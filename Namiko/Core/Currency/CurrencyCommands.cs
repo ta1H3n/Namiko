@@ -1,0 +1,193 @@
+﻿using System;
+using System.Threading.Tasks;
+
+using Discord.Commands;
+using Discord.WebSocket;
+using Discord;
+
+using Namiko.Resources.Datatypes;
+using System.Collections.Generic;
+using Namiko.Resources.Database;
+using System.Diagnostics.Contracts;
+using Namiko.Resources.Attributes;
+
+namespace Namiko.Core.Currency
+{
+    
+    public class Currency : ModuleBase<SocketCommandContext>
+    {
+        [Command("Blackjack"), Alias("bj"), Summary("Starts a game of blackjack.\n`!bj [amount]`")]
+        public async Task BlackjackCommand(string sAmount)
+        {
+            var user = Context.User;
+            var ch = Context.Channel;
+
+            if (Blackjack.games.ContainsKey(Context.User))
+            {
+                await Context.Channel.SendMessageAsync("You are already in a game of blackjack. #" + Blackjack.games[user].Channel.Name);
+                return;
+            }
+
+            int amount = ToastieUtil.GetAmount(sAmount, user);
+            try
+            {
+                await ToastieDb.AddToasties(user.Id, -amount);
+            }
+            catch (Exception e)
+            {
+                await ch.SendMessageAsync(e.Message);
+                return;
+            }
+
+            Game game = new Game(amount, ch);
+            Blackjack.games[user] = game;
+            await Blackjack.GameContinue(Context, game);
+        }
+
+        [Command("Daily"), Alias("dailies"), Summary("Gives daily toasties to a user.")]
+        public async Task DailyCmd()
+        {
+            Daily daily = DailyDb.GetDaily(Context.User.Id);
+            if (daily == null)
+            {
+                daily = new Daily
+                {
+                    UserId = Context.User.Id,
+                    Date = 0
+                };
+            }
+
+            long timeNow = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+
+            if ((daily.Date + 72000000) < timeNow)
+            {
+                if ((daily.Date + 172800000) < timeNow)
+                {
+                    daily.Streak = 0;
+                }
+
+                daily.Streak++;
+                daily.Date = timeNow;
+                int amount = DailyUtil.DailyAmount(daily.Streak);
+                await DailyDb.SetDaily(daily);
+                await ToastieDb.AddToasties(Context.User.Id, amount);
+
+                await Context.Channel.SendMessageAsync("", false, DailyUtil.DailyGetEmbed(Context.User, daily.Streak, amount, ToastieDb.GetToasties(Context.User.Id)));
+            }
+            else
+            {
+                long wait = ((daily.Date + 72000000) - timeNow) / 1000;
+                int hours = (int)wait / 3600;
+                int minutes = (int)wait % 3600 / 60;
+                int seconds = (int)wait % 60;
+                await Context.Channel.SendMessageAsync("", false, DailyUtil.DailyWaitEmbed(Context.User, hours, minutes, seconds));
+            }
+        }
+
+        [Command("Flip"), Alias("f"), Summary("Flip a coin for toasties, defaults to tails.\n`!flip [amount] [heads_or_tails]`")]
+        public async Task Flip(string sAmount, string side = "t")
+        {
+            var user = Context.User;
+
+            if (!(side.Equals("t") || side.Equals("h") || side.Equals("tails") || side.Equals("heads")))
+            {
+                await Context.Channel.SendMessageAsync("Pick heads or tails!");
+                return;
+            }
+
+            int amount = ToastieUtil.GetAmount(sAmount, user);
+            if (amount <= 0)
+            {
+                await Context.Channel.SendMessageAsync("Pick an amount!");
+                return;
+            }
+
+            try
+            {
+                await ToastieDb.AddToasties(user.Id, -amount);
+            }
+            catch (Exception ex)
+            {
+                await Context.Channel.SendMessageAsync(ex.Message);
+                return;
+            }
+
+            if (FlipUtil.FiftyFifty())
+            {
+                await ToastieDb.AddToasties(user.Id, amount * 2);
+                await ToastieDb.AddToasties(Context.Client.CurrentUser.Id, -amount);
+                await Context.Channel.SendMessageAsync("", false, FlipUtil.WinEmbed(user, amount).Build());
+            }
+            else
+            {
+                await ToastieDb.AddToasties(Context.Client.CurrentUser.Id, amount);
+                await Context.Channel.SendMessageAsync("", false, FlipUtil.LoseEmbed(user, amount).Build());
+            }
+        }
+
+        [Command("Toasties"), Alias("toastie", "bal", "balance"), Summary("Shows amount of toasties.\n`!bal [user_optional]`")]
+        public async Task Toastie(IUser User = null)
+        {
+            if (User == null)
+            {
+                User = Context.User;
+            }
+            await Context.Channel.SendMessageAsync("", false, ToastieUtil.ToastieEmbed(User, ToastieDb.GetToasties(User.Id)));
+        }
+
+        [Command("Set"), Summary("Sets the amount of toasties.\n`!set [user] [amount]`"), OwnerPrecondition]
+        public async Task Set(IUser User = null, int Amount = 0)
+        {
+
+            SocketGuildUser User1 = Context.User as SocketGuildUser;
+            if (User == null)
+            {
+                await Context.Channel.SendMessageAsync("Select a user. !set @user 100");
+                return;
+            }
+            if (User1.Id != StaticSettings.owner)
+            {
+                await Context.Channel.SendMessageAsync("You are not the owner of the Bot");
+                return;
+            }
+
+            await ToastieDb.SetToasties(User.Id, Amount);
+        }
+
+        [Command("Give"), Summary("Give a user some of you toasties.\n`!give [user] [amount]`")]
+        public async Task Give(IUser recipient, int amount = 0)
+        {
+            if (amount <= 0)
+            {
+                await Context.Channel.SendMessageAsync("Pick an amount!");
+                return;
+            }
+
+            try
+            {
+                await ToastieDb.AddToasties(Context.User.Id, -amount);
+            }
+            catch (Exception ex)
+            {
+                await Context.Channel.SendMessageAsync(ex.Message);
+                return;
+            }
+
+            await ToastieDb.AddToasties(recipient.Id, amount);
+
+            EmbedBuilder eb = new EmbedBuilder();
+            eb.WithAuthor("Toasties");
+            eb.WithDescription($"{Context.User.Username} gave {recipient.Username} **{amount}** {ToastieUtil.RandomEmote()}!");
+            eb.WithColor(Namiko.Core.Basic.BasicUtil.RandomColor());
+            await Context.Channel.SendMessageAsync("", false, eb.Build());
+        }
+        [Command("ToastieLeaderboard"), Alias("tlb"), Summary("Toastie Leaderboard.\n`!tlb [page_number]`")]
+        public async Task ToastieLeaderboard(int page = 1)
+        {
+            var toasties = ToastieDb.GetAllToasties();
+            await Context.Channel.SendMessageAsync("", false, ToastieUtil.ToastieLeaderboardEmbed(toasties, Context, page-1));
+        }
+    }
+
+    
+}

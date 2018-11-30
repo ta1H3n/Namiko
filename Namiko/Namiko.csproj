@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <RuntimeHostConfigurationOption Include="System.Globalization.Invariant" Value="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Migrations\20180912211032_Tables.cs" />
+    <Compile Remove="Migrations\20180916124257_Tables.cs" />
+    <Compile Remove="Migrations\20180930212353_Waifus.cs" />
+    <Compile Remove="Migrations\20180930212550_Waifus.cs" />
+    <Compile Remove="Migrations\20180930213638_Waifus.cs" />
+    <Compile Remove="Migrations\20180930214418_Waifus.cs" />
+    <Compile Remove="Migrations\20181002143334_Waifu.cs" />
+    <Compile Remove="Migrations\20181002152711_waifu.cs" />
+    <Compile Remove="Migrations\20181002152902_tables.cs" />
+    <Compile Remove="Migrations\20181002153050_tables.cs" />
+    <Compile Remove="Migrations\20181002173912_edit.cs" />
+    <Compile Remove="Migrations\20181005154304_tables.cs" />
+    <Compile Remove="Migrations\20181116002351_FeaturedWaifu.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Discord.Net" Version="1.0.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.1.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.1.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="2.1.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.1.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.1.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+  </ItemGroup>
+
+</Project>
+
+
