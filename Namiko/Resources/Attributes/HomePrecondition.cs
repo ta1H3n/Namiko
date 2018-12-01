@@ -5,8 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 namespace Namiko.Resources.Attributes
 {
-    class HomePrecondition : PreconditionAttribute
+    public class HomePrecondition : CustomPrecondition
     {
+
         public override Task<PreconditionResult> CheckPermissions(ICommandContext context, CommandInfo command, IServiceProvider services)
         {
             try
@@ -23,6 +24,11 @@ namespace Namiko.Resources.Attributes
                 context.Channel.SendMessageAsync("Nononono, you can't use this command, you're not in my home guild!");
                 return Task.FromResult(PreconditionResult.FromError("Not bot owner"));
             }
+        }
+
+        public override string GetName()
+        {
+            return "HomeServer";
         }
     }
 }

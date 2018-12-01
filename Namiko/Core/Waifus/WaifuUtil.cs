@@ -37,17 +37,25 @@ namespace Namiko.Core.Waifus
             int r = 0;
 
             var tier = WaifuDb.GetWaifusByTier(1);
-            r = rand.Next(0, tier.Count);
-            var item = new ShopWaifu { Waifu = tier.ElementAt(r), GeneratedDate = date, Discount = GenerateDiscount(), Limited = 1, BoughtBy = 0 };
-            waifus.Add(item);
-            tier.RemoveAt(r);
+            ShopWaifu item = null;
+            for (int i = 0; i < 1; i++)
+            {
+                r = rand.Next(0, tier.Count);
+                item = new ShopWaifu { Waifu = tier.ElementAt(r), GeneratedDate = date, Discount = GenerateDiscount(), Limited = 1, BoughtBy = 0 };
+                waifus.Add(item);
+                tier.RemoveAt(r);
+            }
 
-            r = rand.Next(0, tier.Count);
-            item = new ShopWaifu { Waifu = tier.ElementAt(r), GeneratedDate = date, Limited = -1, BoughtBy = 0 };
-            waifus.Add(item);
+            for (int i = 0; i < 3; i++)
+            {
+                r = rand.Next(0, tier.Count);
+                item = new ShopWaifu { Waifu = tier.ElementAt(r), GeneratedDate = date, Limited = -1, BoughtBy = 0 };
+                waifus.Add(item);
+                tier.RemoveAt(r);
+            }
 
             tier = WaifuDb.GetWaifusByTier(2);
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < 4; i++)
             {
                 r = rand.Next(0, tier.Count);
                 item = new ShopWaifu { Waifu = tier.ElementAt(r), GeneratedDate = date, Limited = -1, BoughtBy = 0 };
@@ -70,29 +78,31 @@ namespace Namiko.Core.Waifus
         {
             var eb = new EmbedBuilder();
             eb.WithAuthor("Waifu Store", Context.Client.CurrentUser.GetAvatarUrl());
+            bool split = false;
             foreach (var x in waifus)
             {
                 var efb = new EmbedFieldBuilder();
                 efb.IsInline = true;
-                if (x.Limited > -1)
-                    efb.IsInline = false;
                 efb.Name = x.Waifu.Name;
                 efb.Value = $"TIER: **{x.Waifu.Tier}**\nPrice: {GetPriceString(x.Waifu.Tier, x.Discount)}";
+
                 if (x.Limited > -1)
                 {
+                    efb.IsInline = false;
                     efb.Value += "\n" + "**Limited!**";
                     if (x.Limited > 0)
                         efb.Value += $" {x.Limited} in stock!";
                     else
                         efb.Value += $" OUT OF STOCK! Bought by: {Context.Client.GetUser(x.BoughtBy).Mention}";
                 }
+
                 eb.AddField(efb);
-                eb.WithFooter($"{StaticSettings.prefix}buywaifu [name]");
             }
 
             ///////////////////////////
             //INSERT THUMBNAIL
             ///////////////////////////
+            eb.WithFooter($"{StaticSettings.prefix}buywaifu [name]");
             eb.Color = BasicUtil.RandomColor();
             return eb;
         }
@@ -216,32 +226,42 @@ namespace Namiko.Core.Waifus
             eb.WithThumbnailUrl(user.GetAvatarUrl());
 
             var waifus = UserInventoryDb.GetWaifus(user.Id);
-
             waifus = waifus.OrderBy(x => x.Name).ToList();
+
+            int waifuprice = 0;
             foreach (var x in waifus)
+                waifuprice += WaifuUtil.GetPrice(x.Tier);
+
+            // string desc = $"**Toasties**: {ToastieDb.GetToasties(user.Id)}\n";
+            // desc += $"**Waifu worth**: {waifuprice}";
+            // eb.WithDescription(desc);
+
+            eb.AddField("Toasties", $"Amount: {ToastieDb.GetToasties(user.Id)} <:toastie3:454441133876183060>\nDaily: {DailyDb.GetDaily(user.Id).Streak} :calendar_spiral:", true);
+            eb.AddField("Waifus", $"Amount: {waifus.Count} :two_hearts:\nValue: {waifuprice} <:toastie3:454441133876183060>", true);
+
+            if (waifus.Count > 0)
             {
-                EmbedFieldBuilder efb = new EmbedFieldBuilder();
-                efb.Name = x.Name;
-                efb.IsInline = true;
-                if (x.Source != null)
+                string wstr = "";
+                // wstr += $"Total: {waifus.Count} :two_hearts:\n";
+                // wstr += $"Value: {waifuprice} <:toastie3:454441133876183060>";
+                foreach (var x in waifus)
                 {
-                    string source = x.Source;
-                    if (source.Length > 26)
-                        source = source.Substring(0, 24) + "...";
-                    efb.Value = $"*{source}*";
+                    if (x.LongName.Length > 35)
+                        x.LongName = x.LongName.Substring(0, 33) + "...";
+                    wstr += String.Format("**{0}** - *{1}*\n", x.Name, x.LongName);
                 }
-                else
-                    efb.Value = "-no source-";
-                eb.AddField(efb);
+                eb.AddField("Waifus", wstr);
             }
 
             var waifu = FeaturedWaifuDb.GetFeaturedWaifu(user.Id);
             if(waifu != null)
                 eb.WithThumbnailUrl(waifu.ImageUrl);
-
-            string desc = $"**Toasties**: {ToastieDb.GetToasties(user.Id)}\n";
-            desc += "\n**Waifus:**";
-            eb.WithDescription(desc);
+            
+            string footer = "";
+            footer += $"Status: '{user.Status.ToString()}'";
+            if (user.Game.HasValue)
+                footer += $", Playing: '{user.Game.Value.Name}'";
+            eb.WithFooter(footer);
 
             eb.Color = BasicUtil.RandomColor();
             return eb;
@@ -297,6 +317,7 @@ namespace Namiko.Core.Waifus
             eb.AddField("Users", user, true);
 
             eb.WithColor(BasicUtil.RandomColor());
+            eb.WithFooter($"Page: {page+1}");
             return eb;
         }
     }

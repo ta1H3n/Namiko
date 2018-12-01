@@ -52,10 +52,15 @@ namespace Namiko.Core
             var bans = BanDb.GetBans();
             foreach(var x in bans)
             {
-                if(x.DateBanEnd.ToBinary() < DateTime.Now.ToBinary())
+                if (x.DateBanEnd.CompareTo(System.DateTime.Now) == -1 ? true : false)
                 {
+                    Console.WriteLine("Unbanning " + x.UserId);
                     await BanDb.EndBan(x.UserId, x.ServerId);
-                    await Program.GetClient().GetGuild(x.ServerId).RemoveBanAsync(x.UserId);
+                    try
+                    {
+                        await Program.GetClient().GetGuild(x.ServerId).RemoveBanAsync(x.UserId);
+                    }
+                    catch (Exception ex) { }
                 }
             }
         }

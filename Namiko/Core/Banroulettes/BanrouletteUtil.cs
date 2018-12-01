@@ -17,13 +17,13 @@ namespace Namiko.Core.Banroulettes
         public static string BanrouletteDetails(Banroulette banroulette, SocketRole role = null)
         {
             string desc = "";
-            desc += $"**Ban Length**: {banroulette.BanLengthHours} hours.\n";
-            desc += $"**Toastie Reward Pool**: {banroulette.RewardPool} *(you can add more by using the !brrewardpool command)*\n";
-            desc += $"**Minimum Participants**: {banroulette.MinParticipants}\n";
-            desc += $"**Maximum Participants**: {banroulette.MaxParticipants}\n";
+            desc += $":calendar_spiral: Ban Length: *{banroulette.BanLengthHours} hours.*";
+            desc += $"\n<:toastie3:454441133876183060> Toastie Reward Pool: *{banroulette.RewardPool} (you can add more by using the !brrewardpool command)*";
+            //desc += $"**Minimum Participants**: {banroulette.MinParticipants}\n";
+            //desc += $"**Maximum Participants**: {banroulette.MaxParticipants}\n";
             if(role != null)
             {
-                desc += $"**Required Role**: {role.Name}";
+                desc += $"\n:star: Required Role: *{role.Name}*";
             }
             return desc;
         }

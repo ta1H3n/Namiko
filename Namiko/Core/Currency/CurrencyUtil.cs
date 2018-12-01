@@ -74,6 +74,7 @@ namespace Namiko.Core.Currency
 
             eb.AddField("Users", users, true);
             eb.WithColor(BasicUtil.RandomColor());
+            eb.WithFooter($"Page: {page+1}");
             return eb;
         }
     }
@@ -112,7 +113,7 @@ namespace Namiko.Core.Currency
             double multiplier = 1.0 + streak / 5;
             int random = new Random().Next(10) + 5;
             amount = random * multiplier * 10;
-            return (int)amount;
+            return (int)amount > 2500 ? 2500 : (int)amount;
         }
         public static EmbedBuilder DailyGetEmbed(IUser user, int streak, int amount, int balance)
         {

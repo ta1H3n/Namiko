@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 
 namespace Namiko.Resources.Attributes
 {
-    class OwnerPrecondition : PreconditionAttribute
+    class OwnerPrecondition : CustomPrecondition
     {
+
         public override Task<PreconditionResult> CheckPermissions(ICommandContext context, CommandInfo command, IServiceProvider services)
         {
             if (context.User.Id == StaticSettings.owner)
@@ -17,6 +18,11 @@ namespace Namiko.Resources.Attributes
                 //context.Channel.SendMessageAsync("You can't do thaaaaaaat! This one's only for tai >_<");
                 return Task.FromResult(PreconditionResult.FromError("Not bot owner"));
             }
+        }
+
+        public override string GetName()
+        {
+            return "BotOwner";
         }
     }
 }

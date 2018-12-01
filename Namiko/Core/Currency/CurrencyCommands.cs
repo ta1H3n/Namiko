@@ -16,8 +16,8 @@ namespace Namiko.Core.Currency
     
     public class Currency : ModuleBase<SocketCommandContext>
     {
-        [Command("Blackjack"), Alias("bj"), Summary("Starts a game of blackjack.\n`!bj [amount]`")]
-        public async Task BlackjackCommand(string sAmount)
+        [Command("Blackjack"), Alias("bj"), Summary("Starts a game of blackjack.\n**Usage**: `!bj [amount]`")]
+        public async Task BlackjackCommand(string sAmount, [Remainder] string str)
         {
             var user = Context.User;
             var ch = Context.Channel;
@@ -84,8 +84,8 @@ namespace Namiko.Core.Currency
             }
         }
 
-        [Command("Flip"), Alias("f"), Summary("Flip a coin for toasties, defaults to tails.\n`!flip [amount] [heads_or_tails]`")]
-        public async Task Flip(string sAmount, string side = "t")
+        [Command("Flip"), Alias("f"), Summary("Flip a coin for toasties, defaults to tails.\n**Usage**: `!flip [amount] [heads_or_tails]`")]
+        public async Task Flip(string sAmount, string side = "t", [Remainder] string str = "")
         {
             var user = Context.User;
 
@@ -125,8 +125,8 @@ namespace Namiko.Core.Currency
             }
         }
 
-        [Command("Toasties"), Alias("toastie", "bal", "balance"), Summary("Shows amount of toasties.\n`!bal [user_optional]`")]
-        public async Task Toastie(IUser User = null)
+        [Command("Toasties"), Alias("toastie", "bal", "balance"), Summary("Shows amount of toasties.\n**Usage**: `!bal [user_optional]`")]
+        public async Task Toastie(IUser User = null, [Remainder] string str = "")
         {
             if (User == null)
             {
@@ -135,27 +135,22 @@ namespace Namiko.Core.Currency
             await Context.Channel.SendMessageAsync("", false, ToastieUtil.ToastieEmbed(User, ToastieDb.GetToasties(User.Id)));
         }
 
-        [Command("Set"), Summary("Sets the amount of toasties.\n`!set [user] [amount]`"), OwnerPrecondition]
-        public async Task Set(IUser User = null, int Amount = 0)
+        [Command("SetToasties"), Alias("st", "sett"), Summary("Sets the amount of toasties.\n**Usage**: `!st [user] [amount]`"), OwnerPrecondition]
+        public async Task Set(IUser user, int amount, [Remainder] string str = "")
         {
-
-            SocketGuildUser User1 = Context.User as SocketGuildUser;
-            if (User == null)
-            {
-                await Context.Channel.SendMessageAsync("Select a user. !set @user 100");
-                return;
-            }
-            if (User1.Id != StaticSettings.owner)
-            {
-                await Context.Channel.SendMessageAsync("You are not the owner of the Bot");
-                return;
-            }
-
-            await ToastieDb.SetToasties(User.Id, Amount);
+            await ToastieDb.SetToasties(user.Id, amount);
+            await Context.Channel.SendMessageAsync("", false, ToastieUtil.ToastieEmbed(user, ToastieDb.GetToasties(user.Id)));
         }
 
-        [Command("Give"), Summary("Give a user some of you toasties.\n`!give [user] [amount]`")]
-        public async Task Give(IUser recipient, int amount = 0)
+        [Command("AddToasites"), Alias("at", "addt"), Summary("Adds toasties to a user.\n**Usage**: `!at [user] [amount]`"), OwnerPrecondition]
+        public async Task Add(IUser user, int amount, [Remainder] string str = "")
+        {
+            await ToastieDb.AddToasties(user.Id, amount);
+            await Context.Channel.SendMessageAsync("", false, ToastieUtil.ToastieEmbed(user, ToastieDb.GetToasties(user.Id)));
+        }
+
+        [Command("Give"), Summary("Give a user some of you toasties.\n**Usage**: `!give [user] [amount]`")]
+        public async Task Give(IUser recipient, int amount = 0, [Remainder] string str = "")
         {
             if (amount <= 0)
             {
@@ -181,8 +176,9 @@ namespace Namiko.Core.Currency
             eb.WithColor(Namiko.Core.Basic.BasicUtil.RandomColor());
             await Context.Channel.SendMessageAsync("", false, eb.Build());
         }
-        [Command("ToastieLeaderboard"), Alias("tlb"), Summary("Toastie Leaderboard.\n`!tlb [page_number]`")]
-        public async Task ToastieLeaderboard(int page = 1)
+
+        [Command("ToastieLeaderboard"), Alias("tlb"), Summary("Toastie Leaderboard.\n**Usage**: `!tlb [page_number]`")]
+        public async Task ToastieLeaderboard(int page = 1, [Remainder] string str = "")
         {
             var toasties = ToastieDb.GetAllToasties();
             await Context.Channel.SendMessageAsync("", false, ToastieUtil.ToastieLeaderboardEmbed(toasties, Context, page-1));

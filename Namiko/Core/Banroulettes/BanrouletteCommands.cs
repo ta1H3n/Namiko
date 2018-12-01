@@ -16,10 +16,13 @@ namespace Namiko.Core.Banroulettes
 {
     public class Banroulettes : ModuleBase<SocketCommandContext>
     {
-        [Command("NewBanroulette"), Alias("nbr"), Summary("Starts a new game of ban roulette, where one participant is randomly banned from the server. Winners split toasties from the reward pool.\n`!nbr [min_users] [max_users] [ban_length_in_hours] [toastie_reward_pool] [required_role_name]`\n[max_users] - 0 for no limit.\n[toastie_reward_poll] - bot owner only, defaults to 0 otherwise.\n[required_role_name] - optional."), RequireBotPermission(GuildPermission.BanMembers), RequireUserPermission(GuildPermission.BanMembers)]
-        public async Task NewBanroulette(int min, int max, int hours, int reward = 0, [Remainder] string roleName = "")
+        [Command("NewBanroulette"), Alias("nbr"), Summary("Starts a new game of ban roulette, where one participant is randomly banned from the server. Winners split toasties from the reward pool.\n" +
+            "**Usage**: `!nbr [ban_length_in_hours] [toastie_reward_pool] [required_role_name]`\n" +
+            "[toastie_reward_poll] - bot owner only, defaults to 0 otherwise.\n" +
+            "[required_role_name] - optional."), RequireBotPermission(GuildPermission.BanMembers), RequireUserPermission(GuildPermission.BanMembers)]
+        public async Task NewBanroulette(int hours, int reward = 0, [Remainder] string roleName = "")
         {
-            if (min < 0 || max < 0 || hours < 0 || reward < 0)
+            if (hours < 0)
                 throw new IndexOutOfRangeException();
 
             var banroulette = BanrouletteDb.GetBanroulette(Context.Channel.Id);
@@ -46,14 +49,14 @@ namespace Namiko.Core.Banroulettes
                 await Context.Channel.SendMessageAsync("Resetting toastie rewards to 0, because you are not my owner.");
             }
 
-            banroulette = new Namiko.Resources.Datatypes.Banroulette { Active = true, BanLengthHours = hours, ChannelId = Context.Channel.Id, MaxParticipants = max, MinParticipants = min,
+            banroulette = new Namiko.Resources.Datatypes.Banroulette { Active = true, BanLengthHours = hours, ChannelId = Context.Channel.Id, MaxParticipants = 0, MinParticipants = 0,
             RewardPool = reward, ServerId = Context.Guild.Id, RoleReqId = (role == null ? 0 : role.Id) };
 
             await BanrouletteDb.NewBanroulette(banroulette);
-            await Context.Channel.SendMessageAsync("Started a new game Ban Roulette! It's on.\n\n" + BanrouletteUtil.BanrouletteDetails(banroulette, role) + $"\n\nType `{StaticSettings.prefix}jbr` to join the game.");
+            await Context.Channel.SendMessageAsync("Started a new game of Ban Roulette! It's on.\n\n" + BanrouletteUtil.BanrouletteDetails(banroulette, role) + $"\n\n*Type `{StaticSettings.prefix}jbr` to join the game.*");
         }
 
-        [Command("Banroulette"), Alias("br"), Summary("Shows details of the current Ban Roulette.\n`!br`")]
+        [Command("Banroulette"), Alias("br"), Summary("Shows details of the current Ban Roulette.\n**Usage**: `!br`")]
         public async Task Banroulette()
         {
             var banroulette = BanrouletteDb.GetBanroulette(Context.Channel.Id);
@@ -65,10 +68,10 @@ namespace Namiko.Core.Banroulettes
 
             var users = BasicUtil.UserList(Context.Client, BanrouletteDb.GetParticipants(banroulette));
             var role = Context.Guild.GetRole(banroulette.RoleReqId);
-            await Context.Channel.SendMessageAsync($"{BanrouletteUtil.BanrouletteDetails(banroulette, role)}\n**Participants**:\n{BanrouletteUtil.BanrouletteParticipants(users)}");
+            await Context.Channel.SendMessageAsync($"{BanrouletteUtil.BanrouletteDetails(banroulette, role)}\n\nParticipants:\n{BanrouletteUtil.BanrouletteParticipants(users)}");
         }
 
-        [Command("JoinBanroulette"), Alias("jbr"), Summary("Join the current Ban Roulette. Must be in the same channel.\n`!jbr`")]
+        [Command("JoinBanroulette"), Alias("jbr"), Summary("Join the current Ban Roulette. Must be in the same channel.\n**Usage**: `!jbr`")]
         public async Task JoinBanroulette()
         {
             var banroulette = BanrouletteDb.GetBanroulette(Context.Channel.Id);
@@ -77,6 +80,17 @@ namespace Namiko.Core.Banroulettes
                 await Context.Channel.SendMessageAsync(":x: There is no running Ban Roulette in this channel.");
                 return;
             }
+
+            if (banroulette.RoleReqId != 0)
+            {
+                var user = Context.User as SocketGuildUser;
+                if (!user.Roles.Any(x => x.Id == banroulette.RoleReqId))
+                {
+                    await Context.Channel.SendMessageAsync(":x: You do not have the required role to join!");
+                    return;
+                }
+            }
+                    
 
             var userIds = BanrouletteDb.GetParticipants(banroulette);
             if (userIds.Count >= banroulette.MaxParticipants - 1 && banroulette.MaxParticipants != 0)
@@ -94,10 +108,10 @@ namespace Namiko.Core.Banroulettes
 
             var users = BasicUtil.UserList(Context.Client, userIds);
             users.Add(Context.User);
-            await Context.Channel.SendMessageAsync("You joined the Ban Roulette. *Heh.*\n\n**List of Participants**:\n" + BanrouletteUtil.BanrouletteParticipants(users));
+            await Context.Channel.SendMessageAsync("You joined the Ban Roulette. *Heh.*\n\nList of Participants:\n" + BanrouletteUtil.BanrouletteParticipants(users));
         }
 
-        [Command("CancelBanroulette"), Alias("cbr"), Summary("Cancels the current Ban Roulette.\n`!cbr`"), RequireUserPermission(GuildPermission.BanMembers)]
+        [Command("CancelBanroulette"), Alias("cbr"), Summary("Cancels the current Ban Roulette.\n**Usage**: `!cbr`"), RequireUserPermission(GuildPermission.BanMembers)]
         public async Task CancelBanroulette()
         {
             var banroulette = BanrouletteDb.GetBanroulette(Context.Channel.Id);
@@ -111,7 +125,7 @@ namespace Namiko.Core.Banroulettes
             await Context.Channel.SendMessageAsync("*Tch...* Cancelling ban roulette.");
         }
 
-        [Command("EndBanroulette"), Alias("ebr"), Summary("Ends the current Ban Roulette, banning a random participant and splitting the reward pool between the others.\n`!ebr`"), RequireBotPermission(GuildPermission.BanMembers), RequireUserPermission(GuildPermission.BanMembers)]
+        [Command("EndBanroulette"), Alias("ebr"), Summary("Ends the current Ban Roulette, banning a random participant and splitting the reward pool between the others.\n**Usage**: `!ebr`"), RequireBotPermission(GuildPermission.BanMembers), RequireUserPermission(GuildPermission.BanMembers)]
         public async Task EndBanroulette()
         {
             var banroulette = BanrouletteDb.GetBanroulette(Context.Channel.Id);
@@ -141,39 +155,33 @@ namespace Namiko.Core.Banroulettes
             };
 
             string msg = $"{user.Mention} won! Bai baaaaaai! See you in {banroulette.BanLengthHours} hours!\n\n";
-            if (users.Count > 1)
+
+            users.Remove(user);
+            if (users.Count > 0 && banroulette.RewardPool > 0)
             {
-                msg += $"Prize pool of {banroulette.RewardPool} ({banroulette.RewardPool / (users.Count - 1)} each) split between:\n";
+                int prize = banroulette.RewardPool / users.Count;
+                msg += $"Prize pool of {banroulette.RewardPool} ({prize} each) split between: ";
                 foreach (var x in users)
                 {
-                    if (!user.Equals(user))
-                    {
-                        await ToastieDb.AddToasties(x.Id, banroulette.RewardPool / (users.Count - 1));
-                        msg += x.Mention + " ";
-                    }
+                    await ToastieDb.AddToasties(x.Id, prize);
+                    msg += x.Mention + " ";
                 }
             }
             await Context.Channel.SendMessageAsync(msg);
             await user.SendMessageAsync($"You won the ban roulette! You are banned from {Context.Guild.Name} guild for {banroulette.BanLengthHours} hours! Bai baaaai!");
+
+            await BanrouletteDb.EndBanroulette(banroulette.Id);
 
             if (banroulette.BanLengthHours > 0)
             {
                 await BanDb.AddBan(ban);
                 await Context.Guild.AddBanAsync(user, 0, $"Banroulette {banroulette.Id}, {banroulette.BanLengthHours} hours.");
             }
-
-            await BanrouletteDb.EndBanroulette(banroulette.Id
-);
         }
 
-        [Command("BRRewardPool"), Alias("brrp"), Summary("Add toasties to the Ban Roulette reward pool from your account.\n`!brrp [amount]`")]
-        public async Task BRRewardPool(int amount = 0)
+        [Command("BRRewardPool"), Alias("brrp"), Summary("Add toasties to the Ban Roulette reward pool from your account.\n**Usage**: `!brrp [amount]`")]
+        public async Task BRRewardPool(int amount)
         {
-            if(amount <= 0)
-            {
-                await Context.Channel.SendMessageAsync("Pick an amount!");
-            }
-
             var banroulette = BanrouletteDb.GetBanroulette(Context.Channel.Id);
             if (banroulette == null)
             {

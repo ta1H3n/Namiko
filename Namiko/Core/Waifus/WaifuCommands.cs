@@ -15,8 +15,8 @@ namespace Namiko.Core.Waifus
 {
     public class Waifus : ModuleBase<SocketCommandContext>
     {
-        [Command("Inventory"), Alias("waifus", "profile"), Summary("Shows user waifus.\n`!inventory [user_optional]`")]
-        public async Task Inventory(IUser user = null)
+        [Command("Inventory"), Alias("waifus", "profile"), Summary("Shows user waifus.\n**Usage**: `!inventory [user_optional]`")]
+        public async Task Inventory(IUser user = null, [Remainder] string str = "")
         {
             if (user == null)
                 user = Context.User;
@@ -25,15 +25,15 @@ namespace Namiko.Core.Waifus
         }
 
         [Command("WaifuShop"), Alias("ws"), Summary("Opens the waifu shop."),]
-        public async Task OpenWaifuShop()
+        public async Task OpenWaifuShop([Remainder] string str = "")
         {
             List<ShopWaifu> waifus = await WaifuUtil.GetShopWaifus();
             var eb = WaifuUtil.GetShopEmbed(waifus, Context);
             await Context.Channel.SendMessageAsync("", false, eb.Build());
         }
 
-        [Command("BuyWaifu"), Alias("bw"), Summary("Buys a waifu, must be in a shop.\n`!bw [name]`")]
-        public async Task BuyWaifu(string name)
+        [Command("BuyWaifu"), Alias("bw"), Summary("Buys a waifu, must be in a shop.\n**Usage**: `!bw [name]`")]
+        public async Task BuyWaifu(string name, [Remainder] string str = "")
         {
             var waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(name), name, Context.Channel);
 
@@ -86,8 +86,8 @@ namespace Namiko.Core.Waifus
             await Context.Channel.SendMessageAsync($"Congratulations! You bought **{waifu.Name}**!", false, WaifuUtil.WaifuEmbedBuilder(waifu));
         }
 
-        [Command("GiveWaifu"), Alias("gw"), Summary("Transfers waifu to another user.\n`!gw [name] [user]`")]
-        public async Task GiveWaifu(string name, IUser recipient, [Remainder] string str = "")
+        [Command("GiveWaifu"), Alias("gw"), Summary("Transfers waifu to another user.\n**Usage**: `!gw [user] [waifu_name]`")]
+        public async Task GiveWaifu(IUser recipient, string name, [Remainder] string str = "")
         {
             var waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(name), name, Context.Channel);
 
@@ -114,7 +114,7 @@ namespace Namiko.Core.Waifus
             await Context.Channel.SendMessageAsync($"{recipient.Mention} You received {waifu.Name} from {Context.User.Mention}!", false, WaifuUtil.WaifuEmbedBuilder(waifu).Build());
         }
 
-        [Command("Waifu"), Alias("Husbando"), Summary("Shows waifu details.\n`!waifu [name]`")]
+        [Command("Waifu"), Alias("Husbando"), Summary("Shows waifu details.\n**Usage**: `!waifu [name]`")]
         public async Task ShowWaifu([Remainder] string name)
         {
             var waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(name), name, Context.Channel);
@@ -130,13 +130,13 @@ namespace Namiko.Core.Waifus
 
         }
 
-        [Command("AllWaifus"), Alias("aw"), Summary("Lists all waifus. Tier Optional.\n`!aw [tier]`")]
+        [Command("AllWaifus"), Alias("aw"), Summary("Lists all waifus. Tier Optional.\n**Usage**: `!aw [tier]`")]
         public async Task ListWaifus(int tier = 0)
         {
             await Context.Channel.SendMessageAsync("", false, WaifuUtil.WaifuListEmbedBuilder(tier).Build());
         }
 
-        [Command("NewWaifu"), Alias("nw"), Summary("Adds a waifu to the database.\n`!nw [name] [tier(1-3)] [image_url]`"), HomePrecondition]
+        [Command("NewWaifu"), Alias("nw"), Summary("Adds a waifu to the database.\n**Usage**: `!nw [name] [tier(1-3)] [image_url]`"), HomePrecondition]
         public async Task NewWaifu(string name, int tier, string url = null)
         {
             if (url != null)
@@ -156,7 +156,7 @@ namespace Namiko.Core.Waifus
                 await Context.Channel.SendMessageAsync($"Failed to add {name}");
         }
 
-        [Command("DeleteWaifu"), Alias("dw"), Summary("Removes a waifu from the database.\n`!dw [name]`"), HomePrecondition]
+        [Command("DeleteWaifu"), Alias("dw"), Summary("Removes a waifu from the database.\n**Usage**: `!dw [name]`"), HomePrecondition]
         public async Task DeleteWaifu(string name)
         {
 
@@ -166,7 +166,7 @@ namespace Namiko.Core.Waifus
                 await Context.Channel.SendMessageAsync($"Failed to delete {name}");
         }
 
-        [Command("WaifuFullName"), Alias("wfn"), Summary("Changes the full name of a waifu.\n`!wfn [name] [fullname]`"), HomePrecondition]
+        [Command("WaifuFullName"), Alias("wfn"), Summary("Changes the full name of a waifu.\n**Usage**: `!wfn [name] [fullname]`"), HomePrecondition]
         public async Task WaifuFullName(string name, [Remainder] string fullname = null)
         {
 
@@ -185,7 +185,7 @@ namespace Namiko.Core.Waifus
                 await Context.Channel.SendMessageAsync($":x: Failed to update {name}");
         }
 
-        [Command("WaifuDescription"), Alias("wd"), Summary("Changes the description of a waifu.\n`!wd [name] [description]`"), HomePrecondition]
+        [Command("WaifuDescription"), Alias("wd"), Summary("Changes the description of a waifu.\n**Usage**: `!wd [name] [description]`"), HomePrecondition]
         public async Task WaifuDescription(string name, [Remainder] string description = null)
         {
 
@@ -204,7 +204,7 @@ namespace Namiko.Core.Waifus
                 await Context.Channel.SendMessageAsync($":x: Failed to update {name}");
         }
 
-        [Command("WaifuSource"), Alias("wsrc"), Summary("Changes the source of a waifu.\n`!ws [name] [source]`"), HomePrecondition]
+        [Command("WaifuSource"), Alias("wsrc"), Summary("Changes the source of a waifu.\n**Usage**: `!ws [name] [source]`"), HomePrecondition]
         public async Task WaifuSource(string name, [Remainder] string source = null)
         {
 
@@ -223,7 +223,7 @@ namespace Namiko.Core.Waifus
                 await Context.Channel.SendMessageAsync($":x: Failed to update {name}");
         }
 
-        [Command("WaifuTier"), Alias("wt"), Summary("Changes the tier of a waifu.\n`!wt [name] [tier(1-3)]`"), HomePrecondition]
+        [Command("WaifuTier"), Alias("wt"), Summary("Changes the tier of a waifu.\n**Usage**: `!wt [name] [tier(1-3)]`"), HomePrecondition]
         public async Task WaifuTier(string name, int tier)
         {
 
@@ -242,7 +242,7 @@ namespace Namiko.Core.Waifus
                 await Context.Channel.SendMessageAsync($":x: Failed to update {name}");
         }
 
-        [Command("WaifuImage"), Alias("wi"), Summary("Changes the image of a waifu.\n`!wi [name] [image_url]`"), HomePrecondition]
+        [Command("WaifuImage"), Alias("wi"), Summary("Changes the image of a waifu.\n**Usage**: `!wi [name] [image_url]`"), HomePrecondition]
         public async Task WaifuImage(string name, string url = null)
         {
 
@@ -277,8 +277,8 @@ namespace Namiko.Core.Waifus
             await Context.Channel.SendMessageAsync("I'll try o7. Check if it worked.");
         }
         
-        [Command("WaifuLeaderboard"), Alias("wlb"), Summary("Shows most popular waifus.\n`!wlb [page_number]`")]
-        public async Task WaifuLeaderboard(int page = 1)
+        [Command("WaifuLeaderboard"), Alias("wlb"), Summary("Shows most popular waifus.\n**Usage**: `!wlb [page_number]`")]
+        public async Task WaifuLeaderboard(int page = 1, [Remainder] string str = "")
         {
             var AllWaifus = UserInventoryDb.GetAllWaifuItems();
             var waifus = new Dictionary<Waifu, int>();
@@ -302,8 +302,8 @@ namespace Namiko.Core.Waifus
             await Context.Channel.SendMessageAsync("", false, WaifuUtil.WaifuLeaderboardEmbed(ordWaifus, ordUsers, page).Build());
         }
 
-        [Command("SetFeaturedWaifu"), Alias("sfw"), Summary("Sets your waifu image on your profile.\n`!sfw [waifu_name]`")]
-        public async Task SetFeaturedWaifu(string name)
+        [Command("SetFeaturedWaifu"), Alias("sfw"), Summary("Sets your waifu image on your profile.\n**Usage**: `!sfw [waifu_name]`")]
+        public async Task SetFeaturedWaifu(string name, [Remainder] string str = "")
         {
             var waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(name), name, Context.Channel);
             if (waifu == null)

@@ -32,8 +32,8 @@ namespace Namiko.Core.Basic
              await Context.Channel.SendMessageAsync("", false, ToEmbed(image));
          }
 
-         [Command("NewImage"), Alias("ni"), Summary("Adds a new image to the database.\n`!ni [name] [url]`"), HomePrecondition]
-         public async Task NewImage(string name, string url)
+         [Command("NewImage"), Alias("ni"), Summary("Adds a new image to the database.\n**Usage**: `!ni [name] [url]`"), HomePrecondition]
+         public async Task NewImage(string name, string url, [Remainder] string str = "")
          {
 
             if (!((url.EndsWith(".jpg") || url.EndsWith(".jpeg") || url.EndsWith(".png") || url.EndsWith(".gif") || url.EndsWith(".gifv")) && (Uri.TryCreate(url, UriKind.Absolute, out var outUri) && (outUri.Scheme == Uri.UriSchemeHttp || outUri.Scheme == Uri.UriSchemeHttps))))
@@ -51,8 +51,8 @@ namespace Namiko.Core.Basic
              await Context.Channel.SendMessageAsync("", false, ToEmbed(image));
          }
 
-         [Command("DeleteImage"), Alias("di"), Summary("Deletes image from the database using the id.\n`di [id]`"), HomePrecondition]
-         public async Task DeleteImage(int id)
+         [Command("DeleteImage"), Alias("di"), Summary("Deletes image from the database using the id.\n**Usage**: `di [id]`"), HomePrecondition]
+         public async Task DeleteImage(int id, [Remainder] string str = "")
          {
 
             var image = ImageDb.GetImage(id);
@@ -66,8 +66,8 @@ namespace Namiko.Core.Basic
              await Context.Channel.SendMessageAsync($"Image {id} is gone forever. Why have you done this?");
          }
 
-         [Command("Image"), Alias("i"), Summary("Sends a reaction image by id.\n`!i [id]`")]
-         public async Task Image(int id, [Remainder] string something = null)
+         [Command("Image"), Alias("i"), Summary("Sends a reaction image by id.\n**Usage**: `!i [id]`")]
+         public async Task Image(int id, [Remainder] string str = "")
          {
              var image = ImageDb.GetImage(id);
              if (image == null)
@@ -79,8 +79,8 @@ namespace Namiko.Core.Basic
              await Context.Channel.SendMessageAsync("", false, ToEmbed(image));
          }
 
-         [Command("All"), Summary("All reaction images from a single command.\n`!all [name]`"), HomePrecondition]
-         public async Task All(string name)
+         [Command("All"), Summary("All reaction images from a single command.\n**Usage**: `!all [name]`"), HomePrecondition]
+         public async Task All(string name, [Remainder] string str = "")
          {
             var images = ImageDb.GetImages(name);
              foreach (ReactionImage x in images)
@@ -89,7 +89,7 @@ namespace Namiko.Core.Basic
              }
          }
 
-        [Command("ListAll"), Summary("List of all image commands and how many images there are.\n`listall`")]
+        [Command("ListAll"), Summary("List of all image commands and how many images there are.\n**Usage**: `listall`")]
          public async Task List()
          {
              var images = ImageDb.GetImages();
@@ -124,8 +124,8 @@ namespace Namiko.Core.Basic
              await Context.Channel.SendMessageAsync(stringList);
          }
 
-        [Command("List"), Summary("List of all image IDs under an image reaction command.\n`list [name]`")]
-        public async Task List(string name)
+        [Command("List"), Summary("List of all image IDs under an image reaction command.\n**Usage**: `list [name]`")]
+        public async Task List(string name, [Remainder] string str = "")
         {
             var list = ImageDb.GetImages(name);
 

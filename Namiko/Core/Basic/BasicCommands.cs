@@ -12,70 +12,33 @@ using Discord.Rest;
 
 namespace Namiko.Core.Basic
 {
-    public class BasicCommands : ModuleBase<SocketCommandContext>
+    public class Basic : ModuleBase<SocketCommandContext>
     {
-        static ISocketMessageChannel ch;
-
-        [Command("Hi Namiko"), Alias("Hi"), Summary("Hi Namiko command")]
-        public async Task HiNamiko()
+        [Command("Hi Namiko"), Alias("Hi", "ping"), Summary("Hi Namiko command")]
+        public async Task HiNamiko([Remainder] string str)
         {
             await Context.Channel.SendMessageAsync($"Hi {Context.User.Mention} :fox:");
         }
 
-        [Command("SetSayCh"), Alias("ssch"), OwnerPrecondition]
-        public async Task SetSayChannel(ulong id)
-        {
-            ch = Context.Client.GetChannel(id) as ISocketMessageChannel;
-            await Context.Channel.SendMessageAsync($"{ch.Name} set as say channel.");
-        }
-
-        [Command("SayCh"), Alias("sch"), OwnerPrecondition]
-        public async Task Say([Remainder] string str)
-        {
-            if(ch == null)
-            {
-                ch = Context.Client.GetChannel(417064769309245475) as ISocketMessageChannel;
-            }
-            await ch.SendMessageAsync(str);
-        }
-
-        [Command("Say"), Alias("s"), OwnerPrecondition]
-        public async Task SayChannel(ulong id, [Remainder] string str)
-        {
-            ISocketMessageChannel ch = Context.Client.GetChannel(id) as ISocketMessageChannel;
-            await ch.SendMessageAsync(str);
-        }
-
-        [Command("Sayd"), Alias("sd"), OwnerPrecondition]
-        public async Task SayDelete([Remainder] string str)
-        {
-            await Context.Message.DeleteAsync();
-            await Context.Channel.SendMessageAsync(str);
-        }
-
-        [Command("Playing"), Summary("Sets the palying status."), OwnerPrecondition]
-        public async Task Playing([Remainder] string str)
-        {
-            await Context.Client.SetGameAsync(str);
-        }
-
-        [Command("RandomUser"), Alias("ru"), Summary("Randomly picks one user from all the reactions on a message.\n`!ru [message_id]`")]
-        public async Task RandomUser(ulong msgId)
+        [Command("RandomUser"), Alias("ru"), Summary("Randomly picks one user from all the reactions on a message.\nOnly works with default discord emotes.\n" +
+            "Message has to be in the same channel.\n**Usage**:`!ru [message_id]`")]
+        public async Task RandomUser(ulong msgId, [Remainder] string str = "")
         {
             var msg = await Context.Channel.GetMessageAsync(msgId) as RestUserMessage;
             List<IUser> users = new List<IUser>();
-            Console.WriteLine($"{msg.Content}   {msg.GetType()}");
-            Console.WriteLine($"{msg.Reactions.First().Key.ToString()}");
             foreach (var reaction in msg.Reactions)
             {
-                var tUsers = await msg.GetReactionUsersAsync(reaction.Key.ToString());
-                Console.WriteLine($"{tUsers.Count}");
-                users.AddRange(tUsers);
+                try
+                {
+                    var tUsers = await msg.GetReactionUsersAsync(reaction.Key.ToString());
+                    users.AddRange(tUsers);
+                } catch (Exception ex) { }
             }
-          
+            
+            users = users.Distinct(new DistintUserComparer()).ToList();
             var user = users[new Random().Next(users.Count)];
           
-            await Context.Channel.SendMessageAsync($"Aaaaaand ... it's {user.Username}!");
+            await Context.Channel.SendMessageAsync($"Aaaaaand ... it's {user.Username}! :star:");
         }
 
 
@@ -117,18 +80,17 @@ namespace Namiko.Core.Basic
                 await context.Channel.SendMessageAsync(desc);
                 return;
             }
-            eb.Color = BasicUtil.GetColor(context.Guild.GetUser(context.User.Id));
-            await context.Channel.SendMessageAsync("", false, eb.Build());
+            await context.Channel.SendMessageAsync($":star: Type `{StaticSettings.prefix}h [command_name]` for more information about a command.", false, eb.Build());
         }
 
         private EmbedBuilder AllHelpEmbed(CommandService commandService)
         {
             var eb = new EmbedBuilder();
-            eb.WithTitle("Commands");
+            //eb.WithTitle("Commands");
 
             foreach(var x in commandService.Modules)
             {
-                if (x.Name != "BasicCommands")
+                if (x.Name != "SpecialCommands")
                 {
                     var fb = new EmbedFieldBuilder();
                     fb.Name = x.Name;
@@ -142,7 +104,7 @@ namespace Namiko.Core.Basic
                 }
             }
 
-            eb.WithDescription($"Type `{StaticSettings.prefix}h [command_name]` for more information about a command.");
+            //eb.WithDescription($"Type `{StaticSettings.prefix}h [command_name]` for more information about a command.");
             eb.WithFooter(@"""What are you? Twelve?"" -Namiko");
             eb.WithColor(BasicUtil.RandomColor());
             return eb;
@@ -202,9 +164,35 @@ namespace Namiko.Core.Basic
             if(commandInfo.Preconditions.Count > 0)
                 desc += $"**Permissions**: ";
             foreach (var x in commandInfo.Preconditions)
-                desc += $"{x.ToString()} ";
+            {
+                try
+                {
+                    var prec = x as RequireUserPermissionAttribute;
+                    desc += $"{prec.ChannelPermission} ";
+                    desc += $"{prec.GuildPermission} ";
+                } catch (Exception ex) { }
+
+                try
+                {
+                    var prec = x as CustomPrecondition;
+                    desc += $"{prec.GetName()} ";
+                } catch (Exception ex) { }
+            }
 
             return desc;
+        }
+    }
+
+    public class DistintUserComparer : IEqualityComparer<IUser>
+    {
+        public bool Equals(IUser x, IUser y)
+        {
+            return x.Id.Equals(y.Id);
+        }
+
+        public int GetHashCode(IUser obj)
+        {
+            return obj.Id.GetHashCode();
         }
     }
 }

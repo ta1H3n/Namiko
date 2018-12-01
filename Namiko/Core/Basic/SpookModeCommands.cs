@@ -20,8 +20,8 @@ namespace Namiko.Core.Basic
         public static int Rate { get; set; }
         private static List<string> Lines { get; set; }
         
-        [Command("ToggleSpookMode"), Alias("tsm"), Summary("Enables spook mode, 0 to disable.\n`!spookmode [chance per message 1/n]`"), OwnerPrecondition]
-        public async Task SpookModeEnable(int rate)
+        [Command("ToggleSpookMode"), Alias("tsm"), Summary("Enables spook mode, 0 to disable.\n**Usage**: `!spookmode [chance per message 1/n]`"), OwnerPrecondition]
+        public async Task SpookModeEnable(int rate, [Remainder] string str = "")
         {
             if(rate == 0)
             {
@@ -65,8 +65,8 @@ namespace Namiko.Core.Basic
             await Context.Channel.SendMessageAsync($"```{list}```");
         }
 
-        [Command("DeleteSpook"), Alias("ds"), Summary("Deletes a spook.\n`!deletespook [no.]`"), OwnerPrecondition]
-        public async Task DeleteSpook(int id)
+        [Command("DeleteSpook"), Alias("ds"), Summary("Deletes a spook.\n**Usage**: `!deletespook [no.]`"), OwnerPrecondition]
+        public async Task DeleteSpook(int id, [Remainder] string str = "")
         {
             var lines = XmlHelper.GetSpookLines();
             lines.RemoveAt(id);

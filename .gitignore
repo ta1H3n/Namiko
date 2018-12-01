@@ -260,3 +260,8 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
+/ConsoleApp7
+/Deprecated
+/Migrations_old
+/Namiko/Empty Db
+/Namiko/Database.sqlite

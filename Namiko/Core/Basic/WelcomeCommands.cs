@@ -16,7 +16,7 @@ namespace Namiko.Core.Basic
     {
         //private Dictionary<ulong, SocketTextChannelO> WelcomeChannels;
 
-        [Command("NewWelcome"), Alias("nwlc"), Summary("Adds a new welcome message. @_ will be replaced with a mention.\n`!nw [welcome]`"), HomePrecondition]
+        [Command("NewWelcome"), Alias("nwlc"), Summary("Adds a new welcome message. @_ will be replaced with a mention.\n**Usage**: `!nw [welcome]`"), HomePrecondition]
         public async Task NewWelcome([Remainder] string message)
         {
             Contract.Requires(Context.Channel.Id.Equals(StaticSettings.home_server) || Context.User.Id.Equals(StaticSettings.owner));
@@ -46,7 +46,7 @@ namespace Namiko.Core.Basic
             await Context.Channel.SendMessageAsync(list);
         }
 
-        [Command("DeleteWelcome"), Alias("dw", "delwelcome"), Summary("Deletes a welcome message by ID.\n`!dw [id]`"), HomePrecondition]
+        [Command("DeleteWelcome"), Alias("dw", "delwelcome"), Summary("Deletes a welcome message by ID.\n**Usage**: `!dw [id]`"), HomePrecondition]
         public async Task DeleteWelcome(int id)
         {
 
@@ -68,7 +68,7 @@ namespace Namiko.Core.Basic
         //     await channel.SendMessageAsync(str);
         // }
 
-        [Command("SetWelcomeChannel"), Alias("swc"), Summary("Set's the welcome channel. Current channel or provided ID.\n`!swc [id]`"), RequireUserPermission(GuildPermission.Administrator)]
+        [Command("SetWelcomeChannel"), Alias("swc"), Summary("Set's the welcome channel. Current channel or provided ID.\n**Usage**: `!swc [id]`"), RequireUserPermission(GuildPermission.Administrator)]
         public async Task SetWelcomeChannel(long inputId = 1)
         {
             ulong id = 0;

@@ -151,7 +151,7 @@ namespace Namiko
             var Result = await Commands.ExecuteAsync(Context, ArgPos);
             if(!Result.IsSuccess)
             {
-                await new BasicCommands().Help(Context, Commands);
+                await new Basic().Help(Context, Commands);
                 await new Images().SendRandomImage(Context);
                 if (!Result.ErrorReason.Equals("Unknown command."))
                 {
@@ -240,7 +240,7 @@ namespace Namiko
         public static string CommandHelpString(string commandName)
         {
             var cmd = Commands.Commands.Where(x => x.Aliases.Any(y => y.Equals(commandName, StringComparison.InvariantCultureIgnoreCase))).First();
-            return new BasicCommands().CommandHelpString(cmd);
+            return new Basic().CommandHelpString(cmd);
         }
         //  public static EmbedBuilder CommandHelpEmbed(string commandName)
         //  {

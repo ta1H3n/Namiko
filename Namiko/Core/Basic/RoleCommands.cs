@@ -14,7 +14,7 @@ namespace Namiko.Core.Basic
 {
     public class Roles : ModuleBase<SocketCommandContext>
     {
-        [Command("Role"), Alias("r"), Summary("Adds or removes a public role from the user.\n`!r [name]`")]
+        [Command("Role"), Alias("r"), Summary("Adds or removes a public role from the user.\n**Usage**: `!r [name]`")]
         public async Task Role([Remainder] string name)
         {
             var role = GetRole(Context.Guild, name);
@@ -42,7 +42,7 @@ namespace Namiko.Core.Basic
             }
         }
 
-        [Command("SetPublicRole"), Alias("spr"), Summary("Sets or unsets a role as a public role.\n`!spr [name]`"), RequireUserPermission(GuildPermission.ManageRoles)]
+        [Command("SetPublicRole"), Alias("spr"), Summary("Sets or unsets a role as a public role.\n**Usage**: `!spr [name]`"), RequireUserPermission(GuildPermission.ManageRoles)]
         public async Task NewRole([Remainder] string name)
         {
             var role = GetRole(Context.Guild, name);
@@ -65,7 +65,7 @@ namespace Namiko.Core.Basic
             }
         }
 
-        [Command("ClearRole"), Alias("cr"), Summary("Removes all users from a role.\n`cr [name]`"), RequireUserPermission(GuildPermission.ManageRoles)]
+        [Command("ClearRole"), Alias("cr"), Summary("Removes all users from a role.\n**Usage**: `cr [name]`"), RequireUserPermission(GuildPermission.ManageRoles)]
         public async Task ClearRole([Remainder] string name)
         {
             var role = GetRole(Context.Guild, name);
@@ -86,8 +86,8 @@ namespace Namiko.Core.Basic
             await Context.Channel.SendMessageAsync($"There are now {count} less weebs in the `{role.Name}` role. Can I have them?");
         }
 
-        [Command("Invite"), Alias("inv"), Summary("Invites a user to your team.\n`!inv [user]`")]
-        public async Task Invite(IUser user = null)
+        [Command("Invite"), Alias("inv"), Summary("Invites a user to your team.\n**Usage**: `!inv [user]`")]
+        public async Task Invite(IUser user = null, [Remainder] string str = "")
         {
             var channel = Context.Channel;
             var leaderRole = GetLeader(Context.User);
@@ -120,8 +120,8 @@ namespace Namiko.Core.Basic
             await ch.SendMessageAsync($"{Context.User.Mention} invited {user} to {teamRole.Name}.");
         }
 
-        [Command("Join"), Summary("Accept an invite to a team.\n`!join [team_name]`")]
-        public async Task Join(string teamName)
+        [Command("Join"), Summary("Accept an invite to a team.\n**Usage**: `!join [team_name]`")]
+        public async Task Join(string teamName, [Remainder] string str = "")
         {
             var role = GetRole(Context.Guild, teamName);
 
@@ -144,7 +144,7 @@ namespace Namiko.Core.Basic
             await Context.Channel.SendMessageAsync($"You're not invited to {teamName}! You sure they exist?");
         }
 
-        [Command("LeaveTeam"), Alias("lt"), Summary("Leave your team.\n`!lt`")]
+        [Command("LeaveTeam"), Alias("lt"), Summary("Leave your team.\n**Usage**: `!lt`")]
         public async Task Leave()
         {
             var role = GetMember(Context.User);
@@ -161,8 +161,8 @@ namespace Namiko.Core.Basic
             await ch.SendMessageAsync($"{Context.User.Mention} left {role.Name}.");
         }
 
-        [Command("TeamKick"), Alias("tk"), Summary("Kicks a user from your team.\n`!tk [user]`")]
-        public async Task TeamKick(IUser user)
+        [Command("TeamKick"), Alias("tk"), Summary("Kicks a user from your team.\n**Usage**: `!tk [user]`")]
+        public async Task TeamKick(IUser user, [Remainder] string str = "")
         {
             var leader = GetLeader(Context.User);
             if (leader == null)
@@ -187,7 +187,7 @@ namespace Namiko.Core.Basic
             await ch.SendMessageAsync($"{Context.User.Mention} kicked {user} from {userteam.Name}.");
         }
 
-        [Command("NewTeam"), Alias("nt"), Summary("Creates a new team.\n`!newteam [LeaderRoleName] [MemberRoleName]`"), RequireUserPermission(GuildPermission.ManageRoles)]
+        [Command("NewTeam"), Alias("nt"), Summary("Creates a new team.\n**Usage**: `!newteam [LeaderRoleName] [MemberRoleName]`"), RequireUserPermission(GuildPermission.ManageRoles)]
         public async Task NewTeam(string leader, string member)
         {
             var leaderR = GetRole(Context.Guild, leader);
