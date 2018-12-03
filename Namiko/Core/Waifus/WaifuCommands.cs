@@ -292,7 +292,7 @@ namespace Namiko.Core.Waifus
                 var user = Context.Client.GetUser(x.UserId);
                 if (user != null)
                     if (!users.ContainsKey(user))
-                        users.Add(user, AllWaifus.Count(y => y.UserId.Equals(x.UserId)));
+                        users.Add(user, WaifuUtil.WaifuValue(AllWaifus.Where(y => y.UserId == user.Id).Select(y => y.Waifu)));
             }
 
             var ordWaifus = waifus.OrderByDescending(x => x.Value);

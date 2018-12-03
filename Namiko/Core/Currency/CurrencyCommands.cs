@@ -17,7 +17,7 @@ namespace Namiko.Core.Currency
     public class Currency : ModuleBase<SocketCommandContext>
     {
         [Command("Blackjack"), Alias("bj"), Summary("Starts a game of blackjack.\n**Usage**: `!bj [amount]`")]
-        public async Task BlackjackCommand(string sAmount, [Remainder] string str)
+        public async Task BlackjackCommand(string sAmount, [Remainder] string str = "")
         {
             var user = Context.User;
             var ch = Context.Channel;

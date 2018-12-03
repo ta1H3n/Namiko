@@ -227,16 +227,14 @@ namespace Namiko.Core.Waifus
 
             var waifus = UserInventoryDb.GetWaifus(user.Id);
             waifus = waifus.OrderBy(x => x.Name).ToList();
-
-            int waifuprice = 0;
-            foreach (var x in waifus)
-                waifuprice += WaifuUtil.GetPrice(x.Tier);
+            int waifuprice = WaifuValue(waifus);
 
             // string desc = $"**Toasties**: {ToastieDb.GetToasties(user.Id)}\n";
             // desc += $"**Waifu worth**: {waifuprice}";
             // eb.WithDescription(desc);
 
-            eb.AddField("Toasties", $"Amount: {ToastieDb.GetToasties(user.Id)} <:toastie3:454441133876183060>\nDaily: {DailyDb.GetDaily(user.Id).Streak} :calendar_spiral:", true);
+            var daily = DailyDb.GetDaily(user.Id);
+            eb.AddField("Toasties", $"Amount: {ToastieDb.GetToasties(user.Id)} <:toastie3:454441133876183060>\nDaily: {(daily == null ? "0" : daily.Streak.ToString())} :calendar_spiral:", true);
             eb.AddField("Waifus", $"Amount: {waifus.Count} :two_hearts:\nValue: {waifuprice} <:toastie3:454441133876183060>", true);
 
             if (waifus.Count > 0)
@@ -248,6 +246,7 @@ namespace Namiko.Core.Waifus
                 {
                     if (x.LongName.Length > 35)
                         x.LongName = x.LongName.Substring(0, 33) + "...";
+                    x.LongName = x.LongName == null ? "" : x.LongName;
                     wstr += String.Format("**{0}** - *{1}*\n", x.Name, x.LongName);
                 }
                 eb.AddField("Waifus", wstr);
@@ -319,6 +318,15 @@ namespace Namiko.Core.Waifus
             eb.WithColor(BasicUtil.RandomColor());
             eb.WithFooter($"Page: {page+1}");
             return eb;
+        }
+        public static int WaifuValue(IEnumerable<Waifu> waifus)
+        {
+            int total = 0;
+            foreach(var x in waifus)
+            {
+                total += GetPrice(x.Tier);
+            }
+            return total;
         }
     }
 }

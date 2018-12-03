@@ -15,7 +15,7 @@ namespace Namiko.Core.Basic
     public class Basic : ModuleBase<SocketCommandContext>
     {
         [Command("Hi Namiko"), Alias("Hi", "ping"), Summary("Hi Namiko command")]
-        public async Task HiNamiko([Remainder] string str)
+        public async Task HiNamiko([Remainder] string str = "")
         {
             await Context.Channel.SendMessageAsync($"Hi {Context.User.Mention} :fox:");
         }
