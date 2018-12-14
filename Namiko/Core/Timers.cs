@@ -37,15 +37,15 @@ namespace Namiko.Core
             try
             {
                 string backupLocation = Assembly.GetEntryAssembly().Location.Replace(@"Namiko.dll", @"backups/");
-                string date = DateTime.Now.ToString("dd-MM-yyyy");
+                string date = DateTime.Now.ToString("yyyy-MM-dd");
 
                 File.Copy(Locations.SqliteDb + "Database.sqlite", Locations.SqliteDb + "backups/Database" + date + ".sqlite");
                 File.Copy(Locations.SpookyLinesXml, Locations.SpookyLinesXml.Replace("SpookyLines.xml", "backups/SpookyLines") + date + ".xml");
+                Console.WriteLine("Backups made.");
             }
             catch (Exception ex)
             {
             }
-            Console.WriteLine("Backups made.");
         }
         private static async void Timer_Unban(object sender, ElapsedEventArgs e)
         {

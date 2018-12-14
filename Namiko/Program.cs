@@ -28,8 +28,8 @@ namespace Namiko
         => new Program().MainAsync().GetAwaiter().GetResult();
         private async Task MainAsync()
         {
-            Locations.SetUpDebug();
-            //Locations.SetUpRelease();
+            //Locations.SetUpDebug();
+            Locations.SetUpRelease();
             Timers.SetUp();
 
             string JSON = "";
@@ -66,6 +66,7 @@ namespace Namiko
             //Client.UserVoiceStateUpdated += Client_UserVoiceStateUpdated;
 
             //Join/leave logging.
+            SetUpJoinLogChannel();
             Client.UserJoined += Client_UserJoinedLog;
             Client.UserLeft += Client_UserLeftLog;
             Client.UserBanned += Client_UserBannedLog;
@@ -180,27 +181,26 @@ namespace Namiko
         private async Task Client_UserBannedLog(SocketUser arg1, SocketGuild arg2)
         {
             if (JoinLogChannel.Guild.Id == arg2.Id)
-                await GetJoinLogChannel().SendMessageAsync($":x: {UserInfo(arg1)} was banned.");
+                await JoinLogChannel.SendMessageAsync($":hammer: {UserInfo(arg1)} was banned.");
         }
         private async Task Client_UserLeftLog(SocketGuildUser arg)
         {
             if(JoinLogChannel.Guild.Id == arg.Guild.Id)
-                await GetJoinLogChannel().SendMessageAsync($":heavy_multiplication_x: {UserInfo(arg)} left the server.");
+                await JoinLogChannel.SendMessageAsync($":x: {UserInfo(arg)} left the server.");
         }
         private async Task Client_UserJoinedLog(SocketGuildUser arg)
         {
             if (JoinLogChannel.Guild.Id == arg.Guild.Id)
-                await GetJoinLogChannel().SendMessageAsync($":white_check_mark: {UserInfo(arg)} joined the server.");
+                await JoinLogChannel.SendMessageAsync($":white_check_mark: {UserInfo(arg)} joined the server.");
         }
         private static string UserInfo(SocketUser user)
         {
-            return $"{user.Id} {user.Username} {user.Mention}";
+            return $"`{user.Id}` {user.Username} {user.Mention}";
         }
-        private static SocketTextChannel GetJoinLogChannel()
+        private static void SetUpJoinLogChannel()
         {
             if(JoinLogChannel == null)
                 JoinLogChannel = Client.GetGuild(417064769309245471).GetTextChannel(511189305838927872);
-            return JoinLogChannel;
         }
 
 
