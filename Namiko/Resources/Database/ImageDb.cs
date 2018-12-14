@@ -15,7 +15,7 @@ namespace Namiko.Resources.Database
             using (var DbContext = new SqliteDbContext())
             {
                 if(id == -1)
-                    DbContext.Add(new ReactionImage { Name = name, Url = url });
+                    DbContext.Add(new ReactionImage { Name = name.ToLowerInvariant(), Url = url });
                 else
                     DbContext.Add(new ReactionImage { Id = id, Name = name, Url = url });
                 await DbContext.SaveChangesAsync();
@@ -79,5 +79,18 @@ namespace Namiko.Resources.Database
             }
         }
 
+        public static async Task ToLower()
+        {
+            using(var db = new SqliteDbContext())
+            {
+                var images = db.Images;
+                foreach(var x in images)
+                {
+                    x.Name = x.Name.ToLowerInvariant();
+                }
+                db.Images.UpdateRange(images);
+                await db.SaveChangesAsync();
+            }
+        }
     }
 }

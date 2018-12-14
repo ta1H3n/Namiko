@@ -14,6 +14,7 @@ using Namiko.Core.Currency;
 using Namiko.Data;
 using System.Timers;
 using Namiko.Core;
+using Namiko.Resources.Database;
 
 namespace Namiko
 {
@@ -148,6 +149,7 @@ namespace Namiko
                 return;
             }
             Timers.CommandCallTickIncrement();
+            await Context.Channel.TriggerTypingAsync();
             var Result = await Commands.ExecuteAsync(Context, ArgPos);
             if(!Result.IsSuccess)
             {

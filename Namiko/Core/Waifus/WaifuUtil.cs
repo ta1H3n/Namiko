@@ -37,6 +37,7 @@ namespace Namiko.Core.Waifus
             int r = 0;
 
             var tier = WaifuDb.GetWaifusByTier(1);
+            tier.AddRange(WaifuDb.GetWaifusByTier(0));
             ShopWaifu item = null;
             for (int i = 0; i < 1; i++)
             {
@@ -121,14 +122,10 @@ namespace Namiko.Core.Waifus
         }
         public static int GetPrice(int tier, int discount = 0)
         {
-            int price = 0;
-
-            if (tier == 1)
-                price = 20000;
-            if (tier == 2)
-                price = 10000;
-            if (tier == 3)
-                price = 5000;
+            int price = tier == 1 ? 20000 :
+                tier == 2 ? 10000 :
+                tier == 3 ? 5000 :
+                tier == 0 ? 100000 : 0;
 
             if (discount >= 0)
                 price = price - (price / 100 * discount);
