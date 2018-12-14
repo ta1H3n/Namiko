@@ -66,17 +66,15 @@ namespace Namiko
             //Client.UserVoiceStateUpdated += Client_UserVoiceStateUpdated;
 
             //Join/leave logging.
-            SetUpJoinLogChannel();
             Client.UserJoined += Client_UserJoinedLog;
             Client.UserLeft += Client_UserLeftLog;
             Client.UserBanned += Client_UserBannedLog;
 
             await Client.LoginAsync(TokenType.Bot, Settings.Token);
             await Client.StartAsync();
-
+            
             await Task.Delay(-1);
         }
-
         
 
         private async Task Client_ReactionAdded(Cacheable<IUserMessage, ulong> arg1, ISocketMessageChannel arg2, SocketReaction arg3)
@@ -101,7 +99,6 @@ namespace Namiko
             var ch = sch.Guild.GetTextChannel(chid);
             await ch.SendMessageAsync(WelcomeUtil.WelcomeMessageConvert(user));
         }
-
         private async Task Client_UserVoiceStateUpdated(SocketUser arg1, SocketVoiceState arg2, SocketVoiceState arg3)
         {
             var ch = await arg1.GetOrCreateDMChannelAsync();
@@ -123,6 +120,7 @@ namespace Namiko
         {
             var ch = Client.GetChannel(StaticSettings.log_channel) as ISocketMessageChannel;
             await ch.SendMessageAsync($"`{DateTime.Now} - Ready`");
+            SetUpJoinLogChannel();
         }
         private async Task Client_Log(LogMessage arg)
         {
@@ -208,10 +206,6 @@ namespace Namiko
         {
             string assemblyFile = new System.Uri(Assembly.GetExecutingAssembly().CodeBase).AbsolutePath;
             Console.WriteLine(assemblyFile);
-        }
-        private void SetUp()
-        {
-
         }
         private string WelcomeDm()
         {

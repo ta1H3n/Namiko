@@ -28,18 +28,21 @@ namespace Namiko.Core.Currency
                 {
                     case "hit":
                         await Hit(Context, game);
+                        await Context.Message.DeleteAsync();
                         break;
                     case "stand":
                         await Stand(Context, game);
+                        await Context.Message.DeleteAsync();
                         break;
                     case "forfeit":
                         await Forfeit(Context, game);
+                        await Context.Message.DeleteAsync();
                         break;
                     case "double":
                         await DoubleDown(Context, game);
+                        await Context.Message.DeleteAsync();
                         break;
                 }
-                await Context.Message.DeleteAsync();
             }
         }
         public static async Task DoubleDown(SocketCommandContext Context, Game game)
