@@ -231,7 +231,8 @@ namespace Namiko.Core.Waifus
             // eb.WithDescription(desc);
 
             var daily = DailyDb.GetDaily(user.Id);
-            eb.AddField("Toasties", $"Amount: {ToastieDb.GetToasties(user.Id)} <:toastie3:454441133876183060>\nDaily: {(daily == null ? "0" : daily.Streak.ToString())} :calendar_spiral:", true);
+            long timeNow = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+            eb.AddField("Toasties", $"Amount: {ToastieDb.GetToasties(user.Id)} <:toastie3:454441133876183060>\nDaily: {(daily == null ? "0" : ((daily.Date + 172800000) < timeNow ? "0" : daily.Streak.ToString()))} :calendar_spiral:", true);
             eb.AddField("Waifus", $"Amount: {waifus.Count} :two_hearts:\nValue: {waifuprice} <:toastie3:454441133876183060>", true);
 
             if (waifus.Count > 0)
@@ -293,7 +294,7 @@ namespace Namiko.Core.Waifus
         public static EmbedBuilder WaifuLeaderboardEmbed(IOrderedEnumerable<KeyValuePair<Waifu, int>> waifus, IOrderedEnumerable<KeyValuePair<SocketUser, int>> users, int page)
         {
             var eb = new EmbedBuilder();
-            eb.WithTitle("Waifu Leaderboard");
+            eb.WithTitle(":star: Waifu Leaderboard");
             page = page == 0 ? 0 : page * 10;
 
             string waifu = "";
@@ -308,12 +309,16 @@ namespace Namiko.Core.Waifus
                 if (y.Key != null)
                     user += $"#{i+1} {y.Key.Mention} - {y.Value}\n";
             }
+            if (waifu == "")
+                waifu = "-";
+            if (user == "")
+                user = "-";
 
-            eb.AddField("Waifus", waifu, true);
-            eb.AddField("Users", user, true);
+            eb.AddField("Waifus :two_hearts:", waifu, true);
+            eb.AddField("Users <:toastie3:454441133876183060>", user, true);
 
             eb.WithColor(BasicUtil.RandomColor());
-            eb.WithFooter($"Page: {page+1}");
+            eb.WithFooter($"Page: {page/10+1}");
             return eb;
         }
         public static int WaifuValue(IEnumerable<Waifu> waifus)

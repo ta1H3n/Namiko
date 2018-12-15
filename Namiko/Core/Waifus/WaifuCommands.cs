@@ -289,10 +289,10 @@ namespace Namiko.Core.Waifus
                 if(!waifus.ContainsKey(x.Waifu))
                     waifus.Add(x.Waifu, AllWaifus.Count(y => y.Waifu.Equals(x.Waifu)));
 
-                var user = Context.Client.GetUser(x.UserId);
+                var user = Context.Guild.GetUser(x.UserId);
                 if (user != null)
                     if (!users.ContainsKey(user))
-                        users.Add(user, WaifuUtil.WaifuValue(AllWaifus.Where(y => y.UserId == user.Id).Select(y => y.Waifu)));
+                        users.Add(user, WaifuUtil.WaifuValue(UserInventoryDb.GetWaifus(user.Id)));
             }
 
             var ordWaifus = waifus.OrderByDescending(x => x.Value);

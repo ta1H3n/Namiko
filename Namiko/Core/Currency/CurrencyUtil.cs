@@ -42,39 +42,133 @@ namespace Namiko.Core.Currency
             eb.WithColor(Color.Gold);
             return eb;
         }
-        public static EmbedBuilder ToastieLeaderboardEmbed(List<Toastie> toasties, SocketCommandContext context, int page)
+        public static async Task<EmbedBuilder> ToastieLeaderboardEmbedAsync(List<Toastie> toasties, SocketCommandContext context, int page)
         {
             var eb = new EmbedBuilder();
-            
-            var list = new Dictionary<SocketUser, int>();
-            foreach(var x in toasties)
-            {
-                var user = context.Client.GetUser(x.UserId);
-                if (user != null && !user.IsBot)
-                    list.Add(user, x.Amount);
-            }
+            long timeNow = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+            var tList = new Dictionary<SocketUser, int>();
 
-            //var ordToasties = toasties.OrderByDescending(x => x.Amount).Skip(page * 10).Take((page + 1) * 10);
-            var ordToasties = list.OrderByDescending(x => x.Value);
+            //Getting users and sorting
+            await Task.Run(() =>
+             {
+                 foreach (var x in toasties)
+                 {
+                     var user = context.Guild.GetUser(x.UserId);
+                     if (user != null && !user.IsBot)
+                         tList.Add(user, x.Amount);
+                 }
+             });
 
-            eb.WithTitle(":star: Toastie Leaderboard");
+            var ordtList = tList.OrderByDescending(x => x.Value);
+
             string users = "";
             page = page*10;
             for (int i = page; i < page + 10; i++)
             {
-                //var user = context.Client.GetUser(x.UserId);
-                //if(user != null && x != null)
-                //    users += $"#{i} {user.Mention} - {x.Amount}\n";
-                var x = ordToasties.ElementAtOrDefault(i);
+                var x = ordtList.ElementAtOrDefault(i);
                 if(x.Key != null)
                     users += $"#{i+1} {x.Key.Mention} - {x.Value}\n";
             }
+            if (users == "")
+                users = "-";
 
-
-
-            eb.AddField("Users", users, true);
+            eb.WithTitle(":star: Toastie Leaderboard");
+            eb.AddField("Toasties <:toastie3:454441133876183060>", users, false);
             eb.WithColor(BasicUtil.RandomColor());
-            eb.WithFooter($"Page: {page+1}");
+            eb.WithFooter($"Page: {page/10+1}");
+            return eb;
+        }
+        public static async Task<EmbedBuilder> DailyLeaderboardEmbedAsync(List<Daily> dailies, SocketCommandContext context, int page)
+        {
+            var eb = new EmbedBuilder();
+            long timeNow = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+            var dList = new Dictionary<SocketUser, int>();
+
+            //Getting users and sorting
+            await Task.Run(() =>
+            {
+                foreach (var x in dailies)
+                {
+                    var user = context.Guild.GetUser(x.UserId);
+                    if (user != null && !user.IsBot)
+                        dList.Add(user, (x.Date + 172800000) < timeNow ? 0 : x.Streak);
+                }
+            });
+
+            var orddList = dList.OrderByDescending(x => x.Value);
+
+            string daily = "";
+            page = page * 10;
+            for (int i = page; i < page + 10; i++)
+            {
+                var y = orddList.ElementAtOrDefault(i);
+                if (y.Key != null)
+                {
+                    daily += $"#{i + 1} {y.Key.Mention} - {y.Value}\n";
+                }
+            }
+            if (daily == "")
+                daily = "-";
+
+            eb.WithTitle(":star: Toastie Leaderboard");
+            eb.AddField("Daily Streak :calendar_spiral:", daily, true);
+            eb.WithColor(BasicUtil.RandomColor());
+            eb.WithFooter($"Page: {page / 10 + 1}");
+            return eb;
+        }
+        public static async Task<EmbedBuilder> BothLeaderboardEmbedAsync(List<Toastie> toasties, List<Daily> dailies, SocketCommandContext context, int page)
+        {
+            var eb = new EmbedBuilder();
+            long timeNow = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+            var tList = new Dictionary<SocketUser, int>();
+            var dList = new Dictionary<SocketUser, int>();
+
+            //Getting users and sorting
+            await Task.Run(() =>
+            {
+                foreach (var x in toasties)
+                {
+                    var user = context.Guild.GetUser(x.UserId);
+                    if (user != null && !user.IsBot)
+                        tList.Add(user, x.Amount);
+                }
+
+                foreach (var x in dailies)
+                {
+                    var user = context.Guild.GetUser(x.UserId);
+                    if (user != null && !user.IsBot)
+                        dList.Add(user, (x.Date + 172800000) < timeNow ? 0 : x.Streak);
+                }
+            });
+
+            var ordtList = tList.OrderByDescending(x => x.Value);
+            var orddList = dList.OrderByDescending(x => x.Value);
+
+            string users = "";
+            string daily = "";
+            page = page * 10;
+            for (int i = page; i < page + 10; i++)
+            {
+                var x = ordtList.ElementAtOrDefault(i);
+                if (x.Key != null)
+                    users += $"#{i + 1} {x.Key.Mention} - {x.Value}\n";
+
+                var y = orddList.ElementAtOrDefault(i);
+                if (y.Key != null)
+                {
+                    daily += $"#{i + 1} {y.Key.Mention} - {y.Value}\n";
+                }
+            }
+            if (users == "")
+                users = "-";
+            if (daily == "")
+                daily = "-";
+
+            eb.WithTitle(":star: Toastie Leaderboard");
+            eb.AddField("Toasties <:toastie3:454441133876183060>", users, true);
+            eb.AddField("Daily Streak :calendar_spiral:", daily, true);
+            eb.WithColor(BasicUtil.RandomColor());
+            eb.WithFooter($"Page: {page / 10 + 1}");
             return eb;
         }
     }

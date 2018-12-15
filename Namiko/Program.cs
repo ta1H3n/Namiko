@@ -133,6 +133,7 @@ namespace Namiko
         {
             if (MessageParam.Channel.Id == 420319722723082275)
                 return;
+
             var Message = MessageParam as SocketUserMessage;
             var Context = new SocketCommandContext(Client, Message);
 
@@ -147,9 +148,9 @@ namespace Namiko
                 await Blackjack.BlackjackInput(Context);
                 return;
             }
-            Timers.CommandCallTickIncrement();
-            await Context.Channel.TriggerTypingAsync();
+
             var Result = await Commands.ExecuteAsync(Context, ArgPos);
+
             if(!Result.IsSuccess)
             {
                 await new Basic().Help(Context, Commands);
@@ -160,7 +161,11 @@ namespace Namiko
                     //await Context.Channel.SendMessageAsync("", false, CommandHelpEmbed(MessageParam.Content.Split(null)[0].Substring(1)).Build());
                     await Context.Channel.SendMessageAsync(CommandHelpString(MessageParam.Content.Split(null)[0].Substring(1)));
                 }
+                return;
             }
+
+            Timers.CommandCallTickIncrement();
+            await Context.Channel.TriggerTypingAsync();
         }
         private async Task Client_MessageReceivedSpook(SocketMessage MessageParam)
         {

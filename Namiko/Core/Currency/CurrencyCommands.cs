@@ -181,7 +181,14 @@ namespace Namiko.Core.Currency
         public async Task ToastieLeaderboard(int page = 1, [Remainder] string str = "")
         {
             var toasties = ToastieDb.GetAllToasties();
-            await Context.Channel.SendMessageAsync("", false, ToastieUtil.ToastieLeaderboardEmbed(toasties, Context, page-1));
+            await Context.Channel.SendMessageAsync("", false, await ToastieUtil.ToastieLeaderboardEmbedAsync(toasties, Context, page-1));
+        }
+
+        [Command("DailyLeaderboard"), Alias("dlb"), Summary("Daily Leaderboard.\n**Usage**: `!dlb [page_number]`")]
+        public async Task DailyLeaderboard(int page = 1, [Remainder] string str = "")
+        {
+            var dailies = DailyDb.GetAll();
+            await Context.Channel.SendMessageAsync("", false, await ToastieUtil.DailyLeaderboardEmbedAsync(dailies, Context, page - 1));
         }
     }
 
