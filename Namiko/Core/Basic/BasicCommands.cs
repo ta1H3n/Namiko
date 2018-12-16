@@ -73,7 +73,7 @@ namespace Namiko.Core.Basic
             #pragma warning restore CS0168 // Variable is declared but never used
             }
             else
-                eb = AllHelpEmbed(commandService);
+                eb = AllHelpEmbed(commandService, context.Guild == null ? false : context.Guild.Id == StaticSettings.home_server);
 
             if(!desc.Equals(""))
             {
@@ -83,14 +83,14 @@ namespace Namiko.Core.Basic
             await context.Channel.SendMessageAsync($":star: Type `{StaticSettings.prefix}h [command_name]` for more information about a command.", false, eb.Build());
         }
 
-        private EmbedBuilder AllHelpEmbed(CommandService commandService)
+        private EmbedBuilder AllHelpEmbed(CommandService commandService, bool all = false)
         {
             var eb = new EmbedBuilder();
             //eb.WithTitle("Commands");
 
             foreach(var x in commandService.Modules)
             {
-                if (x.Name != "SpecialCommands")
+                if ((x.Name != "SpecialCommands" && x.Name != "SpecialModes") || all)
                 {
                     var fb = new EmbedFieldBuilder();
                     fb.Name = x.Name;

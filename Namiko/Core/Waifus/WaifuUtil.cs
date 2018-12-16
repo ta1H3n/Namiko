@@ -216,14 +216,14 @@ namespace Namiko.Core.Waifus
             eb.Color = BasicUtil.RandomColor();
             return eb;
         }
-        public static EmbedBuilder UserInventoryEmbed(IUser user)
+        public static EmbedBuilder ProfileEmbed(IUser user)
         {
             var eb = new EmbedBuilder();
             eb.WithAuthor(user);
             eb.WithThumbnailUrl(user.GetAvatarUrl());
 
-            var waifus = UserInventoryDb.GetWaifus(user.Id);
-            waifus = waifus.OrderBy(x => x.Name).ToList();
+            var waifus = UserInventoryDb.GetWaifus(user.Id).OrderBy(x => x.Source).ThenBy(x => x.Name);
+            int waifucount = waifus.Count();
             int waifuprice = WaifuValue(waifus);
 
             // string desc = $"**Toasties**: {ToastieDb.GetToasties(user.Id)}\n";
@@ -233,9 +233,9 @@ namespace Namiko.Core.Waifus
             var daily = DailyDb.GetDaily(user.Id);
             long timeNow = DateTimeOffset.Now.ToUnixTimeMilliseconds();
             eb.AddField("Toasties", $"Amount: {ToastieDb.GetToasties(user.Id)} <:toastie3:454441133876183060>\nDaily: {(daily == null ? "0" : ((daily.Date + 172800000) < timeNow ? "0" : daily.Streak.ToString()))} :calendar_spiral:", true);
-            eb.AddField("Waifus", $"Amount: {waifus.Count} :two_hearts:\nValue: {waifuprice} <:toastie3:454441133876183060>", true);
+            eb.AddField("Waifus", $"Amount: {waifucount} :two_hearts:\nValue: {waifuprice} <:toastie3:454441133876183060>", true);
 
-            if (waifus.Count > 0)
+            if (waifucount > 0)
             {
                 string wstr = "";
                 // wstr += $"Total: {waifus.Count} :two_hearts:\n";

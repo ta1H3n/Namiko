@@ -15,9 +15,11 @@ namespace Namiko.Core.Web
 {
     public class Web : ModuleBase<SocketCommandContext>
     {
-        [Command("source"), Summary("Finds the source of an image in iqdb.\n**Usage**: `!source [image_url]` or `!source` with attached image.")]
+        [Command("Source"), Summary("Finds the source of an image in iqdb.\n**Usage**: `!source [image_url]` or `!source` with attached image.")]
         public async Task Source(string url = "", [Remainder] string str = "")
         {
+            await Context.Channel.TriggerTypingAsync();
+
             url = !url.Equals("") ? url : Context.Message.Attachments.FirstOrDefault() != null ? 
                 Context.Message.Attachments.FirstOrDefault().Url : null;
             

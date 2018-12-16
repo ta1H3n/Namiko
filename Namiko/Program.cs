@@ -28,8 +28,8 @@ namespace Namiko
         => new Program().MainAsync().GetAwaiter().GetResult();
         private async Task MainAsync()
         {
-            //Locations.SetUpDebug();
-            Locations.SetUpRelease();
+            Locations.SetUpDebug();
+            //Locations.SetUpRelease();
             Timers.SetUp();
 
             string JSON = "";
@@ -56,7 +56,7 @@ namespace Namiko
             });
 
             Client.MessageReceived += Client_MessageReceived;
-            Client.MessageReceived += Client_MessageReceivedSpook;
+            Client.MessageReceived += Client_MessageReceivedSpecialModes;
             await Commands.AddModulesAsync(Assembly.GetEntryAssembly());
 
             Client.Ready += Client_Ready;
@@ -72,7 +72,7 @@ namespace Namiko
 
             await Client.LoginAsync(TokenType.Bot, Settings.Token);
             await Client.StartAsync();
-            
+
             await Task.Delay(-1);
         }
         
@@ -165,10 +165,12 @@ namespace Namiko
             }
 
             Timers.CommandCallTickIncrement();
-            await Context.Channel.TriggerTypingAsync();
         }
-        private async Task Client_MessageReceivedSpook(SocketMessage MessageParam)
+        private async Task Client_MessageReceivedSpecialModes(SocketMessage MessageParam)
         {
+            if (!SpecialModes.ChristmasModeEnable && !SpecialModes.SpookModeEnable)
+                return;
+
             var Message = MessageParam as SocketUserMessage;
             var Context = new SocketCommandContext(Client, Message);
 
@@ -177,7 +179,8 @@ namespace Namiko
             if (Context.User.IsBot)
                 return;
 
-            await new SpookMode().Spook(Context);
+            await new SpecialModes().Spook(Context);
+            await new SpecialModes().Christmas(Context);
         }
 
 

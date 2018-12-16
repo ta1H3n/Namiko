@@ -21,7 +21,7 @@ namespace Namiko.Core.Waifus
             if (user == null)
                 user = Context.User;
 
-            await Context.Channel.SendMessageAsync("", false, WaifuUtil.UserInventoryEmbed(user));
+            await Context.Channel.SendMessageAsync("", false, WaifuUtil.ProfileEmbed(user));
         }
 
         [Command("WaifuShop"), Alias("ws"), Summary("Opens the waifu shop."),]
@@ -315,7 +315,7 @@ namespace Namiko.Core.Waifus
             if (UserInventoryDb.GetWaifus(Context.User.Id).Any(x => x.Name.Equals(waifu.Name)))
             {
                 await FeaturedWaifuDb.SetFeaturedWaifu(Context.User.Id, waifu);
-                await Context.Channel.SendMessageAsync($"{waifu.Name} set as your featured waifu!", false, WaifuUtil.UserInventoryEmbed(Context.User));
+                await Context.Channel.SendMessageAsync($"{waifu.Name} set as your featured waifu!", false, WaifuUtil.ProfileEmbed(Context.User));
                 return;
             }
             await Context.Channel.SendMessageAsync($":x: You don't have {waifu.Name}");
