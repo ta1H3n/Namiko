@@ -84,7 +84,7 @@ namespace Namiko.Core.Basic
             await Context.Channel.SendMessageAsync("Sure I'd remove it ... if it existed.");
         }
 
-        [Command("ToggleChristmasMode"), Alias("tcm"), Summary("Enables chistmas mode, 0 to disable.\n**Usage**: `!tcm [chance per message 1/n]`")]
+        [Command("ToggleChristmasMode"), Alias("tcm"), Summary("Enables chistmas mode, 0 to disable.\n**Usage**: `!tcm [chance per message 1/n]`"), OwnerPrecondition]
         public async Task ToggleChristmasMode(int rate, [Remainder] string sts = "")
         {
             if (rate == 0)

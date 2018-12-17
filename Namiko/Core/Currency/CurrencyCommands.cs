@@ -39,6 +39,13 @@ namespace Namiko.Core.Currency
                 return;
             }
 
+            if (ToastieDb.GetToasties(418823684459855882) < amount)
+            {
+                await Context.Channel.SendMessageAsync("I don't have enough toasties to gamble with... You can give me some using the `!give` command, and view who has the most toasties with `!tlb`.");
+                await ToastieDb.AddToasties(user.Id, amount);
+                return;
+            }
+
             Game game = new Game(amount, ch);
             Blackjack.games[user] = game;
             await Blackjack.GameContinue(Context, game);
@@ -109,6 +116,13 @@ namespace Namiko.Core.Currency
             catch (Exception ex)
             {
                 await Context.Channel.SendMessageAsync(ex.Message);
+                return;
+            }
+
+            if(ToastieDb.GetToasties(418823684459855882) < amount)
+            {
+                await Context.Channel.SendMessageAsync("I don't have enough toasties to gamble with... You can give me some using the `!give` command, and view who has the most toasties with `!tlb`.");
+                await ToastieDb.AddToasties(user.Id, amount);
                 return;
             }
 
