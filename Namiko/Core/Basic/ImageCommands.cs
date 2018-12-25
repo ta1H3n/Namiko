@@ -90,7 +90,7 @@ namespace Namiko.Core.Basic
          }
 
         [Command("ListAll"), Summary("List of all image commands and how many images there are.\n**Usage**: `listall`")]
-         public async Task List()
+         public async Task List([Remainder] string str = "")
          {
              var images = ImageDb.GetImages();
              List<ImageCount> names = new List<ImageCount>();

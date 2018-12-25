@@ -74,6 +74,13 @@ namespace Namiko.Resources.Database
                 await DbContext.SaveChangesAsync();
             }
         }
+        public static List<Daily> GetAll()
+        {
+            using (var db = new SqliteDbContext())
+            {
+                return db.Dailies.ToList();
+            }
+        }
     }
 
     public static class ShopItemDb

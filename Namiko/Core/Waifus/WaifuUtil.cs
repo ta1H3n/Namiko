@@ -37,6 +37,7 @@ namespace Namiko.Core.Waifus
             int r = 0;
 
             var tier = WaifuDb.GetWaifusByTier(1);
+            tier.AddRange(WaifuDb.GetWaifusByTier(0));
             ShopWaifu item = null;
             for (int i = 0; i < 1; i++)
             {
@@ -121,14 +122,10 @@ namespace Namiko.Core.Waifus
         }
         public static int GetPrice(int tier, int discount = 0)
         {
-            int price = 0;
-
-            if (tier == 1)
-                price = 20000;
-            if (tier == 2)
-                price = 10000;
-            if (tier == 3)
-                price = 5000;
+            int price = tier == 1 ? 20000 :
+                tier == 2 ? 10000 :
+                tier == 3 ? 5000 :
+                tier == 0 ? 100000 : 0;
 
             if (discount >= 0)
                 price = price - (price / 100 * discount);
@@ -219,27 +216,26 @@ namespace Namiko.Core.Waifus
             eb.Color = BasicUtil.RandomColor();
             return eb;
         }
-        public static EmbedBuilder UserInventoryEmbed(IUser user)
+        public static EmbedBuilder ProfileEmbed(IUser user)
         {
             var eb = new EmbedBuilder();
             eb.WithAuthor(user);
             eb.WithThumbnailUrl(user.GetAvatarUrl());
 
-            var waifus = UserInventoryDb.GetWaifus(user.Id);
-            waifus = waifus.OrderBy(x => x.Name).ToList();
-
-            int waifuprice = 0;
-            foreach (var x in waifus)
-                waifuprice += WaifuUtil.GetPrice(x.Tier);
+            var waifus = UserInventoryDb.GetWaifus(user.Id).OrderBy(x => x.Source).ThenBy(x => x.Name);
+            int waifucount = waifus.Count();
+            int waifuprice = WaifuValue(waifus);
 
             // string desc = $"**Toasties**: {ToastieDb.GetToasties(user.Id)}\n";
             // desc += $"**Waifu worth**: {waifuprice}";
             // eb.WithDescription(desc);
 
-            eb.AddField("Toasties", $"Amount: {ToastieDb.GetToasties(user.Id)} <:toastie3:454441133876183060>\nDaily: {DailyDb.GetDaily(user.Id).Streak} :calendar_spiral:", true);
-            eb.AddField("Waifus", $"Amount: {waifus.Count} :two_hearts:\nValue: {waifuprice} <:toastie3:454441133876183060>", true);
+            var daily = DailyDb.GetDaily(user.Id);
+            long timeNow = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+            eb.AddField("Toasties", $"Amount: {ToastieDb.GetToasties(user.Id)} <:toastie3:454441133876183060>\nDaily: {(daily == null ? "0" : ((daily.Date + 172800000) < timeNow ? "0" : daily.Streak.ToString()))} :calendar_spiral:", true);
+            eb.AddField("Waifus", $"Amount: {waifucount} :two_hearts:\nValue: {waifuprice} <:toastie3:454441133876183060>", true);
 
-            if (waifus.Count > 0)
+            if (waifucount > 0)
             {
                 string wstr = "";
                 // wstr += $"Total: {waifus.Count} :two_hearts:\n";
@@ -248,6 +244,7 @@ namespace Namiko.Core.Waifus
                 {
                     if (x.LongName.Length > 35)
                         x.LongName = x.LongName.Substring(0, 33) + "...";
+                    x.LongName = x.LongName == null ? "" : x.LongName;
                     wstr += String.Format("**{0}** - *{1}*\n", x.Name, x.LongName);
                 }
                 eb.AddField("Waifus", wstr);
@@ -297,7 +294,7 @@ namespace Namiko.Core.Waifus
         public static EmbedBuilder WaifuLeaderboardEmbed(IOrderedEnumerable<KeyValuePair<Waifu, int>> waifus, IOrderedEnumerable<KeyValuePair<SocketUser, int>> users, int page)
         {
             var eb = new EmbedBuilder();
-            eb.WithTitle("Waifu Leaderboard");
+            eb.WithTitle(":star: Waifu Leaderboard");
             page = page == 0 ? 0 : page * 10;
 
             string waifu = "";
@@ -312,13 +309,26 @@ namespace Namiko.Core.Waifus
                 if (y.Key != null)
                     user += $"#{i+1} {y.Key.Mention} - {y.Value}\n";
             }
+            if (waifu == "")
+                waifu = "-";
+            if (user == "")
+                user = "-";
 
-            eb.AddField("Waifus", waifu, true);
-            eb.AddField("Users", user, true);
+            eb.AddField("Waifus :two_hearts:", waifu, true);
+            eb.AddField("Users <:toastie3:454441133876183060>", user, true);
 
             eb.WithColor(BasicUtil.RandomColor());
-            eb.WithFooter($"Page: {page+1}");
+            eb.WithFooter($"Page: {page/10+1}");
             return eb;
+        }
+        public static int WaifuValue(IEnumerable<Waifu> waifus)
+        {
+            int total = 0;
+            foreach(var x in waifus)
+            {
+                total += GetPrice(x.Tier);
+            }
+            return total;
         }
     }
 }

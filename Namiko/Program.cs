@@ -14,6 +14,7 @@ using Namiko.Core.Currency;
 using Namiko.Data;
 using System.Timers;
 using Namiko.Core;
+using Namiko.Resources.Database;
 
 namespace Namiko
 {
@@ -55,7 +56,7 @@ namespace Namiko
             });
 
             Client.MessageReceived += Client_MessageReceived;
-            Client.MessageReceived += Client_MessageReceivedSpook;
+            Client.MessageReceived += Client_MessageReceivedSpecialModes;
             await Commands.AddModulesAsync(Assembly.GetEntryAssembly());
 
             Client.Ready += Client_Ready;
@@ -74,7 +75,6 @@ namespace Namiko
 
             await Task.Delay(-1);
         }
-
         
 
         private async Task Client_ReactionAdded(Cacheable<IUserMessage, ulong> arg1, ISocketMessageChannel arg2, SocketReaction arg3)
@@ -99,7 +99,6 @@ namespace Namiko
             var ch = sch.Guild.GetTextChannel(chid);
             await ch.SendMessageAsync(WelcomeUtil.WelcomeMessageConvert(user));
         }
-
         private async Task Client_UserVoiceStateUpdated(SocketUser arg1, SocketVoiceState arg2, SocketVoiceState arg3)
         {
             var ch = await arg1.GetOrCreateDMChannelAsync();
@@ -121,6 +120,7 @@ namespace Namiko
         {
             var ch = Client.GetChannel(StaticSettings.log_channel) as ISocketMessageChannel;
             await ch.SendMessageAsync($"`{DateTime.Now} - Ready`");
+            SetUpJoinLogChannel();
         }
         private async Task Client_Log(LogMessage arg)
         {
@@ -133,6 +133,7 @@ namespace Namiko
         {
             if (MessageParam.Channel.Id == 420319722723082275)
                 return;
+
             var Message = MessageParam as SocketUserMessage;
             var Context = new SocketCommandContext(Client, Message);
 
@@ -147,8 +148,9 @@ namespace Namiko
                 await Blackjack.BlackjackInput(Context);
                 return;
             }
-            Timers.CommandCallTickIncrement();
+
             var Result = await Commands.ExecuteAsync(Context, ArgPos);
+
             if(!Result.IsSuccess)
             {
                 await new Basic().Help(Context, Commands);
@@ -159,10 +161,16 @@ namespace Namiko
                     //await Context.Channel.SendMessageAsync("", false, CommandHelpEmbed(MessageParam.Content.Split(null)[0].Substring(1)).Build());
                     await Context.Channel.SendMessageAsync(CommandHelpString(MessageParam.Content.Split(null)[0].Substring(1)));
                 }
+                return;
             }
+
+            Timers.CommandCallTickIncrement();
         }
-        private async Task Client_MessageReceivedSpook(SocketMessage MessageParam)
+        private async Task Client_MessageReceivedSpecialModes(SocketMessage MessageParam)
         {
+            if (!SpecialModes.ChristmasModeEnable && !SpecialModes.SpookModeEnable)
+                return;
+
             var Message = MessageParam as SocketUserMessage;
             var Context = new SocketCommandContext(Client, Message);
 
@@ -171,34 +179,34 @@ namespace Namiko
             if (Context.User.IsBot)
                 return;
 
-            await new SpookMode().Spook(Context);
+            await new SpecialModes().Spook(Context);
+            await new SpecialModes().Christmas(Context);
         }
 
 
         private async Task Client_UserBannedLog(SocketUser arg1, SocketGuild arg2)
         {
             if (JoinLogChannel.Guild.Id == arg2.Id)
-                await GetJoinLogChannel().SendMessageAsync($":x: {UserInfo(arg1)} was banned.");
+                await JoinLogChannel.SendMessageAsync($":hammer: {UserInfo(arg1)} was banned.");
         }
         private async Task Client_UserLeftLog(SocketGuildUser arg)
         {
             if(JoinLogChannel.Guild.Id == arg.Guild.Id)
-                await GetJoinLogChannel().SendMessageAsync($":heavy_multiplication_x: {UserInfo(arg)} left the server.");
+                await JoinLogChannel.SendMessageAsync($":x: {UserInfo(arg)} left the server.");
         }
         private async Task Client_UserJoinedLog(SocketGuildUser arg)
         {
             if (JoinLogChannel.Guild.Id == arg.Guild.Id)
-                await GetJoinLogChannel().SendMessageAsync($":white_check_mark: {UserInfo(arg)} joined the server.");
+                await JoinLogChannel.SendMessageAsync($":white_check_mark: {UserInfo(arg)} joined the server.");
         }
         private static string UserInfo(SocketUser user)
         {
-            return $"{user.Id} {user.Username} {user.Mention}";
+            return $"`{user.Id}` {user.Username} {user.Mention}";
         }
-        private static SocketTextChannel GetJoinLogChannel()
+        private static void SetUpJoinLogChannel()
         {
             if(JoinLogChannel == null)
                 JoinLogChannel = Client.GetGuild(417064769309245471).GetTextChannel(511189305838927872);
-            return JoinLogChannel;
         }
 
 
@@ -206,10 +214,6 @@ namespace Namiko
         {
             string assemblyFile = new System.Uri(Assembly.GetExecutingAssembly().CodeBase).AbsolutePath;
             Console.WriteLine(assemblyFile);
-        }
-        private void SetUp()
-        {
-
         }
         private string WelcomeDm()
         {

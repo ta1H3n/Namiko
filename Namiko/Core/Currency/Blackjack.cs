@@ -24,32 +24,24 @@ namespace Namiko.Core.Currency
 
             if (game != null && Context.Channel.Equals(game.Channel))
             {
-                // Hit
-                if (Context.Message.Content.Equals("hit") || Context.Message.Content.Equals("Hit"))
+                switch(Context.Message.Content.ToLower())
                 {
-                    await Hit(Context, game);
-                    await Context.Message.DeleteAsync();
-                }
-
-                // Stand
-                else if (Context.Message.Content.Equals("stand") || Context.Message.Content.Equals("Stand"))
-                {
-                    await Stand(Context, game);
-                    await Context.Message.DeleteAsync();
-                }
-
-                // Forfeit
-                else if (Context.Message.Content.Equals("forfeit") || Context.Message.Content.Equals("Forfeit"))
-                {
-                    await Forfeit(Context, game);
-                    await Context.Message.DeleteAsync();
-                }
-
-                // Double
-                else if (Context.Message.Content.Equals("double") || Context.Message.Content.Equals("Double"))
-                {
-                    await DoubleDown(Context, game);
-                    await Context.Message.DeleteAsync();
+                    case "hit":
+                        await Hit(Context, game);
+                        await Context.Message.DeleteAsync();
+                        break;
+                    case "stand":
+                        await Stand(Context, game);
+                        await Context.Message.DeleteAsync();
+                        break;
+                    case "forfeit":
+                        await Forfeit(Context, game);
+                        await Context.Message.DeleteAsync();
+                        break;
+                    case "double":
+                        await DoubleDown(Context, game);
+                        await Context.Message.DeleteAsync();
+                        break;
                 }
             }
         }
@@ -78,7 +70,7 @@ namespace Namiko.Core.Currency
             EmbedBuilder eb = new EmbedBuilder();
 
             eb.WithAuthor(user.Username + " | You Lose", null, user.GetAvatarUrl());
-            eb.WithDescription("You forfeit. You get half your pats back. Lost `" + game.Pats / 2 + "`" + ToastieUtil.RandomEmote() + "\n" +
+            eb.WithDescription("You forfeit. You get half your toasties back. Lost `" + game.Pats / 2 + "`" + ToastieUtil.RandomEmote() + "\n" +
             "New balance `" + ToastieDb.GetToasties(user.Id) + "`" + ToastieUtil.RandomEmote());
             eb.AddField("Your hand (" + game.SumHand(game.Hand) + ")", HandToString(game.Hand, false), true);
             eb.AddField("Namiko's hand (" + game.SumHand(game.Dealer) + ")", HandToString(game.Dealer, false), true);
@@ -166,7 +158,7 @@ namespace Namiko.Core.Currency
             String.Format("{0,10} - to draw another card.\n", "**hit**") +
             String.Format("{0,10} - to finalize and let Namiko draw.\n", "**stand**") +
             String.Format("{0,10} - to double your bet and draw only 1 card.\n", "**double**") +
-            String.Format("{0,10} - to forfeit and get half your pats back.", "**forfeit**"));
+            String.Format("{0,10} - to forfeit and get half your toasties back.", "**forfeit**"));
             eb.AddField("Your hand (" + game.SumHand(game.Hand) + ")", HandToString(game.Hand, false), true);
             eb.AddField("Namiko's hand (" + game.CardValue(game.Dealer[0]) + ")", HandToString(game.Dealer, true), true);
             eb.WithColor(Color.Green);

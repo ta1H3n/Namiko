@@ -17,7 +17,7 @@ namespace Namiko.Core.Currency
     public class Currency : ModuleBase<SocketCommandContext>
     {
         [Command("Blackjack"), Alias("bj"), Summary("Starts a game of blackjack.\n**Usage**: `!bj [amount]`")]
-        public async Task BlackjackCommand(string sAmount, [Remainder] string str)
+        public async Task BlackjackCommand(string sAmount, [Remainder] string str = "")
         {
             var user = Context.User;
             var ch = Context.Channel;
@@ -36,6 +36,13 @@ namespace Namiko.Core.Currency
             catch (Exception e)
             {
                 await ch.SendMessageAsync(e.Message);
+                return;
+            }
+
+            if (ToastieDb.GetToasties(418823684459855882) < amount)
+            {
+                await Context.Channel.SendMessageAsync("I don't have enough toasties to gamble with... You can give me some using the `!give` command, and view who has the most toasties with `!tlb`.");
+                await ToastieDb.AddToasties(user.Id, amount);
                 return;
             }
 
@@ -112,6 +119,13 @@ namespace Namiko.Core.Currency
                 return;
             }
 
+            if(ToastieDb.GetToasties(418823684459855882) < amount)
+            {
+                await Context.Channel.SendMessageAsync("I don't have enough toasties to gamble with... You can give me some using the `!give` command, and view who has the most toasties with `!tlb`.");
+                await ToastieDb.AddToasties(user.Id, amount);
+                return;
+            }
+
             if (FlipUtil.FiftyFifty())
             {
                 await ToastieDb.AddToasties(user.Id, amount * 2);
@@ -181,7 +195,14 @@ namespace Namiko.Core.Currency
         public async Task ToastieLeaderboard(int page = 1, [Remainder] string str = "")
         {
             var toasties = ToastieDb.GetAllToasties();
-            await Context.Channel.SendMessageAsync("", false, ToastieUtil.ToastieLeaderboardEmbed(toasties, Context, page-1));
+            await Context.Channel.SendMessageAsync("", false, await ToastieUtil.ToastieLeaderboardEmbedAsync(toasties, Context, page-1));
+        }
+
+        [Command("DailyLeaderboard"), Alias("dlb"), Summary("Daily Leaderboard.\n**Usage**: `!dlb [page_number]`")]
+        public async Task DailyLeaderboard(int page = 1, [Remainder] string str = "")
+        {
+            var dailies = DailyDb.GetAll();
+            await Context.Channel.SendMessageAsync("", false, await ToastieUtil.DailyLeaderboardEmbedAsync(dailies, Context, page - 1));
         }
     }
 

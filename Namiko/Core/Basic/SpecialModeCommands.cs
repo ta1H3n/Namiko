@@ -14,24 +14,27 @@ using Namiko.Resources.Xml;
 
 namespace Namiko.Core.Basic
 {
-    public class SpookMode : ModuleBase<SocketCommandContext>
+    public class SpecialModes : ModuleBase<SocketCommandContext>
     {
-        public static bool Enable { get; set; }
-        public static int Rate { get; set; }
+        public static bool ChristmasModeEnable { get; set; }
+        public static int ChristmasModeRate { get; set; }
+        public string[] ChristmasEmotes = { "<:ChristmasAwoo:523987349743599616> ",  "<:XmasYeah:523986875497578522>", "<:ChristmasOwO:523983823591964699>", "<:ChristmasPanda:523987350313762816>", "<:Padoru:523993285275156480>", "<:XmasSip:523995761742970901>", "<:MikuPresent:523995762028445701>", "<:OwOPresent:523995763559235594>" };
+        public static bool SpookModeEnable { get; set; }
+        public static int SpookModeRate { get; set; }
         private static List<string> Lines { get; set; }
         
-        [Command("ToggleSpookMode"), Alias("tsm"), Summary("Enables spook mode, 0 to disable.\n**Usage**: `!spookmode [chance per message 1/n]`"), OwnerPrecondition]
-        public async Task SpookModeEnable(int rate, [Remainder] string str = "")
+        [Command("ToggleSpookMode"), Alias("tsm"), Summary("Enables spook mode, 0 to disable.\n**Usage**: `!tsm [chance per message 1/n]`"), OwnerPrecondition]
+        public async Task ToggleSpookMode(int rate, [Remainder] string str = "")
         {
             if(rate == 0)
             {
-                Enable = false;
+                SpookModeEnable = false;
                 await Context.Channel.SendMessageAsync("Spook Mode disabled. I'll chill out.");
                 return;
             }
 
-            Rate = rate;
-            Enable = true;
+            SpookModeRate = rate;
+            SpookModeEnable = true;
 
             await Context.Channel.SendMessageAsync($"Spook mode enabled at rate {rate}. It's on.");
         }
@@ -65,7 +68,7 @@ namespace Namiko.Core.Basic
             await Context.Channel.SendMessageAsync($"```{list}```");
         }
 
-        [Command("DeleteSpook"), Alias("ds"), Summary("Deletes a spook.\n**Usage**: `!deletespook [no.]`"), OwnerPrecondition]
+        [Command("DeleteSpook"), Alias("ds"), Summary("Deletes a spook.\n**Usage**: `!ds [no.]`"), OwnerPrecondition]
         public async Task DeleteSpook(int id, [Remainder] string str = "")
         {
             var lines = XmlHelper.GetSpookLines();
@@ -81,14 +84,29 @@ namespace Namiko.Core.Basic
             await Context.Channel.SendMessageAsync("Sure I'd remove it ... if it existed.");
         }
 
+        [Command("ToggleChristmasMode"), Alias("tcm"), Summary("Enables chistmas mode, 0 to disable.\n**Usage**: `!tcm [chance per message 1/n]`"), OwnerPrecondition]
+        public async Task ToggleChristmasMode(int rate, [Remainder] string sts = "")
+        {
+            if (rate == 0)
+            {
+                ChristmasModeEnable = false;
+                await Context.Channel.SendMessageAsync("Christmas Mode disabled... :c");
+                return;
+            }
+
+            ChristmasModeRate = rate;
+            ChristmasModeEnable = true;
+
+            await Context.Channel.SendMessageAsync($"Christmas Rate enabled at rate {rate}. *Yaayy.*");
+        }
 
         public async Task Spook(SocketCommandContext context)
         {
-            if (!Enable)
+            if (!SpookModeEnable)
                 return;
 
             var rnd = new Random();
-            if (rnd.Next(Rate) != 0)
+            if (rnd.Next(SpookModeRate) != 0)
                 return;
 
             if (Lines == null)
@@ -96,6 +114,18 @@ namespace Namiko.Core.Basic
 
             string spook = Lines[rnd.Next(Lines.Count())];
             await context.Channel.SendMessageAsync(spook);
+        }
+
+        public async Task Christmas(SocketCommandContext context)
+        {
+            if (!ChristmasModeEnable)
+                return;
+
+            var rnd = new Random();
+            if (rnd.Next(ChristmasModeRate) != 0)
+                return;
+            
+            await context.Message.AddReactionAsync(Emote.Parse(ChristmasEmotes[rnd.Next(ChristmasEmotes.Length)]));
         }
     }
 }
