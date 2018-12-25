@@ -128,6 +128,7 @@ namespace Namiko.Core.Currency
             var eb = new EmbedBuilder();
             eb.WithAuthor(user);
             eb.WithDescription($"You already claimed your daily reward today.\nYou must wait `{hours} hours {minutes} minutes {seconds} seconds`");
+            eb.WithImageUrl("https://i.imgur.com/LcqpKmo.png");
             eb.WithColor(BasicUtil.RandomColor());
             return eb;
         }
