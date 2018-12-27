@@ -7,10 +7,11 @@ using System.Linq;
 using Discord;
 using Discord.Commands;
 using Namiko.Resources.Attributes;
+using Namiko.Core.Util;
 using Discord.WebSocket;
 using Discord.Rest;
 
-namespace Namiko.Core.Basic
+namespace Namiko.Core.Modules
 {
     public class Basic : ModuleBase<SocketCommandContext>
     {
@@ -32,7 +33,7 @@ namespace Namiko.Core.Basic
                 {
                     var tUsers = await msg.GetReactionUsersAsync(reaction.Key.ToString());
                     users.AddRange(tUsers);
-                } catch (Exception ex) { }
+                } catch { }
             }
             
             users = users.Distinct(new DistintUserComparer()).ToList();
@@ -65,12 +66,11 @@ namespace Namiko.Core.Basic
                 {
                     //eb = CommandHelpEmbed(commandService.Commands.Where(x => x.Aliases.Equals(cmd, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault());
                     desc = CommandHelpString(commandService.Commands.Where(x => x.Aliases.Any(y => y.Equals(cmd, StringComparison.InvariantCultureIgnoreCase))).FirstOrDefault());
-                } catch (Exception ex) { };
+                } catch { };
                 try
                 {
                     eb = ModuleHelpEmbed(commandService.Modules.Where(x => x.Name.Equals(cmd, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault());
-                } catch (Exception ex) { };
-            #pragma warning restore CS0168 // Variable is declared but never used
+                } catch { };
             }
             else
                 eb = AllHelpEmbed(commandService, context.Guild == null ? false : context.Guild.Id == StaticSettings.home_server);
@@ -121,9 +121,7 @@ namespace Namiko.Core.Basic
                 {
                     //desc += $"  **{x.Name}** - `{StaticSettings.prefix}{x.Aliases[1]}`\n{x.Summary}\n";
                     desc += $"  **{x.Name}**\n{x.Summary}\n";
-#pragma warning disable CS0168 // Variable is declared but never used
-                } catch (Exception ex) { }
-#pragma warning restore CS0168 // Variable is declared but never used
+                } catch { }
             }
 
             eb.WithColor(BasicUtil.RandomColor());
@@ -170,13 +168,13 @@ namespace Namiko.Core.Basic
                     var prec = x as RequireUserPermissionAttribute;
                     desc += $"{prec.ChannelPermission} ";
                     desc += $"{prec.GuildPermission} ";
-                } catch (Exception ex) { }
+                } catch { }
 
                 try
                 {
                     var prec = x as CustomPrecondition;
                     desc += $"{prec.GetName()} ";
-                } catch (Exception ex) { }
+                } catch { }
             }
 
             return desc;

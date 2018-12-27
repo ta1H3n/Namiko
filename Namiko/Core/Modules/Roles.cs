@@ -9,15 +9,16 @@ using Discord.WebSocket;
 
 using Namiko.Resources.Database;
 using Namiko.Resources.Datatypes;
+using Namiko.Core.Util;
 
-namespace Namiko.Core.Basic
+namespace Namiko.Core.Modules
 {
     public class Roles : ModuleBase<SocketCommandContext>
     {
         [Command("Role"), Alias("r"), Summary("Adds or removes a public role from the user.\n**Usage**: `!r [name]`")]
         public async Task Role([Remainder] string name)
         {
-            var role = GetRole(Context.Guild, name);
+            var role = RoleUtil.GetRoleByName(Context.Guild, name);
             var guildUser = Context.Guild.GetUser(Context.User.Id);
             if (role == null)
             {
@@ -45,7 +46,7 @@ namespace Namiko.Core.Basic
         [Command("SetPublicRole"), Alias("spr"), Summary("Sets or unsets a role as a public role.\n**Usage**: `!spr [name]`"), RequireUserPermission(GuildPermission.ManageRoles)]
         public async Task NewRole([Remainder] string name)
         {
-            var role = GetRole(Context.Guild, name);
+            var role = RoleUtil.GetRoleByName(Context.Guild, name);
             if (role == null)
             {
                 await Context.Channel.SendMessageAsync($"There's no role called `{name}` :bangbang:");
@@ -68,7 +69,7 @@ namespace Namiko.Core.Basic
         [Command("ClearRole"), Alias("cr"), Summary("Removes all users from a role.\n**Usage**: `cr [name]`"), RequireUserPermission(GuildPermission.ManageRoles)]
         public async Task ClearRole([Remainder] string name)
         {
-            var role = GetRole(Context.Guild, name);
+            var role = RoleUtil.GetRoleByName(Context.Guild, name);
             if (role == null)
             {
                 await Context.Channel.SendMessageAsync($"There's no role called `{name}` :bangbang:");
@@ -90,7 +91,7 @@ namespace Namiko.Core.Basic
         public async Task Invite(IUser user = null, [Remainder] string str = "")
         {
             var channel = Context.Channel;
-            var leaderRole = GetLeader(Context.User);
+            var leaderRole = RoleUtil.GetLeader(Context);
 
             if (leaderRole == null)
             {
@@ -98,7 +99,7 @@ namespace Namiko.Core.Basic
                 return;
             }
 
-            if (IsTeamed(user))
+            if (RoleUtil.IsTeamed(Context))
             {
                 await channel.SendMessageAsync($@"{user.Username} is already in a team, I guess you're too late ¯\_(ツ)_/¯");
                 return;
@@ -123,7 +124,7 @@ namespace Namiko.Core.Basic
         [Command("Join"), Summary("Accept an invite to a team.\n**Usage**: `!join [team_name]`")]
         public async Task Join(string teamName, [Remainder] string str = "")
         {
-            var role = GetRole(Context.Guild, teamName);
+            var role = RoleUtil.GetRoleByName(Context.Guild, teamName);
 
             if (role == null)
             {
@@ -147,7 +148,7 @@ namespace Namiko.Core.Basic
         [Command("LeaveTeam"), Alias("lt"), Summary("Leave your team.\n**Usage**: `!lt`")]
         public async Task Leave()
         {
-            var role = GetMember(Context.User);
+            var role = RoleUtil.GetMember(Context);
             if (role == null)
             {
                 await Context.Channel.SendMessageAsync("Buuut... You're not in a team.");
@@ -164,7 +165,7 @@ namespace Namiko.Core.Basic
         [Command("TeamKick"), Alias("tk"), Summary("Kicks a user from your team.\n**Usage**: `!tk [user]`")]
         public async Task TeamKick(IUser user, [Remainder] string str = "")
         {
-            var leader = GetLeader(Context.User);
+            var leader = RoleUtil.GetLeader(Context);
             if (leader == null)
             {
                 await Context.Channel.SendMessageAsync("You're not a leader! Getting ahead of yourself eh?~");
@@ -172,7 +173,7 @@ namespace Namiko.Core.Basic
             }
 
             var team = TeamDb.TeamByLeader(leader.Id);
-            var userteam = GetMember(user);
+            var userteam = RoleUtil.GetMember(Context);
             var leaderteam = Context.Guild.GetRole(team.MemberRoleId);
             if (!userteam.Equals(leaderteam))
             {
@@ -190,8 +191,8 @@ namespace Namiko.Core.Basic
         [Command("NewTeam"), Alias("nt"), Summary("Creates a new team.\n**Usage**: `!newteam [LeaderRoleName] [MemberRoleName]`"), RequireUserPermission(GuildPermission.ManageRoles)]
         public async Task NewTeam(string leader, string member)
         {
-            var leaderR = GetRole(Context.Guild, leader);
-            var memberR = GetRole(Context.Guild, member);
+            var leaderR = RoleUtil.GetRoleByName(Context.Guild, leader);
+            var memberR = RoleUtil.GetRoleByName(Context.Guild, member);
             if (leaderR == null)
             {
                 await Context.Channel.SendMessageAsync($"Leader role {leader} not found.");
@@ -206,67 +207,6 @@ namespace Namiko.Core.Basic
             await TeamDb.AddTeam(leaderR.Id, memberR.Id);
             await Context.Channel.SendMessageAsync($"Added Leader role: '{leaderR.Name}' and Team role: '{memberR.Name}'");
         }
-
-
-
-        private SocketRole GetLeader(IUser user)
-        {
-            var gUser = Context.Guild.GetUser(user.Id);
-            var teams = TeamDb.Teams();
-
-            foreach (Team x in teams)
-            {
-                var role = Context.Guild.GetRole(x.LeaderRoleId);
-                if (HasRole(gUser, role))
-                    return role;
-            }
-
-            return null;
-        }
-        private SocketRole GetMember(IUser user)
-        {
-            var gUser = Context.Guild.GetUser(user.Id);
-            var teams = TeamDb.Teams();
-
-            foreach (Team x in teams)
-            {
-                var role = Context.Guild.GetRole(x.MemberRoleId);
-                if (HasRole(gUser, role))
-                    return role;
-            }
-
-            return null;
-        }
-        public static SocketRole GetRole(SocketGuild guild, string roleName)
-        {
-            var roles = guild.Roles;
-            foreach (SocketRole x in roles)
-            {
-                if (x.Name.Equals(roleName, StringComparison.InvariantCultureIgnoreCase))
-                    return x;
-            }
-            return null;
-        }
-        private bool IsTeamed(IUser user)
-        {
-            var leader = GetLeader(user);
-            var member = GetMember(user);
-            if (leader != null || member != null)
-                return true;
-            return false;
-        }
-        public static bool HasRole(SocketGuildUser user, SocketRole role)
-        {
-            /*var roles = user.Roles;
-            foreach(SocketRole userRole in roles)
-            {
-                if (userRole.Equals(role))
-                    return true;
-            }
-
-            return false;*/
-
-            return user.Roles.Contains(role);
-        }
+        
     }
 }

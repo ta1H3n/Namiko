@@ -43,16 +43,14 @@ namespace Namiko.Core
                 File.Copy(Locations.SpookyLinesXml, Locations.SpookyLinesXml.Replace("SpookyLines.xml", "backups/SpookyLines") + date + ".xml");
                 Console.WriteLine("Backups made.");
             }
-            catch (Exception ex)
-            {
-            }
+            catch { }
         }
         private static async void Timer_Unban(object sender, ElapsedEventArgs e)
         {
             var bans = BanDb.GetBans();
             foreach(var x in bans)
             {
-                if (x.DateBanEnd.CompareTo(System.DateTime.Now) == -1 ? true : false)
+                if (x.DateBanEnd.CompareTo(System.DateTime.Now) == -1)
                 {
                     Console.WriteLine("Unbanning " + x.UserId);
                     await BanDb.EndBan(x.UserId, x.ServerId);
@@ -60,7 +58,7 @@ namespace Namiko.Core
                     {
                         await Program.GetClient().GetGuild(x.ServerId).RemoveBanAsync(x.UserId);
                     }
-                    catch (Exception ex) { }
+                    catch { }
                 }
             }
         }

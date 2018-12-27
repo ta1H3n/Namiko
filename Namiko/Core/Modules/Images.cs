@@ -11,12 +11,12 @@ using Namiko.Resources.Database;
 using Namiko.Resources.Datatypes;
 using System.Diagnostics.Contracts;
 using Namiko.Resources.Attributes;
+using Namiko.Core.Util;
 
-namespace Namiko.Core.Basic
+namespace Namiko.Core.Modules
 {
     public class Images : ModuleBase<SocketCommandContext>
     {
-         //[Command(""), Summary("Sends a random reaction image based on the command."), Priority(5)]
          public async Task SendRandomImage(SocketCommandContext Context)
          {
             string text = Context.Message.Content;
@@ -29,7 +29,7 @@ namespace Namiko.Core.Basic
             {
                 return;
             }
-             await Context.Channel.SendMessageAsync("", false, ToEmbed(image));
+             await Context.Channel.SendMessageAsync("", false, ImageUtil.ToEmbed(image));
          }
 
          [Command("NewImage"), Alias("ni"), Summary("Adds a new image to the database.\n**Usage**: `!ni [name] [url]`"), HomePrecondition]
@@ -48,7 +48,7 @@ namespace Namiko.Core.Basic
              await Task.Delay(50);
              var user = Context.Guild.GetUser(Context.User.Id);
              var image = ImageDb.GetLastImage();
-             await Context.Channel.SendMessageAsync("", false, ToEmbed(image));
+             await Context.Channel.SendMessageAsync("", false, ImageUtil.ToEmbed(image));
          }
 
          [Command("DeleteImage"), Alias("di"), Summary("Deletes image from the database using the id.\n**Usage**: `di [id]`"), HomePrecondition]
@@ -76,7 +76,7 @@ namespace Namiko.Core.Basic
                  return;
              }
              var user = Context.Guild.GetUser(Context.User.Id);
-             await Context.Channel.SendMessageAsync("", false, ToEmbed(image));
+             await Context.Channel.SendMessageAsync("", false, ImageUtil.ToEmbed(image));
          }
 
          [Command("All"), Summary("All reaction images from a single command.\n**Usage**: `!all [name]`"), HomePrecondition]
@@ -85,7 +85,7 @@ namespace Namiko.Core.Basic
             var images = ImageDb.GetImages(name);
              foreach (ReactionImage x in images)
              {
-                 await Context.Channel.SendMessageAsync("", false, ToEmbed(x));
+                 await Context.Channel.SendMessageAsync("", false, ImageUtil.ToEmbed(x));
              }
          }
 
@@ -137,15 +137,7 @@ namespace Namiko.Core.Basic
             stringList += "```";
             await Context.Channel.SendMessageAsync(stringList);
         }
-
-        private EmbedBuilder ToEmbed(ReactionImage image)
-        {
-            EmbedBuilder embed = new EmbedBuilder();
-            embed.WithImageUrl(image.Url);
-            embed.WithFooter($"{image.Name} id: {image.Id}");
-            embed.WithColor(BasicUtil.RandomColor());
-            return embed;
-        }
+        
 
         private class ImageCount
         {

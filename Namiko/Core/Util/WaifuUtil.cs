@@ -1,7 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using Namiko.Core.Basic;
+using Namiko.Core.Modules;
 using Namiko.Resources.Database;
 using Namiko.Resources.Datatypes;
 using System;
@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Namiko.Core.Waifus
+namespace Namiko.Core.Util
 {
     public static class WaifuUtil
     {
@@ -79,7 +79,6 @@ namespace Namiko.Core.Waifus
         {
             var eb = new EmbedBuilder();
             eb.WithAuthor("Waifu Store", Context.Client.CurrentUser.GetAvatarUrl());
-            bool split = false;
             foreach (var x in waifus)
             {
                 var efb = new EmbedFieldBuilder();
@@ -159,7 +158,7 @@ namespace Namiko.Core.Waifus
             if (footerDetails)
             {
                 string footer = ($"Tier: {waifu.Tier}");
-                footer += WaifuOwnerMentionsString(waifu, context);
+                footer += WaifuOwnerString(waifu, context);
                 eb.WithFooter(footer);
             }
             
@@ -167,7 +166,7 @@ namespace Namiko.Core.Waifus
             eb.Color = BasicUtil.RandomColor();
             return eb;
         }
-        public static string WaifuOwnerMentionsString(Waifu waifu, SocketCommandContext context)
+        public static string WaifuOwnerString(Waifu waifu, SocketCommandContext context)
         {
             var userIds = UserInventoryDb.GetOwners(waifu);
             string str = null;
@@ -180,8 +179,7 @@ namespace Namiko.Core.Waifus
                     {
                         var mention = context.Client.GetUser(id).Username;
                         str += $"`{mention}` ";
-                    }
-                    catch(Exception ex) { }
+                    }catch { }
                 }
             }
             return str;
@@ -273,24 +271,6 @@ namespace Namiko.Core.Waifus
             text += "```";
             return text;
         }
-        public static async Task<Waifu> ProcessWaifuListAndRespond(List<Waifu> waifus, string inputName, ISocketMessageChannel channel = null)
-        {
-          //  if (waifus.Count == 1)
-          //  {
-          //      if (waifus[0].Name.Equals(inputName, StringComparison.InvariantCultureIgnoreCase))
-          //          return waifus[0];
-          //  }
-
-            if (waifus.Count == 1)
-                return waifus[0];
-
-            if (waifus.Count > 0 && channel != null)
-            {
-                await channel.SendMessageAsync(WaifuUtil.FoundWaifusCodeBlock(waifus));
-            }
-
-            return null;
-        }
         public static EmbedBuilder WaifuLeaderboardEmbed(IOrderedEnumerable<KeyValuePair<Waifu, int>> waifus, IOrderedEnumerable<KeyValuePair<SocketUser, int>> users, int page)
         {
             var eb = new EmbedBuilder();
@@ -329,6 +309,26 @@ namespace Namiko.Core.Waifus
                 total += GetPrice(x.Tier);
             }
             return total;
+        }
+
+
+        public static async Task<Waifu> ProcessWaifuListAndRespond(List<Waifu> waifus, string inputName, ISocketMessageChannel channel = null)
+        {
+            //  if (waifus.Count == 1)
+            //  {
+            //      if (waifus[0].Name.Equals(inputName, StringComparison.InvariantCultureIgnoreCase))
+            //          return waifus[0];
+            //  }
+
+            if (waifus.Count == 1)
+                return waifus[0];
+
+            if (waifus.Count > 0 && channel != null)
+            {
+                await channel.SendMessageAsync(WaifuUtil.FoundWaifusCodeBlock(waifus));
+            }
+
+            return null;
         }
     }
 }

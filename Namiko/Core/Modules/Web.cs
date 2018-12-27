@@ -10,8 +10,9 @@ using System.Collections.Generic;
 using System;
 using Namiko.Resources.Attributes;
 using Discord.WebSocket;
+using Namiko.Core.Util;
 
-namespace Namiko.Core.Web
+namespace Namiko.Core.Modules
 {
     public class Web : ModuleBase<SocketCommandContext>
     {
@@ -29,7 +30,7 @@ namespace Namiko.Core.Web
                 return;
             }
 
-            var result = await IqdbUtil.SearchUrl(url);
+            var result = await WebUtil.IqdbUrlSearchAsync(url);
 
             if(!result.IsFound)
             {
@@ -37,7 +38,7 @@ namespace Namiko.Core.Web
                 return;
             }
 
-            await Context.Channel.SendMessageAsync("", false, IqdbUtil.SourceResultEmbed(result, url));
+            await Context.Channel.SendMessageAsync("", false, WebUtil.IqdbSourceResultEmbed(result, url));
         }
     }
 }

@@ -11,8 +11,9 @@ using Namiko.Resources.Database;
 using Namiko.Resources.Datatypes;
 using Namiko.Resources.Attributes;
 using Namiko.Resources.Xml;
+using Namiko.Core.Util;
 
-namespace Namiko.Core.Basic
+namespace Namiko.Core.Modules
 {
     public class SpecialModes : ModuleBase<SocketCommandContext>
     {

@@ -10,8 +10,9 @@ using System.Collections.Generic;
 using Namiko.Resources.Database;
 using System.Diagnostics.Contracts;
 using Namiko.Resources.Attributes;
+using Namiko.Core.Util;
 
-namespace Namiko.Core.Currency
+namespace Namiko.Core.Modules
 {
     
     public class Currency : ModuleBase<SocketCommandContext>
@@ -28,7 +29,7 @@ namespace Namiko.Core.Currency
                 return;
             }
 
-            int amount = ToastieUtil.GetAmount(sAmount, user);
+            int amount = ToastieUtil.ParseAmount(sAmount, user);
             try
             {
                 await ToastieDb.AddToasties(user.Id, -amount);
@@ -46,7 +47,7 @@ namespace Namiko.Core.Currency
                 return;
             }
 
-            Game game = new Game(amount, ch);
+            BlackjackGame game = new BlackjackGame(amount, ch);
             Blackjack.games[user] = game;
             await Blackjack.GameContinue(Context, game);
         }
@@ -75,11 +76,11 @@ namespace Namiko.Core.Currency
 
                 daily.Streak++;
                 daily.Date = timeNow;
-                int amount = DailyUtil.DailyAmount(daily.Streak);
+                int amount = ToastieUtil.DailyAmount(daily.Streak);
                 await DailyDb.SetDaily(daily);
                 await ToastieDb.AddToasties(Context.User.Id, amount);
 
-                await Context.Channel.SendMessageAsync("", false, DailyUtil.DailyGetEmbed(Context.User, daily.Streak, amount, ToastieDb.GetToasties(Context.User.Id)));
+                await Context.Channel.SendMessageAsync("", false, ToastieUtil.DailyGetEmbed(Context.User, daily.Streak, amount, ToastieDb.GetToasties(Context.User.Id)));
             }
             else
             {
@@ -87,7 +88,7 @@ namespace Namiko.Core.Currency
                 int hours = (int)wait / 3600;
                 int minutes = (int)wait % 3600 / 60;
                 int seconds = (int)wait % 60;
-                await Context.Channel.SendMessageAsync("", false, DailyUtil.DailyWaitEmbed(Context.User, hours, minutes, seconds));
+                await Context.Channel.SendMessageAsync("", false, ToastieUtil.DailyWaitEmbed(Context.User, hours, minutes, seconds));
             }
         }
 
@@ -102,7 +103,7 @@ namespace Namiko.Core.Currency
                 return;
             }
 
-            int amount = ToastieUtil.GetAmount(sAmount, user);
+            int amount = ToastieUtil.ParseAmount(sAmount, user);
             if (amount <= 0)
             {
                 await Context.Channel.SendMessageAsync("Pick an amount!");
@@ -126,16 +127,16 @@ namespace Namiko.Core.Currency
                 return;
             }
 
-            if (FlipUtil.FiftyFifty())
+            if (ToastieUtil.FiftyFifty())
             {
                 await ToastieDb.AddToasties(user.Id, amount * 2);
                 await ToastieDb.AddToasties(Context.Client.CurrentUser.Id, -amount);
-                await Context.Channel.SendMessageAsync("", false, FlipUtil.WinEmbed(user, amount).Build());
+                await Context.Channel.SendMessageAsync("", false, ToastieUtil.FlipWinEmbed(user, amount).Build());
             }
             else
             {
                 await ToastieDb.AddToasties(Context.Client.CurrentUser.Id, amount);
-                await Context.Channel.SendMessageAsync("", false, FlipUtil.LoseEmbed(user, amount).Build());
+                await Context.Channel.SendMessageAsync("", false, ToastieUtil.FlipLoseEmbed(user, amount).Build());
             }
         }
 
@@ -187,7 +188,7 @@ namespace Namiko.Core.Currency
             EmbedBuilder eb = new EmbedBuilder();
             eb.WithAuthor("Toasties");
             eb.WithDescription($"{Context.User.Username} gave {recipient.Username} **{amount}** {ToastieUtil.RandomEmote()}!");
-            eb.WithColor(Namiko.Core.Basic.BasicUtil.RandomColor());
+            eb.WithColor(BasicUtil.RandomColor());
             await Context.Channel.SendMessageAsync("", false, eb.Build());
         }
 

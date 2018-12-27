@@ -10,7 +10,7 @@ using Discord.WebSocket;
 using Namiko.Resources.Database;
 using Namiko.Resources.Datatypes;
 
-namespace Namiko.Core.Banroulettes
+namespace Namiko.Core.Util
 {
     public static class BanrouletteUtil
     {

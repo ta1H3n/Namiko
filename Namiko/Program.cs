@@ -8,9 +8,9 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Namiko.Resources.Datatypes;
-using Namiko.Core.Basic;
+using Namiko.Core.Modules;
 using Newtonsoft.Json;
-using Namiko.Core.Currency;
+using Namiko.Core.Util;
 using Namiko.Data;
 using System.Timers;
 using Namiko.Core;
@@ -32,21 +32,6 @@ namespace Namiko
             //Locations.SetUpRelease();
             Timers.SetUp();
 
-            string JSON = "";
-            string JSONLocation = Locations.SettingsJSON;
-            using (var Stream = new FileStream(JSONLocation, FileMode.Open, FileAccess.Read))
-            using (var ReadSettings = new StreamReader(Stream))
-            {
-                JSON = ReadSettings.ReadToEnd();
-            }
-
-            Settings Settings = JsonConvert.DeserializeObject<Settings>(JSON);
-            StaticSettings.owner = Settings.Owner;
-            StaticSettings.prefix = Settings.Prefix;
-            StaticSettings.home_server = Settings.home_server;
-            StaticSettings.log_channel = Settings.log_channel;
-            StaticSettings.version = Settings.Version;
-
             Client = new DiscordSocketClient();
             Commands = new CommandService(new CommandServiceConfig
             {
@@ -61,21 +46,20 @@ namespace Namiko
 
             Client.Ready += Client_Ready;
             Client.Log += Client_Log;
-            //Client.UserJoined += Client_UserJoined;
             Client.ReactionAdded += Client_ReactionAdded;
-            //Client.UserVoiceStateUpdated += Client_UserVoiceStateUpdated;
 
-            //Join/leave logging.
+            // Join/leave logging.
             Client.UserJoined += Client_UserJoinedLog;
             Client.UserLeft += Client_UserLeftLog;
             Client.UserBanned += Client_UserBannedLog;
 
-            await Client.LoginAsync(TokenType.Bot, Settings.Token);
+            await Client.LoginAsync(TokenType.Bot, ParseSettingsJson());
             await Client.StartAsync();
-
+            
             await Task.Delay(-1);
         }
         
+        // EVENTS
 
         private async Task Client_ReactionAdded(Cacheable<IUserMessage, ulong> arg1, ISocketMessageChannel arg2, SocketReaction arg3)
         {
@@ -88,7 +72,7 @@ namespace Namiko
             var user = sch.Guild.GetUser(arg3.UserId);
             var role = sch.Guild.GetRole(417112174926888961);
 
-            if (Roles.HasRole(user, role))
+            if (RoleUtil.HasRole(user, role))
             {
                 return;
             }
@@ -97,7 +81,7 @@ namespace Namiko
             
             var chid = WelcomeMessageDb.GetWelcomeChannel(sch.Guild.Id);
             var ch = sch.Guild.GetTextChannel(chid);
-            await ch.SendMessageAsync(WelcomeUtil.WelcomeMessageConvert(user));
+            await ch.SendMessageAsync(WelcomeUtil.GetWelcomeMessageString(user));
         }
         private async Task Client_UserVoiceStateUpdated(SocketUser arg1, SocketVoiceState arg2, SocketVoiceState arg3)
         {
@@ -111,7 +95,7 @@ namespace Namiko
 
             var chid = WelcomeMessageDb.GetWelcomeChannel(arg.Guild.Id);
             var ch = arg.Guild.GetTextChannel(chid);
-            await ch.SendMessageAsync(WelcomeUtil.WelcomeMessageConvert(arg));
+            await ch.SendMessageAsync(WelcomeUtil.GetWelcomeMessageString(arg));
 
             var dmch = await arg.GetOrCreateDMChannelAsync();
             await dmch.SendMessageAsync(WelcomeDm());
@@ -183,6 +167,7 @@ namespace Namiko
             await new SpecialModes().Christmas(Context);
         }
 
+        // USER JOIN LOGS
 
         private async Task Client_UserBannedLog(SocketUser arg1, SocketGuild arg2)
         {
@@ -209,6 +194,29 @@ namespace Namiko
                 JoinLogChannel = Client.GetGuild(417064769309245471).GetTextChannel(511189305838927872);
         }
 
+        // SET-UP
+
+        private static string ParseSettingsJson()
+        {
+            string JSON = "";
+            string JSONLocation = Locations.SettingsJSON;
+            using (var Stream = new FileStream(JSONLocation, FileMode.Open, FileAccess.Read))
+            using (var ReadSettings = new StreamReader(Stream))
+            {
+                JSON = ReadSettings.ReadToEnd();
+            }
+
+            Settings Settings = JsonConvert.DeserializeObject<Settings>(JSON);
+            StaticSettings.owner = Settings.Owner;
+            StaticSettings.prefix = Settings.Prefix;
+            StaticSettings.home_server = Settings.home_server;
+            StaticSettings.log_channel = Settings.log_channel;
+            StaticSettings.version = Settings.Version;
+
+            return Settings.Token;
+        }
+
+        // RANDOM
 
         private void Test()
         {
@@ -246,6 +254,7 @@ namespace Namiko
             var cmd = Commands.Commands.Where(x => x.Aliases.Any(y => y.Equals(commandName, StringComparison.InvariantCultureIgnoreCase))).First();
             return new Basic().CommandHelpString(cmd);
         }
+
         //  public static EmbedBuilder CommandHelpEmbed(string commandName)
         //  {
         //      var cmd = Commands.Commands.Where(x => x.Aliases.Any(y => y.Equals(commandName))).First();

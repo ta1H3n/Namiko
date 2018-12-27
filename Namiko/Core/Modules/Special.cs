@@ -9,10 +9,11 @@ using Discord.Commands;
 using Namiko.Resources.Attributes;
 using Discord.WebSocket;
 using Discord.Rest;
+using Namiko.Core.Util;
 
-namespace Namiko.Core.Basic
+namespace Namiko.Core.Modules
 {
-    public class SpecialCommands : ModuleBase<SocketCommandContext>
+    public class Special : ModuleBase<SocketCommandContext>
     {
         static ISocketMessageChannel ch;
 

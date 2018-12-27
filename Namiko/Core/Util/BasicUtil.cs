@@ -11,7 +11,7 @@ using Namiko.Resources.Database;
 using Namiko.Resources.Datatypes;
 using System.Diagnostics.Contracts;
 
-namespace Namiko.Core.Basic
+namespace Namiko.Core.Util
 {
     static class BasicUtil
     {

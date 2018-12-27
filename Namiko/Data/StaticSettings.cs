@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Namiko
 {
-    class StaticSettings
+    public static class StaticSettings
     {
         public static ulong owner;
         public static ulong home_server;

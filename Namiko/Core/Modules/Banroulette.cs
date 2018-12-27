@@ -6,13 +6,13 @@ using Discord;
 
 using Namiko.Resources.Database;
 using Namiko.Resources.Datatypes;
-using Namiko.Core.Basic;
+using Namiko.Core.Util;
 using System.Collections.Generic;
 using System;
 using Namiko.Resources.Attributes;
 using Discord.WebSocket;
 
-namespace Namiko.Core.Banroulettes
+namespace Namiko.Core.Modules
 {
     public class Banroulettes : ModuleBase<SocketCommandContext>
     {
@@ -35,7 +35,7 @@ namespace Namiko.Core.Banroulettes
             SocketRole role = null;
             if (roleName != "")
             {
-                role = Roles.GetRole(Context.Guild, roleName);
+                role = RoleUtil.GetRoleByName(Context.Guild, roleName);
                 if (role == null)
                 {
                     await Context.Channel.SendMessageAsync($":x: Role {roleName} not found.");

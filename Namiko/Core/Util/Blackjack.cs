@@ -9,11 +9,11 @@ using Namiko.Resources.Datatypes;
 using System.Collections.Generic;
 using Namiko.Resources.Database;
 
-namespace Namiko.Core.Currency
+namespace Namiko.Core.Util
 {
     public static class Blackjack
     {
-        public static Dictionary<SocketUser, Game> games = new Dictionary<SocketUser, Game>();
+        public static Dictionary<SocketUser, BlackjackGame> games = new Dictionary<SocketUser, BlackjackGame>();
 
         public static async Task BlackjackInput(SocketCommandContext Context)
         {
@@ -45,7 +45,7 @@ namespace Namiko.Core.Currency
                 }
             }
         }
-        public static async Task DoubleDown(SocketCommandContext Context, Game game)
+        public static async Task DoubleDown(SocketCommandContext Context, BlackjackGame game)
         {
             try
             {
@@ -59,7 +59,7 @@ namespace Namiko.Core.Currency
                 await Context.Channel.SendMessageAsync(e.Message);
             }
         }
-        public static async Task Forfeit(SocketCommandContext Context, Game game)
+        public static async Task Forfeit(SocketCommandContext Context, BlackjackGame game)
         {
             var user = Context.User;
             var ch = Context.Channel;
@@ -80,7 +80,7 @@ namespace Namiko.Core.Currency
 
             games.Remove(user);
         }
-        public static async Task Hit(SocketCommandContext Context, Game game)
+        public static async Task Hit(SocketCommandContext Context, BlackjackGame game)
         {
             int value = game.Hit();
 
@@ -91,13 +91,13 @@ namespace Namiko.Core.Currency
                 await GameEnd(Context, game);
             }
         }
-        public static async Task Stand(SocketCommandContext Context, Game game)
+        public static async Task Stand(SocketCommandContext Context, BlackjackGame game)
         {
             game.Stand();
             await GameEnd(Context, game);
         }
 
-        public static async Task GameEnd(SocketCommandContext Context, Game game)
+        public static async Task GameEnd(SocketCommandContext Context, BlackjackGame game)
         {
             EmbedBuilder eb = new EmbedBuilder();
             var user = Context.User;
@@ -147,7 +147,7 @@ namespace Namiko.Core.Currency
 
             games.Remove(user);
         }
-        public static async Task GameContinue(SocketCommandContext Context, Game game)
+        public static async Task GameContinue(SocketCommandContext Context, BlackjackGame game)
         {
             EmbedBuilder eb = new EmbedBuilder();
             var user = Context.User;
@@ -180,7 +180,7 @@ namespace Namiko.Core.Currency
                 }
             return cards;
         }
-        public static async Task Send(Game game, EmbedBuilder eb)
+        public static async Task Send(BlackjackGame game, EmbedBuilder eb)
         {
             if (game.Message == null)
             {
@@ -192,7 +192,7 @@ namespace Namiko.Core.Currency
             }
         }
     }
-    public class Game
+    public class BlackjackGame
     {
         public int Pats { get; set; }
         public List<Card> Hand { get; set; }
@@ -202,7 +202,7 @@ namespace Namiko.Core.Currency
         public IUserMessage Message { get; set; }
         public ISocketMessageChannel Channel { get; set; }
 
-        public Game(int pats, ISocketMessageChannel channel)
+        public BlackjackGame(int pats, ISocketMessageChannel channel)
         {
             this.Pats = pats;
             this.Channel = channel;

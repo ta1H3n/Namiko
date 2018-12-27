@@ -19,7 +19,7 @@ namespace Namiko.Resources.Attributes
                     context.Channel.SendMessageAsync("Nononono, you can't use this command, you're not in my home guild!");
                     return Task.FromResult(PreconditionResult.FromError("Not bot owner"));
                 }
-            } catch (Exception ex)
+            } catch 
             {
                 context.Channel.SendMessageAsync("Nononono, you can't use this command, you're not in my home guild!");
                 return Task.FromResult(PreconditionResult.FromError("Not bot owner"));

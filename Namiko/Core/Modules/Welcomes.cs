@@ -9,13 +9,12 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Namiko.Resources.Attributes;
 using Namiko.Resources.Datatypes;
+using Namiko.Core.Util;
 
-namespace Namiko.Core.Basic
+namespace Namiko.Core.Modules
 {
     public class Welcomes : ModuleBase<SocketCommandContext>
     {
-        //private Dictionary<ulong, SocketTextChannelO> WelcomeChannels;
-
         [Command("NewWelcome"), Alias("nwlc"), Summary("Adds a new welcome message. @_ will be replaced with a mention.\n**Usage**: `!nw [welcome]`"), HomePrecondition]
         public async Task NewWelcome([Remainder] string message)
         {
@@ -60,14 +59,6 @@ namespace Namiko.Core.Basic
             }
         }
 
-        // [Command("TestWelcome"), Alias("tw"), HomePrecondition]
-        // public async Task TestWelcome()
-        // {
-        //     var channel = GetWelcomeChannel(Context.Guild.Id, Context.Client);
-        //     string str = WelcomeMessageConvert(Context.User);
-        //     await channel.SendMessageAsync(str);
-        // }
-
         [Command("SetWelcomeChannel"), Alias("swc"), Summary("Set's the welcome channel. Current channel or provided ID.\n**Usage**: `!swc [id]`"), RequireUserPermission(GuildPermission.Administrator)]
         public async Task SetWelcomeChannel(long inputId = 1)
         {
@@ -81,59 +72,8 @@ namespace Namiko.Core.Basic
                 id = (ulong)inputId;
             }
             await WelcomeMessageDb.SetWelcomeChannel(new WelcomeChannel { GuildId = Context.Guild.Id, ChannelId = id });
-            //SetUpWelcomeChannels(Context.Client);
-            //WelcomeChannels.Add(Context.Guild.Id, Context.Client.GetChannel(id) as SocketTextChannel);
 
             await Context.Channel.SendMessageAsync($"{id} Set as the welcome channel.");
-            // await TestWelcome();
         }
-
-
-    }
-    public static class WelcomeUtil { 
-        // public void SetUpWelcomeChannels(DiscordSocketClient client)
-        // {
-        //     var channels = WelcomeMessageDb.GetWelcomeChannels();
-        //     WelcomeChannels = new Dictionary<ulong, SocketTextChannel>();
-        //     Console.WriteLine($"Count: {channels.Count}");
-        //     foreach(var x in channels)
-        //     {
-        //         var guild = client.GetGuild(x.GuildId);
-        //         var ch = guild.GetTextChannel(x.ChannelId);
-        //         Console.WriteLine($"Adding: {ch.Id}");
-        //         WelcomeChannels.Add(x.GuildId, ch);
-        //     }
-        // }
-        // public async Task SendWelcome(SocketGuildUser user, DiscordSocketClient client)
-        // {
-        //     var channel = GetWelcomeChannel(user.Guild.Id, client);
-        //     await channel.SendMessageAsync(WelcomeMessageConvert(user));
-        // }
-        public static string WelcomeMessageConvert(SocketUser user)
-        {
-            string message = WelcomeMessageDb.GetRandomMessage();
-            message = message.Replace("@_", user.Mention);
-            return message;
-        }
-        // private SocketTextChannel General(SocketGuild guild)
-        // {
-        //     var channels = guild.TextChannels;
-        //     foreach(SocketTextChannel x in channels)
-        //     {
-        //         if(x.Name == "general")
-        //         {
-        //             return x;
-        //         }
-        //     }
-        //     return null;
-        // }
-        // private SocketTextChannel GetWelcomeChannel(ulong guildId, DiscordSocketClient client)
-        // {
-        //     if(WelcomeChannels == null)
-        //     {
-        //         SetUpWelcomeChannels(client);
-        //     }
-        //     return WelcomeChannels.GetValueOrDefault(guildId);
-        // }
     }
 }

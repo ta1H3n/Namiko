@@ -9,9 +9,10 @@ using Namiko.Resources.Datatypes;
 using System.Collections.Generic;
 using System;
 using Namiko.Resources.Attributes;
+using Namiko.Core.Util;
 using Discord.WebSocket;
 
-namespace Namiko.Core.Waifus
+namespace Namiko.Core.Modules
 {
     public class Waifus : ModuleBase<SocketCommandContext>
     {

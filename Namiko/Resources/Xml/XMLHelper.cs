@@ -96,7 +96,7 @@ namespace Namiko.Resources.Xml
             {
                 return FromXmlFile<List<string>>(XmlPaths.GetSpookLinesPath());
             }
-            catch (Exception ex)
+            catch
             {
                 return null;
             }
