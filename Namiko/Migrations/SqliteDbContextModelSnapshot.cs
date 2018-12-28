@@ -3,7 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Namiko.Resources.Datatypes;
+using Namiko.Resources.Database;
 
 namespace Namiko.Migrations
 {

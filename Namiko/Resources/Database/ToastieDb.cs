@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 using Namiko.Resources.Datatypes;
+using Namiko.Resources.Database;
 using System.Threading.Tasks;
 
 namespace Namiko.Resources.Database

@@ -23,6 +23,7 @@ namespace Namiko
         private static DiscordSocketClient Client;
         private static CommandService Commands;
         private static SocketTextChannel JoinLogChannel = null;
+        private static bool Pause = false;
 
         static void Main(string[] args)
         => new Program().MainAsync().GetAwaiter().GetResult();
@@ -127,9 +128,25 @@ namespace Namiko
                 return;
 
             int ArgPos = 0;
-            if (!(Message.HasStringPrefix(StaticSettings.prefix, ref ArgPos) || Message.HasMentionPrefix(Client.CurrentUser, ref ArgPos)))
+            if (!(Message.HasStringPrefix(StaticSettings.prefix, ref ArgPos) || Message.HasMentionPrefix(Client.CurrentUser, ref ArgPos)) && !Pause)
             {
+                
                 await Blackjack.BlackjackInput(Context);
+                return;
+            }
+            var cmds = Commands.Search(Context, ArgPos);
+            if (cmds.IsSuccess && Pause)
+            {
+                if(cmds.Commands[0].Alias.Contains("pause", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    if ((await cmds.Commands[0].CheckPreconditionsAsync(Context)).IsSuccess)
+                    {
+                        Pause = false;
+                        await Context.Channel.SendMessageAsync($"Pause = {Pause}");
+                    }
+                    return;
+                }
+                await Context.Channel.SendMessageAsync("Commands disabled temporarily. Try again later.");
                 return;
             }
 
@@ -194,7 +211,7 @@ namespace Namiko
                 JoinLogChannel = Client.GetGuild(417064769309245471).GetTextChannel(511189305838927872);
         }
 
-        // SET-UP
+        // SET-UP / TECHNICAL
 
         private static string ParseSettingsJson()
         {
@@ -214,6 +231,15 @@ namespace Namiko
             StaticSettings.version = Settings.Version;
 
             return Settings.Token;
+        }
+        public static bool SetPause()
+        {
+            if (Pause)
+                Pause = false;
+            else
+                Pause = true;
+
+            return Pause;
         }
 
         // RANDOM

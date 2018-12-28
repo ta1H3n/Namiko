@@ -7,6 +7,7 @@ using System.Linq;
 using Discord;
 using Discord.Commands;
 using Namiko.Resources.Attributes;
+using Namiko.Resources.Database;
 using Discord.WebSocket;
 using Discord.Rest;
 using Namiko.Core.Util;
@@ -49,10 +50,24 @@ namespace Namiko.Core.Modules
             await Context.Channel.SendMessageAsync(str);
         }
 
-        [Command("Playing"), Summary("Sets the palying status."), OwnerPrecondition]
+        [Command("Playing"), Summary("Sets the playing status."), OwnerPrecondition]
         public async Task Playing([Remainder] string str)
         {
             await Context.Client.SetGameAsync(str);
+        }
+
+        [Command("Pause"), Summary("Pauses or Unpauses the bot"), OwnerPrecondition]
+        public async Task Pause([Remainder] string str = "")
+        {
+            var pause = Program.SetPause();
+            await Context.Channel.SendMessageAsync($"Pause = {pause}");
+        }
+
+        [Command("SQL"), Summary("Executes an SQL query. DANGEROUS"), OwnerPrecondition]
+        public async Task Sql([Remainder] string str = "")
+        {
+            int res = await SqliteDbContext.ExecuteSQL(str);
+            await Context.Channel.SendMessageAsync($"{res} rows affected.");
         }
     }
 }

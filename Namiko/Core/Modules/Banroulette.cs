@@ -108,7 +108,8 @@ namespace Namiko.Core.Modules
 
             var users = BasicUtil.UserList(Context.Client, userIds);
             users.Add(Context.User);
-            await Context.Channel.SendMessageAsync("You joined the Ban Roulette. *Heh.*\n\nList of Participants:\n" + BanrouletteUtil.BanrouletteParticipants(users));
+            string response = "You joined the Ban Roulette. *Heh.*" + (users.Count > 10 ? "" : "\n\nList of Participants:\n" + BanrouletteUtil.BanrouletteParticipants(users));
+            await Context.Channel.SendMessageAsync(response);
         }
 
         [Command("CancelBanroulette"), Alias("cbr"), Summary("Cancels the current Ban Roulette.\n**Usage**: `!cbr`"), RequireUserPermission(GuildPermission.BanMembers)]

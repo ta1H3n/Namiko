@@ -3,8 +3,10 @@ using System.Reflection;
 using Discord;
 using Discord.WebSocket;
 using Namiko.Data;
+using System.Threading.Tasks;
+using Namiko.Resources.Datatypes;
 
-namespace Namiko.Resources.Datatypes
+namespace Namiko.Resources.Database
 {
     public class SqliteDbContext : DbContext
     {
@@ -30,6 +32,14 @@ namespace Namiko.Resources.Datatypes
         {
             string DbLocation = Locations.SqliteDb;
             Options.UseSqlite($"Data Source={DbLocation}Database.sqlite");
+        }
+
+        public async static Task<int> ExecuteSQL(string query)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                return await db.Database.ExecuteSqlCommandAsync(query);
+            }
         }
     }
 }
