@@ -24,6 +24,7 @@ namespace Namiko
         private static CommandService Commands;
         private static SocketTextChannel JoinLogChannel = null;
         private static bool Pause = false;
+        private static bool Debug = false;
 
         static void Main(string[] args)
         => new Program().MainAsync().GetAwaiter().GetResult();
@@ -105,7 +106,8 @@ namespace Namiko
         {
             var ch = Client.GetChannel(StaticSettings.log_channel) as ISocketMessageChannel;
             await ch.SendMessageAsync($"`{DateTime.Now} - Ready`");
-            
+            if(!Debug)
+                SetUpJoinLogChannel();
         }
         private async Task Client_Log(LogMessage arg)
         {
@@ -135,17 +137,8 @@ namespace Namiko
                 return;
             }
             var cmds = Commands.Search(Context, ArgPos);
-            if (cmds.IsSuccess && Pause)
+            if (cmds.IsSuccess && Pause && Context.User.Id != StaticSettings.owner)
             {
-                if(cmds.Commands[0].Alias.Contains("pause", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    if ((await cmds.Commands[0].CheckPreconditionsAsync(Context)).IsSuccess)
-                    {
-                        Pause = false;
-                        await Context.Channel.SendMessageAsync($"Pause = {Pause}");
-                    }
-                    return;
-                }
                 await Context.Channel.SendMessageAsync("Commands disabled temporarily. Try again later.");
                 return;
             }
@@ -244,11 +237,11 @@ namespace Namiko
         private static void SetUpDebug()
         {
             Locations.SetUpDebug();
+            Debug = true;
         }
         private static void SetUpRelease()
         {
             Locations.SetUpRelease();
-            SetUpJoinLogChannel();
         }
 
         // RANDOM
