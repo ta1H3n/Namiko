@@ -31,7 +31,7 @@ namespace Namiko.Resources.Database
         {
             using (var DbContext = new SqliteDbContext())
             {
-                WelcomeMessage message = DbContext.WelcomeMessages.Where(x => x.Id == id).First();
+                WelcomeMessage message = DbContext.WelcomeMessages.Where(x => x.Id == id).FirstOrDefault();
                 DbContext.WelcomeMessages.Remove(message);
                 await DbContext.SaveChangesAsync();
             }
@@ -40,7 +40,7 @@ namespace Namiko.Resources.Database
         {
             using (var DbContext = new SqliteDbContext())
             {
-                WelcomeMessage message = DbContext.WelcomeMessages.Where(x => x.Id == id).First();
+                WelcomeMessage message = DbContext.WelcomeMessages.Where(x => x.Id == id).FirstOrDefault();
                 return message;
             }
         }

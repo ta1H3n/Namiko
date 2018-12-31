@@ -115,21 +115,29 @@ namespace Namiko.Core.Modules
 
              names = names.OrderByDescending(x=> x.Count).ToList();
 
-             string stringList = "```";
+             string stringList = "```cs\n";
              foreach(ImageCount x in names)
              {
-                 stringList += String.Format("{0,-10} - {1}\n", x.Name, x.Count);
+                 if(x.Count > 9)
+                    stringList += String.Format("{0,-10} - {1}\n", x.Name, x.Count);
+                 else
+                    stringList += $"{x.Name} ";
              }
              stringList += "```";
              await Context.Channel.SendMessageAsync(stringList);
          }
 
         [Command("List"), Summary("List of all image IDs under an image reaction command.\n**Usage**: `list [name]`")]
-        public async Task List(string name, [Remainder] string str = "")
+        public async Task List(string name = "", [Remainder] string str = "")
         {
+            if(name == "")
+            {
+                return;
+            }
+
             var list = ImageDb.GetImages(name);
 
-            string stringList = "```";
+            string stringList = "```cs\n";
             foreach (ReactionImage x in list)
             {
                 stringList += String.Format("{0} - {1}\n", x.Name, x.Id);

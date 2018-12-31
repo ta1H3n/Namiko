@@ -29,8 +29,8 @@ namespace Namiko
         => new Program().MainAsync().GetAwaiter().GetResult();
         private async Task MainAsync()
         {
-            Locations.SetUpDebug();
-            //Locations.SetUpRelease();
+            SetUpDebug();
+            //SetUpRelease();
             Timers.SetUp();
 
             Client = new DiscordSocketClient();
@@ -105,7 +105,7 @@ namespace Namiko
         {
             var ch = Client.GetChannel(StaticSettings.log_channel) as ISocketMessageChannel;
             await ch.SendMessageAsync($"`{DateTime.Now} - Ready`");
-            SetUpJoinLogChannel();
+            
         }
         private async Task Client_Log(LogMessage arg)
         {
@@ -241,6 +241,15 @@ namespace Namiko
 
             return Pause;
         }
+        private static void SetUpDebug()
+        {
+            Locations.SetUpDebug();
+        }
+        private static void SetUpRelease()
+        {
+            Locations.SetUpRelease();
+            SetUpJoinLogChannel();
+        }
 
         // RANDOM
 
@@ -277,13 +286,13 @@ namespace Namiko
         }
         public static string CommandHelpString(string commandName)
         {
-            var cmd = Commands.Commands.Where(x => x.Aliases.Any(y => y.Equals(commandName, StringComparison.InvariantCultureIgnoreCase))).First();
+            var cmd = Commands.Commands.Where(x => x.Aliases.Any(y => y.Equals(commandName, StringComparison.InvariantCultureIgnoreCase))).FirstOrDefault();
             return new Basic().CommandHelpString(cmd);
         }
 
         //  public static EmbedBuilder CommandHelpEmbed(string commandName)
         //  {
-        //      var cmd = Commands.Commands.Where(x => x.Aliases.Any(y => y.Equals(commandName))).First();
+        //      var cmd = Commands.Commands.Where(x => x.Aliases.Any(y => y.Equals(commandName))).FirstOrDefault();
         //      return new BasicCommands().CommandHelpEmbed(cmd);
         //  }
 

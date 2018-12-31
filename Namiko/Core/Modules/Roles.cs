@@ -188,7 +188,7 @@ namespace Namiko.Core.Modules
             await ch.SendMessageAsync($"{Context.User.Mention} kicked {user} from {userteam.Name}.");
         }
 
-        [Command("NewTeam"), Alias("nt"), Summary("Creates a new team.\n**Usage**: `!newteam [LeaderRoleName] [MemberRoleName]`"), RequireUserPermission(GuildPermission.ManageRoles)]
+        [Command("NewTeam"), Alias("nt"), Summary("Creates a new team.\n**Usage**: `!nt [LeaderRoleName] [MemberRoleName]`"), RequireUserPermission(GuildPermission.ManageRoles)]
         public async Task NewTeam(string leader, string member)
         {
             var leaderR = RoleUtil.GetRoleByName(Context.Guild, leader);
@@ -207,6 +207,86 @@ namespace Namiko.Core.Modules
             await TeamDb.AddTeam(leaderR.Id, memberR.Id);
             await Context.Channel.SendMessageAsync($"Added Leader role: '{leaderR.Name}' and Team role: '{memberR.Name}'");
         }
-        
+
+        [Command("DeleteTeam"), Alias("dt"), Summary("Deletes a team.\n**Usage**: `!dt [Leader or Team RoleName]`"), RequireUserPermission(GuildPermission.ManageRoles)]
+        public async Task NewTeam(string teamName)
+        {
+            var role = RoleUtil.GetRoleByName(Context.Guild, teamName);
+
+            if (role == null)
+            {
+                await Context.Channel.SendMessageAsync($"`{teamName}` is not a role.");
+                return;
+            }
+
+            var team = TeamDb.TeamByMember(role.Id);
+            if (team == null)
+                team = TeamDb.TeamByLeader(role.Id);
+
+            if (team == null)
+            {
+                await Context.Channel.SendMessageAsync($"`{role.Name}` is not a team. Create a team using `!newteam`");
+                return;
+            }
+
+            await TeamDb.DeleteTeam(team);
+            await Context.Channel.SendMessageAsync($"Deleted team {role.Name}. The weak fall, big deal.");
+        }
+
+        [Command("TeamList"), Alias("tl", "teams"), Summary("Lists all teams.\n**Usage**: `!tl`")]
+        public async Task TeamList([Remainder] string str = "")
+        {
+            var teams = new List<SocketRole>();
+            var leaders = new List<SocketRole>();
+            foreach (var x in TeamDb.Teams())
+            {
+                teams.Add(Context.Guild.GetRole(x.MemberRoleId));
+                leaders.Add(Context.Guild.GetRole(x.LeaderRoleId));
+            }
+
+            var eb = RoleUtil.TeamListEmbed(teams, leaders);
+            await Context.Channel.SendMessageAsync("", false, eb.Build());
+        }
+
+        [Command("PublicRoleList"), Alias("prl", "roles"), Summary("Lists all public roles.\n**Usage**: `!prl`")]
+        public async Task PublicRoleList([Remainder] string str = "")
+        {
+            var roles = new List<SocketRole>();
+            foreach (var x in PublicRoleDb.GetAll())
+            {
+                roles.Add(Context.Guild.GetRole(x.RoleId));
+            }
+
+            var eb = RoleUtil.PublicRoleListEmbed(roles);
+            await Context.Channel.SendMessageAsync("", false, eb.Build());
+        }
+
+        [Command("Team"), Summary("Info about a team.\n**Usage**: `!team [team_role_name]`")]
+        public async Task Team([Remainder] string teamName)
+        {
+            var role = RoleUtil.GetRoleByName(Context.Guild, teamName);
+
+            if(role == null)
+            {
+                await Context.Channel.SendMessageAsync($"`{teamName}` is not a role.");
+                return;
+            }
+
+            var team = TeamDb.TeamByMember(role.Id);
+            if (team == null)
+                team = TeamDb.TeamByLeader(role.Id);
+
+            if(team == null)
+            {
+                await Context.Channel.SendMessageAsync($"`{role.Name}` is not a team. Create a team using `!newteam`");
+                return;
+            }
+
+            var teamRole = Context.Guild.GetRole(team.MemberRoleId);
+            var leaderRole = Context.Guild.GetRole(team.LeaderRoleId);
+
+            var eb = RoleUtil.TeamEmbed(teamRole, leaderRole);
+            await Context.Channel.SendMessageAsync("", false, eb.Build());
+        }
     }
 }

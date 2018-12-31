@@ -28,7 +28,7 @@ namespace Namiko.Resources.Database
         {
             using (var DbContext = new SqliteDbContext())
             {
-                var publicRole = DbContext.PublicRoles.Where(x => x.RoleId == roleId).First();
+                var publicRole = DbContext.PublicRoles.Where(x => x.RoleId == roleId).FirstOrDefault();
                 DbContext.PublicRoles.Remove(publicRole);
                 await DbContext.SaveChangesAsync();
             }
@@ -48,14 +48,14 @@ namespace Namiko.Resources.Database
         {
             using (var DbContext = new SqliteDbContext())
             {
-                return DbContext.Teams.Where(x => x.LeaderRoleId == roleId).First();
+                return DbContext.Teams.Where(x => x.LeaderRoleId == roleId).FirstOrDefault();
             }
         }
         public static Team TeamByMember(ulong roleId)
         {
             using (var DbContext = new SqliteDbContext())
             {
-                return DbContext.Teams.Where(x => x.MemberRoleId == roleId).First();
+                return DbContext.Teams.Where(x => x.MemberRoleId == roleId).FirstOrDefault();
             }
         }
         public static async Task AddTeam(ulong leaderId, ulong memberId)
@@ -66,11 +66,10 @@ namespace Namiko.Resources.Database
                 await DbContext.SaveChangesAsync();
             }
         }
-        public static async Task DeleteTeam(ulong leaderId)
+        public static async Task DeleteTeam(Team team)
         {
             using (var DbContext = new SqliteDbContext())
             {
-                var team = DbContext.Teams.Where(x => x.LeaderRoleId == leaderId).First();
                 DbContext.Teams.Remove(team);
                 await DbContext.SaveChangesAsync();
             }
@@ -101,7 +100,7 @@ namespace Namiko.Resources.Database
                 if (DbContext.Invites.Where(x => ((x.TeamId == teamId) && (x.UserId == userId))).Count() < 1)
                     return;
 
-                var invite = DbContext.Invites.Where(x => ((x.TeamId == teamId) && (x.UserId == userId))).First();
+                var invite = DbContext.Invites.Where(x => ((x.TeamId == teamId) && (x.UserId == userId))).FirstOrDefault();
                 DbContext.Remove(invite);
                 await DbContext.SaveChangesAsync();
             }

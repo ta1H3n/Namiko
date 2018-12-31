@@ -66,7 +66,7 @@ namespace Namiko.Resources.Database
         {
             using (var DbContext = new SqliteDbContext())
             {
-                Waifu waifu = DbContext.Waifus.Where(x => x.Name == name).First();
+                Waifu waifu = DbContext.Waifus.Where(x => x.Name == name).FirstOrDefault();
                 if (waifu == null)
                     return 0;
 

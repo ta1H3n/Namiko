@@ -38,7 +38,7 @@ namespace Namiko.Resources.Database
         {
             using (var DbContext = new SqliteDbContext())
             {
-                ReactionImage image = DbContext.Images.Where(x => x.Id == id).First();
+                ReactionImage image = DbContext.Images.Where(x => x.Id == id).FirstOrDefault();
                 DbContext.Images.Remove(image);
                 await DbContext.SaveChangesAsync();
             }
@@ -48,7 +48,7 @@ namespace Namiko.Resources.Database
         {
             using (var DbContext = new SqliteDbContext())
             {
-                ReactionImage message = DbContext.Images.Where(x => x.Id == id).First();
+                ReactionImage message = DbContext.Images.Where(x => x.Id == id).FirstOrDefault();
                 return message;
             }
         }
