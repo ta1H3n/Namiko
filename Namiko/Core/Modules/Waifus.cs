@@ -22,7 +22,7 @@ namespace Namiko.Core.Modules
             if (user == null)
                 user = Context.User;
 
-            await Context.Channel.SendMessageAsync("", false, WaifuUtil.ProfileEmbed(user));
+            await Context.Channel.SendMessageAsync("", false, WaifuUtil.ProfileEmbed(user).Build());
         }
 
         [Command("WaifuShop"), Alias("ws"), Summary("Opens the waifu shop."),]
@@ -84,7 +84,7 @@ namespace Namiko.Core.Modules
             }
 
             await UserInventoryDb.AddWaifu(Context.User.Id, waifu);
-            await Context.Channel.SendMessageAsync($"Congratulations! You bought **{waifu.Name}**!", false, WaifuUtil.WaifuEmbedBuilder(waifu));
+            await Context.Channel.SendMessageAsync($"Congratulations! You bought **{waifu.Name}**!", false, WaifuUtil.WaifuEmbedBuilder(waifu).Build());
         }
 
         [Command("GiveWaifu"), Alias("gw"), Summary("Transfers waifu to another user.\n**Usage**: `!gw [user] [waifu_name]`")]
@@ -316,7 +316,7 @@ namespace Namiko.Core.Modules
             if (UserInventoryDb.GetWaifus(Context.User.Id).Any(x => x.Name.Equals(waifu.Name)))
             {
                 await FeaturedWaifuDb.SetFeaturedWaifu(Context.User.Id, waifu);
-                await Context.Channel.SendMessageAsync($"{waifu.Name} set as your featured waifu!", false, WaifuUtil.ProfileEmbed(Context.User));
+                await Context.Channel.SendMessageAsync($"{waifu.Name} set as your featured waifu!", false, WaifuUtil.ProfileEmbed(Context.User).Build());
                 return;
             }
             await Context.Channel.SendMessageAsync($":x: You don't have {waifu.Name}");

@@ -7,6 +7,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using System.Linq;
+using SauceNET;
 
 namespace Namiko.Core.Util
 {
@@ -24,7 +25,7 @@ namespace Namiko.Core.Util
             IIqdbClient api = new IqdbClient();
             return await api.SearchFile(file);
         }
-
+        
         public static EmbedBuilder IqdbSourceResultEmbed(SearchResult result, string searchedUrl)
         {
             var eb = new EmbedBuilder();
@@ -69,6 +70,30 @@ namespace Namiko.Core.Util
         public static string IqdbFixUrl(string url)
         {
             return url.StartsWith(@"//") ? url.Insert(0, "https:") : url;
+        }
+
+        // SAUCENAO
+
+        public static async Task<SauceNET.Model.Sauce> SauceNETSearchAsync(string url)
+        {
+            SauceNETClient client = new SauceNETClient("ea858ed6c91d925cc7d0af7ca7cfe6651fd9fb94");
+            return await client.GetSauceAsync(url);
+        }
+        public static EmbedBuilder SauceEmbed(SauceNET.Model.Sauce sauce, string requestUrl)
+        {
+            var eb = new EmbedBuilder();
+
+            string desc = "**Results:**";
+            foreach(var x in sauce.Results)
+            {
+                desc += $"\n{x.Similarity}% - [{x.DatabaseName}]({x.SourceURL})";
+            }
+
+            eb.WithDescription(desc);
+            eb.WithThumbnailUrl(requestUrl);
+            eb.WithAuthor("SauceNao", "http://www.userlogos.org/files/logos/zoinzberg/SauceNAO_2.png", "https://saucenao.com/");
+            eb.WithColor(BasicUtil.RandomColor());
+            return eb;
         }
 
         // BOORU

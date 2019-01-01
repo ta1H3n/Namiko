@@ -8,7 +8,7 @@ namespace Namiko.Resources.Attributes
     public class HomePrecondition : CustomPrecondition
     {
 
-        public override Task<PreconditionResult> CheckPermissions(ICommandContext context, CommandInfo command, IServiceProvider services)
+        public override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
         {
             try
             {

@@ -44,7 +44,7 @@ namespace Namiko
 
             Client.MessageReceived += Client_MessageReceived;
             Client.MessageReceived += Client_MessageReceivedSpecialModes;
-            await Commands.AddModulesAsync(Assembly.GetEntryAssembly());
+            await Commands.AddModulesAsync(Assembly.GetEntryAssembly(), null);
 
             Client.Ready += Client_Ready;
             Client.Log += Client_Log;
@@ -142,8 +142,8 @@ namespace Namiko
                 await Context.Channel.SendMessageAsync("Commands disabled temporarily. Try again later.");
                 return;
             }
-
-            var Result = await Commands.ExecuteAsync(Context, ArgPos);
+            
+            var Result = await Commands.ExecuteAsync(Context, ArgPos, null);
 
             if(!Result.IsSuccess)
             {

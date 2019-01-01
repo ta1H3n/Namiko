@@ -242,7 +242,7 @@ namespace Namiko.Core.Util
                 {
                     if (x.LongName.Length > 35)
                         x.LongName = x.LongName.Substring(0, 33) + "...";
-                    x.LongName = x.LongName == null ? "" : x.LongName;
+                    x.LongName = x.LongName ?? "";
                     wstr += String.Format("**{0}** - *{1}*\n", x.Name, x.LongName);
                 }
                 eb.AddField("Waifus", wstr);
@@ -254,8 +254,8 @@ namespace Namiko.Core.Util
             
             string footer = "";
             footer += $"Status: '{user.Status.ToString()}'";
-            if (user.Game.HasValue)
-                footer += $", Playing: '{user.Game.Value.Name}'";
+            if (user.Activity != null)
+                footer += $", Playing: '{user.Activity.Name}'";
             eb.WithFooter(footer);
 
             eb.Color = BasicUtil.RandomColor();

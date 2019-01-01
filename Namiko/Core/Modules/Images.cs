@@ -29,7 +29,7 @@ namespace Namiko.Core.Modules
             {
                 return;
             }
-             await Context.Channel.SendMessageAsync("", false, ImageUtil.ToEmbed(image));
+             await Context.Channel.SendMessageAsync("", false, ImageUtil.ToEmbed(image).Build());
          }
 
          [Command("NewImage"), Alias("ni"), Summary("Adds a new image to the database.\n**Usage**: `!ni [name] [url]`"), HomePrecondition]
@@ -48,7 +48,7 @@ namespace Namiko.Core.Modules
              await Task.Delay(50);
              var user = Context.Guild.GetUser(Context.User.Id);
              var image = ImageDb.GetLastImage();
-             await Context.Channel.SendMessageAsync("", false, ImageUtil.ToEmbed(image));
+             await Context.Channel.SendMessageAsync("", false, ImageUtil.ToEmbed(image).Build());
          }
 
          [Command("DeleteImage"), Alias("di"), Summary("Deletes image from the database using the id.\n**Usage**: `di [id]`"), HomePrecondition]
@@ -76,7 +76,7 @@ namespace Namiko.Core.Modules
                  return;
              }
              var user = Context.Guild.GetUser(Context.User.Id);
-             await Context.Channel.SendMessageAsync("", false, ImageUtil.ToEmbed(image));
+             await Context.Channel.SendMessageAsync("", false, ImageUtil.ToEmbed(image).Build());
          }
 
          [Command("All"), Summary("All reaction images from a single command.\n**Usage**: `!all [name]`"), HomePrecondition]
@@ -85,7 +85,7 @@ namespace Namiko.Core.Modules
             var images = ImageDb.GetImages(name);
              foreach (ReactionImage x in images)
              {
-                 await Context.Channel.SendMessageAsync("", false, ImageUtil.ToEmbed(x));
+                 await Context.Channel.SendMessageAsync("", false, ImageUtil.ToEmbed(x).Build());
              }
          }
 

@@ -80,7 +80,7 @@ namespace Namiko.Core.Modules
                 await DailyDb.SetDaily(daily);
                 await ToastieDb.AddToasties(Context.User.Id, amount);
 
-                await Context.Channel.SendMessageAsync("", false, ToastieUtil.DailyGetEmbed(Context.User, daily.Streak, amount, ToastieDb.GetToasties(Context.User.Id)));
+                await Context.Channel.SendMessageAsync("", false, ToastieUtil.DailyGetEmbed(Context.User, daily.Streak, amount, ToastieDb.GetToasties(Context.User.Id)).Build());
             }
             else
             {
@@ -88,7 +88,7 @@ namespace Namiko.Core.Modules
                 int hours = (int)wait / 3600;
                 int minutes = (int)wait % 3600 / 60;
                 int seconds = (int)wait % 60;
-                await Context.Channel.SendMessageAsync("", false, ToastieUtil.DailyWaitEmbed(Context.User, hours, minutes, seconds));
+                await Context.Channel.SendMessageAsync("", false, ToastieUtil.DailyWaitEmbed(Context.User, hours, minutes, seconds).Build());
             }
         }
 
@@ -147,21 +147,21 @@ namespace Namiko.Core.Modules
             {
                 User = Context.User;
             }
-            await Context.Channel.SendMessageAsync("", false, ToastieUtil.ToastieEmbed(User, ToastieDb.GetToasties(User.Id)));
+            await Context.Channel.SendMessageAsync("", false, ToastieUtil.ToastieEmbed(User, ToastieDb.GetToasties(User.Id)).Build());
         }
 
         [Command("SetToasties"), Alias("st", "sett"), Summary("Sets the amount of toasties.\n**Usage**: `!st [user] [amount]`"), OwnerPrecondition]
         public async Task Set(IUser user, int amount, [Remainder] string str = "")
         {
             await ToastieDb.SetToasties(user.Id, amount);
-            await Context.Channel.SendMessageAsync("", false, ToastieUtil.ToastieEmbed(user, ToastieDb.GetToasties(user.Id)));
+            await Context.Channel.SendMessageAsync("", false, ToastieUtil.ToastieEmbed(user, ToastieDb.GetToasties(user.Id)).Build());
         }
 
         [Command("AddToasites"), Alias("at", "addt"), Summary("Adds toasties to a user.\n**Usage**: `!at [user] [amount]`"), OwnerPrecondition]
         public async Task Add(IUser user, int amount, [Remainder] string str = "")
         {
             await ToastieDb.AddToasties(user.Id, amount);
-            await Context.Channel.SendMessageAsync("", false, ToastieUtil.ToastieEmbed(user, ToastieDb.GetToasties(user.Id)));
+            await Context.Channel.SendMessageAsync("", false, ToastieUtil.ToastieEmbed(user, ToastieDb.GetToasties(user.Id)).Build());
         }
 
         [Command("Give"), Summary("Give a user some of you toasties.\n**Usage**: `!give [user] [amount]`")]
@@ -196,14 +196,14 @@ namespace Namiko.Core.Modules
         public async Task ToastieLeaderboard(int page = 1, [Remainder] string str = "")
         {
             var toasties = ToastieDb.GetAllToasties();
-            await Context.Channel.SendMessageAsync("", false, await ToastieUtil.ToastieLeaderboardEmbedAsync(toasties, Context, page-1));
+            await Context.Channel.SendMessageAsync("", false, (await ToastieUtil.ToastieLeaderboardEmbedAsync(toasties, Context, page-1)).Build());
         }
 
         [Command("DailyLeaderboard"), Alias("dlb"), Summary("Daily Leaderboard.\n**Usage**: `!dlb [page_number]`")]
         public async Task DailyLeaderboard(int page = 1, [Remainder] string str = "")
         {
             var dailies = DailyDb.GetAll();
-            await Context.Channel.SendMessageAsync("", false, await ToastieUtil.DailyLeaderboardEmbedAsync(dailies, Context, page - 1));
+            await Context.Channel.SendMessageAsync("", false, (await ToastieUtil.DailyLeaderboardEmbedAsync(dailies, Context, page - 1)).Build());
         }
     }
 
