@@ -53,7 +53,7 @@ namespace Namiko.Core.Modules
             ShopWaifu shopWaifu = null;
             foreach (var x in shopwaifus)
             {
-                if (x.Waifu.Name.Equals(waifu.Name))
+                if (x.Waifu.Name.Equals(waifu.Name) && x.Limited != 0)
                 {
                     shopWaifu = x;
                 }
