@@ -22,7 +22,6 @@ namespace Namiko
     {
         private static DiscordSocketClient Client;
         private static CommandService Commands;
-        private static SocketTextChannel JoinLogChannel = null;
         private static bool Pause = false;
         private static bool Debug = false;
 
@@ -41,14 +40,15 @@ namespace Namiko
                 DefaultRunMode = RunMode.Async,
                 LogLevel = LogSeverity.Debug
             });
-
-            Client.MessageReceived += Client_MessageReceived;
-            Client.MessageReceived += Client_MessageReceivedSpecialModes;
-            await Commands.AddModulesAsync(Assembly.GetEntryAssembly(), null);
-
+            
             Client.Ready += Client_Ready;
             Client.Log += Client_Log;
             Client.ReactionAdded += Client_ReactionAdded;
+            Client.JoinedGuild += Client_JoinedGuild;
+            Client.LeftGuild += Client_LeftGuild;
+            Client.MessageReceived += Client_MessageReceived;
+            Client.MessageReceived += Client_MessageReceivedSpecialModes;
+            await Commands.AddModulesAsync(Assembly.GetEntryAssembly(), null);
 
             // Join/leave logging.
             Client.UserJoined += Client_UserJoinedLog;
@@ -60,7 +60,7 @@ namespace Namiko
             
             await Task.Delay(-1);
         }
-        
+
         // EVENTS
 
         private async Task Client_ReactionAdded(Cacheable<IUserMessage, ulong> arg1, ISocketMessageChannel arg2, SocketReaction arg3)
@@ -106,10 +106,10 @@ namespace Namiko
         {
             var ch = Client.GetChannel(StaticSettings.log_channel) as ISocketMessageChannel;
             await ch.SendMessageAsync($"`{DateTime.Now} - Ready`");
-            if(!Debug)
-                SetUpJoinLogChannel();
         }
+        #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         private async Task Client_Log(LogMessage arg)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             string message = $"`{DateTime.Now} at {arg.Source}] {arg.Message}`";
             Console.WriteLine(message);
@@ -128,11 +128,12 @@ namespace Namiko
                 return;
             if (Context.User.IsBot)
                 return;
+            if (BlacklistedChannelDb.IsBlacklisted(Context.Channel.Id))
+                return;
 
             int ArgPos = 0;
             if (!(Message.HasStringPrefix(StaticSettings.prefix, ref ArgPos) || Message.HasMentionPrefix(Client.CurrentUser, ref ArgPos)) && !Pause)
             {
-                
                 await Blackjack.BlackjackInput(Context);
                 return;
             }
@@ -176,32 +177,50 @@ namespace Namiko
             await new SpecialModes().Spook(Context);
             await new SpecialModes().Christmas(Context);
         }
+        private async Task Client_JoinedGuild(SocketGuild arg)
+        {
+            Resources.Datatypes.Server server = new Resources.Datatypes.Server
+            {
+                GuildId = arg.Id,
+                JoinDate = System.DateTime.Now,
+                Prefix = StaticSettings.prefix
+            };
+            await ServerDb.UpdateServer(server);
+
+            SocketTextChannel ch = arg.SystemChannel ?? arg.DefaultChannel;
+            await ch?.SendMessageAsync("Helloooo! Take good care of me! Try `!info` for a quick guide, or `!help` for a list of my commands!");
+            await ((ISocketMessageChannel)Client.GetChannel(StaticSettings.log_channel)).SendMessageAsync($":white_check_mark: I joined `{arg.Id}` {arg.Name}.\nOwner: `{arg.Owner.Id}` {arg.Owner.Username}");
+        }
+        private async Task Client_LeftGuild(SocketGuild arg)
+        {
+            var server = ServerDb.GetServer(arg.Id);
+            server.LeaveDate = DateTime.Now;
+            await ServerDb.UpdateServer(server);
+
+            await ((ISocketMessageChannel)Client.GetChannel(StaticSettings.log_channel)).SendMessageAsync($":x: I left `{arg.Id}` {arg.Name}.\nOwner: `{arg.Owner.Id}` {arg.Owner.Username}");
+        }
 
         // USER JOIN LOGS
 
         private async Task Client_UserBannedLog(SocketUser arg1, SocketGuild arg2)
         {
-            if (JoinLogChannel.Guild.Id == arg2.Id)
-                await JoinLogChannel.SendMessageAsync($":hammer: {UserInfo(arg1)} was banned.");
+            await GetJoinLogChannel(arg2)?.SendMessageAsync($":hammer: {UserInfo(arg1)} was banned.");
         }
         private async Task Client_UserLeftLog(SocketGuildUser arg)
         {
-            if(JoinLogChannel.Guild.Id == arg.Guild.Id)
-                await JoinLogChannel.SendMessageAsync($":x: {UserInfo(arg)} left the server.");
+            await GetJoinLogChannel(arg.Guild)?.SendMessageAsync($":x: {UserInfo(arg)} left the server.");
         }
         private async Task Client_UserJoinedLog(SocketGuildUser arg)
         {
-            if (JoinLogChannel.Guild.Id == arg.Guild.Id)
-                await JoinLogChannel.SendMessageAsync($":white_check_mark: {UserInfo(arg)} joined the server.");
+            await GetJoinLogChannel(arg.Guild)?.SendMessageAsync($":white_check_mark: {UserInfo(arg)} joined the server.");
         }
         private static string UserInfo(SocketUser user)
         {
             return $"`{user.Id}` {user.Username} {user.Mention}";
         }
-        private static void SetUpJoinLogChannel()
+        private static SocketTextChannel GetJoinLogChannel(SocketGuild guild)
         {
-            if(JoinLogChannel == null)
-                JoinLogChannel = Client.GetGuild(417064769309245471).GetTextChannel(511189305838927872);
+            return (SocketTextChannel) guild.GetChannel(ServerDb.GetServer(guild.Id).JoinLogChannelId);
         }
 
         // SET-UP / TECHNICAL
@@ -242,6 +261,9 @@ namespace Namiko
         private static void SetUpRelease()
         {
             Locations.SetUpRelease();
+            Console.WriteLine(Locations.SettingsJSON);
+            Console.WriteLine(Locations.SpookyLinesXml);
+            Console.WriteLine(Locations.SqliteDb);
         }
 
         // RANDOM

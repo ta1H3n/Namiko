@@ -22,6 +22,7 @@ namespace Namiko.Core
             Minute5.AutoReset = true;
             Minute5.Enabled = true;
             Minute5.Elapsed += Timer_Unban;
+            Minute5.Elapsed += Timer_TimeoutBlackjack;
 
             Hour = new Timer(1000 * 60 * 60);
             Hour.AutoReset = true;
@@ -30,6 +31,11 @@ namespace Namiko.Core
             Hour.Elapsed += Timer_ResetCommandCallTick;
 
             Console.WriteLine("Timers set up.");
+        }
+
+        private static void Timer_TimeoutBlackjack(object sender, ElapsedEventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         private static void Timer_BackupData(object sender, ElapsedEventArgs e)

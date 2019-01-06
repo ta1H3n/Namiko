@@ -117,8 +117,8 @@ namespace Namiko.Core.Modules
             await InviteDb.NewInvite(team.MemberRoleId, user.Id);
             await channel.SendMessageAsync($"{user.Mention} You're invited to join {teamRole.Name}! Type {StaticSettings.prefix}join {teamRole.Name}");
 
-            ISocketMessageChannel ch = (ISocketMessageChannel) Context.Client.GetChannel(StaticSettings.log_channel);
-            await ch.SendMessageAsync($"{Context.User.Mention} invited {user} to {teamRole.Name}.");
+            ISocketMessageChannel ch = (ISocketMessageChannel) Context.Client.GetChannel(ServerDb.GetServer(Context.Guild.Id).TeamLogChannelId);
+            await ch.SendMessageAsync($"{Context.User.Username} invited {user.Username} to {teamRole.Name}.");
         }
 
         [Command("Join"), Summary("Accept an invite to a team.\n**Usage**: `!join [team_name]`")]
@@ -138,8 +138,8 @@ namespace Namiko.Core.Modules
                 await user.AddRoleAsync(role);
                 await InviteDb.DeleteInvite(role.Id, user.Id);
                 await Context.Channel.SendMessageAsync($"Congratulations! You joined {role.Name}!");
-                ISocketMessageChannel ch = (ISocketMessageChannel)Context.Client.GetChannel(StaticSettings.log_channel);
-                await ch.SendMessageAsync($"{Context.User.Mention} joined {teamName}.");
+                ISocketMessageChannel ch = (ISocketMessageChannel)Context.Client.GetChannel(ServerDb.GetServer(Context.Guild.Id).TeamLogChannelId);
+                await ch.SendMessageAsync($"{Context.User.Username} joined {teamName}.");
                 return;
             }
             await Context.Channel.SendMessageAsync($"You're not invited to {teamName}! You sure they exist?");
@@ -158,8 +158,8 @@ namespace Namiko.Core.Modules
             await Context.Guild.GetUser(Context.User.Id).RemoveRoleAsync(role);
             await Context.Channel.SendMessageAsync($@"Ha! You left {role.Name}! Too bad for them ¯\_(ツ)_/¯");
 
-            ISocketMessageChannel ch = (ISocketMessageChannel)Context.Client.GetChannel(StaticSettings.log_channel);
-            await ch.SendMessageAsync($"{Context.User.Mention} left {role.Name}.");
+            ISocketMessageChannel ch = (ISocketMessageChannel)Context.Client.GetChannel(ServerDb.GetServer(Context.Guild.Id).TeamLogChannelId);
+            await ch.SendMessageAsync($"{Context.User.Username} left {role.Name}.");
         }
 
         [Command("TeamKick"), Alias("tk"), Summary("Kicks a user from your team.\n**Usage**: `!tk [user]`")]
@@ -184,8 +184,8 @@ namespace Namiko.Core.Modules
             await Context.Guild.GetUser(user.Id).RemoveRoleAsync(userteam);
             await Context.Channel.SendMessageAsync("Ha! One less to take care of!");
 
-            ISocketMessageChannel ch = (ISocketMessageChannel)Context.Client.GetChannel(StaticSettings.log_channel);
-            await ch.SendMessageAsync($"{Context.User.Mention} kicked {user} from {userteam.Name}.");
+            ISocketMessageChannel ch = (ISocketMessageChannel)Context.Client.GetChannel(ServerDb.GetServer(Context.Guild.Id).TeamLogChannelId);
+            await ch.SendMessageAsync($"{Context.User.Username} kicked {user.Username} from {userteam.Name}.");
         }
 
         [Command("NewTeam"), Alias("nt"), Summary("Creates a new team.\n**Usage**: `!nt [LeaderRoleName] [MemberRoleName]`"), RequireUserPermission(GuildPermission.ManageRoles)]
