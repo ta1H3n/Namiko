@@ -131,6 +131,23 @@ namespace Namiko.Core.Util
 
             return price;
         }
+        public static int getSalePrice(int tier) {
+
+            //creating nessacary variables 
+            Random rnd = new Random();
+            int num = rnd.Next(1, 35);
+            int worth = (tier == 3) ? 4000 :    //80%
+                        (tier == 2) ? 6500 :    //65%
+                        (tier == 1) ? 11000 :   //55%
+                        (tier == 0) ? 55000 :   //55%
+
+                        //default/error
+                        0;
+
+            //random 3 in 17 chance to have increased sale
+            if (num < 6) return worth + worth / (num * ((worth > 5000) ? 4 : 5));
+            return worth;
+        }
         public static EmbedBuilder WaifuEmbedBuilder(Waifu waifu, bool footerDetails = false, SocketCommandContext context = null)
         {
             EmbedBuilder eb = new EmbedBuilder();

@@ -87,6 +87,42 @@ namespace Namiko.Core.Modules
             await Context.Channel.SendMessageAsync($"Congratulations! You bought **{waifu.Name}**!", false, WaifuUtil.WaifuEmbedBuilder(waifu).Build());
         }
 
+        [Command("SellWaifu"), Alias("sw"), Summary("Sells a waifu you already own with while namiko pockets a smol amount.\n**Usage**: `!sw [name]`")]
+        public async Task SellWaifu(string name, [Remainder] string str = "") {
+            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(name), name, Context.Channel);
+
+            //waifus existance
+            if (waifu == null) {
+                await Context.Channel.SendMessageAsync($"Can't find '{name}'. I know they are not real, but this one *really is* just your imagination >_>");
+                return;
+            }
+
+            //getting waifus u own
+            var waifus = UserInventoryDb.GetWaifus(Context.User.Id);
+            if (waifus.Where(x => x.Name.Equals(waifu.Name)).Count() > 0) {
+
+                //checking worth
+                int worth = WaifuUtil.getSalePrice(waifu.Tier);
+                if (worth > 0) {
+
+                    //giving u the money for da waifu
+                    try { await ToastieDb.AddToasties(Context.User.Id, worth); } catch (Exception ex) { await Context.Channel.SendMessageAsync(ex.Message); }
+
+                    //removing waifu + confirmation
+                    await UserInventoryDb.DeleteWaifu(Context.User.Id, waifu);
+                    await Context.Channel.SendMessageAsync($"Congratulations! You sold **{waifu.Name}** for {worth.ToString("n0")} toasties", false, ToastieUtil.ToastieEmbed(Context.User, ToastieDb.GetToasties(Context.User.Id)).Build());
+                    return;
+                }
+
+                //if u have da waifu, but value error occurs
+                await Context.Channel.SendMessageAsync("You have this waifu, but there was a sales error\nPlease get it's \"Tier\" corrected");
+                return;
+            }
+
+            //doesnt have the waifu
+            await Context.Channel.SendMessageAsync("If you wanna play the pimp boi....\nYou're gonna have to actually buy dat' waifu");
+        }
+
         [Command("GiveWaifu"), Alias("gw"), Summary("Transfers waifu to another user.\n**Usage**: `!gw [user] [waifu_name]`")]
         public async Task GiveWaifu(IUser recipient, string name, [Remainder] string str = "")
         {
