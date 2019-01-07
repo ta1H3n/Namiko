@@ -1,17 +1,14 @@
 ﻿using System.Threading.Tasks;
+using Namiko.Core.Util;
 using System.Linq;
-
-using Discord.Commands;
 using Discord;
-
+using System;
+using Discord.Commands;
+using Discord.WebSocket;
 using Namiko.Resources.Database;
 using Namiko.Resources.Datatypes;
-using System.Collections.Generic;
-using System;
 using Namiko.Resources.Attributes;
-using Namiko.Core.Util;
-using Discord.WebSocket;
-
+using System.Collections.Generic;
 namespace Namiko.Core.Modules
 {
     public class Waifus : ModuleBase<SocketCommandContext>
@@ -87,7 +84,7 @@ namespace Namiko.Core.Modules
             await Context.Channel.SendMessageAsync($"Congratulations! You bought **{waifu.Name}**!", false, WaifuUtil.WaifuEmbedBuilder(waifu).Build());
         }
 
-        [Command("SellWaifu"), Alias("sw"), Summary("Sells a waifu you already own with while namiko pockets a smol amount.\n**Usage**: `!sw [name]`")]
+        [Command("SellWaifu"), Alias("sw"), Summary("Sells a waifu you already own for a discounted price.\n**Usage**: `!sw [name]`")]
         public async Task SellWaifu(string name, [Remainder] string str = "") {
             var waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(name), name, Context.Channel);
 
@@ -106,7 +103,8 @@ namespace Namiko.Core.Modules
                 if (worth > 0) {
 
                     //giving u the money for da waifu
-                    try { await ToastieDb.AddToasties(Context.User.Id, worth); } catch (Exception ex) { await Context.Channel.SendMessageAsync(ex.Message); }
+                    try { await ToastieDb.AddToasties(Context.User.Id, worth); } 
+                    catch (Exception ex) { await Context.Channel.SendMessageAsync(ex.Message); }
 
                     //removing waifu + confirmation
                     await UserInventoryDb.DeleteWaifu(Context.User.Id, waifu);

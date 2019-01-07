@@ -1,15 +1,14 @@
 ﻿using Discord;
+using System;
+using System.Text;
+using System.Linq;
 using Discord.Commands;
 using Discord.WebSocket;
 using Namiko.Core.Modules;
 using Namiko.Resources.Database;
 using Namiko.Resources.Datatypes;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-
 namespace Namiko.Core.Util
 {
     public static class WaifuUtil
@@ -122,9 +121,9 @@ namespace Namiko.Core.Util
         public static int GetPrice(int tier, int discount = 0)
         {
             int price = tier == 1 ? 20000 :
-                tier == 2 ? 10000 :
-                tier == 3 ? 5000 :
-                tier == 0 ? 100000 : 0;
+                        tier == 2 ? 10000 :
+                        tier == 3 ? 5000 :
+                        tier == 0 ? 100000 : 0;
 
             if (discount >= 0)
                 price = price - (price / 100 * discount);
@@ -135,17 +134,15 @@ namespace Namiko.Core.Util
 
             //creating nessacary variables 
             Random rnd = new Random();
-            int num = rnd.Next(1, 35);
-            int worth = (tier == 3) ? 4000 :    //80%
-                        (tier == 2) ? 6500 :    //65%
-                        (tier == 1) ? 11000 :   //55%
-                        (tier == 0) ? 55000 :   //55%
+            int num = rnd.Next(1, 31);
+            int worth = (int)(GetPrice(tier) *  ((tier == 3)? 0.70 :   //70%
+                                                (tier == 2)? 0.60 :    //60%
 
-                        //default/error
-                        0;
+                                                //default, also 55%
+                                                0.55));
 
             //random 3 in 17 chance to have increased sale
-            if (num < 6) return worth + worth / (num * ((worth > 5000) ? 4 : 5));
+            if (num < 10) return worth + worth / (num * 4);
             return worth;
         }
         public static EmbedBuilder WaifuEmbedBuilder(Waifu waifu, bool footerDetails = false, SocketCommandContext context = null)
