@@ -1,20 +1,16 @@
 ﻿using System;
-using System.Threading.Tasks;
-
+using Discord;
+using Namiko.Core.Util;
 using Discord.Commands;
 using Discord.WebSocket;
-using Discord;
-
+using System.Threading.Tasks;
+using Namiko.Resources.Database;
 using Namiko.Resources.Datatypes;
 using System.Collections.Generic;
-using Namiko.Resources.Database;
 using System.Diagnostics.Contracts;
 using Namiko.Resources.Attributes;
-using Namiko.Core.Util;
-
 namespace Namiko.Core.Modules
 {
-    
     public class Currency : ModuleBase<SocketCommandContext>
     {
         [Command("Blackjack"), Alias("bj"), Summary("Starts a game of blackjack.\n**Usage**: `!bj [amount]`")]
@@ -166,8 +162,9 @@ namespace Namiko.Core.Modules
         }
 
         [Command("Give"), Summary("Give a user some of you toasties.\n**Usage**: `!give [user] [amount]`")]
-        public async Task Give(IUser recipient, int amount = 0, [Remainder] string str = "")
+        public async Task Give(IUser recipient, string sAmount, [Remainder] string str = "")
         {
+            int amount = ToastieUtil.ParseAmount(sAmount, Context.User);
             if (amount <= 0)
             {
                 await Context.Channel.SendMessageAsync("Pick an amount!");
@@ -188,7 +185,7 @@ namespace Namiko.Core.Modules
 
             EmbedBuilder eb = new EmbedBuilder();
             eb.WithAuthor("Toasties");
-            eb.WithDescription($"{Context.User.Username} gave {recipient.Username} **{amount}** {ToastieUtil.RandomEmote()}!");
+            eb.WithDescription($"{Context.User.Username} gave {recipient.Username} **{amount.ToString("n0")}** {ToastieUtil.RandomEmote()}!");
             eb.WithColor(BasicUtil.RandomColor());
             await Context.Channel.SendMessageAsync("", false, eb.Build());
         }
@@ -207,6 +204,4 @@ namespace Namiko.Core.Modules
             await Context.Channel.SendMessageAsync("", false, (await ToastieUtil.DailyLeaderboardEmbedAsync(dailies, Context, page - 1)).Build());
         }
     }
-
-    
 }
