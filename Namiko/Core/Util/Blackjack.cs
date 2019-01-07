@@ -180,6 +180,56 @@ namespace Namiko.Core.Util
                 }
             return cards;
         }
+        public static async Task GameTimeout(SocketUser user, BlackjackGame game)
+        {
+            {
+                EmbedBuilder eb = new EmbedBuilder();
+                var bot = game.Message.Author.Id;
+
+                if (game.SumHand(game.Hand) > 21)
+                {
+                    await ToastieDb.AddToasties(bot, game.Pats);
+                    eb.WithAuthor(user.Username + " | Timeout", user.GetAvatarUrl());
+                    eb.WithDescription("Your hand is a bust. You lose `" + game.Pats + "` " + ToastieUtil.RandomEmote() + "\n" +
+                    "New balance `" + ToastieDb.GetToasties(user.Id) + "` " + ToastieUtil.RandomEmote());
+                    eb.WithColor(Color.DarkRed);
+                }
+
+                else if (game.SumHand(game.Hand) > game.SumHand(game.Dealer) || game.SumHand(game.Dealer) > 21)
+                {
+                    await ToastieDb.AddToasties(user.Id, game.Pats * 2);
+                    await ToastieDb.AddToasties(bot, -game.Pats);
+                    eb.WithAuthor(user.Username + " | Timeout", user.GetAvatarUrl());
+                    eb.WithDescription("Your score is higher than Namiko's. You win `" + game.Pats + "` " + ToastieUtil.RandomEmote() + "\n" +
+                    "New balance `" + ToastieDb.GetToasties(user.Id) + "` " + ToastieUtil.RandomEmote());
+                    eb.WithColor(Color.Gold);
+                }
+
+                else if (game.SumHand(game.Hand) == game.SumHand(game.Dealer))
+                {
+                    await ToastieDb.AddToasties(user.Id, game.Pats);
+                    eb.WithAuthor(user.Username + " | Timeout", user.GetAvatarUrl());
+                    eb.WithDescription("Your score is tied with Namiko's. You get your " + ToastieUtil.RandomEmote() + " back!\n" +
+                    "Your balance `" + ToastieDb.GetToasties(user.Id) + "` " + ToastieUtil.RandomEmote());
+                    eb.WithColor(Color.DarkGreen);
+                }
+
+                else
+                {
+                    await ToastieDb.AddToasties(bot, game.Pats);
+                    eb.WithAuthor(user.Username + " | Timeout", user.GetAvatarUrl());
+                    eb.WithDescription("Namiko's score is higher. You lose `" + game.Pats + "` " + ToastieUtil.RandomEmote() + "\n" +
+                    "New balance `" + ToastieDb.GetToasties(user.Id) + "` " + ToastieUtil.RandomEmote());
+                    eb.WithColor(Color.DarkRed);
+                }
+
+                eb.AddField("Your hand (" + game.SumHand(game.Hand) + ")", HandToString(game.Hand, false), true);
+                eb.AddField("Namiko's hand (" + game.SumHand(game.Dealer) + ")", HandToString(game.Dealer, false), true);
+
+                await Send(game, eb);
+                games.Remove(user);
+            }
+        }
         public static async Task Send(BlackjackGame game, EmbedBuilder eb)
         {
             if (game.Message == null)
@@ -198,7 +248,7 @@ namespace Namiko.Core.Util
         public List<Card> Hand { get; set; }
         public List<Card> Dealer { get; set; }
         public Deck Deck { get; set; }
-        public long TimeStarted { get; set; }
+        public DateTime Refresh { get; set; }
         public IUserMessage Message { get; set; }
         public ISocketMessageChannel Channel { get; set; }
 
