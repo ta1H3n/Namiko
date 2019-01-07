@@ -88,7 +88,7 @@ namespace Namiko.Core.Modules
                 return;
             }
 
-            await BlacklistedChannelDb.UpdateBlacklistedChannel(new BlacklistedChannel { ChannelId = channelId, GuildId = Context.Guild.Id });
+            await BlacklistedChannelDb.UpdateBlacklistedChannel(new BlacklistedChannel { ChannelId = channelId });
             await Context.Channel.SendMessageAsync("Channel blacklisted.");
         }
 

@@ -20,7 +20,6 @@ namespace Namiko.Resources.Datatypes
     public class BlacklistedChannel
     {
         [Key]
-        public ulong GuildId { get; set; }
         public ulong ChannelId { get; set; }
     }
 }
