@@ -113,18 +113,19 @@ namespace Namiko.Core.Modules
                  }
              }
 
-             names = names.OrderByDescending(x=> x.Count).ToList();
+             names = names.OrderBy(x => x.Name).ToList();
 
-             string stringList = "```cs\n";
-             foreach(ImageCount x in names)
-             {
-                 if(x.Count > 9)
-                    stringList += String.Format("{0,-10} - {1}\n", x.Name, x.Count);
-                 else
-                    stringList += $"{x.Name} ";
-             }
-             stringList += "```";
-             await Context.Channel.SendMessageAsync(stringList);
+           //  string stringList = "```cs\n";
+           //  foreach(ImageCount x in names)
+           //  {
+           //      if(x.Count > 9)
+           //         stringList += String.Format("{0,-10} - {1}\n", x.Name, x.Count);
+           //      else
+           //         stringList += $"{x.Name} ";
+           //  }
+           //  stringList += "```";
+
+             await Context.Channel.SendMessageAsync(ImageUtil.ListAllBlock(names));
          }
 
         [Command("List"), Summary("List of all image IDs under an image reaction command.\n**Usage**: `list [name]`")]
@@ -147,10 +148,15 @@ namespace Namiko.Core.Modules
         }
         
 
-        private class ImageCount
+        public class ImageCount
         {
             public string Name { get; set; }
             public int Count { get; set; }
+
+            public override string ToString()
+            {
+                return $"{Name}";
+            }
         }
     }
 }
