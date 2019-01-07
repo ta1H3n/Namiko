@@ -83,27 +83,27 @@ namespace Namiko.Core.Util
             return eb;
         }
 
-        public static SocketRole GetLeader(SocketCommandContext Context)
+        public static SocketRole GetLeader(SocketGuild guild, IUser user)
         {
             var teams = TeamDb.Teams();
 
             foreach (Team x in teams)
             {
-                var role = Context.Guild.GetRole(x.LeaderRoleId);
-                if (HasRole((SocketGuildUser)Context.User, role))
+                var role = guild.GetRole(x.LeaderRoleId);
+                if (HasRole((SocketGuildUser)user, role))
                     return role;
             }
 
             return null;
         }
-        public static SocketRole GetMember(SocketCommandContext Context)
+        public static SocketRole GetMember(SocketGuild guild, IUser user)
         {
             var teams = TeamDb.Teams();
 
             foreach (Team x in teams)
             {
-                var role = Context.Guild.GetRole(x.MemberRoleId);
-                if (HasRole((SocketGuildUser)Context.User, role))
+                var role = guild.GetRole(x.MemberRoleId);
+                if (HasRole((SocketGuildUser)user, role))
                     return role;
             }
 
@@ -119,11 +119,11 @@ namespace Namiko.Core.Util
             }
             return null;
         }
-        public static bool IsTeamed(SocketCommandContext Context)
+        public static bool IsTeamed(SocketGuild guild, IUser user)
         {
-            if (GetMember(Context) != null)
+            if (GetMember(guild, user) != null)
                 return true;
-            if (GetLeader(Context) != null)
+            if (GetLeader(guild, user) != null)
                 return true;
             return false;
         }

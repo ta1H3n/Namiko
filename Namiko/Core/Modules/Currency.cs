@@ -40,7 +40,7 @@ namespace Namiko.Core.Modules
                 return;
             }
 
-            if (ToastieDb.GetToasties(418823684459855882) < amount)
+            if (ToastieDb.GetToasties(Context.Client.CurrentUser.Id) < amount)
             {
                 await Context.Channel.SendMessageAsync("I don't have enough toasties to gamble with... You can give me some using the `!give` command, and view who has the most toasties with `!tlb`.");
                 await ToastieDb.AddToasties(user.Id, amount);
@@ -79,6 +79,7 @@ namespace Namiko.Core.Modules
                 int amount = ToastieUtil.DailyAmount(daily.Streak);
                 await DailyDb.SetDaily(daily);
                 await ToastieDb.AddToasties(Context.User.Id, amount);
+                await ToastieDb.AddToasties(Context.Client.CurrentUser.Id, amount / 10);
 
                 await Context.Channel.SendMessageAsync("", false, ToastieUtil.DailyGetEmbed(Context.User, daily.Streak, amount, ToastieDb.GetToasties(Context.User.Id)).Build());
             }
@@ -120,7 +121,7 @@ namespace Namiko.Core.Modules
                 return;
             }
 
-            if(ToastieDb.GetToasties(418823684459855882) < amount)
+            if(ToastieDb.GetToasties(Context.Client.CurrentUser.Id) < amount)
             {
                 await Context.Channel.SendMessageAsync("I don't have enough toasties to gamble with... You can give me some using the `!give` command, and view who has the most toasties with `!tlb`.");
                 await ToastieDb.AddToasties(user.Id, amount);
