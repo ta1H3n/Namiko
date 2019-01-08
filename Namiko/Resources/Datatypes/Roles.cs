@@ -10,6 +10,7 @@ namespace Namiko.Resources.Datatypes
     {
         [Key]
         public ulong RoleId { get; set; }
+        public ulong GuildId { get; set; }
     }
 
     public class Team
@@ -17,6 +18,7 @@ namespace Namiko.Resources.Datatypes
         [Key]
         public ulong LeaderRoleId { get; set; }
         public ulong MemberRoleId { get; set; }
+        public ulong GuildId { get; set; }
     }
 
     public class Invite
@@ -26,5 +28,6 @@ namespace Namiko.Resources.Datatypes
         public ulong TeamId { get; set; }
         public ulong UserId { get; set; }
         public DateTime Date { get; set; }
+        public ulong GuildId { get; set; }
     }
 }

@@ -23,6 +23,10 @@
     <Compile Remove="Migrations\20181002173912_edit.cs" />
     <Compile Remove="Migrations\20181005154304_tables.cs" />
     <Compile Remove="Migrations\20181116002351_FeaturedWaifu.cs" />
+    <Compile Remove="Migrations\20190107150249_test.cs" />
+    <Compile Remove="Migrations\20190107152247_global.cs" />
+    <Compile Remove="Migrations\20190107152424_global.cs" />
+    <Compile Remove="Migrations\20190108025726_global.cs" />
   </ItemGroup>
 
   <ItemGroup>

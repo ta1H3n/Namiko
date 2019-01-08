@@ -163,6 +163,7 @@ namespace Namiko.Core.Util
             eb.AddField("Namiko's hand (" + game.CardValue(game.Dealer[0]) + ")", HandToString(game.Dealer, true), true);
             eb.WithColor(Color.Green);
 
+            game.Refresh = DateTime.Now;
             await Send(game, eb);
         }
         public static String HandToString(List<Card> hand, Boolean dealer)

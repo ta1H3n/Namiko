@@ -22,6 +22,7 @@ namespace Namiko.Resources.Datatypes
     {
         [Key]
         public int Id { get; set; }
+        public ulong GuildId { get; set; }
         public ulong UserId { get; set; }
         public Waifu Waifu { get; set; }
         public DateTime DateBought { get; set; }
@@ -31,6 +32,7 @@ namespace Namiko.Resources.Datatypes
     {
         [Key]
         public int Id { get; set; }
+        public ulong GuildId { get; set; }
         public DateTime GeneratedDate { get; set; }
         public Waifu Waifu { get; set; }
         public int Discount { get; set; }
@@ -42,6 +44,7 @@ namespace Namiko.Resources.Datatypes
     {
         [Key]
         public int id { get; set; }
+        public ulong GuildId { get; set; }
         public ulong UserId { get; set; }
         public Waifu Waifu { get; set; }
     }

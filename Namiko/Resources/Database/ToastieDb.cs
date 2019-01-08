@@ -84,44 +84,44 @@ namespace Namiko.Resources.Database
         }
     }
 
-    public static class ShopItemDb
-    {
-        public static List<ShopRole> GetByGuild(ulong GuildId)
-        {
-            using (var db = new SqliteDbContext())
-            {
-                return db.ShopRoles.Where(x => x.GuildId == GuildId).ToList();
-            }
-        }
-        public static List<ShopRole> GetAll()
-        {
-            using (var db = new SqliteDbContext())
-            {
-                return db.ShopRoles.ToList();
-            }
-        }
-        public static ShopRole GetByRoleId(ulong RoleId)
-        {
-            using (var db = new SqliteDbContext())
-            {
-                return db.ShopRoles.Where(x => x.RoleId == RoleId).FirstOrDefault();
-            }
-        }
-        public static async Task AddShopRole(ShopRole role)
-        {
-            using (var db = new SqliteDbContext())
-            {
-                db.ShopRoles.Add(role);
-                await db.SaveChangesAsync();
-            }
-        }
-        public static async Task DeleteShopRole(ShopRole role)
-        {
-            using (var db = new SqliteDbContext())
-            {
-                db.Remove(role);
-                await db.SaveChangesAsync();
-            }
-        }
-    }
+   // public static class ShopItemDb
+   // {
+   //     public static List<ShopRole> GetByGuild(ulong GuildId)
+   //     {
+   //         using (var db = new SqliteDbContext())
+   //         {
+   //             return db.ShopRoles.Where(x => x.GuildId == GuildId).ToList();
+   //         }
+   //     }
+   //     public static List<ShopRole> GetAll()
+   //     {
+   //         using (var db = new SqliteDbContext())
+   //         {
+   //             return db.ShopRoles.ToList();
+   //         }
+   //     }
+   //     public static ShopRole GetByRoleId(ulong RoleId)
+   //     {
+   //         using (var db = new SqliteDbContext())
+   //         {
+   //             return db.ShopRoles.Where(x => x.RoleId == RoleId).FirstOrDefault();
+   //         }
+   //     }
+   //     public static async Task AddShopRole(ShopRole role)
+   //     {
+   //         using (var db = new SqliteDbContext())
+   //         {
+   //             db.ShopRoles.Add(role);
+   //             await db.SaveChangesAsync();
+   //         }
+   //     }
+   //     public static async Task DeleteShopRole(ShopRole role)
+   //     {
+   //         using (var db = new SqliteDbContext())
+   //         {
+   //             db.Remove(role);
+   //             await db.SaveChangesAsync();
+   //         }
+   //     }
+   // }
 }
