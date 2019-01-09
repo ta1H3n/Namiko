@@ -5,8 +5,6 @@ VisualStudioVersion = 15.0.28010.2019
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Namiko", "Namiko\Namiko.csproj", "{8D472380-F0CC-445B-A057-087595C9CF1B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DBTESTSHIT", "DBTESTSHIT\DBTESTSHIT.csproj", "{087F4817-B304-443D-9FE6-BF2612785C2E}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,10 +15,6 @@ Global
 		{8D472380-F0CC-445B-A057-087595C9CF1B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8D472380-F0CC-445B-A057-087595C9CF1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8D472380-F0CC-445B-A057-087595C9CF1B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{087F4817-B304-443D-9FE6-BF2612785C2E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{087F4817-B304-443D-9FE6-BF2612785C2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{087F4817-B304-443D-9FE6-BF2612785C2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{087F4817-B304-443D-9FE6-BF2612785C2E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
