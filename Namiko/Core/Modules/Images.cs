@@ -94,7 +94,7 @@ namespace Namiko.Core.Modules
             await Context.Channel.SendMessageAsync("", false, ImageUtil.ToEmbed(image).Build());
         }
 
-        [Command("All"), Summary("All reaction images from a single command.\n**Usage**: `!all [name]`"), HomePrecondition]
+        [Command("All"), Summary("All reaction images from a single command.\n**Usage**: `!all [name]`")]
         public async Task All(string name = null, [Remainder] string str = "")
         {
             if(name == null)
