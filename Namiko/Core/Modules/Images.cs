@@ -46,6 +46,9 @@ namespace Namiko.Core.Modules
                 return;
             }
 
+            url = url.EndsWith(".gifv") ? url.Replace(".gifv", ".gif") : url;
+            url = url.EndsWith(".mp4") ? url.Replace(".mp4", ".gif") : url;
+
             string albumId = null;
             if (!ImageDb.Exists(name))
             {
