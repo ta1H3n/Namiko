@@ -16,11 +16,11 @@ namespace Namiko.Resources.Database
                 return DbContext.PublicRoles.Where(x => x.RoleId == roleId).Count() > 0;
             }
         }
-        public static async Task Add(ulong roleId)
+        public static async Task Add(ulong roleId, ulong guildId)
         {
             using (var DbContext = new SqliteDbContext())
             {
-                DbContext.Add(new PublicRole { RoleId = roleId });
+                DbContext.Add(new PublicRole { RoleId = roleId, GuildId = guildId });
                 await DbContext.SaveChangesAsync();
             }
         }
@@ -33,11 +33,11 @@ namespace Namiko.Resources.Database
                 await DbContext.SaveChangesAsync();
             }
         }
-        public static List<PublicRole> GetAll()
+        public static List<PublicRole> GetAll(ulong guildId)
         {
             using (var DbContext = new SqliteDbContext())
             {
-                return DbContext.PublicRoles.ToList();
+                return DbContext.PublicRoles.Where(x => x.GuildId == guildId).ToList();
             }
         }
     }
@@ -58,11 +58,11 @@ namespace Namiko.Resources.Database
                 return DbContext.Teams.Where(x => x.MemberRoleId == roleId).FirstOrDefault();
             }
         }
-        public static async Task AddTeam(ulong leaderId, ulong memberId)
+        public static async Task AddTeam(ulong leaderId, ulong memberId, ulong guildId)
         {
             using (var DbContext = new SqliteDbContext())
             {
-                DbContext.Add(new Team { LeaderRoleId = leaderId, MemberRoleId = memberId });
+                DbContext.Add(new Team { LeaderRoleId = leaderId, MemberRoleId = memberId, GuildId = guildId });
                 await DbContext.SaveChangesAsync();
             }
         }
@@ -74,11 +74,11 @@ namespace Namiko.Resources.Database
                 await DbContext.SaveChangesAsync();
             }
         }
-        public static List<Team> Teams()
+        public static List<Team> Teams(ulong guildId)
         {
             using (var DbContext = new SqliteDbContext())
             {
-                return DbContext.Teams.ToList();
+                return DbContext.Teams.Where(x => x.GuildId == guildId).ToList();
             }
         }
     }
@@ -89,7 +89,7 @@ namespace Namiko.Resources.Database
         {
             using (var DbContext = new SqliteDbContext())
             {
-                DbContext.Add(new Invite { TeamId = teamId, UserId = userId });
+                DbContext.Add(new Invite { TeamId = teamId, UserId = userId, Date = DateTime.Now });
                 await DbContext.SaveChangesAsync();
             }
         }
@@ -97,10 +97,7 @@ namespace Namiko.Resources.Database
         {
             using (var DbContext = new SqliteDbContext())
             {
-                if (DbContext.Invites.Where(x => ((x.TeamId == teamId) && (x.UserId == userId))).Count() < 1)
-                    return;
-
-                var invite = DbContext.Invites.Where(x => ((x.TeamId == teamId) && (x.UserId == userId))).FirstOrDefault();
+                var invite = DbContext.Invites.Where(x => x.TeamId == teamId && x.UserId == userId).FirstOrDefault();
                 DbContext.Remove(invite);
                 await DbContext.SaveChangesAsync();
             }
@@ -109,9 +106,16 @@ namespace Namiko.Resources.Database
         {
             using (var DbContext = new SqliteDbContext())
             {
-                if (DbContext.Invites.Where(x => ((x.TeamId == teamId) && (x.UserId == userId))).Count() < 1)
-                    return false;
-                return true;
+                return DbContext.Invites.Any(x => x.TeamId == teamId && x.UserId == userId);
+            }
+        }
+
+        public static async Task<int> DeleteOlder(DateTime date)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                db.RemoveRange(db.Invites.Where(x => x.Date.CompareTo(date) < 0));
+                return await db.SaveChangesAsync();
             }
         }
     }

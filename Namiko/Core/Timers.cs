@@ -30,15 +30,20 @@ namespace Namiko.Core
             Minute5.AutoReset = true;
             Minute5.Enabled = true;
             Minute5.Elapsed += Timer_Unban;
-
-
+            
             Hour = new Timer(1000 * 60 * 60);
             Hour.AutoReset = true;
             Hour.Enabled = true;
             Hour.Elapsed += Timer_BackupData;
             Hour.Elapsed += Timer_ResetCommandCallTick;
+            Hour.Elapsed += Timer_ExpireTeamInvites;
 
             Console.WriteLine("Timers set up.");
+        }
+
+        private static async void Timer_ExpireTeamInvites(object sender, ElapsedEventArgs e)
+        {
+            await InviteDb.DeleteOlder(DateTime.Now.AddDays(-1));
         }
 
         private static async void Timer_TimeoutBlackjack(object sender, ElapsedEventArgs e)

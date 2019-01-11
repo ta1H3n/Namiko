@@ -19,12 +19,12 @@ namespace Namiko.Core.Util
         {
             return "Toasties";
         }
-        public static int ParseAmount(string sAmount, SocketUser user)
+        public static int ParseAmount(string sAmount, SocketGuildUser user)
         {
             int amount = 0;
             if (sAmount.Equals("all"))
             {
-                amount = ToastieDb.GetToasties(user.Id);
+                amount = ToastieDb.GetToasties(user.Id, user.Guild.Id);
                 if (amount > 10000)
                     amount = 10000;
             }
@@ -182,19 +182,19 @@ namespace Namiko.Core.Util
                 return false;
             return true;
         }
-        public static EmbedBuilder FlipWinEmbed(IUser user, int amount)
+        public static EmbedBuilder FlipWinEmbed(SocketGuildUser user, int amount)
         {
             var eb = new EmbedBuilder();
             eb.WithAuthor(user);
-            eb.WithDescription($"**You win!** {amount} {ToastieUtil.RandomEmote()} received!\nNow you have {ToastieDb.GetToasties(user.Id)} {ToastieUtil.RandomEmote()}!");
+            eb.WithDescription($"**You win!** {amount} {ToastieUtil.RandomEmote()} received!\nNow you have {ToastieDb.GetToasties(user.Id, user.Guild.Id)} {ToastieUtil.RandomEmote()}!");
             eb.WithColor(Color.Gold);
             return eb;
         }
-        public static EmbedBuilder FlipLoseEmbed(IUser user, int amount)
+        public static EmbedBuilder FlipLoseEmbed(SocketGuildUser user, int amount)
         {
             var eb = new EmbedBuilder();
             eb.WithAuthor(user);
-            eb.WithDescription($"**You lose!** {amount} {ToastieUtil.RandomEmote()} lost...\nNow you have {ToastieDb.GetToasties(user.Id)} {ToastieUtil.RandomEmote()}!");
+            eb.WithDescription($"**You lose!** {amount} {ToastieUtil.RandomEmote()} lost...\nNow you have {ToastieDb.GetToasties(user.Id, user.Guild.Id)} {ToastieUtil.RandomEmote()}!");
             eb.WithColor(Color.DarkRed);
             return eb;
         }

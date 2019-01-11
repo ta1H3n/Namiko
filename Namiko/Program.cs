@@ -99,8 +99,8 @@ namespace Namiko
             var ch = arg.Guild.GetTextChannel(chid);
             await ch.SendMessageAsync(WelcomeUtil.GetWelcomeMessageString(arg));
 
-            var dmch = await arg.GetOrCreateDMChannelAsync();
-            await dmch.SendMessageAsync(WelcomeDm());
+           // var dmch = await arg.GetOrCreateDMChannelAsync();
+           // await dmch.SendMessageAsync(WelcomeDm());
         }
         private async Task Client_Ready()
         {
@@ -109,7 +109,7 @@ namespace Namiko
         }
         #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         private async Task Client_Log(LogMessage arg)
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+        #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             string message = $"`{DateTime.Now} at {arg.Source}] {arg.Message}`";
             Console.WriteLine(message);

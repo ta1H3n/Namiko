@@ -17,10 +17,10 @@ namespace Namiko.Core.Modules
     public class Waifus : ModuleBase<SocketCommandContext>
     {
         [Command("Inventory"), Alias("waifus", "profile"), Summary("Shows user waifus.\n**Usage**: `!inventory [user_optional]`")]
-        public async Task Inventory(IUser user = null, [Remainder] string str = "")
+        public async Task Inventory(SocketGuildUser user = null, [Remainder] string str = "")
         {
             if (user == null)
-                user = Context.User;
+                user = (SocketGuildUser) Context.User;
 
             await Context.Channel.SendMessageAsync("", false, WaifuUtil.ProfileEmbed(user).Build());
         }
@@ -28,7 +28,7 @@ namespace Namiko.Core.Modules
         [Command("WaifuShop"), Alias("ws"), Summary("Opens the waifu shop."),]
         public async Task OpenWaifuShop([Remainder] string str = "")
         {
-            List<ShopWaifu> waifus = await WaifuUtil.GetShopWaifus();
+            List<ShopWaifu> waifus = await WaifuUtil.GetShopWaifus(Context.Guild.Id);
             var eb = WaifuUtil.GetShopEmbed(waifus, Context);
             await Context.Channel.SendMessageAsync("", false, eb.Build());
         }
@@ -43,13 +43,13 @@ namespace Namiko.Core.Modules
                 await Context.Channel.SendMessageAsync($"Can't find '{name}'. I know they are not real, but this one *really is* just your imagination >_>");
                 return;
             }
-            var waifus = UserInventoryDb.GetWaifus(Context.User.Id);
+            var waifus = UserInventoryDb.GetWaifus(Context.User.Id, Context.Guild.Id);
             if (waifus.Where(x => x.Name.Equals(waifu.Name)).Count() > 0)
             {
                 await Context.Channel.SendMessageAsync("You already have " + name);
                 return;
             }
-            var shopwaifus = WaifuShopDb.GetWaifuStores();
+            var shopwaifus = WaifuShopDb.GetWaifuStores(Context.Guild.Id);
             ShopWaifu shopWaifu = null;
             foreach (var x in shopwaifus)
             {
@@ -68,7 +68,7 @@ namespace Namiko.Core.Modules
 
             try
             {
-                await ToastieDb.AddToasties(Context.User.Id, -price);
+                await ToastieDb.AddToasties(Context.User.Id, -price, Context.Guild.Id);
             }
             catch (Exception ex)
             {
@@ -83,7 +83,7 @@ namespace Namiko.Core.Modules
                 await WaifuShopDb.UpdateWaifu(shopWaifu);
             }
 
-            await UserInventoryDb.AddWaifu(Context.User.Id, waifu);
+            await UserInventoryDb.AddWaifu(Context.User.Id, waifu, Context.Guild.Id);
             await Context.Channel.SendMessageAsync($"Congratulations! You bought **{waifu.Name}**!", false, WaifuUtil.WaifuEmbedBuilder(waifu).Build());
         }
 
@@ -97,21 +97,21 @@ namespace Namiko.Core.Modules
                 await Context.Channel.SendMessageAsync("You don't have " + name);
                 return;
             }
-            var waifus = UserInventoryDb.GetWaifus(Context.User.Id);
+            var waifus = UserInventoryDb.GetWaifus(Context.User.Id, Context.Guild.Id);
             if (!(waifus.Where(x => x.Name.Equals(waifu.Name)).Count() > 0))
             {
                 await Context.Channel.SendMessageAsync("You don't have " + name);
                 return;
             }
-            waifus = UserInventoryDb.GetWaifus(recipient.Id);
+            waifus = UserInventoryDb.GetWaifus(recipient.Id, Context.Guild.Id);
             if (waifus.Where(x => x.Name.Equals(waifu.Name)).Count() > 0)
             {
                 await Context.Channel.SendMessageAsync("They already have " + name);
                 return;
             }
 
-            await UserInventoryDb.AddWaifu(recipient.Id, waifu);
-            await UserInventoryDb.DeleteWaifu(Context.User.Id, waifu);
+            await UserInventoryDb.AddWaifu(recipient.Id, waifu, Context.Guild.Id);
+            await UserInventoryDb.DeleteWaifu(Context.User.Id, waifu, Context.Guild.Id);
             await Context.Channel.SendMessageAsync($"{recipient.Mention} You received {waifu.Name} from {Context.User.Mention}!", false, WaifuUtil.WaifuEmbedBuilder(waifu).Build());
         }
 
@@ -274,7 +274,7 @@ namespace Namiko.Core.Modules
         public async Task ResetWaifuShop()
         {
 
-            await WaifuShopDb.NewList(WaifuUtil.GenerateWaifuList());
+            await WaifuShopDb.NewList(WaifuUtil.GenerateWaifuList(Context.Guild.Id));
             await Context.Channel.SendMessageAsync("I'll try o7. Check if it worked.");
         }
         
@@ -293,7 +293,7 @@ namespace Namiko.Core.Modules
                 var user = Context.Guild.GetUser(x.UserId);
                 if (user != null)
                     if (!users.ContainsKey(user))
-                        users.Add(user, WaifuUtil.WaifuValue(UserInventoryDb.GetWaifus(user.Id)));
+                        users.Add(user, WaifuUtil.WaifuValue(UserInventoryDb.GetWaifus(user.Id, Context.Guild.Id)));
             }
 
             var ordWaifus = waifus.OrderByDescending(x => x.Value);
@@ -313,10 +313,10 @@ namespace Namiko.Core.Modules
                 return;
             }
 
-            if (UserInventoryDb.GetWaifus(Context.User.Id).Any(x => x.Name.Equals(waifu.Name)))
+            if (UserInventoryDb.GetWaifus(Context.User.Id, Context.Guild.Id).Any(x => x.Name.Equals(waifu.Name)))
             {
-                await FeaturedWaifuDb.SetFeaturedWaifu(Context.User.Id, waifu);
-                await Context.Channel.SendMessageAsync($"{waifu.Name} set as your featured waifu!", false, WaifuUtil.ProfileEmbed(Context.User).Build());
+                await FeaturedWaifuDb.SetFeaturedWaifu(Context.User.Id, waifu, Context.Guild.Id);
+                await Context.Channel.SendMessageAsync($"{waifu.Name} set as your featured waifu!", false, WaifuUtil.ProfileEmbed((SocketGuildUser) Context.User).Build());
                 return;
             }
             await Context.Channel.SendMessageAsync($":x: You don't have {waifu.Name}");

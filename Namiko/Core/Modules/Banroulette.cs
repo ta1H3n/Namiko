@@ -164,7 +164,7 @@ namespace Namiko.Core.Modules
                 msg += $"Prize pool of {banroulette.RewardPool} ({prize} each) split between: ";
                 foreach (var x in users)
                 {
-                    await ToastieDb.AddToasties(x.Id, prize);
+                    await ToastieDb.AddToasties(x.Id, prize, Context.Guild.Id);
                     msg += x.Mention + " ";
                 }
             }
@@ -192,7 +192,7 @@ namespace Namiko.Core.Modules
 
             try
             {
-                await ToastieDb.AddToasties(Context.User.Id, -amount);
+                await ToastieDb.AddToasties(Context.User.Id, -amount, Context.Guild.Id);
             }
             catch(Exception ex)
             {

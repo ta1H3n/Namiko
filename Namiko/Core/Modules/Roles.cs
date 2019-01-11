@@ -54,7 +54,7 @@ namespace Namiko.Core.Modules
             }
             if (!PublicRoleDb.IsPublic(role.Id))
             {
-                await PublicRoleDb.Add(role.Id);
+                await PublicRoleDb.Add(role.Id, Context.Guild.Id);
                 await Context.Channel.SendMessageAsync($"`{role.Name}` set as a public role.");
                 return;
             }
@@ -204,7 +204,7 @@ namespace Namiko.Core.Modules
                 return;
             }
 
-            await TeamDb.AddTeam(leaderR.Id, memberR.Id);
+            await TeamDb.AddTeam(leaderR.Id, memberR.Id, Context.Guild.Id);
             await Context.Channel.SendMessageAsync($"Added Leader role: '{leaderR.Name}' and Team role: '{memberR.Name}'");
         }
 
@@ -238,7 +238,7 @@ namespace Namiko.Core.Modules
         {
             var teams = new List<SocketRole>();
             var leaders = new List<SocketRole>();
-            foreach (var x in TeamDb.Teams())
+            foreach (var x in TeamDb.Teams(Context.Guild.Id))
             {
                 teams.Add(Context.Guild.GetRole(x.MemberRoleId));
                 leaders.Add(Context.Guild.GetRole(x.LeaderRoleId));
@@ -252,7 +252,7 @@ namespace Namiko.Core.Modules
         public async Task PublicRoleList([Remainder] string str = "")
         {
             var roles = new List<SocketRole>();
-            foreach (var x in PublicRoleDb.GetAll())
+            foreach (var x in PublicRoleDb.GetAll(Context.Guild.Id))
             {
                 roles.Add(Context.Guild.GetRole(x.RoleId));
             }

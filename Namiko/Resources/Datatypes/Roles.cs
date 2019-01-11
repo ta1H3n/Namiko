@@ -28,6 +28,5 @@ namespace Namiko.Resources.Datatypes
         public ulong TeamId { get; set; }
         public ulong UserId { get; set; }
         public DateTime Date { get; set; }
-        public ulong GuildId { get; set; }
     }
 }
