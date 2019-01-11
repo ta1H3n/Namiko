@@ -32,8 +32,9 @@ namespace Namiko
         {
             SetUpDebug();
             //SetUpRelease();
+            await ImgurUtil.ImgurSetup();
             Timers.SetUp();
-
+          
             Client = new DiscordSocketClient();
             Commands = new CommandService(new CommandServiceConfig
             {
@@ -41,20 +42,20 @@ namespace Namiko
                 DefaultRunMode = RunMode.Async,
                 LogLevel = LogSeverity.Debug
             });
+            await Commands.AddModulesAsync(Assembly.GetEntryAssembly(), null);
 
             Client.MessageReceived += Client_MessageReceived;
             Client.MessageReceived += Client_MessageReceivedSpecialModes;
-            await Commands.AddModulesAsync(Assembly.GetEntryAssembly(), null);
-
+          
             Client.Ready += Client_Ready;
             Client.Log += Client_Log;
             Client.ReactionAdded += Client_ReactionAdded;
-
+          
             // Join/leave logging.
             Client.UserJoined += Client_UserJoinedLog;
             Client.UserLeft += Client_UserLeftLog;
             Client.UserBanned += Client_UserBannedLog;
-
+          
             await Client.LoginAsync(TokenType.Bot, ParseSettingsJson());
             await Client.StartAsync();
             

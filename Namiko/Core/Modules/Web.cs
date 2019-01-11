@@ -40,7 +40,7 @@ namespace Namiko.Core.Modules
             await Context.Channel.SendMessageAsync("", false, WebUtil.IqdbSourceResultEmbed(result, url).Build());
         }
 
-        [Command("SauceNao"), Alias("Source"), Summary("Finds the source of an image with SauceNao.\n**Usage**: `!source [image_url]` or `!source` with attached image.")]
+        [Command("Source"), Alias("SauceNao", "Sauce"), Summary("Finds the source of an image with SauceNao.\n**Usage**: `!source [image_url]` or `!source` with attached image.")]
         public async Task SaceNao(string url = "", [Remainder] string str = "")
         {
             await Context.Channel.TriggerTypingAsync();

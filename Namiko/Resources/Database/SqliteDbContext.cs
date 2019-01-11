@@ -27,6 +27,7 @@ namespace Namiko.Resources.Database
         public DbSet<Banroulette> Banroulettes { get; set; }
         public DbSet<BanrouletteParticipant> BanrouletteParticipants { get; set; }
         public DbSet<BannedUser> BannedUsers { get; set; }
+        public DbSet<ImgurAlbumLink> ImgurAlbums { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder Options)
         {
