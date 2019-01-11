@@ -13,15 +13,6 @@ namespace Namiko.Core.Modules
 {
     public class Waifus : ModuleBase<SocketCommandContext>
     {
-        [Command("Inventory"), Alias("waifus", "profile"), Summary("Shows user waifus.\n**Usage**: `!inventory [user_optional]`")]
-        public async Task Inventory(IUser user = null, [Remainder] string str = "")
-        {
-            if (user == null)
-                user = Context.User;
-
-            await Context.Channel.SendMessageAsync("", false, WaifuUtil.ProfileEmbed(user).Build());
-        }
-
         [Command("WaifuShop"), Alias("ws"), Summary("Opens the waifu shop."),]
         public async Task OpenWaifuShop([Remainder] string str = "")
         {
@@ -99,7 +90,7 @@ namespace Namiko.Core.Modules
             if (waifus.Where(x => x.Name.Equals(waifu.Name)).Count() > 0) {
 
                 //checking worth
-                int worth = WaifuUtil.getSalePrice(waifu.Tier);
+                int worth = WaifuUtil.GetSalePrice(waifu.Tier);
                 if (worth > 0) {
 
                     //giving u the money for da waifu
@@ -350,7 +341,7 @@ namespace Namiko.Core.Modules
             if (UserInventoryDb.GetWaifus(Context.User.Id).Any(x => x.Name.Equals(waifu.Name)))
             {
                 await FeaturedWaifuDb.SetFeaturedWaifu(Context.User.Id, waifu);
-                await Context.Channel.SendMessageAsync($"{waifu.Name} set as your featured waifu!", false, WaifuUtil.ProfileEmbed(Context.User).Build());
+                await Context.Channel.SendMessageAsync($"{waifu.Name} set as your featured waifu!", false, UserUtil.ProfileEmbed(Context.User).Build());
                 return;
             }
             await Context.Channel.SendMessageAsync($":x: You don't have {waifu.Name}");
