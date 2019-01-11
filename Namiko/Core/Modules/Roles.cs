@@ -15,7 +15,7 @@ namespace Namiko.Core.Modules
 {
     public class Roles : ModuleBase<SocketCommandContext>
     {
-        [Command("Role"), Alias("r"), Summary("Adds or removes a public role from the user.\n**Usage**: `!r [name]`")]
+        [Command("Role"), Alias("r"), Summary("Adds or removes a public role from the user.\n**Usage**: `!r [name]`"), RequireBotPermission(GuildPermission.ManageRoles)]
         public async Task Role([Remainder] string name)
         {
             var role = RoleUtil.GetRoleByName(Context.Guild, name);
@@ -66,7 +66,7 @@ namespace Namiko.Core.Modules
             }
         }
 
-        [Command("ClearRole"), Alias("cr"), Summary("Removes all users from a role.\n**Usage**: `cr [name]`"), RequireUserPermission(GuildPermission.ManageRoles)]
+        [Command("ClearRole"), Alias("cr"), Summary("Removes all users from a role.\n**Usage**: `cr [name]`"), RequireUserPermission(GuildPermission.ManageRoles), RequireBotPermission(GuildPermission.ManageRoles)]
         public async Task ClearRole([Remainder] string name)
         {
             var role = RoleUtil.GetRoleByName(Context.Guild, name);
@@ -121,7 +121,7 @@ namespace Namiko.Core.Modules
             await ch.SendMessageAsync($"{Context.User.Username} invited {user.Username} to {teamRole.Name}.");
         }
 
-        [Command("Join"), Summary("Accept an invite to a team.\n**Usage**: `!join [team_name]`")]
+        [Command("Join"), Summary("Accept an invite to a team.\n**Usage**: `!join [team_name]`"), RequireBotPermission(GuildPermission.ManageRoles)]
         public async Task Join(string teamName, [Remainder] string str = "")
         {
             var role = RoleUtil.GetRoleByName(Context.Guild, teamName);
@@ -145,7 +145,7 @@ namespace Namiko.Core.Modules
             await Context.Channel.SendMessageAsync($"You're not invited to {teamName}! You sure they exist?");
         }
 
-        [Command("LeaveTeam"), Alias("lt"), Summary("Leave your team.\n**Usage**: `!lt`")]
+        [Command("LeaveTeam"), Alias("lt"), Summary("Leave your team.\n**Usage**: `!lt`"), RequireBotPermission(GuildPermission.ManageRoles)]
         public async Task Leave()
         {
             var role = RoleUtil.GetMember(Context);
@@ -162,7 +162,7 @@ namespace Namiko.Core.Modules
             await ch.SendMessageAsync($"{Context.User.Username} left {role.Name}.");
         }
 
-        [Command("TeamKick"), Alias("tk"), Summary("Kicks a user from your team.\n**Usage**: `!tk [user]`")]
+        [Command("TeamKick"), Alias("tk"), Summary("Kicks a user from your team.\n**Usage**: `!tk [user]`"), RequireBotPermission(GuildPermission.ManageRoles)]
         public async Task TeamKick(IUser user, [Remainder] string str = "")
         {
             var leader = RoleUtil.GetLeader(Context);

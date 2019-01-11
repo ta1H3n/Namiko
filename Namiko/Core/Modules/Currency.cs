@@ -142,7 +142,7 @@ namespace Namiko.Core.Modules
             }
         }
 
-        [Command("Toasties"), Alias("toastie", "bal", "balance"), Summary("Shows amount of toasties.\n**Usage**: `!bal [user_optional]`")]
+        [Command("Balance"), Alias("toastie", "bal", "toasties"), Summary("Shows amount of toasties.\n**Usage**: `!bal [user_optional]`")]
         public async Task Toastie(IUser User = null, [Remainder] string str = "")
         {
             if (User == null)
@@ -150,20 +150,6 @@ namespace Namiko.Core.Modules
                 User = Context.User;
             }
             await Context.Channel.SendMessageAsync("", false, ToastieUtil.ToastieEmbed(User, ToastieDb.GetToasties(User.Id, Context.Guild.Id)).Build());
-        }
-
-        [Command("SetToasties"), Alias("st", "sett"), Summary("Sets the amount of toasties.\n**Usage**: `!st [user] [amount]`"), OwnerPrecondition]
-        public async Task Set(IUser user, int amount, [Remainder] string str = "")
-        {
-            await ToastieDb.SetToasties(user.Id, amount, Context.Guild.Id);
-            await Context.Channel.SendMessageAsync("", false, ToastieUtil.ToastieEmbed(user, ToastieDb.GetToasties(user.Id, Context.Guild.Id)).Build());
-        }
-
-        [Command("AddToasites"), Alias("at", "addt"), Summary("Adds toasties to a user.\n**Usage**: `!at [user] [amount]`"), OwnerPrecondition]
-        public async Task Add(IUser user, int amount, [Remainder] string str = "")
-        {
-            await ToastieDb.AddToasties(user.Id, amount, Context.Guild.Id);
-            await Context.Channel.SendMessageAsync("", false, ToastieUtil.ToastieEmbed(user, ToastieDb.GetToasties(user.Id, Context.Guild.Id)).Build());
         }
 
         [Command("Give"), Summary("Give a user some of you toasties.\n**Usage**: `!give [user] [amount]`")]
@@ -192,6 +178,20 @@ namespace Namiko.Core.Modules
             eb.WithDescription($"{Context.User.Username} gave {recipient.Username} **{amount}** {ToastieUtil.RandomEmote()}!");
             eb.WithColor(BasicUtil.RandomColor());
             await Context.Channel.SendMessageAsync("", false, eb.Build());
+        }
+
+        [Command("SetToasties"), Alias("st", "sett"), Summary("Sets the amount of toasties.\n**Usage**: `!st [user] [amount]`"), RequireUserPermission(GuildPermission.Administrator), RequireBotPermission(GuildPermission.Administrator)]
+        public async Task Set(IUser user, int amount, [Remainder] string str = "")
+        {
+            await ToastieDb.SetToasties(user.Id, amount, Context.Guild.Id);
+            await Context.Channel.SendMessageAsync("", false, ToastieUtil.ToastieEmbed(user, ToastieDb.GetToasties(user.Id, Context.Guild.Id)).Build());
+        }
+
+        [Command("AddToasites"), Alias("at", "addt"), Summary("Adds toasties to a user.\n**Usage**: `!at [user] [amount]`"), RequireUserPermission(GuildPermission.Administrator), RequireBotPermission(GuildPermission.Administrator)]
+        public async Task Add(IUser user, int amount, [Remainder] string str = "")
+        {
+            await ToastieDb.AddToasties(user.Id, amount, Context.Guild.Id);
+            await Context.Channel.SendMessageAsync("", false, ToastieUtil.ToastieEmbed(user, ToastieDb.GetToasties(user.Id, Context.Guild.Id)).Build());
         }
 
         [Command("ToastieLeaderboard"), Alias("tlb"), Summary("Toastie Leaderboard.\n**Usage**: `!tlb [page_number]`")]

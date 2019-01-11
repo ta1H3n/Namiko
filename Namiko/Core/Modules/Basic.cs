@@ -15,11 +15,11 @@ namespace Namiko.Core.Modules
 {
     public class Basic : ModuleBase<SocketCommandContext>
     {
-        [Command("Hi Namiko"), Alias("Hi", "ping"), Summary("Hi Namiko command")]
-        public async Task HiNamiko([Remainder] string str = "")
-        {
-            await Context.Channel.SendMessageAsync($"Hi {Context.User.Mention} :fox:");
-        }
+      //  [Command("Hi Namiko"), Alias("Hi", "ping"), Summary("Hi Namiko command")]
+      //  public async Task HiNamiko([Remainder] string str = "")
+      //  {
+      //      await Context.Channel.SendMessageAsync($"Hi {Context.User.Mention} :fox:");
+      //  }
 
      //   [Command("RandomUser"), Alias("ru"), Summary("Randomly picks one user from all the reactions on a message.\nOnly works with default discord emotes.\n" +
      //       "Message has to be in the same channel.\n**Usage**:`!ru [message_id]`")]
