@@ -130,13 +130,23 @@ namespace Namiko
             if (Context.User.IsBot)
                 return;
 
+            if(Message.Content.StartsWith("Hi Namiko", StringComparison.InvariantCultureIgnoreCase))
+            {
+                await Message.Channel.SendMessageAsync($"Hi {Context.User.Mention} :fox:");
+                return;
+            }
+            if(Message.Content.Contains(Client.CurrentUser.Mention))
+            {
+                await Message.Channel.SendMessageAsync($":heart:");
+            }
+
             int ArgPos = 0;
             if (!(Message.HasStringPrefix(StaticSettings.prefix, ref ArgPos) || Message.HasMentionPrefix(Client.CurrentUser, ref ArgPos)) && !Pause)
             {
-                
                 await Blackjack.BlackjackInput(Context);
                 return;
             }
+
             var cmds = Commands.Search(Context, ArgPos);
             if (cmds.IsSuccess && Pause && Context.User.Id != StaticSettings.owner)
             {
