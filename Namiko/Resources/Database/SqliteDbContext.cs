@@ -28,6 +28,8 @@ namespace Namiko.Resources.Database
         public DbSet<BanrouletteParticipant> BanrouletteParticipants { get; set; }
         public DbSet<BannedUser> BannedUsers { get; set; }
         public DbSet<ImgurAlbumLink> ImgurAlbums { get; set; }
+        public DbSet<Profile> Profiles { get; set; }
+        public DbSet<Marriage> Marriages { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder Options)
         {
