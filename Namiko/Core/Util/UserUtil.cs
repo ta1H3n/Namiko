@@ -68,24 +68,18 @@ namespace Namiko.Core.Util {
             int waifucount = waifus.Count();
             int waifuprice = WaifuUtil.WaifuValue(waifus);
 
-            // string desc = $"**Toasties**: {ToastieDb.GetToasties(user.Id)}\n";
-            // desc += $"**Waifu worth**: {waifuprice}";
-            // eb.WithDescription(desc);
-
             var daily = DailyDb.GetDaily(user.Id);
             long timeNow = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-            eb.AddField("Toasties", $"Amount: {ToastieDb.GetToasties(user.Id)} <:toastie3:454441133876183060>\nDaily: {(daily == null ? "0" : ((daily.Date + 172800000) < timeNow ? "0" : daily.Streak.ToString()))} :calendar_spiral:", true);
-            eb.AddField("Waifus", $"Amount: {waifucount} :two_hearts:\nValue: {waifuprice} <:toastie3:454441133876183060>", true);
+            eb.AddField("Toasties", $"Amount: {ToastieDb.GetToasties(user.Id).ToString("n0")} <:toastie3:454441133876183060>\nDaily: {(daily == null ? "0" : ((daily.Date + 172800000) < timeNow ? "0" : daily.Streak.ToString()))} :calendar_spiral:", true);
+            eb.AddField("Waifus", $"Amount: {waifucount} :two_hearts:\nValue: {waifuprice.ToString("n0")} <:toastie3:454441133876183060>", true);
 
             if (waifucount > 0) {
                 string wstr = "";
-                // wstr += $"Total: {waifus.Count} :two_hearts:\n";
-                // wstr += $"Value: {waifuprice} <:toastie3:454441133876183060>";
                 foreach (var x in waifus) {
-                    if (x.LongName.Length > 35)
-                        x.LongName = x.LongName.Substring(0, 33) + "...";
-                    x.LongName = x.LongName ?? "";
-                    wstr += String.Format("**{0}** - *{1}*\n", x.Name, x.LongName);
+                    if (x.Source.Length > 45)
+                        x.Source = x.Source.Substring(0, 33) + "...";
+                    x.Source = x.Source ?? "";
+                    wstr += String.Format("**{0}** - *{1}*\n", x.Name, x.Source);
                 }
                 eb.AddField("Waifus", wstr);
             }
@@ -100,8 +94,9 @@ namespace Namiko.Core.Util {
                 footer += $", Playing: '{user.Activity.Name}'";
             eb.WithFooter(footer);
 
-
-
+            if(UserDb.GetQuote(user.Id) != null && !UserDb.GetQuote(user.Id).Equals(""))
+                eb.WithDescription($"{UserDb.GetQuote(user.Id)}");
+            
             eb.Color = UserDb.CheckHex(out string colour, user.Id)? (Discord.Color) HexToColor(colour) : BasicUtil.RandomColor();
             return eb;
         }

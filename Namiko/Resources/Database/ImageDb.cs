@@ -98,7 +98,17 @@ namespace Namiko.Resources.Database
         {
             using (var db = new SqliteDbContext())
             {
-                return db.Images.Any(x => x.Name == name);
+                bool res = db.ImgurAlbums.Any(x => x.Name == name);
+                return res;
+            }
+        }
+
+        public static async Task UpdateImage(ReactionImage image)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                db.Images.Update(image);
+                await db.SaveChangesAsync();
             }
         }
 

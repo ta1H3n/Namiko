@@ -33,6 +33,7 @@ namespace Namiko
             SetUpDebug();
             //SetUpRelease();
             await ImgurUtil.ImgurSetup();
+            //await Scripts.ImgurMove.THEPROCESS();
             Timers.SetUp();
           
             Client = new DiscordSocketClient();

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Linq;
 using System.Threading.Tasks;
 using Imgur;
 using Imgur.API.Authentication.Impl;
@@ -86,6 +87,11 @@ namespace Namiko.Core.Util
         public static string ParseAlbumLink(string id)
         {
             return "https://imgur.com/a/" + id;
+        }
+
+        public static string ParseId(string imgurUrl)
+        {
+            return imgurUrl.Split('/').Last().Split('.').First();
         }
     }
 }

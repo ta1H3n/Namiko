@@ -144,6 +144,7 @@ namespace Namiko.Core.Modules
 
             await ImageDb.DeleteImage(id);
             await Context.Channel.SendMessageAsync($"Image {id} is gone forever. Why have you done this?");
+            await ImgurUtil.EditImageAsync(ImgurUtil.ParseId(image.Url), null, image.Id.ToString() + " [DELETED]");
         }
 
         public class ImageCount

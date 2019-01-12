@@ -75,7 +75,7 @@ namespace Namiko.Core.Modules
                 int amount = ToastieUtil.DailyAmount(daily.Streak);
                 await DailyDb.SetDaily(daily);
                 await ToastieDb.AddToasties(Context.User.Id, amount);
-                await ToastieDb.AddToasties(Context.Client.CurrentUser.Id, amount / 10);
+                await ToastieDb.AddToasties(Context.Client.CurrentUser.Id, amount / 20);
 
                 await Context.Channel.SendMessageAsync("", false, ToastieUtil.DailyGetEmbed(Context.User, daily.Streak, amount, ToastieDb.GetToasties(Context.User.Id)).Build());
             }

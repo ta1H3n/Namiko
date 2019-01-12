@@ -4,6 +4,8 @@ using Discord;
 using System;
 using Discord.Commands;
 using Namiko.Resources.Database;
+
+
 namespace Namiko.Core.Modules {
     public class User : ModuleBase<SocketCommandContext> {
 
@@ -25,7 +27,7 @@ namespace Namiko.Core.Modules {
                 //creating comfermation embed
                 EmbedBuilder embed = new EmbedBuilder();
                 embed.WithAuthor("Profile Colour");
-                embed.WithDescription($"{ Context.User.Username } set colour to **Default**\nSwitching to Dafult incurs no additional costs");
+                embed.WithDescription($"{ Context.User.Username } set colour to **Default**\nSwitching to Dafault incurs no additional costs");
                 embed.WithColor(BasicUtil.RandomColor());
 
                 //sending embed + exception & error confermations 
@@ -63,8 +65,21 @@ namespace Namiko.Core.Modules {
             } 
         }
 
-        [Command("setquote"), Alias("sq"), Summary("Allows user to set a personal quote.\n**Usage**: `!sq [quote]`")]
-        public async Task CustomQuote([Remainder] string quote) {
+        [Command("setquote"), Alias("sq"), Summary("Sets your personal quote on your profile.\n**Usage**: `!sq [quote]`")]
+        public async Task CustomQuote([Remainder] string quote = null) {
+
+            if(quote == null)
+            {
+                await UserDb.SetQuote(Context.User.Id, null);
+                await Context.Channel.SendMessageAsync("Quote removed.");
+                return;
+            }
+
+            if (quote.Length > 200)
+            {
+                await Context.Channel.SendMessageAsync("Quotes have a 200 character limit.");
+                return;
+            }
 
             //setting quote 
             await UserDb.SetQuote(Context.User.Id, quote);
@@ -77,8 +92,10 @@ namespace Namiko.Core.Modules {
         }
 
         [Command("quote"), Alias("q"), Summary("Allows user to see their personal quote.\n**Usage**: `!q`")]
-        public async Task PersonalQuote([Remainder] string str = "") {
-            string quote = UserDb.GetQuote(Context.User.Id);
+        public async Task PersonalQuote(IUser user = null, [Remainder] string str = "") {
+
+            ulong userid = user?.Id ?? Context.User.Id;
+            string quote = UserDb.GetQuote(userid);
 
             //checking quote
             if(quote == null || quote == ""){
@@ -87,7 +104,7 @@ namespace Namiko.Core.Modules {
             }
 
             //sending quote
-            EmbedBuilder embed = UserUtil.QuoteEmbed(Context.User.Id, quote);
+            EmbedBuilder embed = UserUtil.QuoteEmbed(userid, quote);
             await Context.Channel.SendMessageAsync("", false, embed.Build());
         }
     }
