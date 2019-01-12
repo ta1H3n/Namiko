@@ -92,8 +92,10 @@ namespace Namiko.Core.Modules
             {
                 if ((x.Name != "SpecialCommands" && x.Name != "SpecialModes") || all)
                 {
-                    var fb = new EmbedFieldBuilder();
-                    fb.Name = x.Name;
+                    var fb = new EmbedFieldBuilder{
+                        Name = x.Name
+                    };
+                    //fb.Name = x.Name;
 
                     string commandList = "";
                     foreach (var y in x.Commands)
