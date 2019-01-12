@@ -1,8 +1,8 @@
 ﻿using Discord;
 using System;
 using System.Linq;
-using Namiko.Resources.Database;
 using System.Globalization;
+using Namiko.Resources.Database;
 namespace Namiko.Core.Util {
     class UserUtil {
 
@@ -42,14 +42,14 @@ namespace Namiko.Core.Util {
             } return true;
         }
         
-        //Methods: Hex Code Operations
+        //Methods: Hex Code Operations - *only* uitility classes have access to HexToColor
         public static bool GetHexColour(ref System.Drawing.Color color, string colour) {
             if(System.Text.RegularExpressions.Regex.IsMatch(colour, @"\A\b[0-9a-fA-F]+\b\Z")) {
                 color = HexToColor(colour);
                 return true;
             } return false;
         }
-        private static System.Drawing.Color HexToColor(string colour) {
+        internal static System.Drawing.Color HexToColor(string colour) {
             return new Color(   int.Parse(colour.Substring(0, 2), NumberStyles.AllowHexSpecifier), 
                                 int.Parse(colour.Substring(2, 2), NumberStyles.AllowHexSpecifier),
                                 int.Parse(colour.Substring(4, 2), NumberStyles.AllowHexSpecifier));

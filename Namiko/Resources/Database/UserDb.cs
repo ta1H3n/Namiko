@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Linq;
 using System.Drawing;
-using System.Globalization;
 using System.Threading.Tasks;
-using Namiko.Resources.Database;
 using Namiko.Resources.Datatypes;
 namespace Namiko.Resources.Database {
     class UserDb {
@@ -32,7 +28,7 @@ namespace Namiko.Resources.Database {
             using (var DbContext = new SqliteDbContext()) {
                 var profile = DbContext.Profiles.Where(x => x.UserId == UserId).FirstOrDefault();
 
-                //checking hex validity
+                //checking hex validity (makes sure hex colour.len ALWAYS = 6)
                 string colour = color.Name;
                 int boundary = colour.Length;
                 if (boundary < 6) colour = new string('0', 6 - boundary) + colour;
@@ -54,7 +50,7 @@ namespace Namiko.Resources.Database {
             using (var DbContext = new SqliteDbContext()) {
                 var profile = DbContext.Profiles.Where(x => x.UserId == UserId).FirstOrDefault();
 
-                //if this user has not set a custom colour
+                //if this user is not in the database
                 if (profile == null) {
                     DbContext.Add(new Profile { UserId = UserId, ColorHex = "", Quote = "" });
                     await DbContext.SaveChangesAsync();

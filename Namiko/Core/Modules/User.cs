@@ -1,16 +1,9 @@
 ﻿using System.Threading.Tasks;
 using Namiko.Core.Util;
-using System.Linq;
 using Discord;
 using System;
-using System.Drawing;
 using Discord.Commands;
-using Discord.WebSocket;
-using System.Globalization;
 using Namiko.Resources.Database;
-using Namiko.Resources.Datatypes;
-using Namiko.Resources.Attributes;
-using System.Collections.Generic;
 namespace Namiko.Core.Modules {
     public class User : ModuleBase<SocketCommandContext> {
 
@@ -21,12 +14,12 @@ namespace Namiko.Core.Modules {
         }
 
         [Command("setcolour"), Alias("setcolor", "sc"), Summary("Allows user to set profile colour for a smol cost.\n**Usage**: `!sc [shade - optional as dark/light ] [colour name or hex value]`")]
-        public async Task CustomColour(string shade = "", string colour = "",[Remainder] string str = "") {
+        public async Task CustomColour(string shade, string colour = "",[Remainder] string str = "") {
 
              //
             //way to set it back to default
             shade = shade.ToLower();
-            if (shade.Equals("") || shade.Equals("default")) {
+            if (shade.Equals("default")) {
                 await UserDb.HexDefault(Context.User.Id);                    
                 
                 //creating comfermation embed
@@ -73,10 +66,10 @@ namespace Namiko.Core.Modules {
         [Command("setquote"), Alias("sq"), Summary("Allows user to set a personal quote.\n**Usage**: `!sq [quote]`")]
         public async Task CustomQuote([Remainder] string quote) {
 
-            //setting quote + re-getting quote
+            //setting quote 
             await UserDb.SetQuote(Context.User.Id, quote);
 
-            //getting embed
+            //getting embed + re-getting quote
             quote = UserDb.GetQuote(Context.User.Id);
             EmbedBuilder embed = UserUtil.QuoteEmbed(Context.User.Id, quote);
             embed.WithAuthor("Personal Quote Updated");
