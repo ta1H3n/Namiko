@@ -100,8 +100,19 @@ namespace Namiko.Core.Util {
                 footer += $", Playing: '{user.Activity.Name}'";
             eb.WithFooter(footer);
 
-            eb.Color = BasicUtil.RandomColor();
+
+
+            eb.Color = UserDb.CheckHex(out string colour, user.Id)? (Discord.Color) HexToColor(colour) : BasicUtil.RandomColor();
             return eb;
+        }
+        public static EmbedBuilder QuoteEmbed(ulong UserId, string quote) {
+
+            //creating comfermation embed
+            EmbedBuilder embed = new EmbedBuilder();
+            embed.WithAuthor("Personal Quote");
+            embed.WithDescription(quote);
+            embed.WithColor(UserDb.CheckHex(out string colour, UserId)? (Discord.Color) HexToColor(colour) : BasicUtil.RandomColor());
+            return embed;
         }
     }
 }

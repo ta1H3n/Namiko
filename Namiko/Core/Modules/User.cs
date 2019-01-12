@@ -20,25 +20,43 @@ namespace Namiko.Core.Modules {
             await Context.Channel.SendMessageAsync("", false, UserUtil.ProfileEmbed(user).Build());
         }
 
-        [Command("setcolour"), Alias("setcolor", "sc"), Summary("Allows user to set profile colour for a smol cost.\n**Usage**: `!sc [colour name or hex value] [shade, optional]`")]
-        public async Task CustomColour(string colour, string shade = "", [Remainder] string str = "") {
+        [Command("setcolour"), Alias("setcolor", "sc"), Summary("Allows user to set profile colour for a smol cost.\n**Usage**: `!sc [shade - optional as dark/light ] [colour name or hex value]`")]
+        public async Task CustomColour(string shade = "", string colour = "",[Remainder] string str = "") {
 
-            //setting starting values
+             //
+            //way to set it back to default
             shade = shade.ToLower();
-            colour = colour.ToLower();
+            if (shade.Equals("") || shade.Equals("default")) {
+                await UserDb.HexDefault(Context.User.Id);                    
+                
+                //creating comfermation embed
+                EmbedBuilder embed = new EmbedBuilder();
+                embed.WithAuthor("Profile Colour");
+                embed.WithDescription($"{ Context.User.Username } set colour to **Default**\nSwitching to Dafult incurs no additional costs");
+                embed.WithColor(BasicUtil.RandomColor());
+
+                //sending embed + exception & error confermations 
+                await Context.Channel.SendMessageAsync("", false, embed.Build());
+                return;
+
+
+            //if no shade specified but colour value exists
+            } if (colour.Equals("")) colour = shade;
+            else colour = colour.ToLower();
+
+
+
+             //
+            //setting start values
             System.Drawing.Color color;
 
             //checking for possible name or hex value, 
             if (colour.StartsWith('#')) colour = colour.Remove(0, 1);
             if (UserUtil.GetNamedColour(ref color, colour, shade) || UserUtil.GetHexColour(ref color, colour)) {
 
-                //toastie try
+                //toastie + saving hex color try
                 try { await ToastieDb.AddToasties(Context.User.Id, -Cost.colour);
-
-                    //color.Name --> will need to store hex code in DB .Name *should* do this
-                    //method for setting colour in DB
-
-                    
+                    await UserDb.SetHex(color, Context.User.Id);
 
                     //creating comfermation embed
                     EmbedBuilder embed = new EmbedBuilder();
@@ -48,8 +66,36 @@ namespace Namiko.Core.Modules {
 
                     //sending embed + exception & error confermations 
                     await Context.Channel.SendMessageAsync("", false, embed.Build());
-                } catch (Exception ex) {await Context.Channel.SendMessageAsync(ex.Message); } return;
-            } await Context.Channel.SendMessageAsync("\"" + colour + "\" is an invalid colour");
+                } catch (Exception ex) {await Context.Channel.SendMessageAsync(ex.Message); }
+            } 
+        }
+
+        [Command("setquote"), Alias("sq"), Summary("Allows user to set a personal quote.\n**Usage**: `!sq [quote]`")]
+        public async Task CustomQuote([Remainder] string quote) {
+
+            //setting quote + re-getting quote
+            await UserDb.SetQuote(Context.User.Id, quote);
+
+            //getting embed
+            quote = UserDb.GetQuote(Context.User.Id);
+            EmbedBuilder embed = UserUtil.QuoteEmbed(Context.User.Id, quote);
+            embed.WithAuthor("Personal Quote Updated");
+            await Context.Channel.SendMessageAsync("", false, embed.Build());
+        }
+
+        [Command("quote"), Alias("q"), Summary("Allows user to see their personal quote.\n**Usage**: `!q`")]
+        public async Task PersonalQuote([Remainder] string str = "") {
+            string quote = UserDb.GetQuote(Context.User.Id);
+
+            //checking quote
+            if(quote == null || quote == ""){
+                await Context.Channel.SendMessageAsync("You haven't added a quote yet qq");
+                return;
+            }
+
+            //sending quote
+            EmbedBuilder embed = UserUtil.QuoteEmbed(Context.User.Id, quote);
+            await Context.Channel.SendMessageAsync("", false, embed.Build());
         }
     }
 }
