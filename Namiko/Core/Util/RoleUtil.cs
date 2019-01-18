@@ -112,12 +112,13 @@ namespace Namiko.Core.Util
         public static SocketRole GetRoleByName(SocketGuild guild, string roleName)
         {
             var roles = guild.Roles;
-            foreach (SocketRole x in roles)
+            var role = roles.FirstOrDefault(x => x.Name.Equals(roleName, StringComparison.InvariantCultureIgnoreCase));
+            if (role == null)
             {
-                if (x.Name.Equals(roleName, StringComparison.InvariantCultureIgnoreCase))
-                    return x;
+                role = roles.Count(x => x.Name.Contains(roleName, StringComparison.InvariantCultureIgnoreCase)) == 1 ? 
+                    roles.First(x => x.Name.Contains(roleName, StringComparison.InvariantCultureIgnoreCase)) : null;
             }
-            return null;
+            return role;
         }
         public static bool IsTeamed(SocketGuild guild, IUser user)
         {

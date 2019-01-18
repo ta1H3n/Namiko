@@ -29,7 +29,7 @@ namespace Namiko.Core
             Hour.Elapsed += Timer_BackupData;
             Hour.Elapsed += Timer_ResetCommandCallTick;
 
-            Console.WriteLine("Timers set up.");
+            Console.WriteLine("Timers Ready.");
         }
 
         private static void Timer_BackupData(object sender, ElapsedEventArgs e)

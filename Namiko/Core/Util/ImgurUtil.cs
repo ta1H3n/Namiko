@@ -48,6 +48,8 @@ namespace Namiko.Core.Util
             }
 
             Client.SetOAuth2Token(token);
+
+            Console.WriteLine("Imgur Ready.");
         }
 
         public static async Task<IAlbum> CreateAlbumAsync(string name, string description = null)
