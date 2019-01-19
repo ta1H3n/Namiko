@@ -38,7 +38,7 @@ namespace Namiko.Core
             Hour.Elapsed += Timer_ResetCommandCallTick;
             Hour.Elapsed += Timer_ExpireTeamInvites;
 
-            Console.WriteLine("Timers set up.");
+            Console.WriteLine("Timers Ready.");
         }
 
         private static async void Timer_ExpireTeamInvites(object sender, ElapsedEventArgs e)

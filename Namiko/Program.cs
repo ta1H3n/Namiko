@@ -16,6 +16,9 @@ using System.Timers;
 using Namiko.Core;
 using Namiko.Resources.Database;
 
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+
 namespace Namiko
 {
     public class Program
@@ -31,8 +34,9 @@ namespace Namiko
         {
             SetUpDebug();
             //SetUpRelease();
+            Task.Run(() => ImgurUtil.ImgurSetup());
             Timers.SetUp();
-
+          
             Client = new DiscordSocketClient();
             Commands = new CommandService(new CommandServiceConfig
             {
@@ -54,7 +58,7 @@ namespace Namiko
             Client.UserJoined += Client_UserJoinedLog;
             Client.UserLeft += Client_UserLeftLog;
             Client.UserBanned += Client_UserBannedLog;
-
+          
             await Client.LoginAsync(TokenType.Bot, ParseSettingsJson());
             await Client.StartAsync();
             
@@ -131,12 +135,24 @@ namespace Namiko
             if (BlacklistedChannelDb.IsBlacklisted(Context.Channel.Id))
                 return;
 
+            if(Message.Content.StartsWith("Hi Namiko", StringComparison.InvariantCultureIgnoreCase))
+            {
+                await Message.Channel.SendMessageAsync($"Hi {Context.User.Mention} :fox:");
+                return;
+            }
+
+            if(Message.Content.Contains(Client.CurrentUser.Mention) && (!Message.Content.StartsWith(Client.CurrentUser.Mention) || Message.Content.Equals(Client.CurrentUser.Mention)))
+            {
+                await Message.Channel.SendMessageAsync($":sparkling_heart:");
+            }
+
             int ArgPos = 0;
             if (!(Message.HasStringPrefix(StaticSettings.prefix, ref ArgPos) || Message.HasMentionPrefix(Client.CurrentUser, ref ArgPos)) && !Pause)
             {
                 await Blackjack.BlackjackInput(Context);
                 return;
             }
+
             var cmds = Commands.Search(Context, ArgPos);
             if (cmds.IsSuccess && Pause && Context.User.Id != StaticSettings.owner)
             {
@@ -152,7 +168,7 @@ namespace Namiko
                 await new Images().SendRandomImage(Context);
                 if (!Result.ErrorReason.Equals("Unknown command."))
                 {
-                    Console.WriteLine($"{DateTime.Now} at Commands] Text: {Context.Message.Content} | Error: {Result.ErrorReason}");
+                    Console.WriteLine($"{DateTime.Now} at Commands] Text: {Message.Content} | Error: {Result.ErrorReason}");
                     //await Context.Channel.SendMessageAsync("", false, CommandHelpEmbed(MessageParam.Content.Split(null)[0].Substring(1)).Build());
                     await Context.Channel.SendMessageAsync(CommandHelpString(MessageParam.Content.Split(null)[0].Substring(1)));
                 }

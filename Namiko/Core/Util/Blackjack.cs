@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Threading.Tasks;
-
+using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using Discord;
-
+using System.Threading.Tasks;
 using Namiko.Resources.Datatypes;
 using System.Collections.Generic;
 using Namiko.Resources.Database;
-
 namespace Namiko.Core.Util
 {
     public static class Blackjack
@@ -49,8 +46,8 @@ namespace Namiko.Core.Util
         {
             try
             {
-                await ToastieDb.AddToasties(Context.User.Id, -game.Pats, Context.Guild.Id);
-                game.Pats *= 2;
+                await ToastieDb.AddToasties(Context.User.Id, -game.Toasties, Context.Guild.Id);
+                game.Toasties *= 2;
                 game.Hit();
                 await Stand(Context, game);
             }
@@ -64,13 +61,13 @@ namespace Namiko.Core.Util
             var user = Context.User;
             var ch = Context.Channel;
 
-            await ToastieDb.AddToasties(user.Id, game.Pats / 2, Context.Guild.Id);
-            await ToastieDb.AddToasties(Context.Client.CurrentUser.Id, game.Pats / 2, Context.Guild.Id);
+            await ToastieDb.AddToasties(user.Id, game.Toasties / 2, Context.Guild.Id);
+            await ToastieDb.AddToasties(Context.Client.CurrentUser.Id, game.Toasties / 2, Context.Guild.Id);
 
             EmbedBuilder eb = new EmbedBuilder();
 
             eb.WithAuthor(user.Username + " | You Lose", null, user.GetAvatarUrl());
-            eb.WithDescription("You forfeit. You get half your toasties back. Lost `" + game.Pats / 2 + "`" + ToastieUtil.RandomEmote() + "\n" +
+            eb.WithDescription("You forfeit. You get half your toasties back. Lost `" + game.Toasties / 2 + "`" + ToastieUtil.RandomEmote() + "\n" +
             "New balance `" + ToastieDb.GetToasties(user.Id, Context.Guild.Id) + "`" + ToastieUtil.RandomEmote());
             eb.AddField("Your hand (" + game.SumHand(game.Hand) + ")", HandToString(game.Hand, false), true);
             eb.AddField("Namiko's hand (" + game.SumHand(game.Dealer) + ")", HandToString(game.Dealer, false), true);
@@ -86,10 +83,9 @@ namespace Namiko.Core.Util
 
             if (value < 22)
                 await GameContinue(Context, game);
+
             else
-            {
                 await GameEnd(Context, game);
-            }
         }
         public static async Task Stand(SocketCommandContext Context, BlackjackGame game)
         {
@@ -105,26 +101,26 @@ namespace Namiko.Core.Util
 
             if (game.SumHand(game.Hand) > 21)
             {
-                await ToastieDb.AddToasties(Context.Client.CurrentUser.Id, game.Pats, Context.Guild.Id);
+                await ToastieDb.AddToasties(Context.Client.CurrentUser.Id, game.Toasties, Context.Guild.Id);
                 eb.WithAuthor(user.Username + " | You Lose", user.GetAvatarUrl());
-                eb.WithDescription("Your hand is a bust. You lose `" + game.Pats + "` " + ToastieUtil.RandomEmote() + "\n" +
+                eb.WithDescription("Your hand is a bust. You lose `" + game.Toasties + "` " + ToastieUtil.RandomEmote() + "\n" +
                 "New balance `" + ToastieDb.GetToasties(user.Id, Context.Guild.Id) + "` " + ToastieUtil.RandomEmote());
                 eb.WithColor(Color.DarkRed);
             }
 
             else if (game.SumHand(game.Hand) > game.SumHand(game.Dealer) || game.SumHand(game.Dealer) > 21)
             {
-                await ToastieDb.AddToasties(user.Id, game.Pats * 2, Context.Guild.Id);
-                await ToastieDb.AddToasties(Context.Client.CurrentUser.Id, -game.Pats, Context.Guild.Id);
+                await ToastieDb.AddToasties(user.Id, game.Toasties * 2, Context.Guild.Id);
+                await ToastieDb.AddToasties(Context.Client.CurrentUser.Id, -game.Toasties, Context.Guild.Id);
                 eb.WithAuthor(user.Username + " | You Win", user.GetAvatarUrl());
-                eb.WithDescription("Your score is higher than Namiko's. You win `" + game.Pats + "` " + ToastieUtil.RandomEmote() + "\n" +
+                eb.WithDescription("Your score is higher than Namiko's. You win `" + game.Toasties + "` " + ToastieUtil.RandomEmote() + "\n" +
                 "New balance `" + ToastieDb.GetToasties(user.Id, Context.Guild.Id) + "` " + ToastieUtil.RandomEmote());
                 eb.WithColor(Color.Gold);
             }
 
             else if (game.SumHand(game.Hand) == game.SumHand(game.Dealer))
             {
-                await ToastieDb.AddToasties(user.Id, game.Pats, Context.Guild.Id);
+                await ToastieDb.AddToasties(user.Id, game.Toasties, Context.Guild.Id);
                 eb.WithAuthor(user.Username + " | Tie", user.GetAvatarUrl());
                 eb.WithDescription("Your score is tied with Namiko's. You get your " + ToastieUtil.RandomEmote() + " back!\n" +
                 "Your balance `" + ToastieDb.GetToasties(user.Id, Context.Guild.Id) + "` " + ToastieUtil.RandomEmote());
@@ -133,9 +129,9 @@ namespace Namiko.Core.Util
 
             else
             {
-                await ToastieDb.AddToasties(Context.Client.CurrentUser.Id, game.Pats, Context.Guild.Id);
+                await ToastieDb.AddToasties(Context.Client.CurrentUser.Id, game.Toasties, Context.Guild.Id);
                 eb.WithAuthor(user.Username + " | You Lose", user.GetAvatarUrl());
-                eb.WithDescription("Namiko's score is higher. You lose `" + game.Pats + "` " + ToastieUtil.RandomEmote() + "\n" +
+                eb.WithDescription("Namiko's score is higher. You lose `" + game.Toasties + "` " + ToastieUtil.RandomEmote() + "\n" +
                 "New balance `" + ToastieDb.GetToasties(user.Id, Context.Guild.Id) + "` " + ToastieUtil.RandomEmote());
                 eb.WithColor(Color.DarkRed);
             }
@@ -245,7 +241,7 @@ namespace Namiko.Core.Util
     }
     public class BlackjackGame
     {
-        public int Pats { get; set; }
+        public int Toasties { get; set; }
         public List<Card> Hand { get; set; }
         public List<Card> Dealer { get; set; }
         public Deck Deck { get; set; }
@@ -253,9 +249,9 @@ namespace Namiko.Core.Util
         public IUserMessage Message { get; set; }
         public SocketTextChannel Channel { get; set; }
 
-        public BlackjackGame(int pats, SocketTextChannel channel)
+        public BlackjackGame(int Toasties, SocketTextChannel channel)
         {
-            this.Pats = pats;
+            this.Toasties = Toasties;
             this.Channel = channel;
             SetUp();
         }

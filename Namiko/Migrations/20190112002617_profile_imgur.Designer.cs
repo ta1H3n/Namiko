@@ -2,19 +2,21 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Namiko.Resources.Database;
 
 namespace Namiko.Migrations
 {
     [DbContext(typeof(SqliteDbContext))]
-    partial class SqliteDbContextModelSnapshot : ModelSnapshot
+    [Migration("20190112002617_profile_imgur")]
+    partial class profile_imgur
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.0-rtm-35687");
+                .HasAnnotation("ProductVersion", "2.2.1-servicing-10028");
 
             modelBuilder.Entity("Namiko.Resources.Datatypes.BannedUser", b =>
                 {
@@ -78,26 +80,12 @@ namespace Namiko.Migrations
                     b.ToTable("BanrouletteParticipants");
                 });
 
-            modelBuilder.Entity("Namiko.Resources.Datatypes.BlacklistedChannel", b =>
-                {
-                    b.Property<ulong>("ChannelId")
-                        .ValueGeneratedOnAdd();
-
-                    b.HasKey("ChannelId");
-
-                    b.ToTable("BlacklistedChannels");
-                });
-
             modelBuilder.Entity("Namiko.Resources.Datatypes.Daily", b =>
                 {
                     b.Property<ulong>("UserId")
                         .ValueGeneratedOnAdd();
 
                     b.Property<long>("Date");
-
-                    b.Property<ulong>("GuildId");
-
-                    b.Property<int>("Id");
 
                     b.Property<int>("Streak");
 
@@ -110,8 +98,6 @@ namespace Namiko.Migrations
                 {
                     b.Property<int>("id")
                         .ValueGeneratedOnAdd();
-
-                    b.Property<ulong>("GuildId");
 
                     b.Property<ulong>("UserId");
 
@@ -142,10 +128,6 @@ namespace Namiko.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
-
-                    b.Property<DateTime>("Date");
-
-                    b.Property<ulong>("GuildId");
 
                     b.Property<ulong>("TeamId");
 
@@ -191,8 +173,6 @@ namespace Namiko.Migrations
                     b.Property<ulong>("RoleId")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<ulong>("GuildId");
-
                     b.HasKey("RoleId");
 
                     b.ToTable("PublicRoles");
@@ -212,26 +192,22 @@ namespace Namiko.Migrations
                     b.ToTable("Images");
                 });
 
-            modelBuilder.Entity("Namiko.Resources.Datatypes.Server", b =>
+            modelBuilder.Entity("Namiko.Resources.Datatypes.ShopRole", b =>
                 {
-                    b.Property<ulong>("GuildId")
+                    b.Property<ulong>("RoleId")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<DateTime>("JoinDate");
+                    b.Property<int>("DaysLength");
 
-                    b.Property<ulong>("JoinLogChannelId");
+                    b.Property<ulong>("GuildId");
 
-                    b.Property<DateTime>("LeaveDate");
+                    b.Property<ulong>("IfLimitedUserId");
 
-                    b.Property<string>("Prefix");
+                    b.Property<int>("Price");
 
-                    b.Property<ulong>("TeamLogChannelId");
+                    b.HasKey("RoleId");
 
-                    b.Property<ulong>("WelcomeChannelId");
-
-                    b.HasKey("GuildId");
-
-                    b.ToTable("Servers");
+                    b.ToTable("ShopRoles");
                 });
 
             modelBuilder.Entity("Namiko.Resources.Datatypes.ShopWaifu", b =>
@@ -244,8 +220,6 @@ namespace Namiko.Migrations
                     b.Property<int>("Discount");
 
                     b.Property<DateTime>("GeneratedDate");
-
-                    b.Property<ulong>("GuildId");
 
                     b.Property<int>("Limited");
 
@@ -263,8 +237,6 @@ namespace Namiko.Migrations
                     b.Property<ulong>("LeaderRoleId")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<ulong>("GuildId");
-
                     b.Property<ulong>("MemberRoleId");
 
                     b.HasKey("LeaderRoleId");
@@ -279,10 +251,6 @@ namespace Namiko.Migrations
 
                     b.Property<int>("Amount");
 
-                    b.Property<ulong>("GuildId");
-
-                    b.Property<int>("Id");
-
                     b.HasKey("UserId");
 
                     b.ToTable("Toasties");
@@ -295,8 +263,6 @@ namespace Namiko.Migrations
 
                     b.Property<DateTime>("DateBought");
 
-                    b.Property<ulong>("GuildId");
-
                     b.Property<ulong>("UserId");
 
                     b.Property<string>("WaifuName");
@@ -306,6 +272,22 @@ namespace Namiko.Migrations
                     b.HasIndex("WaifuName");
 
                     b.ToTable("UserInventories");
+                });
+
+            modelBuilder.Entity("Namiko.Resources.Datatypes.UserRole", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<DateTime>("DateToRemoveOn");
+
+                    b.Property<ulong>("RoleId");
+
+                    b.Property<ulong>("UserId");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ShopItems");
                 });
 
             modelBuilder.Entity("Namiko.Resources.Datatypes.Waifu", b =>

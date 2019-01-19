@@ -91,7 +91,7 @@ namespace Namiko.Core.Modules
         public async Task Invite(IUser user = null, [Remainder] string str = "")
         {
             var channel = Context.Channel;
-            var leaderRole = RoleUtil.GetLeader(Context);
+            var leaderRole = RoleUtil.GetLeader(Context.Guild, Context.User);
 
             if (leaderRole == null)
             {
@@ -99,7 +99,7 @@ namespace Namiko.Core.Modules
                 return;
             }
 
-            if (RoleUtil.IsTeamed(Context))
+            if (RoleUtil.IsTeamed(Context.Guild, user))
             {
                 await channel.SendMessageAsync($@"{user.Username} is already in a team, I guess you're too late ¯\_(ツ)_/¯");
                 return;
@@ -148,7 +148,7 @@ namespace Namiko.Core.Modules
         [Command("LeaveTeam"), Alias("lt"), Summary("Leave your team.\n**Usage**: `!lt`"), RequireBotPermission(GuildPermission.ManageRoles)]
         public async Task Leave()
         {
-            var role = RoleUtil.GetMember(Context);
+            var role = RoleUtil.GetMember(Context.Guild, Context.User);
             if (role == null)
             {
                 await Context.Channel.SendMessageAsync("Buuut... You're not in a team.");
@@ -165,7 +165,7 @@ namespace Namiko.Core.Modules
         [Command("TeamKick"), Alias("tk"), Summary("Kicks a user from your team.\n**Usage**: `!tk [user]`"), RequireBotPermission(GuildPermission.ManageRoles)]
         public async Task TeamKick(IUser user, [Remainder] string str = "")
         {
-            var leader = RoleUtil.GetLeader(Context);
+            var leader = RoleUtil.GetLeader(Context.Guild, Context.User);
             if (leader == null)
             {
                 await Context.Channel.SendMessageAsync("You're not a leader! Getting ahead of yourself eh?~");
@@ -173,7 +173,7 @@ namespace Namiko.Core.Modules
             }
 
             var team = TeamDb.TeamByLeader(leader.Id);
-            var userteam = RoleUtil.GetMember(Context);
+            var userteam = RoleUtil.GetMember(Context.Guild, user);
             var leaderteam = Context.Guild.GetRole(team.MemberRoleId);
             if (!userteam.Equals(leaderteam))
             {

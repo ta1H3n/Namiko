@@ -25,6 +25,9 @@ namespace Namiko.Resources.Database
         public DbSet<Banroulette> Banroulettes { get; set; }
         public DbSet<BanrouletteParticipant> BanrouletteParticipants { get; set; }
         public DbSet<BannedUser> BannedUsers { get; set; }
+        public DbSet<ImgurAlbumLink> ImgurAlbums { get; set; }
+        public DbSet<Profile> Profiles { get; set; }
+        public DbSet<Marriage> Marriages { get; set; }
         public DbSet<Server> Servers { get; set; }
         public DbSet<BlacklistedChannel> BlacklistedChannels { get; set; }
 

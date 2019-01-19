@@ -23,6 +23,8 @@
     <Compile Remove="Migrations\20181002173912_edit.cs" />
     <Compile Remove="Migrations\20181005154304_tables.cs" />
     <Compile Remove="Migrations\20181116002351_FeaturedWaifu.cs" />
+    <Compile Remove="Migrations\20190112143555_imgurshit.cs" />
+    <Compile Remove="Migrations\20190117141614_imgurshit_removal.cs" />
     <Compile Remove="Migrations\20190107150249_test.cs" />
     <Compile Remove="Migrations\20190107152247_global.cs" />
     <Compile Remove="Migrations\20190107152424_global.cs" />
@@ -32,13 +34,14 @@
   <ItemGroup>
     <PackageReference Include="Booru.Net" Version="1.0.0.3" />
     <PackageReference Include="Discord.Net" Version="2.0.1" />
+    <PackageReference Include="Imgur.API" Version="4.0.1" />
     <PackageReference Include="IqdbApi" Version="1.4.0" />
     <PackageReference Include="Kitsu" Version="1.4.1" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.2.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.2.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="2.2.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.2.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.2.0">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.2.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.2.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="2.2.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.2.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.2.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>

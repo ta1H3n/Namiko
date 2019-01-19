@@ -1,15 +1,14 @@
 ﻿using Discord;
+using System;
+using System.Text;
+using System.Linq;
 using Discord.Commands;
 using Discord.WebSocket;
 using Namiko.Core.Modules;
 using Namiko.Resources.Database;
 using Namiko.Resources.Datatypes;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-
 namespace Namiko.Core.Util
 {
     public static class WaifuUtil
@@ -81,10 +80,15 @@ namespace Namiko.Core.Util
             eb.WithAuthor("Waifu Store", Context.Client.CurrentUser.GetAvatarUrl());
             foreach (var x in waifus)
             {
-                var efb = new EmbedFieldBuilder();
-                efb.IsInline = true;
-                efb.Name = x.Waifu.Name;
-                efb.Value = $"TIER: **{x.Waifu.Tier}**\nPrice: {GetPriceString(x.Waifu.Tier, x.Discount)}";
+
+                var efb = new EmbedFieldBuilder{
+                    IsInline = true,
+                    Name = x.Waifu.Name,
+                    Value = $"TIER: **{x.Waifu.Tier}**\nPrice: {GetPriceString(x.Waifu.Tier, x.Discount)}"
+                };
+                //efb.IsInline = true;
+                //efb.Name = x.Waifu.Name;
+                //efb.Value = $"TIER: **{x.Waifu.Tier}**\nPrice: {GetPriceString(x.Waifu.Tier, x.Discount)}";
 
                 if (x.Limited > -1)
                 {
@@ -121,15 +125,33 @@ namespace Namiko.Core.Util
         }
         public static int GetPrice(int tier, int discount = 0)
         {
-            int price = tier == 1 ? 20000 :
-                tier == 2 ? 10000 :
-                tier == 3 ? 5000 :
-                tier == 0 ? 100000 : 0;
+            int price = tier == 1 ? Cost.tier1 :
+                        tier == 2 ? Cost.tier2 :
+                        tier == 3 ? Cost.tier3 :
+                        tier == 0 ? Cost.tier0 : 
+                        
+                        //default
+                        0;
 
             if (discount >= 0)
                 price = price - (price / 100 * discount);
 
             return price;
+        }
+        public static int GetSalePrice(int tier) {
+
+            //creating nessacary variables 
+            Random rnd = new Random();
+            int num = rnd.Next(1, 31);
+            int worth = (int)(GetPrice(tier) *  ((tier == 3)? 0.70 :   //70%
+                                                (tier == 2)? 0.60 :    //60%
+
+                                                //default, also 55%
+                                                0.55));
+
+            //random 3 in 17 chance to have increased sale
+            if (num < 10) return worth + worth / (num * 4);
+            return worth;
         }
         public static EmbedBuilder WaifuEmbedBuilder(Waifu waifu, bool footerDetails = false, SocketCommandContext context = null)
         {
@@ -211,53 +233,6 @@ namespace Namiko.Core.Util
                     field += "`" + x.Name + "` ";
                 eb.WithDescription(field);
             }
-            eb.Color = BasicUtil.RandomColor();
-            return eb;
-        }
-        public static EmbedBuilder ProfileEmbed(SocketGuildUser user)
-        {
-            var eb = new EmbedBuilder();
-            eb.WithAuthor(user);
-            eb.WithThumbnailUrl(user.GetAvatarUrl());
-
-            var waifus = UserInventoryDb.GetWaifus(user.Id, user.Guild.Id).OrderBy(x => x.Source).ThenBy(x => x.Name);
-            int waifucount = waifus.Count();
-            int waifuprice = WaifuValue(waifus);
-
-            // string desc = $"**Toasties**: {ToastieDb.GetToasties(user.Id)}\n";
-            // desc += $"**Waifu worth**: {waifuprice}";
-            // eb.WithDescription(desc);
-
-            var daily = DailyDb.GetDaily(user.Id, user.Guild.Id);
-            long timeNow = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-            eb.AddField("Toasties", $"Amount: {ToastieDb.GetToasties(user.Id, user.Guild.Id)} <:toastie3:454441133876183060>\nDaily: {(daily == null ? "0" : ((daily.Date + 172800000) < timeNow ? "0" : daily.Streak.ToString()))} :calendar_spiral:", true);
-            eb.AddField("Waifus", $"Amount: {waifucount} :two_hearts:\nValue: {waifuprice} <:toastie3:454441133876183060>", true);
-
-            if (waifucount > 0)
-            {
-                string wstr = "";
-                // wstr += $"Total: {waifus.Count} :two_hearts:\n";
-                // wstr += $"Value: {waifuprice} <:toastie3:454441133876183060>";
-                foreach (var x in waifus)
-                {
-                    if (x.LongName.Length > 35)
-                        x.LongName = x.LongName.Substring(0, 33) + "...";
-                    x.LongName = x.LongName ?? "";
-                    wstr += String.Format("**{0}** - *{1}*\n", x.Name, x.LongName);
-                }
-                eb.AddField("Waifus", wstr);
-            }
-
-            var waifu = FeaturedWaifuDb.GetFeaturedWaifu(user.Id, user.Guild.Id);
-            if(waifu != null)
-                eb.WithThumbnailUrl(waifu.ImageUrl);
-            
-            string footer = "";
-            footer += $"Status: '{user.Status.ToString()}'";
-            if (user.Activity != null)
-                footer += $", Playing: '{user.Activity.Name}'";
-            eb.WithFooter(footer);
-
             eb.Color = BasicUtil.RandomColor();
             return eb;
         }

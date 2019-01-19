@@ -18,7 +18,7 @@ namespace Namiko.Resources.Database
                 if(id == -1)
                     DbContext.Add(new ReactionImage { Name = name.ToLowerInvariant(), Url = url });
                 else
-                    DbContext.Add(new ReactionImage { Id = id, Name = name, Url = url });
+                    DbContext.Add(new ReactionImage { Id = id, Name = name.ToLowerInvariant(), Url = url });
                 await DbContext.SaveChangesAsync();
             }
         }
@@ -90,6 +90,41 @@ namespace Namiko.Resources.Database
                     x.Name = x.Name.ToLowerInvariant();
                 }
                 db.Images.UpdateRange(images);
+                await db.SaveChangesAsync();
+            }
+        }
+
+        public static bool Exists(string name)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                bool res = db.ImgurAlbums.Any(x => x.Name == name);
+                return res;
+            }
+        }
+
+        public static async Task UpdateImage(ReactionImage image)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                db.Images.Update(image);
+                await db.SaveChangesAsync();
+            }
+        }
+
+        public static ImgurAlbumLink GetAlbum(string name)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                return db.ImgurAlbums.FirstOrDefault(x => x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
+            }
+        }
+
+        public static async Task CreateAlbum(string name, string albumId)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                db.Add(new ImgurAlbumLink { AlbumId = albumId, Name = name.ToLowerInvariant() });
                 await db.SaveChangesAsync();
             }
         }

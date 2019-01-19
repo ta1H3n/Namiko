@@ -1,30 +1,18 @@
 ﻿using System.Threading.Tasks;
+using Namiko.Core.Util;
 using System.Linq;
-
-using Discord.Commands;
 using Discord;
-
+using System;
+using Discord.Commands;
+using Discord.WebSocket;
 using Namiko.Resources.Database;
 using Namiko.Resources.Datatypes;
-using System.Collections.Generic;
-using System;
 using Namiko.Resources.Attributes;
-using Namiko.Core.Util;
-using Discord.WebSocket;
-
+using System.Collections.Generic;
 namespace Namiko.Core.Modules
 {
     public class Waifus : ModuleBase<SocketCommandContext>
     {
-        [Command("Inventory"), Alias("waifus", "profile"), Summary("Shows user waifus.\n**Usage**: `!inventory [user_optional]`")]
-        public async Task Inventory(SocketGuildUser user = null, [Remainder] string str = "")
-        {
-            if (user == null)
-                user = (SocketGuildUser) Context.User;
-
-            await Context.Channel.SendMessageAsync("", false, WaifuUtil.ProfileEmbed(user).Build());
-        }
-
         [Command("WaifuShop"), Alias("ws"), Summary("Opens the waifu shop."),]
         public async Task OpenWaifuShop([Remainder] string str = "")
         {
@@ -85,6 +73,43 @@ namespace Namiko.Core.Modules
 
             await UserInventoryDb.AddWaifu(Context.User.Id, waifu, Context.Guild.Id);
             await Context.Channel.SendMessageAsync($"Congratulations! You bought **{waifu.Name}**!", false, WaifuUtil.WaifuEmbedBuilder(waifu).Build());
+        }
+
+        [Command("SellWaifu"), Alias("sw"), Summary("Sells a waifu you already own for a discounted price.\n**Usage**: `!sw [name]`")]
+        public async Task SellWaifu(string name, [Remainder] string str = "") {
+            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(name), name, Context.Channel);
+
+            //waifus existance
+            if (waifu == null) {
+                await Context.Channel.SendMessageAsync($"Can't find '{name}'. I know they are not real, but this one *really is* just your imagination >_>");
+                return;
+            }
+
+            //getting waifus u own
+            var waifus = UserInventoryDb.GetWaifus(Context.User.Id);
+            if (waifus.Where(x => x.Name.Equals(waifu.Name)).Count() > 0) {
+
+                //checking worth
+                int worth = WaifuUtil.GetSalePrice(waifu.Tier);
+                if (worth > 0) {
+
+                    //giving u the money for da waifu
+                    try { await ToastieDb.AddToasties(Context.User.Id, worth); } 
+                    catch (Exception ex) { await Context.Channel.SendMessageAsync(ex.Message); }
+
+                    //removing waifu + confirmation
+                    await UserInventoryDb.DeleteWaifu(Context.User.Id, waifu);
+                    await Context.Channel.SendMessageAsync($"Congratulations! You sold **{waifu.Name}** for {worth.ToString("n0")} toasties", false, ToastieUtil.ToastieEmbed(Context.User, ToastieDb.GetToasties(Context.User.Id)).Build());
+                    return;
+                }
+
+                //if u have da waifu, but value error occurs
+                await Context.Channel.SendMessageAsync("You have this waifu, but there was a sales error\nPlease get it's \"Tier\" corrected");
+                return;
+            }
+
+            //doesnt have the waifu
+            await Context.Channel.SendMessageAsync("If you wanna play the pimp boi....\nYou're gonna have to actually buy dat' waifu");
         }
 
         [Command("GiveWaifu"), Alias("gw"), Summary("Transfers waifu to another user.\n**Usage**: `!gw [user] [waifu_name]`")]
@@ -316,7 +341,7 @@ namespace Namiko.Core.Modules
             if (UserInventoryDb.GetWaifus(Context.User.Id, Context.Guild.Id).Any(x => x.Name.Equals(waifu.Name)))
             {
                 await FeaturedWaifuDb.SetFeaturedWaifu(Context.User.Id, waifu, Context.Guild.Id);
-                await Context.Channel.SendMessageAsync($"{waifu.Name} set as your featured waifu!", false, WaifuUtil.ProfileEmbed((SocketGuildUser) Context.User).Build());
+                await Context.Channel.SendMessageAsync($"{waifu.Name} set as your featured waifu!", false, UserUtil.ProfileEmbed((SocketGuildUser) Context.User).Build());
                 return;
             }
             await Context.Channel.SendMessageAsync($":x: You don't have {waifu.Name}");

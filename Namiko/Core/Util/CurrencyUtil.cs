@@ -1,16 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
+using Discord;
 using System.Text;
 using System.Linq;
-using System.Threading.Tasks;
-using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-
 using Namiko.Core.Modules;
+using System.Threading.Tasks;
 using Namiko.Resources.Database;
+using System.Collections.Generic;
 using Namiko.Resources.Datatypes;
-
 namespace Namiko.Core.Util
 {
     public static class ToastieUtil
@@ -38,7 +36,7 @@ namespace Namiko.Core.Util
         {
             var eb = new EmbedBuilder();
             eb.WithAuthor(user);
-            eb.WithDescription($"You have {amount} {ToastieUtil.RandomEmote()}!");
+            eb.WithDescription($"You have {amount.ToString("n0")} {ToastieUtil.RandomEmote()}!");
             eb.WithColor(Color.Gold);
             return eb;
         }
@@ -67,7 +65,7 @@ namespace Namiko.Core.Util
             {
                 var x = ordtList.ElementAtOrDefault(i);
                 if(x.Key != null)
-                    users += $"#{i+1} {x.Key.Mention} - {x.Value}\n";
+                    users += $"#{i+1} {x.Key.Mention} - {x.Value.ToString("n0")}\n";
             }
             if (users == "")
                 users = "-";
@@ -104,7 +102,7 @@ namespace Namiko.Core.Util
                 var y = orddList.ElementAtOrDefault(i);
                 if (y.Key != null)
                 {
-                    daily += $"#{i + 1} {y.Key.Mention} - {y.Value}\n";
+                    daily += $"#{i + 1} {y.Key.Mention} - {y.Value.ToString("n0")}\n";
                 }
             }
             if (daily == "")
@@ -151,12 +149,12 @@ namespace Namiko.Core.Util
             {
                 var x = ordtList.ElementAtOrDefault(i);
                 if (x.Key != null)
-                    users += $"#{i + 1} {x.Key.Mention} - {x.Value}\n";
+                    users += $"#{i + 1} {x.Key.Mention} - {x.Value.ToString("n0")}\n";
 
                 var y = orddList.ElementAtOrDefault(i);
                 if (y.Key != null)
                 {
-                    daily += $"#{i + 1} {y.Key.Mention} - {y.Value}\n";
+                    daily += $"#{i + 1} {y.Key.Mention} - {y.Value.ToString("n0")}\n";
                 }
             }
             if (users == "")
@@ -186,7 +184,7 @@ namespace Namiko.Core.Util
         {
             var eb = new EmbedBuilder();
             eb.WithAuthor(user);
-            eb.WithDescription($"**You win!** {amount} {ToastieUtil.RandomEmote()} received!\nNow you have {ToastieDb.GetToasties(user.Id, user.Guild.Id)} {ToastieUtil.RandomEmote()}!");
+            eb.WithDescription($"**You win!** {amount.ToString("n0")} {ToastieUtil.RandomEmote()} received!\nNow you have {ToastieDb.GetToasties(user.Id, user.Guild.Id)..ToString("n0")} {ToastieUtil.RandomEmote()}!");
             eb.WithColor(Color.Gold);
             return eb;
         }
@@ -194,7 +192,7 @@ namespace Namiko.Core.Util
         {
             var eb = new EmbedBuilder();
             eb.WithAuthor(user);
-            eb.WithDescription($"**You lose!** {amount} {ToastieUtil.RandomEmote()} lost...\nNow you have {ToastieDb.GetToasties(user.Id, user.Guild.Id)} {ToastieUtil.RandomEmote()}!");
+            eb.WithDescription($"**You lose!** {amount.ToString("n0")} {ToastieUtil.RandomEmote()} lost...\nNow you have {ToastieDb.GetToasties(user.Id, user.Guild.Id.ToString("n0"))} {ToastieUtil.RandomEmote()}!");
             eb.WithColor(Color.DarkRed);
             return eb;
         }
@@ -213,7 +211,7 @@ namespace Namiko.Core.Util
         {
             var eb = new EmbedBuilder();
             eb.WithAuthor(user);
-            eb.WithDescription($"You're on a **{streak}** day streak. You receive **{amount}** {ToastieUtil.RandomEmote()}\nYou now have **{balance}** {ToastieUtil.RandomEmote()}");
+            eb.WithDescription($"You're on a **{streak.ToString("n0")}** day streak. You receive **{amount.ToString("n0")}** {ToastieUtil.RandomEmote()}\nYou now have **{balance}** {ToastieUtil.RandomEmote()}");
             eb.WithColor(BasicUtil.RandomColor());
             return eb;
         }
