@@ -151,7 +151,7 @@ namespace Namiko.Core.Modules
         [Command("Give"), Summary("Give a user some of you toasties.\n**Usage**: `!give [user] [amount]`")]
         public async Task Give(IUser recipient, string sAmount, [Remainder] string str = "")
         {
-            int amount = ToastieUtil.ParseAmount(sAmount, Context.User);
+            int amount = ToastieUtil.ParseAmount(sAmount, (SocketGuildUser)Context.User);
             if (amount <= 0)
             {
                 await Context.Channel.SendMessageAsync("Pick an amount!");

@@ -15,32 +15,32 @@ namespace Namiko.Core.Modules
 {
     public class Basic : ModuleBase<SocketCommandContext>
     {
-      //  [Command("Hi Namiko"), Alias("Hi", "ping"), Summary("Hi Namiko command")]
-      //  public async Task HiNamiko([Remainder] string str = "")
-      //  {
-      //      await Context.Channel.SendMessageAsync($"Hi {Context.User.Mention} :fox:");
-      //  }
+        [Command("Hi Namiko"), Alias("Hi", "ping"), Summary("Hi Namiko command")]
+        public async Task HiNamiko([Remainder] string str = "")
+        {
+            await Context.Channel.SendMessageAsync($"Hi {Context.User.Mention} :fox:");
+        }
 
-     //   [Command("RandomUser"), Alias("ru"), Summary("Randomly picks one user from all the reactions on a message.\nOnly works with default discord emotes.\n" +
-     //       "Message has to be in the same channel.\n**Usage**:`!ru [message_id]`")]
-     //   public async Task RandomUser(ulong msgId, [Remainder] string str = "")
-     //   {
-     //       var msg = await Context.Channel.GetMessageAsync(msgId) as RestUserMessage;
-     //       List<IUser> users = new List<IUser>();
-     //       foreach (var reaction in msg.Reactions)
-     //       {
-     //           try
-     //           {
-     //               var tUsers = msg.GetReactionUsersAsync(reaction.Key, 0);
-     //               users.AddRange(tUsers);
-     //           } catch { }
-     //       }
-     //       
-     //       users = users.Distinct(new DistintUserComparer()).ToList();
-     //       var user = users[new Random().Next(users.Count)];
-     //     
-     //       await Context.Channel.SendMessageAsync($"Aaaaaand ... it's {user.Username}! :star:");
-     //   }
+       // [Command("RandomUser"), Alias("ru"), Summary("Randomly picks one user from all the reactions on a message.\nOnly works with default discord emotes.\n" +
+       //     "Message has to be in the same channel.\n**Usage**:`!ru [message_id]`")]
+       // public async Task RandomUser(ulong msgId, [Remainder] string str = "")
+       // {
+       //     var msg = await Context.Channel.GetMessageAsync(msgId) as RestUserMessage;
+       //     List<IUser> users = new List<IUser>();
+       //     foreach (var reaction in msg.Reactions)
+       //     {
+       //         try
+       //         {
+       //             var tUsers = msg.GetReactionUsersAsync(reaction.Key, 0);
+       //             users.AddRange(tUsers);
+       //         } catch { }
+       //     }
+       //     
+       //     users = users.Distinct(new DistintUserComparer()).ToList();
+       //     var user = users[new Random().Next(users.Count)];
+       //   
+       //     await Context.Channel.SendMessageAsync($"Aaaaaand ... it's {user.Username}! :star:");
+       // }
 
 
         public async Task Help(SocketCommandContext context, CommandService commandService)

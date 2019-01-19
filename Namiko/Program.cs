@@ -26,7 +26,6 @@ namespace Namiko
         private static DiscordSocketClient Client;
         private static CommandService Commands;
         private static bool Pause = false;
-        private static bool Debug = false;
 
         static void Main(string[] args)
         => new Program().MainAsync().GetAwaiter().GetResult();
@@ -111,9 +110,7 @@ namespace Namiko
             var ch = Client.GetChannel(StaticSettings.log_channel) as ISocketMessageChannel;
             await ch.SendMessageAsync($"`{DateTime.Now} - Ready`");
         }
-        #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         private async Task Client_Log(LogMessage arg)
-        #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             string message = $"`{DateTime.Now} at {arg.Source}] {arg.Message}`";
             Console.WriteLine(message);
@@ -272,7 +269,6 @@ namespace Namiko
         private static void SetUpDebug()
         {
             Locations.SetUpDebug();
-            Debug = true;
         }
         private static void SetUpRelease()
         {

@@ -4,7 +4,7 @@ using Discord;
 using System;
 using Discord.Commands;
 using Namiko.Resources.Database;
-
+using Discord.WebSocket;
 
 namespace Namiko.Core.Modules {
     public class User : ModuleBase<SocketCommandContext> {
@@ -12,7 +12,7 @@ namespace Namiko.Core.Modules {
         [Command("Inventory"), Alias("waifus", "profile"), Summary("Shows user waifus.\n**Usage**: `!inventory [user_optional]`")]
         public async Task Inventory(IUser user = null, [Remainder] string str = "") {
             if (user == null) user = Context.User;
-            await Context.Channel.SendMessageAsync("", false, UserUtil.ProfileEmbed(user).Build());
+            await Context.Channel.SendMessageAsync("", false, UserUtil.ProfileEmbed((SocketGuildUser)user).Build());
         }
 
         [Command("setcolour"), Alias("setcolor", "sc"), Summary("Allows user to set profile colour for a smol cost.\n**Usage**: `!sc [shade - optional as dark/light ] [colour name or hex value]`")]
@@ -50,7 +50,7 @@ namespace Namiko.Core.Modules {
             if (UserUtil.GetNamedColour(ref color, colour, shade) || UserUtil.GetHexColour(ref color, colour)) {
 
                 //toastie + saving hex color try
-                try { await ToastieDb.AddToasties(Context.User.Id, -Cost.colour);
+                try { await ToastieDb.AddToasties(Context.User.Id, -Cost.colour, Context.Guild.Id);
                     await UserDb.SetHex(color, Context.User.Id);
 
                     //creating comfermation embed

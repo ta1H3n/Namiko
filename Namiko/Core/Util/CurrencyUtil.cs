@@ -184,7 +184,7 @@ namespace Namiko.Core.Util
         {
             var eb = new EmbedBuilder();
             eb.WithAuthor(user);
-            eb.WithDescription($"**You win!** {amount.ToString("n0")} {ToastieUtil.RandomEmote()} received!\nNow you have {ToastieDb.GetToasties(user.Id, user.Guild.Id)..ToString("n0")} {ToastieUtil.RandomEmote()}!");
+            eb.WithDescription($"**You win!** {amount.ToString("n0")} {ToastieUtil.RandomEmote()} received!\nNow you have {ToastieDb.GetToasties(user.Id, user.Guild.Id).ToString("n0")} {ToastieUtil.RandomEmote()}!");
             eb.WithColor(Color.Gold);
             return eb;
         }
@@ -192,7 +192,7 @@ namespace Namiko.Core.Util
         {
             var eb = new EmbedBuilder();
             eb.WithAuthor(user);
-            eb.WithDescription($"**You lose!** {amount.ToString("n0")} {ToastieUtil.RandomEmote()} lost...\nNow you have {ToastieDb.GetToasties(user.Id, user.Guild.Id.ToString("n0"))} {ToastieUtil.RandomEmote()}!");
+            eb.WithDescription($"**You lose!** {amount.ToString("n0")} {ToastieUtil.RandomEmote()} lost...\nNow you have {ToastieDb.GetToasties(user.Id, user.Guild.Id).ToString("n0")} {ToastieUtil.RandomEmote()}!");
             eb.WithColor(Color.DarkRed);
             return eb;
         }

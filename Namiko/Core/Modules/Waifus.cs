@@ -86,7 +86,7 @@ namespace Namiko.Core.Modules
             }
 
             //getting waifus u own
-            var waifus = UserInventoryDb.GetWaifus(Context.User.Id);
+            var waifus = UserInventoryDb.GetWaifus(Context.User.Id, Context.Guild.Id);
             if (waifus.Where(x => x.Name.Equals(waifu.Name)).Count() > 0) {
 
                 //checking worth
@@ -94,12 +94,12 @@ namespace Namiko.Core.Modules
                 if (worth > 0) {
 
                     //giving u the money for da waifu
-                    try { await ToastieDb.AddToasties(Context.User.Id, worth); } 
+                    try { await ToastieDb.AddToasties(Context.User.Id, worth, Context.Guild.Id); } 
                     catch (Exception ex) { await Context.Channel.SendMessageAsync(ex.Message); }
 
                     //removing waifu + confirmation
-                    await UserInventoryDb.DeleteWaifu(Context.User.Id, waifu);
-                    await Context.Channel.SendMessageAsync($"Congratulations! You sold **{waifu.Name}** for {worth.ToString("n0")} toasties", false, ToastieUtil.ToastieEmbed(Context.User, ToastieDb.GetToasties(Context.User.Id)).Build());
+                    await UserInventoryDb.DeleteWaifu(Context.User.Id, waifu, Context.Guild.Id);
+                    await Context.Channel.SendMessageAsync($"Congratulations! You sold **{waifu.Name}** for {worth.ToString("n0")} toasties", false, ToastieUtil.ToastieEmbed(Context.User, ToastieDb.GetToasties(Context.User.Id, Context.Guild.Id)).Build());
                     return;
                 }
 
