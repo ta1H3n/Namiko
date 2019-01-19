@@ -92,8 +92,8 @@ namespace Namiko.Core.Modules {
             await UserDb.SetQuote(Context.User.Id, quote);
 
             //getting embed + re-getting quote
-            quote = UserDb.GetQuote(Context.User.Id);
-            EmbedBuilder embed = UserUtil.QuoteEmbed(Context.User, true, quote);
+            //quote = ;
+            EmbedBuilder embed = UserUtil.QuoteEmbed(Context.User, true);
             embed.WithAuthor($"Personal { ((isPic)? "Picture" : "Quote") } Updated");
             await Context.Channel.SendMessageAsync("", false, embed.Build());
         }
@@ -104,16 +104,15 @@ namespace Namiko.Core.Modules {
             //variables
             bool isMe = iuser == null;
             IUser user = iuser ?? Context.User;
-            string quote = UserDb.GetQuote(user.Id);
 
             //checking quote
-            if(quote == null){
+            if(UserDb.GetQuote(user.Id) == null){
                 await Context.Channel.SendMessageAsync($"Gomen... { ((isMe)? "You haven't" : $"{ user.Username } hasn't") } added a Quote yet qq ");
                 return;
             }
 
             //sending quote
-            EmbedBuilder embed = UserUtil.QuoteEmbed(user, isMe, quote);
+            EmbedBuilder embed = UserUtil.QuoteEmbed(user, isMe);
             await Context.Channel.SendMessageAsync("", false, embed.Build());
         }
     }

@@ -101,11 +101,14 @@ namespace Namiko.Core.Util {
             eb.Color = UserDb.CheckHex(out string colour, user.Id)? (Discord.Color) HexToColor(colour) : BasicUtil.RandomColor();
             return eb;
         }
-        public static EmbedBuilder QuoteEmbed(IUser User, bool isMe ,string quote) {
+        public static EmbedBuilder QuoteEmbed(IUser User, bool isMe) {
+
+            //necessary string variables 
+            string quote = UserDb.GetQuote(User.Id);
+            string keyWord = (isMe) ? "Personal" : $"{ User.Username }'s ";
 
             //creating embed
             EmbedBuilder embed = new EmbedBuilder();
-            string keyWord = (isMe) ? "Personal" : $"{ User.Username }'s ";
             embed.WithColor(UserDb.CheckHex(out string colour, User.Id)? (Discord.Color) HexToColor(colour) : BasicUtil.RandomColor());
 
             //checking if its a valid url
