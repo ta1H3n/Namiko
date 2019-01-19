@@ -268,3 +268,5 @@ __pycache__/
 /Test
 /SauceNao
 /DBTESTSHIT
+/Namiko/Scripts/SqliteMoveDb.cs
+/Namiko/Scripts/ImgurMove.cs
