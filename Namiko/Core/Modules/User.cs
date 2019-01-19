@@ -15,7 +15,7 @@ namespace Namiko.Core.Modules {
             await Context.Channel.SendMessageAsync("", false, UserUtil.ProfileEmbed(user).Build());
         }
 
-        [Command("setcolour"), Alias("setcolor", "sc"), Summary("Allows user to set profile colour for a smol cost.\n**Usage**: `!sc [shade - optional as dark/light ] [colour name or hex value]`")]
+        [Command("setcolour"), Alias("setcolor", "sc"), Summary("Allows user to set profile colour for 150 toasties.\n**Usage**: `!sc [dark/light optional] [colour name or hex value]`")]
         public async Task CustomColour(string shade, string colour = "",[Remainder] string str = "") {
 
              //
@@ -81,30 +81,39 @@ namespace Namiko.Core.Modules {
                 return;
             }
 
+            //possible image validity check
+            bool isPic = WebUtil.IsImageUrl(quote);
+            if (WebUtil.IsValidUrl(quote) && !isPic) {
+                await Context.Channel.SendMessageAsync("Gomen... I only accept image links (ᗒᗩᗕ)");
+                return;
+            }
+
             //setting quote 
             await UserDb.SetQuote(Context.User.Id, quote);
 
             //getting embed + re-getting quote
             quote = UserDb.GetQuote(Context.User.Id);
-            EmbedBuilder embed = UserUtil.QuoteEmbed(Context.User.Id, quote);
-            embed.WithAuthor("Personal Quote Updated");
+            EmbedBuilder embed = UserUtil.QuoteEmbed(Context.User, true, quote);
+            embed.WithAuthor($"Personal { ((isPic)? "Picture" : "Quote") } Updated");
             await Context.Channel.SendMessageAsync("", false, embed.Build());
         }
 
         [Command("quote"), Alias("q"), Summary("Allows user to see their personal quote.\n**Usage**: `!q`")]
-        public async Task PersonalQuote(IUser user = null, [Remainder] string str = "") {
+        public async Task PersonalQuote(IUser iuser = null, [Remainder] string str = "") {
 
-            ulong userid = user?.Id ?? Context.User.Id;
-            string quote = UserDb.GetQuote(userid);
+            //variables
+            bool isMe = iuser == null;
+            IUser user = iuser ?? Context.User;
+            string quote = UserDb.GetQuote(user.Id);
 
             //checking quote
-            if(quote == null || quote == ""){
-                await Context.Channel.SendMessageAsync("You haven't added a quote yet qq");
+            if(quote == null){
+                await Context.Channel.SendMessageAsync($"Gomen... { ((isMe)? "You haven't" : $"{ user.Username } hasn't") } added a Quote yet qq ");
                 return;
             }
 
             //sending quote
-            EmbedBuilder embed = UserUtil.QuoteEmbed(userid, quote);
+            EmbedBuilder embed = UserUtil.QuoteEmbed(user, isMe, quote);
             await Context.Channel.SendMessageAsync("", false, embed.Build());
         }
     }

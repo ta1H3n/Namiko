@@ -124,16 +124,20 @@ namespace Namiko.Core.Util
 
         public static bool IsImageUrl(string url)
         {
-            var req = (HttpWebRequest)HttpWebRequest.Create(url);
-            req.Method = "HEAD";
-            using (var resp = req.GetResponse())
-            {
-                return resp.ContentType.ToLower(CultureInfo.InvariantCulture).StartsWith("image/");
-            }
+
+            try {
+                var req = (HttpWebRequest)HttpWebRequest.Create(url);
+                req.Method = "HEAD";
+                using (var resp = req.GetResponse()) {
+                    return resp.ContentType.ToLower(CultureInfo.InvariantCulture).StartsWith("image/");
+                }
+            } catch (UriFormatException){ return false; }
         }
         public static bool IsValidUrl(string url)
         {
-            return Uri.IsWellFormedUriString("https://www.google.com", UriKind.Absolute);
+            return  Uri.TryCreate(url, UriKind.Absolute, out Uri uriResult) && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps); 
+
+            //return Uri.IsWellFormedUriString("https://www.google.com", UriKind.Absolute);
         }
     }
 }

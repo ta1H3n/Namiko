@@ -8,6 +8,6 @@
         public const int tier0 = 100000;
         
         //colour, dont laugh at my coments
-        public const int colour = 500;
+        public const int colour = 150;
     }
 }
