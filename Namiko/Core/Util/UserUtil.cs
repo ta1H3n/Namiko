@@ -96,19 +96,33 @@ namespace Namiko.Core.Util {
                 footer += $", Playing: '{user.Activity.Name}'";
             eb.WithFooter(footer);
 
-            if(UserDb.GetQuote(user.Id) != null && !UserDb.GetQuote(user.Id).Equals(""))
-                eb.WithDescription($"{UserDb.GetQuote(user.Id)}");
+            string quote = UserDb.GetQuote(user.Id);
+            if (quote != null && !quote.Equals(""))
+                eb.WithDescription((WebUtil.IsValidUrl(quote))? $"*[Link to Custom Picture]({quote})*" : $"{quote}");
             
             eb.Color = UserDb.CheckHex(out string colour, user.Id)? (Discord.Color) HexToColor(colour) : BasicUtil.RandomColor();
             return eb;
         }
-        public static EmbedBuilder QuoteEmbed(ulong UserId, string quote) {
+        public static EmbedBuilder QuoteEmbed(IUser User, bool isMe) {
 
-            //creating comfermation embed
+            //necessary string variables 
+            string quote = UserDb.GetQuote(User.Id);
+            string keyWord = (isMe) ? "Personal" : $"{ User.Username }'s ";
+
+            //creating embed
             EmbedBuilder embed = new EmbedBuilder();
-            embed.WithAuthor("Personal Quote");
+            embed.WithColor(UserDb.CheckHex(out string colour, User.Id)? (Discord.Color) HexToColor(colour) : BasicUtil.RandomColor());
+
+            //checking if its a valid url
+            if (WebUtil.IsValidUrl(quote)) {
+                embed.WithAuthor(keyWord + " Picture");
+                embed.WithImageUrl(quote);
+                return embed;
+            }
+
+            //if its a regular quote
+            embed.WithAuthor(keyWord + "  Quote");
             embed.WithDescription(quote);
-            embed.WithColor(UserDb.CheckHex(out string colour, UserId)? (Discord.Color) HexToColor(colour) : BasicUtil.RandomColor());
             return embed;
         }
     }
