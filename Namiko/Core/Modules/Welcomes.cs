@@ -60,7 +60,7 @@ namespace Namiko.Core.Modules
             }
         }
 
-        [Command("SetWelcomeChannel"), Alias("swc"), Summary("Set's the welcome channel. Current channel or provided ID.\n**Usage**: `!swc [id]`"), RequireUserPermission(GuildPermission.Administrator)]
+        [Command("SetWelcomeChannel"), Alias("swc"), Summary("Set's the welcome channel. Current channel or provided ID.\n**Usage**: `!swc [id]`"), RequireUserPermission(GuildPermission.ManageChannels)]
         public async Task SetWelcomeChannel(long inputId = 1)
         {
             ulong id = 0;

@@ -3,6 +3,8 @@ using System;
 using System.Linq;
 using System.Globalization;
 using Namiko.Resources.Database;
+using Discord.WebSocket;
+
 namespace Namiko.Core.Util {
     class UserUtil {
 
@@ -59,18 +61,18 @@ namespace Namiko.Core.Util {
 
          // Embedz
         //Embed Method: profile
-        public static EmbedBuilder ProfileEmbed(IUser user) {
+        public static EmbedBuilder ProfileEmbed(SocketGuildUser user) {
             var eb = new EmbedBuilder();
             eb.WithAuthor(user);
             eb.WithThumbnailUrl(user.GetAvatarUrl());
 
-            var waifus = UserInventoryDb.GetWaifus(user.Id).OrderBy(x => x.Source).ThenBy(x => x.Name);
+            var waifus = UserInventoryDb.GetWaifus(user.Id, user.Guild.Id).OrderBy(x => x.Source).ThenBy(x => x.Name);
             int waifucount = waifus.Count();
             int waifuprice = WaifuUtil.WaifuValue(waifus);
 
-            var daily = DailyDb.GetDaily(user.Id);
+            var daily = DailyDb.GetDaily(user.Id, user.Guild.Id);
             long timeNow = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-            eb.AddField("Toasties", $"Amount: {ToastieDb.GetToasties(user.Id).ToString("n0")} <:toastie3:454441133876183060>\nDaily: {(daily == null ? "0" : ((daily.Date + 172800000) < timeNow ? "0" : daily.Streak.ToString()))} :calendar_spiral:", true);
+            eb.AddField("Toasties", $"Amount: {ToastieDb.GetToasties(user.Id, user.Guild.Id).ToString("n0")} <:toastie3:454441133876183060>\nDaily: {(daily == null ? "0" : ((daily.Date + 172800000) < timeNow ? "0" : daily.Streak.ToString()))} :calendar_spiral:", true);
             eb.AddField("Waifus", $"Amount: {waifucount} :two_hearts:\nValue: {waifuprice.ToString("n0")} <:toastie3:454441133876183060>", true);
 
             if (waifucount > 0) {
@@ -84,7 +86,7 @@ namespace Namiko.Core.Util {
                 eb.AddField("Waifus", wstr);
             }
 
-            var waifu = FeaturedWaifuDb.GetFeaturedWaifu(user.Id);
+            var waifu = FeaturedWaifuDb.GetFeaturedWaifu(user.Id, user.Guild.Id);
             if (waifu != null)
                 eb.WithThumbnailUrl(waifu.ImageUrl);
 

@@ -2,15 +2,17 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Namiko.Resources.Database;
 
 namespace Namiko.Migrations
 {
     [DbContext(typeof(SqliteDbContext))]
-    partial class SqliteDbContextModelSnapshot : ModelSnapshot
+    [Migration("20190108025815_global")]
+    partial class global
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -124,20 +126,6 @@ namespace Namiko.Migrations
                     b.ToTable("FeaturedWaifus");
                 });
 
-            modelBuilder.Entity("Namiko.Resources.Datatypes.ImgurAlbumLink", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("AlbumId");
-
-                    b.Property<string>("Name");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ImgurAlbums");
-                });
-
             modelBuilder.Entity("Namiko.Resources.Datatypes.Invite", b =>
                 {
                     b.Property<int>("Id")
@@ -154,36 +142,6 @@ namespace Namiko.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Invites");
-                });
-
-            modelBuilder.Entity("Namiko.Resources.Datatypes.Marriage", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<ulong>("GuildId");
-
-                    b.Property<ulong>("UserId");
-
-                    b.Property<ulong>("WifeId");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Marriages");
-                });
-
-            modelBuilder.Entity("Namiko.Resources.Datatypes.Profile", b =>
-                {
-                    b.Property<ulong>("UserId")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("ColorHex");
-
-                    b.Property<string>("Quote");
-
-                    b.HasKey("UserId");
-
-                    b.ToTable("Profiles");
                 });
 
             modelBuilder.Entity("Namiko.Resources.Datatypes.PublicRole", b =>

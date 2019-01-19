@@ -13,14 +13,14 @@ namespace Namiko.Core.Util
 {
     public static class WaifuUtil
     {
-        public static async Task<List<ShopWaifu>> GetShopWaifus()
+        public static async Task<List<ShopWaifu>> GetShopWaifus(ulong guildId)
         {
-            var contents = WaifuShopDb.GetWaifuStores();
+            var contents = WaifuShopDb.GetWaifuStores(guildId);
             var date = contents[0].GeneratedDate;
 
             if (date.Date < System.DateTime.Now.Date)
             {
-                var list = GenerateWaifuList();
+                var list = GenerateWaifuList(guildId);
                 await WaifuShopDb.NewList(list);
                 return list;
             }
@@ -28,7 +28,7 @@ namespace Namiko.Core.Util
             return contents;
 
         }
-        public static List<ShopWaifu> GenerateWaifuList()
+        public static List<ShopWaifu> GenerateWaifuList(ulong guildId)
         {
             var date = System.DateTime.Now.Date;
             var waifus = new List<ShopWaifu>();
@@ -41,7 +41,7 @@ namespace Namiko.Core.Util
             for (int i = 0; i < 1; i++)
             {
                 r = rand.Next(0, tier.Count);
-                item = new ShopWaifu { Waifu = tier.ElementAt(r), GeneratedDate = date, Discount = GenerateDiscount(), Limited = 1, BoughtBy = 0 };
+                item = new ShopWaifu { Waifu = tier.ElementAt(r), GeneratedDate = date, Discount = GenerateDiscount(), Limited = 1, BoughtBy = 0, GuildId = guildId };
                 waifus.Add(item);
                 tier.RemoveAt(r);
             }
@@ -49,7 +49,7 @@ namespace Namiko.Core.Util
             for (int i = 0; i < 3; i++)
             {
                 r = rand.Next(0, tier.Count);
-                item = new ShopWaifu { Waifu = tier.ElementAt(r), GeneratedDate = date, Limited = -1, BoughtBy = 0 };
+                item = new ShopWaifu { Waifu = tier.ElementAt(r), GeneratedDate = date, Limited = -1, BoughtBy = 0, GuildId = guildId };
                 waifus.Add(item);
                 tier.RemoveAt(r);
             }
@@ -58,7 +58,7 @@ namespace Namiko.Core.Util
             for (int i = 0; i < 4; i++)
             {
                 r = rand.Next(0, tier.Count);
-                item = new ShopWaifu { Waifu = tier.ElementAt(r), GeneratedDate = date, Limited = -1, BoughtBy = 0 };
+                item = new ShopWaifu { Waifu = tier.ElementAt(r), GeneratedDate = date, Limited = -1, BoughtBy = 0, GuildId = guildId };
                 waifus.Add(item);
                 tier.RemoveAt(r);
             }
@@ -67,7 +67,7 @@ namespace Namiko.Core.Util
             for (int i = 0; i < 5; i++)
             {
                 r = rand.Next(0, tier.Count);
-                item = new ShopWaifu { Waifu = tier.ElementAt(r), GeneratedDate = date, Limited = -1, BoughtBy = 0 };
+                item = new ShopWaifu { Waifu = tier.ElementAt(r), GeneratedDate = date, Limited = -1, BoughtBy = 0, GuildId = guildId };
                 waifus.Add(item);
                 tier.RemoveAt(r);
             }
@@ -190,7 +190,7 @@ namespace Namiko.Core.Util
         }
         public static string WaifuOwnerString(Waifu waifu, SocketCommandContext context)
         {
-            var userIds = UserInventoryDb.GetOwners(waifu);
+            var userIds = UserInventoryDb.GetOwners(waifu, context.Guild.Id);
             string str = null;
             if (userIds.Count > 0)
             {

@@ -87,28 +87,28 @@ namespace Namiko.Resources.Database
     
     public class UserInventoryDb
     {
-        public static async Task<int> AddWaifu(ulong userId, Waifu waifu)
+        public static async Task<int> AddWaifu(ulong userId, Waifu waifu, ulong guildId)
         {
             using (var DbContext = new SqliteDbContext())
             {
-                var inv = new UserInventory{ UserId = userId, Waifu = waifu };
+                var inv = new UserInventory{ UserId = userId, Waifu = waifu, GuildId = guildId, DateBought = DateTime.Now };
                 DbContext.Update(inv);
                 return await DbContext.SaveChangesAsync();
             }
         }
-        public static List<Waifu> GetWaifus(ulong userId)
+        public static List<Waifu> GetWaifus(ulong userId, ulong guildId)
         {
             using (var DbContext = new SqliteDbContext())
             {
-                return DbContext.UserInventories.Where(x => x.UserId == userId).Select(x => x.Waifu).ToList();
+                return DbContext.UserInventories.Where(x => x.UserId == userId && x.GuildId == guildId).Select(x => x.Waifu).ToList();
             }
 
         }
-        public static async Task DeleteWaifu(ulong userId, Waifu waifu)
+        public static async Task DeleteWaifu(ulong userId, Waifu waifu, ulong guildId)
         {
             using (var DbContext = new SqliteDbContext())
             {
-                var userWaifu = DbContext.UserInventories.Where(x => x.UserId == userId && x.Waifu.Equals(waifu)).FirstOrDefault();
+                var userWaifu = DbContext.UserInventories.Where(x => x.UserId == userId && x.Waifu.Equals(waifu) && x.GuildId == guildId).FirstOrDefault();
                 if (userWaifu != null)
                 {
                     DbContext.UserInventories.Remove(userWaifu);
@@ -128,11 +128,11 @@ namespace Namiko.Resources.Database
                 await DbContext.SaveChangesAsync();
             }
         }
-        public static List<ulong> GetOwners(Waifu waifu)
+        public static List<ulong> GetOwners(Waifu waifu, ulong guildId)
         {
             using (var db = new SqliteDbContext())
             {
-                return db.UserInventories.Where(x => x.Waifu.Equals(waifu)).Select(x => x.UserId).ToList();
+                return db.UserInventories.Where(x => x.Waifu.Equals(waifu) && x.GuildId == guildId).Select(x => x.UserId).ToList();
             }
         }
         public static List<UserInventory> GetAllWaifuItems()
@@ -188,12 +188,12 @@ namespace Namiko.Resources.Database
                 return dbContext.WaifuStores.LastOrDefault();
             }
         }
-        public static List<ShopWaifu> GetWaifuStores()
+        public static List<ShopWaifu> GetWaifuStores(ulong guildId)
         {
             using (var dbContext = new SqliteDbContext())
             {
-                var waifu = dbContext.WaifuStores.LastOrDefault();
-                var storesque = dbContext.WaifuStores.Where(x => x.GeneratedDate.Equals(waifu.GeneratedDate)).OrderBy(x => x.Id);
+                var waifu = dbContext.WaifuStores.LastOrDefault(x => x.GuildId == guildId);
+                var storesque = dbContext.WaifuStores.Where(x => x.GeneratedDate.Equals(waifu.GeneratedDate) && x.GuildId == guildId).OrderBy(x => x.Id);
 
                 var waifus = storesque.Select(x => x.Waifu).ToList();
                 var stores = storesque.ToList();
@@ -230,24 +230,24 @@ namespace Namiko.Resources.Database
 
     public class FeaturedWaifuDb
     {
-        public static async Task SetFeaturedWaifu(ulong userId, Waifu waifu)
+        public static async Task SetFeaturedWaifu(ulong userId, Waifu waifu, ulong guildId)
         {
             using (var dbContext = new SqliteDbContext())
             {
-                var entry = new FeaturedWaifu { UserId = userId, Waifu = waifu };
+                var entry = new FeaturedWaifu { UserId = userId, Waifu = waifu, GuildId = guildId };
 
-                dbContext.FeaturedWaifus.RemoveRange(dbContext.FeaturedWaifus.Where(x => x.UserId == userId));
+                dbContext.FeaturedWaifus.RemoveRange(dbContext.FeaturedWaifus.Where(x => x.UserId == userId & x.GuildId == guildId));
                 dbContext.FeaturedWaifus.Update(entry);
                 await dbContext.SaveChangesAsync();
             }
         }
-        public static Waifu GetFeaturedWaifu(ulong userId)
+        public static Waifu GetFeaturedWaifu(ulong userId, ulong guildId)
         {
             using (var db = new SqliteDbContext())
             {
-                var waifu = db.FeaturedWaifus.Where(x => x.UserId == userId).Select(x => x.Waifu).FirstOrDefault();
+                var waifu = db.FeaturedWaifus.Where(x => x.UserId == userId && x.GuildId == guildId).Select(x => x.Waifu).LastOrDefault();
                 if (waifu == null)
-                    waifu = UserInventoryDb.GetWaifus(userId).LastOrDefault();
+                    waifu = UserInventoryDb.GetWaifus(userId, guildId).LastOrDefault();
                 return waifu;
             }
         }

@@ -12,8 +12,6 @@ namespace Namiko.Resources.Database
     {
         public DbSet<Toastie> Toasties { get; set; }
         public DbSet<Daily> Dailies { get; set; }
-        public DbSet<UserRole> ShopItems { get; set; }
-        public DbSet<ShopRole> ShopRoles { get; set; }
         public DbSet<WelcomeMessage> WelcomeMessages { get; set; }
         public DbSet<WelcomeChannel> WelcomeChannels { get; set; }
         public DbSet<Team> Teams { get; set; }
@@ -30,6 +28,8 @@ namespace Namiko.Resources.Database
         public DbSet<ImgurAlbumLink> ImgurAlbums { get; set; }
         public DbSet<Profile> Profiles { get; set; }
         public DbSet<Marriage> Marriages { get; set; }
+        public DbSet<Server> Servers { get; set; }
+        public DbSet<BlacklistedChannel> BlacklistedChannels { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder Options)
         {

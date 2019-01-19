@@ -85,7 +85,7 @@ namespace Namiko.Core.Util
 
         public static SocketRole GetLeader(SocketGuild guild, IUser user)
         {
-            var teams = TeamDb.Teams();
+            var teams = TeamDb.Teams(guild.Id);
 
             foreach (Team x in teams)
             {
@@ -98,7 +98,7 @@ namespace Namiko.Core.Util
         }
         public static SocketRole GetMember(SocketGuild guild, IUser user)
         {
-            var teams = TeamDb.Teams();
+            var teams = TeamDb.Teams(guild.Id);
 
             foreach (Team x in teams)
             {
