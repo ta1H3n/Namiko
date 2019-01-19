@@ -5,6 +5,7 @@ using System;
 using Discord.Commands;
 using Namiko.Resources.Database;
 using Discord.WebSocket;
+using System.Linq;
 
 namespace Namiko.Core.Modules {
     public class User : ModuleBase<SocketCommandContext> {
@@ -114,6 +115,44 @@ namespace Namiko.Core.Modules {
             //sending quote
             EmbedBuilder embed = UserUtil.QuoteEmbed(user, isMe);
             await Context.Channel.SendMessageAsync("", false, embed.Build());
+        }
+
+        [Command("SetFeaturedWaifu"), Alias("sfw"), Summary("Sets your waifu image on your profile.\n**Usage**: `!sfw [waifu_name]`")]
+        public async Task SetFeaturedWaifu(string name, [Remainder] string str = "")
+        {
+            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(name), name, Context.Channel);
+            if (waifu == null)
+            {
+                await Context.Channel.SendMessageAsync($"{name} not found.");
+                return;
+            }
+
+            if (UserInventoryDb.GetWaifus(Context.User.Id, Context.Guild.Id).Any(x => x.Name.Equals(waifu.Name)))
+            {
+                await FeaturedWaifuDb.SetFeaturedWaifu(Context.User.Id, waifu, Context.Guild.Id);
+                await Context.Channel.SendMessageAsync($"{waifu.Name} set as your featured waifu!", false, UserUtil.ProfileEmbed((SocketGuildUser)Context.User).Build());
+                return;
+            }
+            await Context.Channel.SendMessageAsync($":x: You don't have {waifu.Name}");
+        }
+
+        [Command("FeaturedWaifu"), Alias("fw"), Summary("Views Featured Waifu.\n**Usage**: `!fw`")]
+        public async Task FeaturedWaifu(IUser iuser = null, [Remainder] string str = "")
+        {
+
+            //using variables for names
+            bool isMe = iuser == null;
+            IUser user = iuser ?? Context.User;
+            var waifu = FeaturedWaifuDb.GetFeaturedWaifu(user.Id, Context.Guild.Id);
+
+            //checking featured exists
+            if (waifu == null)
+            {
+                await Context.Channel.SendMessageAsync(((isMe) ? "You Have No Featured Waifu qq" : $"{ user.Username } has No Featured waifu"));
+                return;
+
+            }
+            await Context.Channel.SendMessageAsync(((isMe) ? $"You have { waifu.Name } as your" : $"{ user.Username } has { waifu.Name } as his") + " Featured waifu!", false, WaifuUtil.WaifuEmbedBuilder(waifu, true, Context).Build());
         }
     }
 }
