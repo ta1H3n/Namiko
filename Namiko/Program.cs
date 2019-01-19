@@ -35,7 +35,6 @@ namespace Namiko
         {
             SetUpDebug();
             //SetUpRelease();
-            //Scripts.ImgurMove.MoveDb();
             Task.Run(() => ImgurUtil.ImgurSetup());
             Timers.SetUp();
           

@@ -36,7 +36,7 @@ namespace Namiko.Core.Modules
                 await Context.Channel.SendMessageAsync("No results. Too bad.");
                 return;
             }
-
+            
             await Context.Channel.SendMessageAsync("", false, WebUtil.IqdbSourceResultEmbed(result, url).Build());
         }
 
