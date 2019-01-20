@@ -14,7 +14,7 @@ namespace Namiko.Resources.Database
         {
             using (var DbContext = new SqliteDbContext())
             {
-                if (DbContext.Toasties.Any(x => x.UserId == UserId && x.GuildId == GuildId))
+                if (!DbContext.Toasties.Any(x => x.UserId == UserId && x.GuildId == GuildId))
                     return 0;
                 return DbContext.Toasties.Where(x => x.UserId == UserId && x.GuildId == GuildId).Select(x => x.Amount).FirstOrDefault();
             }
@@ -23,7 +23,7 @@ namespace Namiko.Resources.Database
         {
             using (var DbContext = new SqliteDbContext())
             {
-                if (DbContext.Toasties.Where(x => x.UserId == UserId).Count() < 1)
+                if (!DbContext.Toasties.Any(x => x.UserId == UserId))
                 {
                     DbContext.Add(new Toastie { UserId = UserId, Amount = Amount, GuildId = GuildId });
                 } else

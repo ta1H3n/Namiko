@@ -1,6 +1,8 @@
 ﻿using Discord.Commands;
+using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 namespace Namiko.Resources.Preconditions
@@ -12,15 +14,15 @@ namespace Namiko.Resources.Preconditions
         {
             try
             {
-                if (context.User.Id == StaticSettings.owner || context.Guild.Id == StaticSettings.home_server)
+                if (context.User.Id == StaticSettings.owner || ((SocketGuildUser) context.User).Roles.Any(x => x.Id == StaticSettings.home_server))
                     return Task.FromResult(PreconditionResult.FromSuccess());
                 else
                 {
-                    return Task.FromResult(PreconditionResult.FromError("Not bot owner"));
+                    return Task.FromResult(PreconditionResult.FromError("This command is insiders only."));
                 }
             } catch 
             {
-                return Task.FromResult(PreconditionResult.FromError("Not bot owner"));
+                return Task.FromResult(PreconditionResult.FromError("This command is insiders only."));
             }
         }
 

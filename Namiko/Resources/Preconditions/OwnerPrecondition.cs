@@ -14,7 +14,7 @@ namespace Namiko.Resources.Preconditions
                 return Task.FromResult(PreconditionResult.FromSuccess());
             else
             {
-                return Task.FromResult(PreconditionResult.FromError("Not bot owner"));
+                return Task.FromResult(PreconditionResult.FromError("This command is only for my owner."));
             }
         }
 

@@ -107,6 +107,7 @@ namespace Namiko
         }
         private async Task Client_Ready()
         {
+            Task.Run(() => SetUpServers());
             var ch = Client.GetChannel(StaticSettings.log_channel) as ISocketMessageChannel;
             await ch.SendMessageAsync($"`{DateTime.Now} - Ready`");
         }
@@ -114,8 +115,6 @@ namespace Namiko
         {
             string message = $"`{DateTime.Now} at {arg.Source}] {arg.Message}`";
             Console.WriteLine(message);
-           // var channel = Client.GetGuild(StaticSettings.home_server).GetChannel(StaticSettings.log_channel) as ISocketMessageChannel;
-           // await channel.SendMessageAsync(message);
         }
         private async Task Client_MessageReceived(SocketMessage MessageParam)
         {
@@ -166,10 +165,12 @@ namespace Namiko
                 if (await new Images().SendRandomImage(Context))
                     return;
 
-                if (!Result.ErrorReason.Equals("Unknown command."))
+                if (!(Result.Error == CommandError.UnknownCommand))
                 {
                     Console.WriteLine($"{DateTime.Now} at Commands] Text: {Message.Content} | Error: {Result.ErrorReason}");
-                    string reason = Result.ErrorReason + "\n" + CommandHelpString(MessageParam.Content.Split(null)[0].Replace(StaticSettings.prefix, ""));
+                    string reason = Result.ErrorReason + "\n";
+                    if(!(Result.Error == CommandError.UnmetPrecondition))
+                        reason += CommandHelpString(MessageParam.Content.Split(null)[0].Replace(StaticSettings.prefix, ""));
                     await Context.Channel.SendMessageAsync(reason);
                 }
                 return;
@@ -195,16 +196,26 @@ namespace Namiko
         }
         private async Task Client_JoinedGuild(SocketGuild arg)
         {
-            Resources.Datatypes.Server server = new Resources.Datatypes.Server
+            DateTime now = DateTime.Now;
+            Resources.Datatypes.Server server = ServerDb.GetServer(arg.Id) ?? new Resources.Datatypes.Server
             {
                 GuildId = arg.Id,
-                JoinDate = System.DateTime.Now,
+                JoinDate = now,
                 Prefix = StaticSettings.prefix
             };
+            server.LeaveDate = new DateTime(0);
             await ServerDb.UpdateServer(server);
 
+            if(server.JoinDate.Equals(now))
+            {
+                await ToastieDb.SetToasties(Client.CurrentUser.Id, 1000000, arg.Id);
+            }
+
             SocketTextChannel ch = arg.SystemChannel ?? arg.DefaultChannel;
-            await ch?.SendMessageAsync("Helloooo! Take good care of me! Try `!info` for more info, or `!help` for a list of my commands!");
+            try
+            {
+                await ch?.SendMessageAsync("Helloooo! Take good care of me! Try `!info` to learn more about me, or `!help` for a list of my commands!");
+            } catch { }
             await ((ISocketMessageChannel)Client.GetChannel(StaticSettings.log_channel)).SendMessageAsync($":white_check_mark: I joined `{arg.Id}` {arg.Name}.\nOwner: `{arg.Owner.Id}` {arg.Owner.Username}");
         }
         private async Task Client_LeftGuild(SocketGuild arg)
@@ -280,6 +291,40 @@ namespace Namiko
             Console.WriteLine(Locations.SpookyLinesXml);
             Console.WriteLine(Locations.SqliteDb);
         }
+        private static async Task SetUpServers()
+        {
+            var guilds = Client.Guilds;
+            var servers = ServerDb.GetAll();
+
+            int added = 0;
+            foreach(var x in guilds)
+            {
+                if(!servers.Any(y => y.GuildId == x.Id))
+                {
+                    var server = new Resources.Datatypes.Server
+                    {
+                        GuildId = x.Id,
+                        JoinDate = System.DateTime.Now,
+                        Prefix = StaticSettings.prefix
+                    };
+                    await ServerDb.UpdateServer(server);
+                    await ToastieDb.SetToasties(Client.CurrentUser.Id, 1000000, x.Id);
+                    added++;
+                }
+            }
+
+            int left = 0;
+            foreach(var srv in servers)
+            {
+                if(srv.LeaveDate == new DateTime(0) && !guilds.Any(y => y.Id == srv.GuildId))
+                {
+                    srv.LeaveDate = DateTime.Now;
+                    await ServerDb.UpdateServer(srv);
+                    left++;
+                }
+            }
+            Console.WriteLine($"Servers ready. Added {added}. Left {left}.");
+        }
 
         // RANDOM
 
@@ -316,13 +361,19 @@ namespace Namiko
         }
         public static string CommandHelpString(string commandName)
         {
-            var cmd = Commands.Commands.Where(x => x.Aliases.Any(y => y.Equals(commandName, StringComparison.InvariantCultureIgnoreCase))).FirstOrDefault();
-            string St = cmd.Summary;
+            try
+            {
+                var cmd = Commands.Commands.Where(x => x.Aliases.Any(y => y.Equals(commandName, StringComparison.InvariantCultureIgnoreCase))).FirstOrDefault();
+                string St = cmd.Summary;
 
-            int pFrom = St.IndexOf("**Usage**:");
+                int pFrom = St.IndexOf("**Usage**:");
 
-            string result = St.Substring(pFrom);
-            return result;
+                string result = St.Substring(pFrom);
+                return result;
+            } catch
+            {
+                return "";
+            }
         }
 
         //  public static EmbedBuilder CommandHelpEmbed(string commandName)

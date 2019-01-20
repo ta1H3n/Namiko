@@ -6,6 +6,7 @@ using System.Linq;
 
 using Discord;
 using Discord.Commands;
+using Namiko;
 using Namiko.Resources.Preconditions;
 using Namiko.Core.Util;
 using Discord.WebSocket;
@@ -48,6 +49,23 @@ namespace Namiko.Core.Modules
             await Context.Channel.SendMessageAsync("", false, BasicUtil.InfoEmbed().Build());
         }
 
+        [Command("permtest"), CustomBotPermission(GuildPermission.Administrator)]
+        public async Task PermTest()
+        {
+            await Context.Channel.SendMessageAsync("???");
+        }
+
+        [Command("guildtest"), OwnerPrecondition]
+        public async Task GuildTest()
+        {
+            string msg = "";
+            foreach (var x in Program.GetClient().Guilds)
+            {
+                msg += x.Name;
+            }
+            await Context.Channel.SendMessageAsync(msg);
+        }
+
         // HELP COMMAND STUFF
         
         public async Task<bool> Help(SocketCommandContext context, CommandService commandService)
@@ -80,7 +98,7 @@ namespace Namiko.Core.Modules
                 } catch { };
             }
             else
-                eb = AllHelpEmbed(commandService, context.Guild == null ? false : context.Guild.Id == StaticSettings.home_server);
+                eb = AllHelpEmbed(commandService, context.Guild == null ? false : ((SocketGuildUser)context.User).Roles.Any(x => x.Id == StaticSettings.home_server));
 
             if(!desc.Equals(""))
             {
@@ -113,8 +131,7 @@ namespace Namiko.Core.Modules
                     eb.AddField(fb);
                 }
             }
-
-            //eb.WithDescription($"Type `{StaticSettings.prefix}h [command_name]` for more information about a command.");
+            
             eb.WithFooter(@"""What are you? Twelve?"" -Namiko");
             eb.WithColor(BasicUtil.RandomColor());
             return eb;
@@ -129,7 +146,6 @@ namespace Namiko.Core.Modules
             {
                 try
                 {
-                    //desc += $"  **{x.Name}** - `{StaticSettings.prefix}{x.Aliases[1]}`\n{x.Summary}\n";
                     desc += $"  **{x.Name}**\n{x.Summary}\n";
                 } catch { }
             }

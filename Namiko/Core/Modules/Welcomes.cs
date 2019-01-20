@@ -19,8 +19,6 @@ namespace Namiko.Core.Modules
         [Command("NewWelcome"), Alias("nwlc"), Summary("Adds a new welcome message. @_ will be replaced with a mention.\n**Usage**: `!nw [welcome]`"), HomePrecondition]
         public async Task NewWelcome([Remainder] string message)
         {
-            Contract.Requires(Context.Channel.Id.Equals(StaticSettings.home_server) || Context.User.Id.Equals(StaticSettings.owner));
-
             if (message.Length < 20)
             {
                 await Context.Channel.SendMessageAsync("Message must be longer than 20 characters.");
@@ -60,7 +58,7 @@ namespace Namiko.Core.Modules
             }
         }
 
-        [Command("SetWelcomeChannel"), Alias("swc"), Summary("Set's the welcome channel. Current channel or provided ID.\n**Usage**: `!swc [id]`"), RequireUserPermission(GuildPermission.ManageChannels)]
+        [Command("SetWelcomeChannel"), Alias("swc"), Summary("Set's the welcome channel. Current channel or provided ID.\n**Usage**: `!swc [id]`"), CustomUserPermission(GuildPermission.ManageChannels)]
         public async Task SetWelcomeChannel(long inputId = 1)
         {
             ulong id = 0;

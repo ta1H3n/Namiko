@@ -10,12 +10,13 @@ using Discord.WebSocket;
 using Namiko.Resources.Database;
 using Namiko.Resources.Datatypes;
 using Namiko.Core.Util;
+using Namiko.Resources.Preconditions;
 
 namespace Namiko.Core.Modules
 {
     public class Roles : ModuleBase<SocketCommandContext>
     {
-        [Command("Role"), Alias("r"), Summary("Adds or removes a public role from the user.\n**Usage**: `!r [name]`"), RequireBotPermission(GuildPermission.ManageRoles)]
+        [Command("Role"), Alias("r"), Summary("Adds or removes a public role from the user.\n**Usage**: `!r [name]`"), CustomBotPermission(GuildPermission.ManageRoles)]
         public async Task Role([Remainder] string name)
         {
             var role = RoleUtil.GetRoleByName(Context.Guild, name);
@@ -43,7 +44,7 @@ namespace Namiko.Core.Modules
             }
         }
 
-        [Command("SetPublicRole"), Alias("spr"), Summary("Sets or unsets a role as a public role.\n**Usage**: `!spr [name]`"), RequireUserPermission(GuildPermission.ManageRoles)]
+        [Command("SetPublicRole"), Alias("spr"), Summary("Sets or unsets a role as a public role.\n**Usage**: `!spr [name]`"), CustomUserPermission(GuildPermission.ManageRoles)]
         public async Task NewRole([Remainder] string name)
         {
             var role = RoleUtil.GetRoleByName(Context.Guild, name);
@@ -66,7 +67,7 @@ namespace Namiko.Core.Modules
             }
         }
 
-        [Command("ClearRole"), Alias("cr"), Summary("Removes all users from a role.\n**Usage**: `cr [name]`"), RequireUserPermission(GuildPermission.ManageRoles), RequireBotPermission(GuildPermission.ManageRoles)]
+        [Command("ClearRole"), Alias("cr"), Summary("Removes all users from a role.\n**Usage**: `cr [name]`"), CustomUserPermission(GuildPermission.ManageRoles), CustomBotPermission(GuildPermission.ManageRoles)]
         public async Task ClearRole([Remainder] string name)
         {
             var role = RoleUtil.GetRoleByName(Context.Guild, name);
@@ -121,7 +122,7 @@ namespace Namiko.Core.Modules
             await ch.SendMessageAsync($"{Context.User.Username} invited {user.Username} to {teamRole.Name}.");
         }
 
-        [Command("Join"), Summary("Accept an invite to a team.\n**Usage**: `!join [team_name]`"), RequireBotPermission(GuildPermission.ManageRoles)]
+        [Command("Join"), Summary("Accept an invite to a team.\n**Usage**: `!join [team_name]`"), CustomBotPermission(GuildPermission.ManageRoles)]
         public async Task Join(string teamName, [Remainder] string str = "")
         {
             var role = RoleUtil.GetRoleByName(Context.Guild, teamName);
@@ -145,7 +146,7 @@ namespace Namiko.Core.Modules
             await Context.Channel.SendMessageAsync($"You're not invited to {teamName}! You sure they exist?");
         }
 
-        [Command("LeaveTeam"), Alias("lt"), Summary("Leave your team.\n**Usage**: `!lt`"), RequireBotPermission(GuildPermission.ManageRoles)]
+        [Command("LeaveTeam"), Alias("lt"), Summary("Leave your team.\n**Usage**: `!lt`"), CustomBotPermission(GuildPermission.ManageRoles)]
         public async Task Leave()
         {
             var role = RoleUtil.GetMember(Context.Guild, Context.User);
@@ -162,7 +163,7 @@ namespace Namiko.Core.Modules
             await ch.SendMessageAsync($"{Context.User.Username} left {role.Name}.");
         }
 
-        [Command("TeamKick"), Alias("tk"), Summary("Kicks a user from your team.\n**Usage**: `!tk [user]`"), RequireBotPermission(GuildPermission.ManageRoles)]
+        [Command("TeamKick"), Alias("tk"), Summary("Kicks a user from your team.\n**Usage**: `!tk [user]`"), CustomBotPermission(GuildPermission.ManageRoles)]
         public async Task TeamKick(IUser user, [Remainder] string str = "")
         {
             var leader = RoleUtil.GetLeader(Context.Guild, Context.User);
@@ -188,7 +189,7 @@ namespace Namiko.Core.Modules
             await ch.SendMessageAsync($"{Context.User.Username} kicked {user.Username} from {userteam.Name}.");
         }
 
-        [Command("NewTeam"), Alias("nt"), Summary("Creates a new team.\n**Usage**: `!nt [LeaderRoleName] [MemberRoleName]`"), RequireUserPermission(GuildPermission.ManageRoles)]
+        [Command("NewTeam"), Alias("nt"), Summary("Creates a new team.\n**Usage**: `!nt [LeaderRoleName] [MemberRoleName]`"), CustomUserPermission(GuildPermission.ManageRoles)]
         public async Task NewTeam(string leader, string member)
         {
             var leaderR = RoleUtil.GetRoleByName(Context.Guild, leader);
@@ -208,7 +209,7 @@ namespace Namiko.Core.Modules
             await Context.Channel.SendMessageAsync($"Added Leader role: '{leaderR.Name}' and Team role: '{memberR.Name}'");
         }
 
-        [Command("DeleteTeam"), Alias("dt"), Summary("Deletes a team.\n**Usage**: `!dt [Leader or Team RoleName]`"), RequireUserPermission(GuildPermission.ManageRoles)]
+        [Command("DeleteTeam"), Alias("dt"), Summary("Deletes a team.\n**Usage**: `!dt [Leader or Team RoleName]`"), CustomUserPermission(GuildPermission.ManageRoles)]
         public async Task NewTeam(string teamName)
         {
             var role = RoleUtil.GetRoleByName(Context.Guild, teamName);

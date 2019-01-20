@@ -10,12 +10,13 @@ using Discord.WebSocket;
 using Namiko.Resources.Database;
 using Namiko.Resources.Datatypes;
 using Namiko.Core.Util;
+using Namiko.Resources.Preconditions;
 
 namespace Namiko.Core.Modules
 {
     public class Server : ModuleBase<SocketCommandContext>
     {
-        [Command("SetJoinLogChannel"), Alias("jlch"), Summary("Sets a channel to log users joining/leaving the guild.\n**Usage**: `!jlch`"), RequireUserPermission(GuildPermission.ManageChannels)]
+        [Command("SetJoinLogChannel"), Alias("jlch"), Summary("Sets a channel to log users joining/leaving the guild.\n**Usage**: `!jlch`"), CustomUserPermission(GuildPermission.ManageChannels)]
         public async Task SetJoinLogChannel()
         {
             var server = ServerDb.GetServer(Context.Guild.Id);
@@ -33,7 +34,7 @@ namespace Namiko.Core.Modules
             await Context.Channel.SendMessageAsync("Join Log channel set.");
         }
 
-        [Command("SetTeamLogChannel"), Alias("tlch"), Summary("Sets a channel to log users joining/leaving teams.\n**Usage**: `!tlch`"), RequireUserPermission(GuildPermission.ManageChannels)]
+        [Command("SetTeamLogChannel"), Alias("tlch"), Summary("Sets a channel to log users joining/leaving teams.\n**Usage**: `!tlch`"), CustomUserPermission(GuildPermission.ManageChannels)]
         public async Task SetTeamLogChannel()
         {
             var server = ServerDb.GetServer(Context.Guild.Id);
@@ -51,7 +52,7 @@ namespace Namiko.Core.Modules
             await Context.Channel.SendMessageAsync("Team Log channel set.");
         }
 
-        [Command("SetWelcomeChannel"), Alias("wch"), Summary("Sets a channel to welcome members.\n**Usage**: `!wch`"), RequireUserPermission(GuildPermission.ManageChannels)]
+        [Command("SetWelcomeChannel"), Alias("wch"), Summary("Sets a channel to welcome members.\n**Usage**: `!wch`"), CustomUserPermission(GuildPermission.ManageChannels)]
         public async Task SetWelcomeChannel()
         {
             var server = ServerDb.GetServer(Context.Guild.Id);
@@ -69,7 +70,7 @@ namespace Namiko.Core.Modules
             await Context.Channel.SendMessageAsync("Welcome channel set.");
         }
 
-        [Command("BlacklistChannel"), Alias("blch"), Summary("Disables or enables bot commands in a channel.\n**Usage**: `!blch [optional_channel_id]`"), RequireUserPermission(GuildPermission.ManageChannels)]
+        [Command("BlacklistChannel"), Alias("blch"), Summary("Disables or enables bot commands in a channel.\n**Usage**: `!blch [optional_channel_id]`"), CustomUserPermission(GuildPermission.ManageChannels)]
         public async Task BlacklistChannel(ulong channelId = 0)
         {
             if (channelId == 0)
@@ -92,7 +93,7 @@ namespace Namiko.Core.Modules
             await Context.Channel.SendMessageAsync("Channel blacklisted.");
         }
 
-        [Command("SetBotPrefix"), Alias("sbp"), Summary("Sets a prefix for the bot in the server.\n**Usage**: `!sbp [prefix]`"), RequireUserPermission(GuildPermission.Administrator)]
+        [Command("SetBotPrefix"), Alias("sbp"), Summary("Sets a prefix for the bot in the server.\n**Usage**: `!sbp [prefix]`"), CustomUserPermission(GuildPermission.Administrator)]
         public async Task SetBotPrefix(string prefix)
         {
             var server = ServerDb.GetServer(Context.Guild.Id);

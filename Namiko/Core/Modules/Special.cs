@@ -69,5 +69,13 @@ namespace Namiko.Core.Modules
             int res = await SqliteDbContext.ExecuteSQL(str);
             await Context.Channel.SendMessageAsync($"{res} rows affected.");
         }
+
+        [Command("GetInvite"), Summary("Gets invite to a server"), OwnerPrecondition]
+        public async Task GetInvite(ulong id, [Remainder] string str = "")
+        {
+            var guild = Context.Client.GetGuild(id);
+            var invite = (await guild.GetInvitesAsync()).FirstOrDefault().Url;
+            await Context.Channel.SendMessageAsync(invite);
+        }
     }
 }

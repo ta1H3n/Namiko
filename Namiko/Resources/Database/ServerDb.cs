@@ -22,8 +22,7 @@ namespace Namiko.Resources.Database
         {
             using (SqliteDbContext db = new SqliteDbContext())
             {
-                var res = db.Servers.Where(x => x.GuildId == server.GuildId).FirstOrDefault();
-                if (res == null)
+                if (!db.Servers.Any(x => x.GuildId == server.GuildId))
                     db.Add(server);
 
                 else
@@ -42,6 +41,13 @@ namespace Namiko.Resources.Database
                     db.Remove(server);
                     await db.SaveChangesAsync();
                 }
+            }
+        }
+        public static List<Server> GetAll()
+        {
+            using (var db = new SqliteDbContext())
+            {
+                return db.Servers.ToList();
             }
         }
     }

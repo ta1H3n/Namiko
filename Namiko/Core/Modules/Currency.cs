@@ -177,14 +177,14 @@ namespace Namiko.Core.Modules
             await Context.Channel.SendMessageAsync("", false, eb.Build());
         }
 
-        [Command("SetToasties"), Alias("st", "sett"), Summary("Sets the amount of toasties.\n**Usage**: `!st [user] [amount]`"), RequireUserPermission(GuildPermission.Administrator), RequireBotPermission(GuildPermission.Administrator)]
+        [Command("SetToasties"), Alias("st", "sett"), Summary("Sets the amount of toasties.\n**Usage**: `!st [user] [amount]`"), CustomUserPermission(GuildPermission.Administrator), CustomBotPermission(GuildPermission.Administrator)]
         public async Task Set(IUser user, int amount, [Remainder] string str = "")
         {
             await ToastieDb.SetToasties(user.Id, amount, Context.Guild.Id);
             await Context.Channel.SendMessageAsync("", false, ToastieUtil.ToastieEmbed(user, ToastieDb.GetToasties(user.Id, Context.Guild.Id)).Build());
         }
 
-        [Command("AddToasites"), Alias("at", "addt"), Summary("Adds toasties to a user.\n**Usage**: `!at [user] [amount]`"), RequireUserPermission(GuildPermission.Administrator), RequireBotPermission(GuildPermission.Administrator)]
+        [Command("AddToasites"), Alias("at", "addt"), Summary("Adds toasties to a user.\n**Usage**: `!at [user] [amount]`"), CustomUserPermission(GuildPermission.Administrator), CustomBotPermission(GuildPermission.Administrator)]
         public async Task Add(IUser user, int amount, [Remainder] string str = "")
         {
             await ToastieDb.AddToasties(user.Id, amount, Context.Guild.Id);

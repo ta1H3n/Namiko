@@ -19,7 +19,7 @@ namespace Namiko.Core.Modules
         [Command("NewBanroulette"), Alias("nbr"), Summary("Starts a new game of ban roulette, where one participant is randomly banned from the server. Winners split toasties from the reward pool.\n" +
             "**Usage**: `!nbr [ban_length_in_hours] [toastie_reward_pool] [required_role_name]`\n" +
             "[toastie_reward_poll] - bot owner only, defaults to 0 otherwise.\n" +
-            "[required_role_name] - optional."), RequireBotPermission(GuildPermission.BanMembers), RequireUserPermission(GuildPermission.BanMembers)]
+            "[required_role_name] - optional."), CustomBotPermission(GuildPermission.BanMembers), CustomUserPermission(GuildPermission.BanMembers)]
         public async Task NewBanroulette(int hours, int reward = 0, [Remainder] string roleName = "")
         {
             if (hours < 0)
@@ -112,7 +112,7 @@ namespace Namiko.Core.Modules
             await Context.Channel.SendMessageAsync(response);
         }
 
-        [Command("CancelBanroulette"), Alias("cbr"), Summary("Cancels the current Ban Roulette.\n**Usage**: `!cbr`"), RequireUserPermission(GuildPermission.BanMembers)]
+        [Command("CancelBanroulette"), Alias("cbr"), Summary("Cancels the current Ban Roulette.\n**Usage**: `!cbr`"), CustomUserPermission(GuildPermission.BanMembers)]
         public async Task CancelBanroulette()
         {
             var banroulette = BanrouletteDb.GetBanroulette(Context.Channel.Id);
@@ -126,7 +126,7 @@ namespace Namiko.Core.Modules
             await Context.Channel.SendMessageAsync("*Tch...* Cancelling ban roulette.");
         }
 
-        [Command("EndBanroulette"), Alias("ebr"), Summary("Ends the current Ban Roulette, banning a random participant and splitting the reward pool between the others.\n**Usage**: `!ebr`"), RequireBotPermission(GuildPermission.BanMembers), RequireUserPermission(GuildPermission.BanMembers)]
+        [Command("EndBanroulette"), Alias("ebr"), Summary("Ends the current Ban Roulette, banning a random participant and splitting the reward pool between the others.\n**Usage**: `!ebr`"), CustomBotPermission(GuildPermission.BanMembers), CustomUserPermission(GuildPermission.BanMembers)]
         public async Task EndBanroulette()
         {
             var banroulette = BanrouletteDb.GetBanroulette(Context.Channel.Id);
