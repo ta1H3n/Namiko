@@ -55,7 +55,7 @@ namespace Namiko.Resources.Database
         {
             using (var DbContext = new SqliteDbContext())
             {
-                if (DbContext.Dailies.Any(x => x.UserId == UserId && x.GuildId == GuildId))
+                if (!DbContext.Dailies.Any(x => x.UserId == UserId && x.GuildId == GuildId))
                     return null;
                 return DbContext.Dailies.Where(x => x.UserId == UserId && x.GuildId == GuildId).FirstOrDefault();
             }
@@ -75,11 +75,49 @@ namespace Namiko.Resources.Database
                 await DbContext.SaveChangesAsync();
             }
         }
-        public static List<Daily> GetAll()
+        public static List<Daily> GetAll(ulong GuildId)
         {
             using (var db = new SqliteDbContext())
             {
-                return db.Dailies.ToList();
+                return db.Dailies.Where(x => x.GuildId == GuildId).ToList();
+            }
+        }
+        public static int GetHighest(ulong GuildId)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                try
+                {
+                    return db.Dailies.Where(x => x.GuildId == GuildId).Max(x => x.Streak);
+                }
+                catch { return 1; }
+            }
+        }
+    }
+
+    public static class WeeklyDb
+    {
+        public static Weekly GetWeekly(ulong UserId, ulong GuildId)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                var weekly = db.Weeklies.FirstOrDefault(x => x.GuildId == GuildId && x.UserId == UserId);
+                return weekly;
+            }
+        }
+        public static async Task SetWeekly(Weekly weekly)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                if (db.Weeklies.Any(x => x.UserId == weekly.UserId && x.GuildId == weekly.GuildId))
+                {
+                    db.Add(weekly);
+                }
+                else
+                {
+                    db.Update(weekly);
+                }
+                await db.SaveChangesAsync();
             }
         }
     }

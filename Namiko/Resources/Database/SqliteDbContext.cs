@@ -30,6 +30,7 @@ namespace Namiko.Resources.Database
         public DbSet<Marriage> Marriages { get; set; }
         public DbSet<Server> Servers { get; set; }
         public DbSet<BlacklistedChannel> BlacklistedChannels { get; set; }
+        public DbSet<Weekly> Weeklies { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder Options)
         {

@@ -29,6 +29,8 @@
     <Compile Remove="Migrations\20190107152247_global.cs" />
     <Compile Remove="Migrations\20190107152424_global.cs" />
     <Compile Remove="Migrations\20190108025726_global.cs" />
+    <Compile Remove="Migrations\20190120230934_weekly.cs" />
+    <Compile Remove="Migrations\20190120231309_weekly.cs" />
   </ItemGroup>
 
   <ItemGroup>

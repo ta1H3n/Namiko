@@ -48,7 +48,7 @@ namespace Namiko.Core.Modules
             await Blackjack.GameContinue(Context, game);
         }
 
-        [Command("Daily"), Alias("dailies"), Summary("Gives daily toasties to a user.")]
+        [Command("Daily"), Alias("dailies"), Summary("Gives daily toasties.")]
         public async Task DailyCmd()
         {
             Daily daily = DailyDb.GetDaily(Context.User.Id, Context.Guild.Id);
@@ -88,6 +88,35 @@ namespace Namiko.Core.Modules
                 int seconds = (int)wait % 60;
                 await Context.Channel.SendMessageAsync("", false, ToastieUtil.DailyWaitEmbed(Context.User, hours, minutes, seconds).Build());
             }
+        }
+
+        [Command("Weekly"), Alias("weeklies"), Summary("Gives weekly toasties.")]
+        public async Task Weekly()
+        {
+            var weekly = WeeklyDb.GetWeekly(Context.User.Id, Context.Guild.Id);
+
+            if(weekly == null)
+            {
+                weekly = new Weekly
+                {
+                    GuildId = Context.Guild.Id,
+                    UserId = Context.User.Id
+                };
+            }
+
+            if(weekly.Date == null ? true : weekly.Date.AddDays(7).CompareTo(DateTime.Now) < 0)
+            {
+                int streak = DailyDb.GetHighest(Context.Guild.Id) + 10;
+                int amount = ToastieUtil.DailyAmount(streak, 10000);
+
+                await ToastieDb.AddToasties(Context.User.Id, amount, Context.Guild.Id);
+                weekly.Date = DateTime.Now;
+                await WeeklyDb.SetWeekly(weekly);
+                await Context.Channel.SendMessageAsync("", false, ToastieUtil.WeeklyEmbed(amount, ToastieDb.GetToasties(Context.User.Id, Context.Guild.Id), Context.User).Build());
+                return;
+            }
+
+            await Context.Channel.SendMessageAsync("", false, ToastieUtil.WeeklyWaitEmbed(weekly.Date, Context.User).Build());
         }
 
         [Command("Flip"), Alias("f"), Summary("Flip a coin for toasties, defaults to tails.\n**Usage**: `!flip [amount] [heads_or_tails]`")]
@@ -201,7 +230,7 @@ namespace Namiko.Core.Modules
         [Command("DailyLeaderboard"), Alias("dlb"), Summary("Daily Leaderboard.\n**Usage**: `!dlb [page_number]`")]
         public async Task DailyLeaderboard(int page = 1, [Remainder] string str = "")
         {
-            var dailies = DailyDb.GetAll();
+            var dailies = DailyDb.GetAll(Context.Guild.Id);
             await Context.Channel.SendMessageAsync("", false, (await ToastieUtil.DailyLeaderboardEmbedAsync(dailies, Context, page - 1)).Build());
         }
     }

@@ -170,6 +170,8 @@ namespace Namiko.Core.Util
             return eb;
         }
 
+        
+
         // FLIPS
 
         public static Boolean FiftyFifty()
@@ -199,13 +201,13 @@ namespace Namiko.Core.Util
 
         // DAILIES
 
-        public static int DailyAmount(double streak)
+        public static int DailyAmount(double streak, int limit = 2500)
         {
             double amount = 0;
             double multiplier = 1.0 + streak / 5;
             int random = new Random().Next(10) + 5;
             amount = random * multiplier * 10;
-            return (int)amount > 2500 ? 2500 : (int)amount;
+            return (int)amount > limit ? limit : (int)amount;
         }
         public static EmbedBuilder DailyGetEmbed(IUser user, int streak, int amount, int balance)
         {
@@ -221,6 +223,29 @@ namespace Namiko.Core.Util
             eb.WithAuthor(user);
             eb.WithDescription($"You already claimed your daily reward today.\nYou must wait `{hours} hours {minutes} minutes {seconds} seconds`");
             eb.WithImageUrl("https://i.imgur.com/LcqpKmo.png");
+            eb.WithColor(BasicUtil.RandomColor());
+            return eb;
+        }
+
+        // WEEKLIES
+
+        public static EmbedBuilder WeeklyWaitEmbed(DateTime date, IUser user)
+        {
+            var eb = new EmbedBuilder();
+            eb.WithAuthor(user);
+            DateTime now = DateTime.Now;
+            date = date.AddDays(7);
+            string wait = $"{(date - now).Days} Days {(date - now).Hours} Hours {(date - now).Minutes} Minutes";
+            eb.WithDescription($"You already claimed your weekly reward.\nYou must wait `{wait}`");
+            eb.WithColor(BasicUtil.RandomColor());
+            return eb;
+        }
+
+        public static EmbedBuilder WeeklyEmbed(int amount, int current, IUser user)
+        {
+            var eb = new EmbedBuilder();
+            eb.WithAuthor(user);
+            eb.WithDescription($"You received **{amount}** {RandomEmote()}\nNow you have **{current}** {RandomEmote()}");
             eb.WithColor(BasicUtil.RandomColor());
             return eb;
         }

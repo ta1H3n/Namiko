@@ -51,6 +51,7 @@ namespace Namiko
             Client.LeftGuild += Client_LeftGuild;
             Client.MessageReceived += Client_MessageReceived;
             Client.MessageReceived += Client_MessageReceivedSpecialModes;
+            Client.MessageReceived += Client_MessageReceivedHeart;
             await Commands.AddModulesAsync(Assembly.GetEntryAssembly(), null);
 
             // Join/leave logging.
@@ -63,6 +64,7 @@ namespace Namiko
             
             await Task.Delay(-1);
         }
+        
 
         // EVENTS
 
@@ -137,11 +139,6 @@ namespace Namiko
                 return;
             }
 
-            if(Message.Content.Contains(Client.CurrentUser.Mention) && (!Message.Content.StartsWith(Client.CurrentUser.Mention) || Message.Content.Equals(Client.CurrentUser.Mention)))
-            {
-                await Message.Channel.SendMessageAsync($":sparkling_heart:");
-            }
-
             int ArgPos = 0;
             if (!(Message.HasStringPrefix(StaticSettings.prefix, ref ArgPos) || Message.HasMentionPrefix(Client.CurrentUser, ref ArgPos)) && !Pause)
             {
@@ -193,6 +190,10 @@ namespace Namiko
 
             await new SpecialModes().Spook(Context);
             await new SpecialModes().Christmas(Context);
+        }
+        private Task Client_MessageReceivedHeart(SocketMessage arg)
+        {
+            throw new NotImplementedException();
         }
         private async Task Client_JoinedGuild(SocketGuild arg)
         {
