@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-namespace Namiko.Resources.Attributes
+namespace Namiko.Resources.Preconditions
 {
     public class HomePrecondition : CustomPrecondition
     {
@@ -16,12 +16,10 @@ namespace Namiko.Resources.Attributes
                     return Task.FromResult(PreconditionResult.FromSuccess());
                 else
                 {
-                    context.Channel.SendMessageAsync("Nononono, you can't use this command, you're not in my home guild!");
                     return Task.FromResult(PreconditionResult.FromError("Not bot owner"));
                 }
             } catch 
             {
-                context.Channel.SendMessageAsync("Nononono, you can't use this command, you're not in my home guild!");
                 return Task.FromResult(PreconditionResult.FromError("Not bot owner"));
             }
         }

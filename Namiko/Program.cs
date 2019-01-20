@@ -161,13 +161,16 @@ namespace Namiko
 
             if(!Result.IsSuccess)
             {
-                await new Basic().Help(Context, Commands);
-                await new Images().SendRandomImage(Context);
+                if (await new Basic().Help(Context, Commands))
+                    return;
+                if (await new Images().SendRandomImage(Context))
+                    return;
+
                 if (!Result.ErrorReason.Equals("Unknown command."))
                 {
                     Console.WriteLine($"{DateTime.Now} at Commands] Text: {Message.Content} | Error: {Result.ErrorReason}");
-                    //await Context.Channel.SendMessageAsync("", false, CommandHelpEmbed(MessageParam.Content.Split(null)[0].Substring(1)).Build());
-                    await Context.Channel.SendMessageAsync(CommandHelpString(MessageParam.Content.Split(null)[0].Substring(1)));
+                    string reason = Result.ErrorReason + "\n" + CommandHelpString(MessageParam.Content.Split(null)[0].Replace(StaticSettings.prefix, ""));
+                    await Context.Channel.SendMessageAsync(reason);
                 }
                 return;
             }
@@ -201,7 +204,7 @@ namespace Namiko
             await ServerDb.UpdateServer(server);
 
             SocketTextChannel ch = arg.SystemChannel ?? arg.DefaultChannel;
-            await ch?.SendMessageAsync("Helloooo! Take good care of me! Try `!info` for a quick guide, or `!help` for a list of my commands!");
+            await ch?.SendMessageAsync("Helloooo! Take good care of me! Try `!info` for more info, or `!help` for a list of my commands!");
             await ((ISocketMessageChannel)Client.GetChannel(StaticSettings.log_channel)).SendMessageAsync($":white_check_mark: I joined `{arg.Id}` {arg.Name}.\nOwner: `{arg.Owner.Id}` {arg.Owner.Username}");
         }
         private async Task Client_LeftGuild(SocketGuild arg)
@@ -314,7 +317,12 @@ namespace Namiko
         public static string CommandHelpString(string commandName)
         {
             var cmd = Commands.Commands.Where(x => x.Aliases.Any(y => y.Equals(commandName, StringComparison.InvariantCultureIgnoreCase))).FirstOrDefault();
-            return new Basic().CommandHelpString(cmd);
+            string St = cmd.Summary;
+
+            int pFrom = St.IndexOf("**Usage**:");
+
+            string result = St.Substring(pFrom);
+            return result;
         }
 
         //  public static EmbedBuilder CommandHelpEmbed(string commandName)

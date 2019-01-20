@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using Namiko.Resources.Attributes;
+using Namiko.Resources.Preconditions;
 using Namiko.Resources.Datatypes;
 using Namiko.Resources.Database;
 using Namiko.Core.Util;

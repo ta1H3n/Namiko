@@ -8,7 +8,7 @@ using Namiko.Resources.Database;
 using Namiko.Resources.Datatypes;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using Namiko.Resources.Attributes;
+using Namiko.Resources.Preconditions;
 namespace Namiko.Core.Modules
 {
     public class Currency : ModuleBase<SocketCommandContext>
@@ -24,7 +24,7 @@ namespace Namiko.Core.Modules
                 await Context.Channel.SendMessageAsync("You are already in a game of blackjack. #" + Blackjack.games[user].Channel.Name);
                 return;
             }
-
+            
             int amount = ToastieUtil.ParseAmount(sAmount, user);
             try
             {

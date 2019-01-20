@@ -8,7 +8,7 @@ using Namiko.Resources.Database;
 using Namiko.Resources.Datatypes;
 using System.Collections.Generic;
 using System;
-using Namiko.Resources.Attributes;
+using Namiko.Resources.Preconditions;
 using Discord.WebSocket;
 using Namiko.Core.Util;
 

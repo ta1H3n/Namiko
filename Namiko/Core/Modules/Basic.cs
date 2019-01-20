@@ -6,7 +6,7 @@ using System.Linq;
 
 using Discord;
 using Discord.Commands;
-using Namiko.Resources.Attributes;
+using Namiko.Resources.Preconditions;
 using Namiko.Core.Util;
 using Discord.WebSocket;
 using Discord.Rest;
@@ -21,35 +21,42 @@ namespace Namiko.Core.Modules
             await Context.Channel.SendMessageAsync($"Hi {Context.User.Mention} :fox:");
         }
 
-       // [Command("RandomUser"), Alias("ru"), Summary("Randomly picks one user from all the reactions on a message.\nOnly works with default discord emotes.\n" +
-       //     "Message has to be in the same channel.\n**Usage**:`!ru [message_id]`")]
-       // public async Task RandomUser(ulong msgId, [Remainder] string str = "")
-       // {
-       //     var msg = await Context.Channel.GetMessageAsync(msgId) as RestUserMessage;
-       //     List<IUser> users = new List<IUser>();
-       //     foreach (var reaction in msg.Reactions)
-       //     {
-       //         try
-       //         {
-       //             var tUsers = msg.GetReactionUsersAsync(reaction.Key, 0);
-       //             users.AddRange(tUsers);
-       //         } catch { }
-       //     }
-       //     
-       //     users = users.Distinct(new DistintUserComparer()).ToList();
-       //     var user = users[new Random().Next(users.Count)];
-       //   
-       //     await Context.Channel.SendMessageAsync($"Aaaaaand ... it's {user.Username}! :star:");
-       // }
+        // [Command("RandomUser"), Alias("ru"), Summary("Randomly picks one user from all the reactions on a message.\nOnly works with default discord emotes.\n" +
+        //     "Message has to be in the same channel.\n**Usage**:`!ru [message_id]`")]
+        // public async Task RandomUser(ulong msgId, [Remainder] string str = "")
+        // {
+        //     var msg = await Context.Channel.GetMessageAsync(msgId) as RestUserMessage;
+        //     List<IUser> users = new List<IUser>();
+        //     foreach (var reaction in msg.Reactions)
+        //     {
+        //         try
+        //         {
+        //             var tUsers = msg.GetReactionUsersAsync(reaction.Key, 0);
+        //             users.AddRange(tUsers);
+        //         } catch { }
+        //     }
+        //     
+        //     users = users.Distinct(new DistintUserComparer()).ToList();
+        //     var user = users[new Random().Next(users.Count)];
+        //   
+        //     await Context.Channel.SendMessageAsync($"Aaaaaand ... it's {user.Username}! :star:");
+        // }
 
+        [Command("Info"), Alias("About"), Summary("Bot info.")]
+        public async Task Info([Remainder] string str = "")
+        {
+            await Context.Channel.SendMessageAsync("", false, BasicUtil.InfoEmbed().Build());
+        }
 
-        public async Task Help(SocketCommandContext context, CommandService commandService)
+        // HELP COMMAND STUFF
+        
+        public async Task<bool> Help(SocketCommandContext context, CommandService commandService)
         {
             var msgStr = context.Message.Content;
             string[] words = msgStr.Split(null);
             string cmd = null;
             if (words[0] != $"{StaticSettings.prefix}help" && words[0] != $"{StaticSettings.prefix}h")
-                return;
+                return false;
             try
             {
                 if (words[1] != null)
@@ -78,9 +85,10 @@ namespace Namiko.Core.Modules
             if(!desc.Equals(""))
             {
                 await context.Channel.SendMessageAsync(desc);
-                return;
+                return true;
             }
             await context.Channel.SendMessageAsync($":star: Type `{StaticSettings.prefix}h [command_name]` for more information about a command.", false, eb.Build());
+            return true;
         }
 
         private EmbedBuilder AllHelpEmbed(CommandService commandService, bool all = false)
@@ -90,7 +98,7 @@ namespace Namiko.Core.Modules
 
             foreach(var x in commandService.Modules)
             {
-                if ((x.Name != "SpecialCommands" && x.Name != "SpecialModes") || all)
+                if ((x.Name != "Special" && x.Name != "Basic" && x.Name != "SpecialModes") || all)
                 {
                     var fb = new EmbedFieldBuilder{
                         Name = x.Name

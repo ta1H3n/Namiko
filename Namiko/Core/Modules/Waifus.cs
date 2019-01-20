@@ -7,13 +7,13 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Namiko.Resources.Database;
 using Namiko.Resources.Datatypes;
-using Namiko.Resources.Attributes;
+using Namiko.Resources.Preconditions;
 using System.Collections.Generic;
 namespace Namiko.Core.Modules
 {
     public class Waifus : ModuleBase<SocketCommandContext>
     {
-        [Command("WaifuShop"), Alias("ws"), Summary("Opens the waifu shop."),]
+        [Command("WaifuShop"), Alias("ws"), Summary("Opens the waifu shop.")]
         public async Task OpenWaifuShop([Remainder] string str = "")
         {
             List<ShopWaifu> waifus = await WaifuUtil.GetShopWaifus(Context.Guild.Id);

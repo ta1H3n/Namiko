@@ -11,14 +11,14 @@ using Imgur.API.Models;
 using Namiko.Resources.Database;
 using Namiko.Resources.Datatypes;
 using System.Diagnostics.Contracts;
-using Namiko.Resources.Attributes;
+using Namiko.Resources.Preconditions;
 using Namiko.Core.Util;
 
 namespace Namiko.Core.Modules
 {
     public class Images : ModuleBase<SocketCommandContext>
     {
-        public async Task SendRandomImage(SocketCommandContext Context)
+        public async Task<bool> SendRandomImage(SocketCommandContext Context)
         {
             string text = Context.Message.Content;
             text = text.Replace(StaticSettings.prefix, "");
@@ -28,9 +28,10 @@ namespace Namiko.Core.Modules
             var image = ImageDb.GetRandomImage(text);
             if (image == null)
             {
-                return;
+                return false;
             }
             await Context.Channel.SendMessageAsync("", false, ImageUtil.ToEmbed(image).Build());
+            return true;
         }
 
         [Command("All"), Summary("All reaction images from a single command.\n**Usage**: `!all [name]`")]

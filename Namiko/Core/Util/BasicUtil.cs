@@ -51,5 +51,27 @@ namespace Namiko.Core.Util
             }
             return users;
         }
+
+        public static EmbedBuilder InfoEmbed()
+        {
+            var eb = new EmbedBuilder();
+            var client = Program.GetClient();
+
+            string desc = "Discord bot made in C#, featuring innovations like waifu shops, a banroulette, teams and extensive currency and economy features.";
+            eb.WithDescription(desc);
+
+            string field = "Creator: taiHen#2839\n";
+            field += "Support Server: [Namiko Test Realm](https://discord.gg/QkWgWUK)\n";
+            field += "Origin Server: [AMFWT](https://discord.gg/pBjSCVN)\n";
+            field += "Invite Link: [Namiko](https://discordapp.com/oauth2/authorize?client_id=418823684459855882&scope=bot&permissions=268707844)\n";
+            field += "Repository: [Github](https://github.com/ta1H3n/Namiko)\n";
+            field += "Donate:\n";
+            eb.AddField("References", field);
+
+            eb.WithAuthor(client.CurrentUser);
+            eb.WithColor(BasicUtil.RandomColor());
+            eb.WithFooter("-What are you? Twelve?");
+            return eb;
+        }
     }
 }

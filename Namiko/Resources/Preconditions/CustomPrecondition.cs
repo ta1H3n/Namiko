@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Namiko.Resources.Attributes
+namespace Namiko.Resources.Preconditions
 {
     public abstract class CustomPrecondition : PreconditionAttribute
     {

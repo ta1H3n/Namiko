@@ -106,7 +106,7 @@ namespace Namiko.Core.Util
             ///////////////////////////
             //INSERT THUMBNAIL
             ///////////////////////////
-            eb.WithFooter($"{StaticSettings.prefix}buywaifu [name]");
+            eb.WithFooter($"{StaticSettings.prefix}buywaifu [name] | Resets in {23 - DateTime.Now.Hour} Hours {60 - DateTime.Now.Minute} Minutes");
             eb.Color = BasicUtil.RandomColor();
             return eb;
         }

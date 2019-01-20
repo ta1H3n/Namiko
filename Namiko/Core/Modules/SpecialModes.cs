@@ -9,7 +9,7 @@ using Discord.WebSocket;
 
 using Namiko.Resources.Database;
 using Namiko.Resources.Datatypes;
-using Namiko.Resources.Attributes;
+using Namiko.Resources.Preconditions;
 using Namiko.Resources.Xml;
 using Namiko.Core.Util;
 

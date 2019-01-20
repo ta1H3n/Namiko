@@ -6,7 +6,7 @@ using System.Linq;
 
 using Discord;
 using Discord.Commands;
-using Namiko.Resources.Attributes;
+using Namiko.Resources.Preconditions;
 using Namiko.Resources.Database;
 using Discord.WebSocket;
 using Discord.Rest;
