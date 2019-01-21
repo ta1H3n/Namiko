@@ -191,9 +191,15 @@ namespace Namiko
             await new SpecialModes().Spook(Context);
             await new SpecialModes().Christmas(Context);
         }
-        private Task Client_MessageReceivedHeart(SocketMessage arg)
+        private async Task Client_MessageReceivedHeart(SocketMessage arg)
         {
-            throw new NotImplementedException();
+            var Message = arg as SocketUserMessage;
+            string msg = Message.Content.Replace("!", "");
+            string mention = Client.CurrentUser.Mention.Replace("!", "");
+            if (msg.Contains(mention) && (!msg.StartsWith(mention) || msg.Equals(mention)))
+            {
+                await Message.Channel.SendMessageAsync($"{Message.Author.Mention} <a:loveme:536705504798441483>");
+            }
         }
         private async Task Client_JoinedGuild(SocketGuild arg)
         {

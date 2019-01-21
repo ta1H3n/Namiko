@@ -55,13 +55,13 @@ namespace Namiko.Core.Modules
             await Context.Channel.SendMessageAsync("???");
         }
 
-        [Command("guildtest"), OwnerPrecondition]
+        [Command("guildlist"), OwnerPrecondition]
         public async Task GuildTest()
         {
             string msg = "";
             foreach (var x in Program.GetClient().Guilds)
             {
-                msg += x.Name;
+                msg += x.Name + "\n";
             }
             await Context.Channel.SendMessageAsync(msg);
         }
