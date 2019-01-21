@@ -47,6 +47,15 @@ namespace Namiko.Resources.Database
                 return db.Toasties.Where(x => x.Amount > 0).ToList();
             }
         }
+        public static async Task DeleteByGuild(ulong guildId)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                db.Toasties.RemoveRange(db.Toasties.Where(x => x.GuildId == guildId));
+                await db.SaveChangesAsync();
+            }
+        }
+
     }
 
     public static class DailyDb
@@ -93,6 +102,14 @@ namespace Namiko.Resources.Database
                 catch { return 1; }
             }
         }
+        public static async Task DeleteByGuild(ulong guildId)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                db.Dailies.RemoveRange(db.Dailies.Where(x => x.GuildId == guildId));
+                await db.SaveChangesAsync();
+            }
+        }
     }
 
     public static class WeeklyDb
@@ -120,46 +137,55 @@ namespace Namiko.Resources.Database
                 await db.SaveChangesAsync();
             }
         }
+        public static async Task DeleteByGuild(ulong guildId)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                db.Weeklies.RemoveRange(db.Weeklies.Where(x => x.GuildId == guildId));
+                await db.SaveChangesAsync();
+            }
+        }
     }
+    
 
-   // public static class ShopItemDb
-   // {
-   //     public static List<ShopRole> GetByGuild(ulong GuildId)
-   //     {
-   //         using (var db = new SqliteDbContext())
-   //         {
-   //             return db.ShopRoles.Where(x => x.GuildId == GuildId).ToList();
-   //         }
-   //     }
-   //     public static List<ShopRole> GetAll()
-   //     {
-   //         using (var db = new SqliteDbContext())
-   //         {
-   //             return db.ShopRoles.ToList();
-   //         }
-   //     }
-   //     public static ShopRole GetByRoleId(ulong RoleId)
-   //     {
-   //         using (var db = new SqliteDbContext())
-   //         {
-   //             return db.ShopRoles.Where(x => x.RoleId == RoleId).FirstOrDefault();
-   //         }
-   //     }
-   //     public static async Task AddShopRole(ShopRole role)
-   //     {
-   //         using (var db = new SqliteDbContext())
-   //         {
-   //             db.ShopRoles.Add(role);
-   //             await db.SaveChangesAsync();
-   //         }
-   //     }
-   //     public static async Task DeleteShopRole(ShopRole role)
-   //     {
-   //         using (var db = new SqliteDbContext())
-   //         {
-   //             db.Remove(role);
-   //             await db.SaveChangesAsync();
-   //         }
-   //     }
-   // }
+    // public static class ShopItemDb
+    // {
+    //     public static List<ShopRole> GetByGuild(ulong GuildId)
+    //     {
+    //         using (var db = new SqliteDbContext())
+    //         {
+    //             return db.ShopRoles.Where(x => x.GuildId == GuildId).ToList();
+    //         }
+    //     }
+    //     public static List<ShopRole> GetAll()
+    //     {
+    //         using (var db = new SqliteDbContext())
+    //         {
+    //             return db.ShopRoles.ToList();
+    //         }
+    //     }
+    //     public static ShopRole GetByRoleId(ulong RoleId)
+    //     {
+    //         using (var db = new SqliteDbContext())
+    //         {
+    //             return db.ShopRoles.Where(x => x.RoleId == RoleId).FirstOrDefault();
+    //         }
+    //     }
+    //     public static async Task AddShopRole(ShopRole role)
+    //     {
+    //         using (var db = new SqliteDbContext())
+    //         {
+    //             db.ShopRoles.Add(role);
+    //             await db.SaveChangesAsync();
+    //         }
+    //     }
+    //     public static async Task DeleteShopRole(ShopRole role)
+    //     {
+    //         using (var db = new SqliteDbContext())
+    //         {
+    //             db.Remove(role);
+    //             await db.SaveChangesAsync();
+    //         }
+    //     }
+    // }
 }

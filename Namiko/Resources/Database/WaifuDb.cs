@@ -116,6 +116,14 @@ namespace Namiko.Resources.Database
                 }
             }
         }
+        public static async Task DeleteByGuild(ulong guildId)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                db.UserInventories.RemoveRange(db.UserInventories.Where(x => x.GuildId == guildId));
+                await db.SaveChangesAsync();
+            }
+        }
         public static async Task CompletelyDeleteWaifu(Waifu waifu)
         {
             using (var DbContext = new SqliteDbContext())
@@ -224,7 +232,14 @@ namespace Namiko.Resources.Database
                 await DbContext.SaveChangesAsync();
             }
         }
-
+        public static async Task DeleteByGuild(ulong guildId)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                db.WaifuStores.RemoveRange(db.WaifuStores.Where(x => x.GuildId == guildId));
+                await db.SaveChangesAsync();
+            }
+        }
     }
 
 
@@ -249,6 +264,14 @@ namespace Namiko.Resources.Database
                 if (waifu == null)
                     waifu = UserInventoryDb.GetWaifus(userId, guildId).LastOrDefault();
                 return waifu;
+            }
+        }
+        public static async Task DeleteByGuild(ulong guildId)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                db.FeaturedWaifus.RemoveRange(db.FeaturedWaifus.Where(x => x.GuildId == guildId));
+                await db.SaveChangesAsync();
             }
         }
     }

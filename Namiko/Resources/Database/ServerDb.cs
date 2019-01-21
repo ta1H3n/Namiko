@@ -50,6 +50,14 @@ namespace Namiko.Resources.Database
                 return db.Servers.ToList();
             }
         }
+        public static List<Server> GetOld()
+        {
+            using (var db = new SqliteDbContext())
+            {
+                var date = new DateTime(0);
+                return db.Servers.Where(x => x.LeaveDate != date && x.LeaveDate.AddDays(3) < DateTime.Now).ToList();
+            }
+        }
     }
 
     public static class BlacklistedChannelDb

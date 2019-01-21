@@ -222,7 +222,8 @@ namespace Namiko.Core.Util
             var eb = new EmbedBuilder();
             eb.WithAuthor(user);
             eb.WithDescription($"You already claimed your daily reward today.\nYou must wait `{hours} hours {minutes} minutes {seconds} seconds`");
-            eb.WithImageUrl("https://i.imgur.com/LcqpKmo.png");
+            if(new Random().Next(20) == 1)
+                eb.WithImageUrl("https://i.imgur.com/LcqpKmo.png");
             eb.WithColor(BasicUtil.RandomColor());
             return eb;
         }

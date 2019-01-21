@@ -33,6 +33,14 @@ namespace Namiko.Resources.Database
                 await DbContext.SaveChangesAsync();
             }
         }
+        public static async Task DeleteByGuild(ulong guildId)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                db.PublicRoles.RemoveRange(db.PublicRoles.Where(x => x.GuildId == guildId));
+                await db.SaveChangesAsync();
+            }
+        }
         public static List<PublicRole> GetAll(ulong guildId)
         {
             using (var DbContext = new SqliteDbContext())
@@ -72,6 +80,14 @@ namespace Namiko.Resources.Database
             {
                 DbContext.Teams.Remove(team);
                 await DbContext.SaveChangesAsync();
+            }
+        }
+        public static async Task DeleteByGuild(ulong guildId)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                db.Teams.RemoveRange(db.Teams.Where(x => x.GuildId == guildId));
+                await db.SaveChangesAsync();
             }
         }
         public static List<Team> Teams(ulong guildId)

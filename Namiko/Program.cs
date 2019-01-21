@@ -35,7 +35,7 @@ namespace Namiko
             //SetUpRelease();
             Task.Run(() => ImgurUtil.ImgurSetup());
             Timers.SetUp();
-          
+
             Client = new DiscordSocketClient();
             Commands = new CommandService(new CommandServiceConfig
             {

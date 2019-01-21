@@ -37,15 +37,32 @@ namespace Namiko.Core
             Hour.Elapsed += Timer_BackupData;
             Hour.Elapsed += Timer_ResetCommandCallTick;
             Hour.Elapsed += Timer_ExpireTeamInvites;
+            Hour.Elapsed += Timer_CleanData;
 
             Console.WriteLine("Timers Ready.");
         }
 
+        public static async void Timer_CleanData(object sender, ElapsedEventArgs e)
+        {
+            var servers = ServerDb.GetOld();
+            foreach(var x in servers)
+            {
+                await PublicRoleDb.DeleteByGuild(x.GuildId);
+                await TeamDb.DeleteByGuild(x.GuildId);
+                await ToastieDb.DeleteByGuild(x.GuildId);
+                await DailyDb.DeleteByGuild(x.GuildId);
+                await WeeklyDb.DeleteByGuild(x.GuildId);
+                await UserInventoryDb.DeleteByGuild(x.GuildId);
+                await WaifuShopDb.DeleteByGuild(x.GuildId);
+                await FeaturedWaifuDb.DeleteByGuild(x.GuildId);
+                await ServerDb.DeleteServer(x.GuildId);
+                Console.WriteLine($"Cleared server {x.GuildId}");
+            }
+        }
         private static async void Timer_ExpireTeamInvites(object sender, ElapsedEventArgs e)
         {
             await InviteDb.DeleteOlder(DateTime.Now.AddDays(-1));
         }
-
         private static async void Timer_TimeoutBlackjack(object sender, ElapsedEventArgs e)
         {
             var games = Blackjack.games;
@@ -55,7 +72,6 @@ namespace Namiko.Core
                 await Blackjack.GameTimeout(x.Key, x.Value);
             }
         }
-
         private static void Timer_BackupData(object sender, ElapsedEventArgs e)
         {
             try
@@ -91,6 +107,8 @@ namespace Namiko.Core
             Console.WriteLine(e.SignalTime + " - " + CommandCallTick + " command calls.");
             CommandCallTick = 0;
         }
+
+
         public static void CommandCallTickIncrement()
         {
             CommandCallTick++;
