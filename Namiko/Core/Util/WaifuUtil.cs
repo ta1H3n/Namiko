@@ -16,9 +16,8 @@ namespace Namiko.Core.Util
         public static async Task<List<ShopWaifu>> GetShopWaifus(ulong guildId)
         {
             var contents = WaifuShopDb.GetWaifuStores(guildId);
-            var date = contents[0].GeneratedDate;
 
-            if (date.Date < System.DateTime.Now.Date)
+            if (contents == null || contents[0].GeneratedDate.Date < System.DateTime.Now.Date)
             {
                 var list = GenerateWaifuList(guildId);
                 await WaifuShopDb.NewList(list);
@@ -74,10 +73,11 @@ namespace Namiko.Core.Util
 
             return waifus;
         }
-        public static EmbedBuilder GetShopEmbed(List<ShopWaifu> waifus, SocketCommandContext Context)
+        public static EmbedBuilder GetShopEmbed(List<ShopWaifu> waifus)
         {
+            var client = Program.GetClient();
             var eb = new EmbedBuilder();
-            eb.WithAuthor("Waifu Store", Context.Client.CurrentUser.GetAvatarUrl());
+            eb.WithAuthor("Waifu Store", client.CurrentUser.GetAvatarUrl());
             foreach (var x in waifus)
             {
 
@@ -97,7 +97,7 @@ namespace Namiko.Core.Util
                     if (x.Limited > 0)
                         efb.Value += $" {x.Limited} in stock!";
                     else
-                        efb.Value += $" OUT OF STOCK! Bought by: {Context.Client.GetUser(x.BoughtBy).Mention}";
+                        efb.Value += $" OUT OF STOCK! Bought by: {client.GetUser(x.BoughtBy).Mention}";
                 }
 
                 eb.AddField(efb);
@@ -110,6 +110,45 @@ namespace Namiko.Core.Util
             eb.Color = BasicUtil.RandomColor();
             return eb;
         }
+        public static EmbedBuilder WaifuShopEmbed(List<ShopWaifu> waifus)
+        {
+            var client = Program.GetClient();
+            var eb = new EmbedBuilder();
+            eb.WithAuthor("Waifu Store", client.CurrentUser.GetAvatarUrl());
+
+            //string list = $"`{StaticSettings.prefix}buywaifu [name]` `{StaticSettings.prefix}waifu [name]`\n\n";
+            string list = "";
+            foreach (var x in waifus)
+            {
+                string src = x.Waifu.Source.Length > 33 ? (x.Waifu.Source.Substring(0, 30) + "...") : x.Waifu.Source;
+                string listing = $"T{x.Waifu.Tier} {GetPriceString(x.Waifu.Tier, x.Discount)}: **{x.Waifu.Name}** - *{src}*\n";
+
+                if (x.Limited > -1)
+                {
+                    listing += "    **-Limited!**";
+                    if (x.Limited > 0)
+                        listing += $" {x.Limited} in stock!\n";
+                    else
+                        listing += $" OUT OF STOCK! Bought by: {client.GetUser(x.BoughtBy).Mention}\n";
+                    list += listing;
+                }
+                else
+                    list += listing;
+            }
+
+            eb.WithDescription(list);
+            eb.WithFooter($"`{StaticSettings.prefix}buywaifu [name]` `{StaticSettings.prefix}waifu [name]` | Resets in {23 - DateTime.Now.Hour} Hours {60 - DateTime.Now.Minute} Minutes");
+            eb.Color = BasicUtil.RandomColor();
+            return eb;
+        }
+        public static EmbedBuilder WaifuShopSlideEmbed(Waifu waifu)
+        {
+            var eb = new EmbedBuilder();
+            eb.Description = $"**{waifu.LongName}**\nT{waifu.Tier} - `{GetPrice(waifu.Tier)}` {ToastieUtil.RandomEmote()}";
+            eb.WithImageUrl(waifu.ImageUrl);
+            eb.WithColor(BasicUtil.RandomColor());
+            return eb;
+        }
         public static int GenerateDiscount()
         {
             var rand = new Random();
@@ -118,10 +157,10 @@ namespace Namiko.Core.Util
         public static string GetPriceString(int tier, int discount = 0)
         {
             if (discount == 0)
-                return GetPrice(tier).ToString();
+                return GetPrice(tier).ToString("n0");
 
             else
-                return $"~~{GetPrice(tier)}~~ {GetPrice(tier, discount)} (-{discount}%)";
+                return $"~~{GetPrice(tier).ToString("n0")}~~ {GetPrice(tier, discount).ToString("n0")} (-{discount}%)";
         }
         public static int GetPrice(int tier, int discount = 0)
         {

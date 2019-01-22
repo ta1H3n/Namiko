@@ -4,6 +4,8 @@ using System.Linq;
 using System.Globalization;
 using Namiko.Resources.Database;
 using Discord.WebSocket;
+using Namiko.Resources.Datatypes;
+using System.Collections.Generic;
 
 namespace Namiko.Core.Util {
     class UserUtil {
@@ -75,20 +77,12 @@ namespace Namiko.Core.Util {
             eb.AddField("Toasties", $"Amount: {ToastieDb.GetToasties(user.Id, user.Guild.Id).ToString("n0")} <:toastie3:454441133876183060>\nDaily: {(daily == null ? "0" : ((daily.Date + 172800000) < timeNow ? "0" : daily.Streak.ToString()))} :calendar_spiral:", true);
             eb.AddField("Waifus", $"Amount: {waifucount} :two_hearts:\nValue: {waifuprice.ToString("n0")} <:toastie3:454441133876183060>", true);
 
-            if (waifucount > 0) {
-                string wstr = "";
-                foreach (var x in waifus) {
-                    if (x.Source.Length > 45)
-                        x.Source = x.Source.Substring(0, 33) + "...";
-                    x.Source = x.Source ?? "";
-                    wstr += String.Format("**{0}** - *{1}*\n", x.Name, x.Source);
-                }
-                eb.AddField("Waifus", wstr);
-            }
-
             var waifu = FeaturedWaifuDb.GetFeaturedWaifu(user.Id, user.Guild.Id);
             if (waifu != null)
-                eb.WithThumbnailUrl(waifu.ImageUrl);
+            {
+                eb.WithImageUrl(waifu.ImageUrl);
+                eb.AddField(waifu.LongName, $"*{waifu.Source}*");
+            }
 
             string footer = "";
             footer += $"Status: '{user.Status.ToString()}'";
@@ -101,6 +95,41 @@ namespace Namiko.Core.Util {
                 eb.WithDescription((WebUtil.IsValidUrl(quote))? $"*[Link to Custom Picture]({quote})*" : $"{quote}");
             
             eb.Color = UserDb.CheckHex(out string colour, user.Id)? (Discord.Color) HexToColor(colour) : BasicUtil.RandomColor();
+            return eb;
+        }
+        public static EmbedBuilder WaifusEmbed(SocketGuildUser user)
+        {
+            var eb = new EmbedBuilder();
+            eb.WithAuthor(user);
+            var waifus = UserInventoryDb.GetWaifus(user.Id, user.Guild.Id);
+
+            if (waifus.Count > 0)
+            {
+                string wstr = "";
+                foreach (var x in waifus)
+                {
+                    if (x.Source.Length > 45)
+                        x.Source = x.Source.Substring(0, 33) + "...";
+                    x.Source = x.Source ?? "";
+                    wstr += String.Format("**{0}** - *{1}*\n", x.Name, x.Source);
+                }
+                eb.AddField("Waifus", wstr);
+
+                var waifu = FeaturedWaifuDb.GetFeaturedWaifu(user.Id, user.Guild.Id);
+                if (waifu != null)
+                    eb.WithThumbnailUrl(waifu.ImageUrl);
+                else
+                    eb.WithThumbnailUrl(user.GetAvatarUrl());
+            }
+            else
+            {
+                string desc = "You find yourself in a strange place. You are all alone in the darkness. You have no waifus, no love, no purpose.\n\nBut perhaps all is not lost?\n\n"
+                    + $"*A pillar of light reveals strange writtings*\n"
+                    + $"```{StaticSettings.prefix}daily\n{StaticSettings.prefix}weekly\n{StaticSettings.prefix}waifushop\n{StaticSettings.prefix}waifushopslides```";
+                eb.WithDescription(desc);
+            }
+
+            eb.WithColor(BasicUtil.RandomColor());
             return eb;
         }
         public static EmbedBuilder QuoteEmbed(IUser User, bool isMe) {

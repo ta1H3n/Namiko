@@ -13,12 +13,49 @@ namespace Namiko.Core.Modules
 {
     public class Waifus : ModuleBase<SocketCommandContext>
     {
+        private static Dictionary<ulong, Object> slideLock = new Dictionary<ulong, Object>();
+
         [Command("WaifuShop"), Alias("ws"), Summary("Opens the waifu shop.")]
-        public async Task OpenWaifuShop([Remainder] string str = "")
+        public async Task WaifuShop([Remainder] string str = "")
         {
             List<ShopWaifu> waifus = await WaifuUtil.GetShopWaifus(Context.Guild.Id);
-            var eb = WaifuUtil.GetShopEmbed(waifus, Context);
+            var eb = WaifuUtil.WaifuShopEmbed(waifus);
+            string desc = eb.Description;
+            
             await Context.Channel.SendMessageAsync("", false, eb.Build());
+        }
+
+        [Command("WaifuShopSlides"), Alias("wss"), Summary("Opens the waifu shop slides.")]
+        public async Task WaifuShopSlides([Remainder] string str = "")
+        {
+            List<ShopWaifu> waifus = await WaifuUtil.GetShopWaifus(Context.Guild.Id);
+            waifus.RemoveAt(0);
+            
+            var lockObj = new Object();
+            if(slideLock.ContainsKey(Context.Channel.Id))
+                slideLock.Remove(Context.Channel.Id);
+            slideLock.Add(Context.Channel.Id, lockObj);
+
+            var eb = WaifuUtil.WaifuShopSlideEmbed(waifus[0].Waifu);
+            var msg = await Context.Channel.SendMessageAsync("", false, eb.Build());
+
+            await Task.Delay(3000);
+
+            for (int i = 1; i < waifus.Count; i++)
+            {
+                if (slideLock.GetValueOrDefault(Context.Channel.Id) != lockObj)
+                    break;
+                eb = WaifuUtil.WaifuShopSlideEmbed(waifus[i].Waifu);
+                await msg.ModifyAsync(x => x.Embed = eb.Build());
+                await Task.Delay(3000);
+            } 
+
+            eb = WaifuUtil.WaifuShopSlideEmbed(waifus[new Random().Next(waifus.Count)].Waifu);
+            eb.WithFooter("Slideshow ended.");
+            await msg.ModifyAsync(x => x.Embed = eb.Build());
+
+            if (slideLock.GetValueOrDefault(Context.Channel.Id) == lockObj)
+                slideLock.Remove(Context.Channel.Id);
         }
 
         [Command("BuyWaifu"), Alias("bw"), Summary("Buys a waifu, must be in a shop.\n**Usage**: `!bw [name]`")]

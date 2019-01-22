@@ -201,6 +201,8 @@ namespace Namiko.Resources.Database
             using (var dbContext = new SqliteDbContext())
             {
                 var waifu = dbContext.WaifuStores.LastOrDefault(x => x.GuildId == guildId);
+                if (waifu == null)
+                    return null;
                 var storesque = dbContext.WaifuStores.Where(x => x.GeneratedDate.Equals(waifu.GeneratedDate) && x.GuildId == guildId).OrderBy(x => x.Id);
 
                 var waifus = storesque.Select(x => x.Waifu).ToList();

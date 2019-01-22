@@ -10,10 +10,18 @@ using System.Linq;
 namespace Namiko.Core.Modules {
     public class User : ModuleBase<SocketCommandContext> {
 
-        [Command("Inventory"), Alias("waifus", "profile"), Summary("Shows user waifus.\n**Usage**: `!inventory [user_optional]`")]
-        public async Task Inventory(IUser user = null, [Remainder] string str = "") {
+        [Command("Profile"), Summary("Showsa a users profile.\n**Usage**: `!profile [user_optional]`")]
+        public async Task Profile(IUser user = null, [Remainder] string str = "")
+        {
             if (user == null) user = Context.User;
             await Context.Channel.SendMessageAsync("", false, UserUtil.ProfileEmbed((SocketGuildUser)user).Build());
+        }
+
+        [Command("Waifus"), Alias("waifus"), Summary("Shows a users waifu list.\n**Usage**: `!waifus [user_optional]`")]
+        public async Task Waifus(IUser user = null, [Remainder] string str = "")
+        {
+            if (user == null) user = Context.User;
+            await Context.Channel.SendMessageAsync("", false, UserUtil.WaifusEmbed((SocketGuildUser)user).Build());
         }
 
         [Command("setcolour"), Alias("setcolor", "sc"), Summary("Allows user to set profile colour for 150 toasties.\n**Usage**: `!sc [dark/light optional] [colour name or hex value]`")]
@@ -28,7 +36,7 @@ namespace Namiko.Core.Modules {
                 //creating comfermation embed
                 EmbedBuilder embed = new EmbedBuilder();
                 embed.WithAuthor("Profile Colour");
-                embed.WithDescription($"{ Context.User.Username } set colour to **Default**\nSwitching to Dafault incurs no additional costs");
+                embed.WithDescription($"{ Context.User.Username } set colour to **Default**\nSwitching to Default incurs no additional costs");
                 embed.WithColor(BasicUtil.RandomColor());
 
                 //sending embed + exception & error confermations 

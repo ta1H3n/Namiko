@@ -223,7 +223,7 @@ namespace Namiko
             {
                 await ch?.SendMessageAsync("Helloooo! Take good care of me! Try `!info` to learn more about me, or `!help` for a list of my commands!");
             } catch { }
-            await ((ISocketMessageChannel)Client.GetChannel(StaticSettings.log_channel)).SendMessageAsync($":white_check_mark: I joined `{arg.Id}` {arg.Name}.\nOwner: `{arg.Owner.Id}` {arg.Owner.Username}");
+            await ((ISocketMessageChannel)Client.GetChannel(StaticSettings.log_channel)).SendMessageAsync($":white_check_mark: I joined `{arg.Id}` {arg.Name}.\nOwner: `{arg.Owner.Id}` {arg.Owner}");
         }
         private async Task Client_LeftGuild(SocketGuild arg)
         {
@@ -231,7 +231,7 @@ namespace Namiko
             server.LeaveDate = DateTime.Now;
             await ServerDb.UpdateServer(server);
 
-            await ((ISocketMessageChannel)Client.GetChannel(StaticSettings.log_channel)).SendMessageAsync($":x: I left `{arg.Id}` {arg.Name}.\nOwner: `{arg.Owner.Id}` {arg.Owner.Username}");
+            await ((ISocketMessageChannel)Client.GetChannel(StaticSettings.log_channel)).SendMessageAsync($":x: I left `{arg.Id}` {arg.Name}.\nOwner: `{arg.Owner.Id}` {arg.Owner}");
         }
 
         // USER JOIN LOGS
@@ -250,7 +250,7 @@ namespace Namiko
         }
         private static string UserInfo(SocketUser user)
         {
-            return $"`{user.Id}` {user.Username} {user.Mention}";
+            return $"`{user.Id}` {user} {user.Mention}";
         }
         private static SocketTextChannel GetJoinLogChannel(SocketGuild guild)
         {
