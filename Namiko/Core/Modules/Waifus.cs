@@ -39,7 +39,7 @@ namespace Namiko.Core.Modules
             var eb = WaifuUtil.WaifuShopSlideEmbed(waifus[0].Waifu);
             var msg = await Context.Channel.SendMessageAsync("", false, eb.Build());
 
-            await Task.Delay(3000);
+            await Task.Delay(5000);
 
             for (int i = 1; i < waifus.Count; i++)
             {
@@ -47,7 +47,7 @@ namespace Namiko.Core.Modules
                     break;
                 eb = WaifuUtil.WaifuShopSlideEmbed(waifus[i].Waifu);
                 await msg.ModifyAsync(x => x.Embed = eb.Build());
-                await Task.Delay(3000);
+                await Task.Delay(5000);
             } 
 
             eb = WaifuUtil.WaifuShopSlideEmbed(waifus[new Random().Next(waifus.Count)].Waifu);

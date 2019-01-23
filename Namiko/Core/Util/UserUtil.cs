@@ -68,7 +68,7 @@ namespace Namiko.Core.Util {
             eb.WithAuthor(user);
             eb.WithThumbnailUrl(user.GetAvatarUrl());
 
-            var waifus = UserInventoryDb.GetWaifus(user.Id, user.Guild.Id).OrderBy(x => x.Source).ThenBy(x => x.Name);
+            var waifus = UserInventoryDb.GetWaifus(user.Id, user.Guild.Id);
             int waifucount = waifus.Count();
             int waifuprice = WaifuUtil.WaifuValue(waifus);
 
@@ -101,9 +101,9 @@ namespace Namiko.Core.Util {
         {
             var eb = new EmbedBuilder();
             eb.WithAuthor(user);
-            var waifus = UserInventoryDb.GetWaifus(user.Id, user.Guild.Id);
+            var waifus = UserInventoryDb.GetWaifus(user.Id, user.Guild.Id).OrderBy(x => x.Source).ThenBy(x => x.Name);
 
-            if (waifus.Count > 0)
+            if (waifus.Count() > 0)
             {
                 string wstr = "";
                 foreach (var x in waifus)
