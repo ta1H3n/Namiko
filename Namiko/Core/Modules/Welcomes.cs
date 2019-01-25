@@ -11,10 +11,11 @@ using Namiko.Resources.Preconditions;
 using Namiko.Resources.Datatypes;
 using Namiko.Resources.Database;
 using Namiko.Core.Util;
+using Discord.Addons.Interactive;
 
 namespace Namiko.Core.Modules
 {
-    public class Welcomes : ModuleBase<SocketCommandContext>
+    public class Welcomes : InteractiveBase<SocketCommandContext>
     {
         [Command("NewWelcome"), Alias("nwlc"), Summary("Adds a new welcome message. @_ will be replaced with a mention.\n**Usage**: `!nw [welcome]`"), HomePrecondition]
         public async Task NewWelcome([Remainder] string message)

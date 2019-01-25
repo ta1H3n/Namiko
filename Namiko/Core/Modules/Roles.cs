@@ -11,10 +11,11 @@ using Namiko.Resources.Database;
 using Namiko.Resources.Datatypes;
 using Namiko.Core.Util;
 using Namiko.Resources.Preconditions;
+using Discord.Addons.Interactive;
 
 namespace Namiko.Core.Modules
 {
-    public class Roles : ModuleBase<SocketCommandContext>
+    public class Roles : InteractiveBase<SocketCommandContext>
     {
         [Command("Role"), Alias("r"), Summary("Adds or removes a public role from the user.\n**Usage**: `!r [name]`"), CustomBotPermission(GuildPermission.ManageRoles)]
         public async Task Role([Remainder] string name)

@@ -60,12 +60,12 @@ namespace Namiko.Core.Util
             var ordtList = tList.OrderByDescending(x => x.Value);
 
             string users = "";
-            page = page*10;
+            page = page * 10;
             for (int i = page; i < page + 10; i++)
             {
                 var x = ordtList.ElementAtOrDefault(i);
-                if(x.Key != null)
-                    users += $"#{i+1} {x.Key.Mention} - {x.Value.ToString("n0")}\n";
+                if (x.Key != null)
+                    users += $"#{i + 1} {x.Key.Mention} - {x.Value.ToString("n0")}\n";
             }
             if (users == "")
                 users = "-";
@@ -73,7 +73,7 @@ namespace Namiko.Core.Util
             eb.WithTitle(":star: Toastie Leaderboard");
             eb.AddField("Toasties <:toastie3:454441133876183060>", users, false);
             eb.WithColor(BasicUtil.RandomColor());
-            eb.WithFooter($"Page: {page/10+1}");
+            eb.WithFooter($"Page: {page / 10 + 1}");
             return eb;
         }
         public static async Task<EmbedBuilder> DailyLeaderboardEmbedAsync(List<Daily> dailies, SocketCommandContext context, int page)
@@ -170,7 +170,7 @@ namespace Namiko.Core.Util
             return eb;
         }
 
-        
+
 
         // FLIPS
 
@@ -222,7 +222,7 @@ namespace Namiko.Core.Util
             var eb = new EmbedBuilder();
             eb.WithAuthor(user);
             eb.WithDescription($"You already claimed your daily reward today.\nYou must wait `{hours} hours {minutes} minutes {seconds} seconds`");
-            if(new Random().Next(20) == 1)
+            if (new Random().Next(20) == 1)
                 eb.WithImageUrl("https://i.imgur.com/LcqpKmo.png");
             eb.WithColor(BasicUtil.RandomColor());
             return eb;
@@ -242,7 +242,7 @@ namespace Namiko.Core.Util
             return eb;
         }
 
-        public static EmbedBuilder WeeklyEmbed(int amount, int current, IUser user)
+        public static EmbedBuilder WeeklyGetEmbed(int amount, int current, IUser user)
         {
             var eb = new EmbedBuilder();
             eb.WithAuthor(user);

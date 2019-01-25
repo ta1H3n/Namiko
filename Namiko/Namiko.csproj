@@ -35,6 +35,7 @@
 
   <ItemGroup>
     <PackageReference Include="Booru.Net" Version="1.0.0.3" />
+    <PackageReference Include="Discord.Addons.Interactive" Version="1.0.1" />
     <PackageReference Include="Discord.Net" Version="2.0.1" />
     <PackageReference Include="Imgur.API" Version="4.0.1" />
     <PackageReference Include="IqdbApi" Version="1.4.0" />

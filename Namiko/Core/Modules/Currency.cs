@@ -9,9 +9,12 @@ using Namiko.Resources.Datatypes;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using Namiko.Resources.Preconditions;
+using Discord.Addons.Interactive;
+using System.Linq;
+
 namespace Namiko.Core.Modules
 {
-    public class Currency : ModuleBase<SocketCommandContext>
+    public class Currency : InteractiveBase<SocketCommandContext>
     {
         [Command("Blackjack"), Alias("bj"), Summary("Starts a game of blackjack.\n**Usage**: `!bj [amount]`")]
         public async Task BlackjackCommand(string sAmount, [Remainder] string str = "")
@@ -112,7 +115,7 @@ namespace Namiko.Core.Modules
                 await ToastieDb.AddToasties(Context.User.Id, amount, Context.Guild.Id);
                 weekly.Date = DateTime.Now;
                 await WeeklyDb.SetWeekly(weekly);
-                await Context.Channel.SendMessageAsync("", false, ToastieUtil.WeeklyEmbed(amount, ToastieDb.GetToasties(Context.User.Id, Context.Guild.Id), Context.User).Build());
+                await Context.Channel.SendMessageAsync("", false, ToastieUtil.WeeklyGetEmbed(amount, ToastieDb.GetToasties(Context.User.Id, Context.Guild.Id), Context.User).Build());
                 return;
             }
 
@@ -223,15 +226,51 @@ namespace Namiko.Core.Modules
         [Command("ToastieLeaderboard"), Alias("tlb"), Summary("Toastie Leaderboard.\n**Usage**: `!tlb [page_number]`")]
         public async Task ToastieLeaderboard(int page = 1, [Remainder] string str = "")
         {
-            var toasties = ToastieDb.GetAllToasties();
-            await Context.Channel.SendMessageAsync("", false, (await ToastieUtil.ToastieLeaderboardEmbedAsync(toasties, Context, page-1)).Build());
+            var toasties = ToastieDb.GetAllToasties(Context.Guild.Id);
+            var parsed = toasties.Select((x) => {
+                try
+                {
+                    return new UserAmountView()
+                    {
+                        User = Context.Client.GetUser(x.UserId),
+                        Amount = x.Amount
+                    };
+                }
+                catch
+                { return null; }
+            }).Where(x => x != null && x.User != null).OrderByDescending(x => x.Amount);
+
+            var msg = new CustomPaginatedMessage();
+            
+            msg.Author = new EmbedAuthorBuilder() { Name = "Toastie Leaderboard" };
+            msg.Title = "Toasties <:toastie3:454441133876183060>";
+            msg.Pages = CustomPaginatedMessage.PagesArray(parsed);
+
+            await PagedReplyAsync(msg);
         }
 
         [Command("DailyLeaderboard"), Alias("dlb"), Summary("Daily Leaderboard.\n**Usage**: `!dlb [page_number]`")]
         public async Task DailyLeaderboard(int page = 1, [Remainder] string str = "")
         {
             var dailies = DailyDb.GetAll(Context.Guild.Id);
-            await Context.Channel.SendMessageAsync("", false, (await ToastieUtil.DailyLeaderboardEmbedAsync(dailies, Context, page - 1)).Build());
+            var parsed = dailies.Select((x) => { try
+                {
+                    return new UserAmountView()
+                    {
+                        User = Context.Client.GetUser(x.UserId),
+                        Amount = x.Streak
+                    };
+                    } catch
+                { return null; }
+            }).Where(x => x != null && x.User != null).OrderByDescending(x => x.Amount);
+
+            var msg = new CustomPaginatedMessage();
+
+            msg.Author = new EmbedAuthorBuilder() { Name = "Toastie Leaderboard" };
+            msg.Title = "Daily Streak :calendar_spiral:";
+            msg.Pages = CustomPaginatedMessage.PagesArray(parsed);
+
+            await PagedReplyAsync(msg);
         }
     }
 }

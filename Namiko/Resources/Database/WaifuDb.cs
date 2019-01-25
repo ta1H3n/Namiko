@@ -163,6 +163,26 @@ namespace Namiko.Resources.Database
                 return stores;
             }
         }
+        public static List<UserInventory> GetAllWaifuItems(ulong GuildId)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                //  var items = db.UserInventories;
+                //  foreach (var x in items)
+                //      x.Waifu = x.Waifu;
+                //  return items.ToList();
+
+                var items = db.UserInventories.Where(x => x.GuildId == GuildId);
+
+                var waifus = items.Select(x => x.Waifu).ToList();
+                var stores = items.ToList();
+                for (int i = 0; i < stores.Count; i++)
+                {
+                    stores[i].Waifu = waifus[i];
+                }
+                return stores;
+            }
+        }
     }
 
     

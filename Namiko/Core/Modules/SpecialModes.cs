@@ -12,10 +12,11 @@ using Namiko.Resources.Datatypes;
 using Namiko.Resources.Preconditions;
 using Namiko.Resources.Xml;
 using Namiko.Core.Util;
+using Discord.Addons.Interactive;
 
 namespace Namiko.Core.Modules
 {
-    public class SpecialModes : ModuleBase<SocketCommandContext>
+    public class SpecialModes : InteractiveBase<SocketCommandContext>
     {
         public static bool ChristmasModeEnable { get; set; }
         public static int ChristmasModeRate { get; set; }

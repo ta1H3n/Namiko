@@ -15,6 +15,8 @@ using Namiko.Data;
 using System.Timers;
 using Namiko.Core;
 using Namiko.Resources.Database;
+using Microsoft.Extensions.DependencyInjection;
+using Discord.Addons.Interactive;
 
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
@@ -25,6 +27,7 @@ namespace Namiko
     {
         private static DiscordSocketClient Client;
         private static CommandService Commands;
+        private static IServiceProvider services;
         private static bool Pause = false;
 
         static void Main(string[] args)
@@ -52,7 +55,6 @@ namespace Namiko
             Client.MessageReceived += Client_MessageReceived;
             Client.MessageReceived += Client_MessageReceivedSpecialModes;
             Client.MessageReceived += Client_MessageReceivedHeart;
-            await Commands.AddModulesAsync(Assembly.GetEntryAssembly(), null);
 
             // Join/leave logging.
             Client.UserJoined += Client_UserJoinedLog;
@@ -61,7 +63,14 @@ namespace Namiko
           
             await Client.LoginAsync(TokenType.Bot, ParseSettingsJson());
             await Client.StartAsync();
-            
+
+            services = new ServiceCollection()
+                .AddSingleton(Client)
+                .AddSingleton<InteractiveService>()
+                .BuildServiceProvider();
+
+            await Commands.AddModulesAsync(Assembly.GetEntryAssembly(), services);
+
             await Task.Delay(-1);
         }
         
@@ -153,7 +162,7 @@ namespace Namiko
                 return;
             }
             
-            var Result = await Commands.ExecuteAsync(Context, ArgPos, null);
+            var Result = await Commands.ExecuteAsync(Context, ArgPos, services);
 
             if(!Result.IsSuccess)
             {

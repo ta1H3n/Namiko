@@ -11,10 +11,11 @@ using Namiko.Resources.Preconditions;
 using Namiko.Core.Util;
 using Discord.WebSocket;
 using Discord.Rest;
+using Discord.Addons.Interactive;
 
 namespace Namiko.Core.Modules
 {
-    public class Basic : ModuleBase<SocketCommandContext>
+    public class Basic : InteractiveBase<SocketCommandContext>
     {
         [Command("Hi Namiko"), Alias("Hi", "ping"), Summary("Hi Namiko command")]
         public async Task HiNamiko([Remainder] string str = "")

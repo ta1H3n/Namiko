@@ -11,10 +11,11 @@ using System.Collections.Generic;
 using System;
 using Namiko.Resources.Preconditions;
 using Discord.WebSocket;
+using Discord.Addons.Interactive;
 
 namespace Namiko.Core.Modules
 {
-    public class Banroulettes : ModuleBase<SocketCommandContext>
+    public class Banroulettes : InteractiveBase<SocketCommandContext>
     {
         [Command("NewBanroulette"), Alias("nbr"), Summary("Starts a new game of ban roulette, where one participant is randomly banned from the server. Winners split toasties from the reward pool.\n" +
             "**Usage**: `!nbr [ban_length_in_hours] [toastie_reward_pool] [required_role_name]`\n" +

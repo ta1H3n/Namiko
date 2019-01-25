@@ -40,11 +40,11 @@ namespace Namiko.Resources.Database
             else
                 await SetToasties(UserId, GetToasties(UserId, GuildId) + Amount, GuildId);
         }
-        public static List<Toastie> GetAllToasties()
+        public static List<Toastie> GetAllToasties(ulong GuildId)
         {
             using (var db = new SqliteDbContext())
             {
-                return db.Toasties.Where(x => x.Amount > 0).ToList();
+                return db.Toasties.Where(x => x.Amount > 0 && x.GuildId == GuildId).ToList();
             }
         }
         public static async Task DeleteByGuild(ulong guildId)

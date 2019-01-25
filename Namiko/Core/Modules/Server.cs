@@ -11,10 +11,11 @@ using Namiko.Resources.Database;
 using Namiko.Resources.Datatypes;
 using Namiko.Core.Util;
 using Namiko.Resources.Preconditions;
+using Discord.Addons.Interactive;
 
 namespace Namiko.Core.Modules
 {
-    public class Server : ModuleBase<SocketCommandContext>
+    public class Server : InteractiveBase<SocketCommandContext>
     {
         [Command("SetJoinLogChannel"), Alias("jlch"), Summary("Sets a channel to log users joining/leaving the guild.\n**Usage**: `!jlch`"), CustomUserPermission(GuildPermission.ManageChannels)]
         public async Task SetJoinLogChannel()

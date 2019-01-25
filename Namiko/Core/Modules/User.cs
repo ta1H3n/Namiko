@@ -6,9 +6,10 @@ using Discord.Commands;
 using Namiko.Resources.Database;
 using Discord.WebSocket;
 using System.Linq;
+using Discord.Addons.Interactive;
 
 namespace Namiko.Core.Modules {
-    public class User : ModuleBase<SocketCommandContext> {
+    public class User : InteractiveBase<SocketCommandContext> {
 
         [Command("Profile"), Summary("Showsa a users profile.\n**Usage**: `!profile [user_optional]`")]
         public async Task Profile(IUser user = null, [Remainder] string str = "")
@@ -20,8 +21,23 @@ namespace Namiko.Core.Modules {
         [Command("Waifus"), Alias("waifus"), Summary("Shows a users waifu list.\n**Usage**: `!waifus [user_optional]`")]
         public async Task Waifus(IUser user = null, [Remainder] string str = "")
         {
-            if (user == null) user = Context.User;
-            await Context.Channel.SendMessageAsync("", false, UserUtil.WaifusEmbed((SocketGuildUser)user).Build());
+            user = user ?? Context.User;
+
+            var waifus = UserInventoryDb.GetWaifus(user.Id, Context.Guild.Id).OrderBy(x => x.Source).ThenBy(x => x.Name);
+
+            var msg = new CustomPaginatedMessage();
+
+            var author = new EmbedAuthorBuilder()
+            {
+                IconUrl = user.GetAvatarUrl(),
+                Name = user.ToString()
+            };
+            msg.Author = author;
+
+            msg.Title = "Waifus";
+            msg.Pages = CustomPaginatedMessage.PagesArray(waifus, 10, (x) => String.Format("**{0}** - *{1}*\n", x.Name, x.Source.Length > 33 ? x.Source.Substring(0, 33) + "..." : x.Source));
+
+            await PagedReplyAsync(msg);
         }
 
         [Command("setcolour"), Alias("setcolor", "sc"), Summary("Allows user to set profile colour for 150 toasties.\n**Usage**: `!sc [dark/light optional] [colour name or hex value]`")]

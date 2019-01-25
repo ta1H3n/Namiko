@@ -13,10 +13,11 @@ using Namiko.Resources.Datatypes;
 using System.Diagnostics.Contracts;
 using Namiko.Resources.Preconditions;
 using Namiko.Core.Util;
+using Discord.Addons.Interactive;
 
 namespace Namiko.Core.Modules
 {
-    public class Images : ModuleBase<SocketCommandContext>
+    public class Images : InteractiveBase<SocketCommandContext>
     {
         public async Task<bool> SendRandomImage(SocketCommandContext Context)
         {

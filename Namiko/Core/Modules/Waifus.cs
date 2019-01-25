@@ -9,9 +9,11 @@ using Namiko.Resources.Database;
 using Namiko.Resources.Datatypes;
 using Namiko.Resources.Preconditions;
 using System.Collections.Generic;
+using Discord.Addons.Interactive;
+
 namespace Namiko.Core.Modules
 {
-    public class Waifus : ModuleBase<SocketCommandContext>
+    public class Waifus : InteractiveBase<SocketCommandContext>
     {
         private static Dictionary<ulong, Object> slideLock = new Dictionary<ulong, Object>();
 
@@ -340,29 +342,52 @@ namespace Namiko.Core.Modules
             await Context.Channel.SendMessageAsync("I'll try o7. Check if it worked.");
         }
         
-        [Command("WaifuLeaderboard"), Alias("wlb"), Summary("Shows most popular waifus.\n**Usage**: `!wlb [page_number]`")]
-        public async Task WaifuLeaderboard(int page = 1, [Remainder] string str = "")
+        [Command("BestWaifus"), Alias("bw"), Summary("Shows waifu worth of each person.\n**Usage**: `!wlb [page_number]`")]
+        public async Task BestWaifus(int page = 1, [Remainder] string str = "")
         {
-            var AllWaifus = UserInventoryDb.GetAllWaifuItems();
+            var AllWaifus = UserInventoryDb.GetAllWaifuItems(Context.Guild.Id);
             var waifus = new Dictionary<Waifu, int>();
-            var users = new Dictionary<SocketUser, int>();
 
             foreach(var x in AllWaifus)
             {
                 if(!waifus.ContainsKey(x.Waifu))
                     waifus.Add(x.Waifu, AllWaifus.Count(y => y.Waifu.Equals(x.Waifu)));
+            }
 
+            var ordWaifus = waifus.OrderByDescending(x => x.Value);
+
+            var msg = new CustomPaginatedMessage();
+
+            msg.Author = new EmbedAuthorBuilder() { Name = "Waifu Leaderboard" };
+            msg.Title = "Globaly Bought :two_hearts:";
+            msg.Pages = CustomPaginatedMessage.PagesArray(ordWaifus, 10, (x) => $"**{x.Key.Name}** - {x.Value}\n");
+
+            await PagedReplyAsync(msg);
+        }
+
+        [Command("WaifuLeaderboard"), Alias("wlb"), Summary("Shows most popular waifus.\n**Usage**: `!wlb [page_number]`")]
+        public async Task BestWaifus()
+        {
+            var AllWaifus = UserInventoryDb.GetAllWaifuItems();
+            var users = new Dictionary<SocketUser, int>();
+
+            foreach (var x in AllWaifus)
+            {
                 var user = Context.Guild.GetUser(x.UserId);
                 if (user != null)
                     if (!users.ContainsKey(user))
                         users.Add(user, WaifuUtil.WaifuValue(UserInventoryDb.GetWaifus(user.Id, Context.Guild.Id)));
             }
-
-            var ordWaifus = waifus.OrderByDescending(x => x.Value);
+            
             var ordUsers = users.OrderByDescending(x => x.Value);
 
-            page--;
-            await Context.Channel.SendMessageAsync("", false, WaifuUtil.WaifuLeaderboardEmbed(ordWaifus, ordUsers, page).Build());
+            var msg = new CustomPaginatedMessage();
+
+            msg.Author = new EmbedAuthorBuilder() { Name = "Waifu Leaderboard" };
+            msg.Title = "Waifu Value <:toastie3:454441133876183060>";
+            msg.Pages = CustomPaginatedMessage.PagesArray(ordUsers, 10, (x) => $"{x.Key.Mention} - {x.Value}\n");
+
+            await PagedReplyAsync(msg);
         }
     }
 }
