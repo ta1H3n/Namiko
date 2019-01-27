@@ -109,7 +109,7 @@ namespace Namiko.Core.Modules
 
             if(weekly.Date == null ? true : weekly.Date.AddDays(7).CompareTo(DateTime.Now) < 0)
             {
-                int streak = DailyDb.GetHighest(Context.Guild.Id) + 10;
+                int streak = DailyDb.GetHighest(Context.Guild.Id) + 15;
                 int amount = ToastieUtil.DailyAmount(streak, 10000);
 
                 await ToastieDb.AddToasties(Context.User.Id, amount, Context.Guild.Id);
