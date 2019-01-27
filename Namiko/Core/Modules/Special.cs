@@ -72,7 +72,7 @@ namespace Namiko.Core.Modules
             await Context.Channel.SendMessageAsync($"{res} rows affected.");
         }
 
-        [Command("GetInvite"), Summary("Gets invite to a server"), OwnerPrecondition]
+        [Command("GetInvite"), Summary("Gets an invite to a server"), OwnerPrecondition]
         public async Task GetInvite(ulong id, [Remainder] string str = "")
         {
             var guild = Context.Client.GetGuild(id);

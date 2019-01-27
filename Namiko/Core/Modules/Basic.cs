@@ -50,21 +50,18 @@ namespace Namiko.Core.Modules
             await Context.Channel.SendMessageAsync("", false, BasicUtil.InfoEmbed().Build());
         }
 
-        [Command("permtest"), CustomBotPermission(GuildPermission.Administrator)]
+        [Command("PermTest"), CustomBotPermission(GuildPermission.Administrator)]
         public async Task PermTest()
         {
             await Context.Channel.SendMessageAsync("???");
         }
 
-        [Command("guildlist"), OwnerPrecondition]
+        [Command("GuildList"), OwnerPrecondition]
         public async Task GuildTest()
         {
-            string msg = "";
-            foreach (var x in Program.GetClient().Guilds)
-            {
-                msg += x.Name + "\n";
-            }
-            await Context.Channel.SendMessageAsync(msg);
+            var msg = new CustomPaginatedMessage();
+            msg.Pages = CustomPaginatedMessage.PagesArray(Program.GetClient().Guilds, 20, (x) => $"`{x.Id}` - **{x.Name}**; `{x.OwnerId}` - **{x.Owner}**\n");
+            await PagedReplyAsync(msg);
         }
 
         // HELP COMMAND STUFF
