@@ -14,7 +14,7 @@ namespace Namiko.Resources.Preconditions
                 return Task.FromResult(PreconditionResult.FromSuccess());
             else
             {
-                return Task.FromResult(PreconditionResult.FromError("This command is only for my owner."));
+                return Task.FromResult(PreconditionResult.FromError("My will is my master's, and you're not him."));
             }
         }
 

@@ -54,7 +54,7 @@ namespace Namiko.Core.Modules
             RewardPool = reward, ServerId = Context.Guild.Id, RoleReqId = (role == null ? 0 : role.Id) };
 
             await BanrouletteDb.NewBanroulette(banroulette);
-            await Context.Channel.SendMessageAsync("Started a new game of Ban Roulette! It's on.\n\n" + BanrouletteUtil.BanrouletteDetails(banroulette, role) + $"\n\n*Type `{StaticSettings.prefix}jbr` to join the game.*");
+            await Context.Channel.SendMessageAsync("Started a new game of Ban Roulette! It's on.\n\n" + BanrouletteUtil.BanrouletteDetails(banroulette, role) + $"\n\n*Type `{Program.GetPrefix(Context)}jbr` to join the game.*");
         }
 
         [Command("Banroulette"), Alias("br"), Summary("Shows details of the current Ban Roulette.\n**Usage**: `!br`")]
@@ -63,7 +63,7 @@ namespace Namiko.Core.Modules
             var banroulette = BanrouletteDb.GetBanroulette(Context.Channel.Id);
             if(banroulette == null)
             {
-                await Context.Channel.SendMessageAsync($"There is no running Ban Roulette in this channel. `{StaticSettings.prefix}nbr` to start a new one.");
+                await Context.Channel.SendMessageAsync($"There is no running Ban Roulette in this channel. `{Program.GetPrefix(Context)}nbr` to start a new one.");
                 return;
             }
 

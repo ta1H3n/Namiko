@@ -21,7 +21,7 @@ namespace Namiko.Core.Modules
         public async Task WaifuShop([Remainder] string str = "")
         {
             List<ShopWaifu> waifus = await WaifuUtil.GetShopWaifus(Context.Guild.Id);
-            var eb = WaifuUtil.WaifuShopEmbed(waifus);
+            var eb = WaifuUtil.WaifuShopEmbed(waifus, Program.GetPrefix(Context));
             string desc = eb.Description;
             
             await Context.Channel.SendMessageAsync("", false, eb.Build());
@@ -179,7 +179,7 @@ namespace Namiko.Core.Modules
             await Context.Channel.SendMessageAsync($"{recipient.Mention} You received {waifu.Name} from {Context.User.Mention}!", false, WaifuUtil.WaifuEmbedBuilder(waifu).Build());
         }
 
-        [Command("Waifu"), Alias("Husbando"), Summary("Shows waifu details.\n**Usage**: `!waifu [name]`")]
+        [Command("Waifu"), Alias("Husbando", "Trap"), Summary("Shows waifu details.\n**Usage**: `!waifu [name]`")]
         public async Task ShowWaifu([Remainder] string name)
         {
             var waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(name), name, Context.Channel);

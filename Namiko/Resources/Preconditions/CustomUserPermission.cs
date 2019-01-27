@@ -10,12 +10,12 @@ namespace Namiko.Resources.Preconditions
     {
         public CustomUserPermission(GuildPermission permission) : base(permission)
         {
-            ErrorMessage = $"You don't have the {permission.ToString()} permission.";
+            ErrorMessage = $"You don't have the {permission.ToString()} permission. Getting ahead of yourself, huh?";
         }
 
         public CustomUserPermission(ChannelPermission permission) : base(permission)
         {
-            ErrorMessage = $"You don't have the {permission.ToString()} permission.";
+            ErrorMessage = $"You don't have the {permission.ToString()} permission. Getting ahead of yourself, huh?";
         }
     }
 }

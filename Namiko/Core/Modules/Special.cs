@@ -8,6 +8,7 @@ using Discord;
 using Discord.Commands;
 using Namiko.Resources.Preconditions;
 using Namiko.Resources.Database;
+using Namiko.Resources.Datatypes;
 using Discord.WebSocket;
 using Discord.Rest;
 using Namiko.Core.Util;
@@ -77,6 +78,32 @@ namespace Namiko.Core.Modules
             var guild = Context.Client.GetGuild(id);
             var invite = (await guild.GetInvitesAsync()).FirstOrDefault().Url;
             await Context.Channel.SendMessageAsync(invite);
+        }
+
+        [Command("NewWelcome"), Alias("nwlc"), Summary("Adds a new welcome message. @_ will be replaced with a mention.\n**Usage**: `!nw [welcome]`"), HomePrecondition]
+        public async Task NewWelcome([Remainder] string message)
+        {
+            if (message.Length < 20)
+            {
+                await Context.Channel.SendMessageAsync("Message must be longer than 20 characters.");
+                return;
+            }
+            await WelcomeMessageDb.AddMessage(message);
+            await Context.Channel.SendMessageAsync("Message added: '" + message.Replace("@_", Context.User.Mention) + "'");
+        }
+
+        [Command("DeleteWelcome"), Alias("dw", "delwelcome"), Summary("Deletes a welcome message by ID.\n**Usage**: `!dw [id]`"), HomePrecondition]
+        public async Task DeleteWelcome(int id)
+        {
+
+            WelcomeMessage message = WelcomeMessageDb.GetMessage(id);
+            if (message == null)
+                await Context.Channel.SendMessageAsync($"Message with id: {id} not found");
+            else
+            {
+                await WelcomeMessageDb.DeleteMessage(id);
+                await Context.Channel.SendMessageAsync($"Deleted welcome message with id: {id}");
+            }
         }
     }
 }

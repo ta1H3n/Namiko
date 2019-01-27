@@ -22,7 +22,7 @@ namespace Namiko.Core.Modules
         public async Task<bool> SendRandomImage(SocketCommandContext Context)
         {
             string text = Context.Message.Content;
-            text = text.Replace(StaticSettings.prefix, "");
+            text = text.Replace(Program.GetPrefix(Context), "");
             text = text.Split(' ')[0];
             text = text.ToLower();
 

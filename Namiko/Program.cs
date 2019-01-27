@@ -17,6 +17,7 @@ using Namiko.Core;
 using Namiko.Resources.Database;
 using Microsoft.Extensions.DependencyInjection;
 using Discord.Addons.Interactive;
+using System.Collections.Generic;
 
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
@@ -27,8 +28,9 @@ namespace Namiko
     {
         private static DiscordSocketClient Client;
         private static CommandService Commands;
-        private static IServiceProvider services;
+        private static IServiceProvider Services;
         private static bool Pause = false;
+        private static Dictionary<ulong, string> Prefixes = new Dictionary<ulong, string>();
 
         static void Main(string[] args)
         => new Program().MainAsync().GetAwaiter().GetResult();
@@ -38,6 +40,7 @@ namespace Namiko
             //SetUpRelease();
             Task.Run(() => ImgurUtil.ImgurSetup());
             Timers.SetUp();
+            SetUpPrefixes();
 
             Client = new DiscordSocketClient();
             Commands = new CommandService(new CommandServiceConfig
@@ -57,6 +60,7 @@ namespace Namiko
             Client.MessageReceived += Client_MessageReceivedHeart;
 
             // Join/leave logging.
+            Client.UserJoined += Client_UserJoinedWelcome;
             Client.UserJoined += Client_UserJoinedLog;
             Client.UserLeft += Client_UserLeftLog;
             Client.UserBanned += Client_UserBannedLog;
@@ -64,12 +68,12 @@ namespace Namiko
             await Client.LoginAsync(TokenType.Bot, ParseSettingsJson());
             await Client.StartAsync();
 
-            services = new ServiceCollection()
+            Services = new ServiceCollection()
                 .AddSingleton(Client)
                 .AddSingleton<InteractiveService>()
                 .BuildServiceProvider();
 
-            await Commands.AddModulesAsync(Assembly.GetEntryAssembly(), services);
+            await Commands.AddModulesAsync(Assembly.GetEntryAssembly(), Services);
 
             await Task.Delay(-1);
         }
@@ -95,26 +99,23 @@ namespace Namiko
 
             await user.AddRoleAsync(role);
             
-            var chid = WelcomeMessageDb.GetWelcomeChannel(sch.Guild.Id);
+            var chid = ServerDb.GetServer(sch.Guild.Id).WelcomeChannelId;
             var ch = sch.Guild.GetTextChannel(chid);
-            await ch.SendMessageAsync(WelcomeUtil.GetWelcomeMessageString(user));
+            await ch.SendMessageAsync(GetWelcomeMessageString(user));
         }
         private async Task Client_UserVoiceStateUpdated(SocketUser arg1, SocketVoiceState arg2, SocketVoiceState arg3)
         {
             var ch = await arg1.GetOrCreateDMChannelAsync();
             await ch.SendMessageAsync(WelcomeDm());
         }
-        private async Task Client_UserJoined(SocketGuildUser arg)
+        private async Task Client_UserJoinedWelcome(SocketGuildUser arg)
         {
-            // var welcomes = new Welcomes();
-            // await welcomes.SendWelcome(arg, Client);
+            if (arg.Guild.Id == 417064769309245471)
+                return;
 
-            var chid = WelcomeMessageDb.GetWelcomeChannel(arg.Guild.Id);
+            var chid = ServerDb.GetServer(arg.Guild.Id).WelcomeChannelId;
             var ch = arg.Guild.GetTextChannel(chid);
-            await ch.SendMessageAsync(WelcomeUtil.GetWelcomeMessageString(arg));
-
-           // var dmch = await arg.GetOrCreateDMChannelAsync();
-           // await dmch.SendMessageAsync(WelcomeDm());
+            await ch.SendMessageAsync(GetWelcomeMessageString(arg));
         }
         private async Task Client_Ready()
         {
@@ -135,6 +136,8 @@ namespace Namiko
             var Message = MessageParam as SocketUserMessage;
             var Context = new SocketCommandContext(Client, Message);
 
+            string prefix = GetPrefix(Context);
+
             if (Context.Message == null || Context.Message.Content == "")
                 return;
             if (Context.User.IsBot)
@@ -149,7 +152,7 @@ namespace Namiko
             }
 
             int ArgPos = 0;
-            if (!(Message.HasStringPrefix(StaticSettings.prefix, ref ArgPos) || Message.HasMentionPrefix(Client.CurrentUser, ref ArgPos)) && !Pause)
+            if (!(Message.HasStringPrefix(prefix, ref ArgPos) || Message.HasMentionPrefix(Client.CurrentUser, ref ArgPos)) && !Pause)
             {
                 await Blackjack.BlackjackInput(Context);
                 return;
@@ -162,7 +165,7 @@ namespace Namiko
                 return;
             }
             
-            var Result = await Commands.ExecuteAsync(Context, ArgPos, services);
+            var Result = await Commands.ExecuteAsync(Context, ArgPos, Services);
 
             if(!Result.IsSuccess)
             {
@@ -176,7 +179,7 @@ namespace Namiko
                     Console.WriteLine($"{DateTime.Now} at Commands] Text: {Message.Content} | Error: {Result.ErrorReason}");
                     string reason = Result.ErrorReason + "\n";
                     if(!(Result.Error == CommandError.UnmetPrecondition))
-                        reason += CommandHelpString(MessageParam.Content.Split(null)[0].Replace(StaticSettings.prefix, ""));
+                        reason += CommandHelpString(MessageParam.Content.Split(null)[0].Replace(prefix, ""), prefix);
                     await Context.Channel.SendMessageAsync(reason);
                 }
                 return;
@@ -342,6 +345,48 @@ namespace Namiko
             Console.WriteLine($"Servers ready. Added {added}. Left {left}.");
         }
 
+        // PREFIXES
+
+        public static string GetPrefix(ulong guildId)
+        {
+            return Prefixes.GetValueOrDefault(guildId) ?? StaticSettings.prefix;
+        }
+        public static string GetPrefix(SocketCommandContext context)
+        {
+            return context.Guild == null ? StaticSettings.prefix : GetPrefix(context.Guild.Id);
+        }
+        public static string GetPrefix(SocketGuildUser user)
+        {
+            return user.Guild == null ? StaticSettings.prefix : GetPrefix(user.Guild.Id);
+        }
+        public static string GetPrefix(SocketGuild guild)
+        {
+            return guild == null ? StaticSettings.prefix : GetPrefix(guild.Id);
+        }
+        private static void SetUpPrefixes()
+        {
+            var servers = ServerDb.GetAll();
+            foreach (var x in servers)
+            {
+                try
+                {
+                    Prefixes.Add(x.GuildId, x.Prefix);
+                }
+                catch { }
+            }
+        }
+        public static bool UpdatePrefix(ulong guildId, string prefix)
+        {
+            if (guildId == 0 || prefix == null || prefix == "")
+                return false;
+
+            if(Prefixes.GetValueOrDefault(guildId) != null)
+                Prefixes.Remove(guildId);
+
+            Prefixes.Add(guildId, prefix);
+            return true;
+        }
+
         // RANDOM
 
         private void Test()
@@ -375,7 +420,7 @@ namespace Namiko
 
             return sb;
         }
-        public static string CommandHelpString(string commandName)
+        public static string CommandHelpString(string commandName, string prefix)
         {
             try
             {
@@ -385,6 +430,7 @@ namespace Namiko
                 int pFrom = St.IndexOf("**Usage**:");
 
                 string result = St.Substring(pFrom);
+                result = result.Replace("!", prefix);
                 return result;
             } catch
             {
@@ -401,6 +447,12 @@ namespace Namiko
         public static DiscordSocketClient GetClient()
         {
             return Client;
+        }
+        private static string GetWelcomeMessageString(SocketUser user)
+        {
+            string message = WelcomeMessageDb.GetRandomMessage();
+            message = message.Replace("@_", user.Mention);
+            return message;
         }
     }
 }

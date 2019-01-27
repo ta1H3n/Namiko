@@ -71,10 +71,11 @@ namespace Namiko.Core.Modules
         
         public async Task<bool> Help(SocketCommandContext context, CommandService commandService)
         {
+            string prefix = Program.GetPrefix(context);
             var msgStr = context.Message.Content;
             string[] words = msgStr.Split(null);
             string cmd = null;
-            if (words[0] != $"{StaticSettings.prefix}help" && words[0] != $"{StaticSettings.prefix}h")
+            if (words[0] != $"{prefix}help" && words[0] != $"{prefix}h")
                 return false;
             try
             {
@@ -91,7 +92,7 @@ namespace Namiko.Core.Modules
                 try
                 {
                     //eb = CommandHelpEmbed(commandService.Commands.Where(x => x.Aliases.Equals(cmd, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault());
-                    desc = CommandHelpString(commandService.Commands.Where(x => x.Aliases.Any(y => y.Equals(cmd, StringComparison.InvariantCultureIgnoreCase))).FirstOrDefault());
+                    desc = CommandHelpString(commandService.Commands.Where(x => x.Aliases.Any(y => y.Equals(cmd, StringComparison.InvariantCultureIgnoreCase))).FirstOrDefault(), prefix);
                 } catch { };
                 try
                 {
@@ -106,7 +107,7 @@ namespace Namiko.Core.Modules
                 await context.Channel.SendMessageAsync(desc);
                 return true;
             }
-            await context.Channel.SendMessageAsync($":star: Type `{StaticSettings.prefix}h [command_name]` for more information about a command.", false, eb.Build());
+            await context.Channel.SendMessageAsync($":star: Type `{prefix}h [command_name]` for more information about a command.", false, eb.Build());
             return true;
         }
 
@@ -176,12 +177,12 @@ namespace Namiko.Core.Modules
             return eb;
         }
 
-        public string CommandHelpString(CommandInfo commandInfo)
+        public string CommandHelpString(CommandInfo commandInfo, string prefix)
         {
             string desc = "";
             desc += $":star: **{commandInfo.Name.ToUpper()}**\n";
             
-            desc += $"**Description**: {commandInfo.Summary}\n\n";
+            desc += $"**Description**: {commandInfo.Summary.Replace("!", prefix)}\n\n";
             desc += $"**Aliases**: ";
             foreach (var x in commandInfo.Aliases)
                 desc += $"`{x}` ";
@@ -214,7 +215,6 @@ namespace Namiko.Core.Modules
         {
             return x.Id.Equals(y.Id);
         }
-
         public int GetHashCode(IUser obj)
         {
             return obj.Id.GetHashCode();

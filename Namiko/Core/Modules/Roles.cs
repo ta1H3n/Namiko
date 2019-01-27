@@ -117,7 +117,7 @@ namespace Namiko.Core.Modules
             }
 
             await InviteDb.NewInvite(team.MemberRoleId, user.Id);
-            await channel.SendMessageAsync($"{user.Mention} You're invited to join {teamRole.Name}! Type {StaticSettings.prefix}join {teamRole.Name}");
+            await channel.SendMessageAsync($"{user.Mention} You're invited to join {teamRole.Name}! Type {Program.GetPrefix(Context)}join {teamRole.Name}");
 
             ISocketMessageChannel ch = (ISocketMessageChannel) Context.Client.GetChannel(ServerDb.GetServer(Context.Guild.Id).TeamLogChannelId);
             await ch.SendMessageAsync($"{Context.User} invited {user} to {teamRole.Name}.");
@@ -179,7 +179,7 @@ namespace Namiko.Core.Modules
             var leaderteam = Context.Guild.GetRole(team.MemberRoleId);
             if (!userteam.Equals(leaderteam))
             {
-                await Context.Channel.SendMessageAsync($"They're not in your team! If you just want to kick them normaly use {StaticSettings.prefix}kick");
+                await Context.Channel.SendMessageAsync($"They're not in your team! If you just want to kick them normaly use {Program.GetPrefix(Context)}kick");
                 return;
             }
 

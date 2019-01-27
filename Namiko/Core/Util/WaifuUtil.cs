@@ -73,7 +73,7 @@ namespace Namiko.Core.Util
 
             return waifus;
         }
-        public static EmbedBuilder GetShopEmbed(List<ShopWaifu> waifus)
+        public static EmbedBuilder GetShopEmbed(List<ShopWaifu> waifus, string prefix)
         {
             var client = Program.GetClient();
             var eb = new EmbedBuilder();
@@ -106,17 +106,16 @@ namespace Namiko.Core.Util
             ///////////////////////////
             //INSERT THUMBNAIL
             ///////////////////////////
-            eb.WithFooter($"{StaticSettings.prefix}buywaifu [name] | Resets in {23 - DateTime.Now.Hour} Hours {60 - DateTime.Now.Minute} Minutes");
+            eb.WithFooter($"{prefix}buywaifu [name] | Resets in {23 - DateTime.Now.Hour} Hours {60 - DateTime.Now.Minute} Minutes");
             eb.Color = BasicUtil.RandomColor();
             return eb;
         }
-        public static EmbedBuilder WaifuShopEmbed(List<ShopWaifu> waifus)
+        public static EmbedBuilder WaifuShopEmbed(List<ShopWaifu> waifus, string prefix)
         {
             var client = Program.GetClient();
             var eb = new EmbedBuilder();
             eb.WithAuthor("Waifu Store", client.CurrentUser.GetAvatarUrl());
-
-            //string list = $"`{StaticSettings.prefix}buywaifu [name]` `{StaticSettings.prefix}waifu [name]`\n\n";
+            
             string list = "";
             foreach (var x in waifus)
             {
@@ -137,7 +136,7 @@ namespace Namiko.Core.Util
             }
 
             eb.WithDescription(list);
-            eb.WithFooter($"`{StaticSettings.prefix}buywaifu [name]` `{StaticSettings.prefix}waifu [name]` | Resets in {23 - DateTime.Now.Hour} Hours {60 - DateTime.Now.Minute} Minutes");
+            eb.WithFooter($"`{prefix}buywaifu [name]` `{prefix}waifu [name]` | Resets in {23 - DateTime.Now.Hour} Hours {60 - DateTime.Now.Minute} Minutes");
             eb.Color = BasicUtil.RandomColor();
             return eb;
         }

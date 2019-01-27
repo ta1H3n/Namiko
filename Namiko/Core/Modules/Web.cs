@@ -42,7 +42,7 @@ namespace Namiko.Core.Modules
         }
 
         [Command("Source"), Alias("SauceNao", "Sauce"), Summary("Finds the source of an image with SauceNao.\n**Usage**: `!source [image_url]` or `!source` with attached image.")]
-        public async Task SaceNao(string url = "", [Remainder] string str = "")
+        public async Task SaceNao(string url = null, [Remainder] string str = "")
         {
             await Context.Channel.TriggerTypingAsync();
 
@@ -62,9 +62,15 @@ namespace Namiko.Core.Modules
                 return;
             }
 
+            for (int i = sauce.Results.Count - 1; i >= 0; i--)
+            {
+                if (Double.Parse(sauce.Results[i].Similarity) < 50)
+                    sauce.Results.RemoveAt(i);
+            }
+
             if (sauce.Results.Count == 0)
             {
-                await Context.Channel.SendMessageAsync("No results. Too bad.");
+                await Context.Channel.SendMessageAsync("No matches. Sorry~");
                 return;
             }
 

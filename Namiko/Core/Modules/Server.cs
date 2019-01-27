@@ -15,9 +15,23 @@ using Discord.Addons.Interactive;
 
 namespace Namiko.Core.Modules
 {
-    public class Server : InteractiveBase<SocketCommandContext>
+    public class Admin : InteractiveBase<SocketCommandContext>
     {
-        [Command("SetJoinLogChannel"), Alias("jlch"), Summary("Sets a channel to log users joining/leaving the guild.\n**Usage**: `!jlch`"), CustomUserPermission(GuildPermission.ManageChannels)]
+        [Command("SetPrefix"), Alias("sp"), Summary("Sets a prefix for the bot in the server.\n**Usage**: `!sbp [prefix]`"), CustomUserPermission(GuildPermission.Administrator)]
+        public async Task SetBotPrefix(string prefix)
+        {
+            if (prefix.Length < 1)
+                return;
+
+            var server = ServerDb.GetServer(Context.Guild.Id);
+
+            server.Prefix = prefix;
+            await ServerDb.UpdateServer(server);
+            Program.UpdatePrefix(Context.Guild.Id, prefix);
+            await Context.Channel.SendMessageAsync($"My prefix is now `{prefix}`");
+        }
+
+        [Command("SetJoinLogChannel"), Alias("jch"), Summary("Sets a channel to log users joining/leaving the guild.\n**Usage**: `!jlch`"), CustomUserPermission(GuildPermission.ManageChannels)]
         public async Task SetJoinLogChannel()
         {
             var server = ServerDb.GetServer(Context.Guild.Id);
@@ -35,7 +49,7 @@ namespace Namiko.Core.Modules
             await Context.Channel.SendMessageAsync("Join Log channel set.");
         }
 
-        [Command("SetTeamLogChannel"), Alias("tlch"), Summary("Sets a channel to log users joining/leaving teams.\n**Usage**: `!tlch`"), CustomUserPermission(GuildPermission.ManageChannels)]
+        [Command("SetTeamLogChannel"), Alias("tch"), Summary("Sets a channel to log users joining/leaving teams.\n**Usage**: `!tlch`"), CustomUserPermission(GuildPermission.ManageChannels)]
         public async Task SetTeamLogChannel()
         {
             var server = ServerDb.GetServer(Context.Guild.Id);
@@ -91,17 +105,23 @@ namespace Namiko.Core.Modules
             }
 
             await BlacklistedChannelDb.UpdateBlacklistedChannel(new BlacklistedChannel { ChannelId = channelId });
-            await Context.Channel.SendMessageAsync("Channel blacklisted.");
+            await Context.Channel.SendMessageAsync($"Channel blacklisted. Use `{Program.GetPrefix(Context)}blch [channel_id]` in another channel to undo.\n The ID of this channel is `{Context.Channel.Id}`.");
         }
 
-        [Command("SetBotPrefix"), Alias("sbp"), Summary("Sets a prefix for the bot in the server.\n**Usage**: `!sbp [prefix]`"), CustomUserPermission(GuildPermission.Administrator)]
-        public async Task SetBotPrefix(string prefix)
+        [Command("ListWelcome"), Alias("lw"), Summary("Lists all welcomes and their IDs.")]
+        public async Task ListWelcome()
         {
-            var server = ServerDb.GetServer(Context.Guild.Id);
-            
-            server.Prefix = prefix;
-            await ServerDb.UpdateServer(server);
-            await Context.Channel.SendMessageAsync($"My prefix is now {prefix}");
+
+            List<WelcomeMessage> messages = WelcomeMessageDb.GetMessages();
+            string list = @"```";
+            foreach (WelcomeMessage x in messages)
+            {
+                list += x.Id + ". ";
+                list += x.Message;
+                list += '\n';
+            }
+            list += "```";
+            await Context.Channel.SendMessageAsync(list);
         }
     }
 }

@@ -61,34 +61,35 @@ namespace Namiko.Resources.Database
                 }
             }
         }
-        public static List<WelcomeChannel> GetWelcomeChannels()
-        {
-            using (var DbContext = new SqliteDbContext())
-            {
-                return DbContext.WelcomeChannels.ToList();
-            }
-        }
-        public static ulong GetWelcomeChannel(ulong guildId)
-        {
-            using (var db = new SqliteDbContext())
-            {
-                return db.WelcomeChannels.FirstOrDefault(x => x.GuildId == guildId).ChannelId;
-            }
-        }
-        public static async Task SetWelcomeChannel(WelcomeChannel ch)
-        {
-            using (var DbContext = new SqliteDbContext())
-            {
-                if (DbContext.WelcomeChannels.Where(x => x.GuildId == ch.GuildId).Count() < 1)
-                {
-                    DbContext.Add(ch);
-                }
-                else
-                {
-                    DbContext.Update(ch);
-                }
-                await DbContext.SaveChangesAsync();
-            }
-        }
+
+     //   public static List<WelcomeChannel> GetWelcomeChannels()
+     //   {
+     //       using (var DbContext = new SqliteDbContext())
+     //       {
+     //           return DbContext.WelcomeChannels.ToList();
+     //       }
+     //   }
+     //   public static ulong GetWelcomeChannel(ulong guildId)
+     //   {
+     //       using (var db = new SqliteDbContext())
+     //       {
+     //           return db.WelcomeChannels.FirstOrDefault(x => x.GuildId == guildId).ChannelId;
+     //       }
+     //   }
+     //   public static async Task SetWelcomeChannel(WelcomeChannel ch)
+     //   {
+     //       using (var DbContext = new SqliteDbContext())
+     //       {
+     //           if (DbContext.WelcomeChannels.Where(x => x.GuildId == ch.GuildId).Count() < 1)
+     //           {
+     //               DbContext.Add(ch);
+     //           }
+     //           else
+     //           {
+     //               DbContext.Update(ch);
+     //           }
+     //           await DbContext.SaveChangesAsync();
+     //       }
+     //   }
     }
 }

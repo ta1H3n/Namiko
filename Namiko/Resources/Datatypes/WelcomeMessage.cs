@@ -12,10 +12,10 @@ namespace Namiko.Resources.Datatypes
         public String Message { get; set; }
     }
 
-    public class WelcomeChannel
-    {
-        [Key]
-        public ulong GuildId { get; set; }
-        public ulong ChannelId { get; set; }
-    }
+   // public class WelcomeChannel
+   // {
+   //     [Key]
+   //     public ulong GuildId { get; set; }
+   //     public ulong ChannelId { get; set; }
+   // }
 }

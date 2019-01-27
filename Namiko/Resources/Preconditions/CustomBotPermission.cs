@@ -10,12 +10,12 @@ namespace Namiko.Resources.Preconditions
     {
         public CustomBotPermission(GuildPermission permission) : base(permission)
         {
-            ErrorMessage = $"I need the {permission.ToString()} permission.";
+            ErrorMessage = $"I need the {permission.ToString()} permission. Life is unfair.";
         }
 
         public CustomBotPermission(ChannelPermission permission) : base(permission)
         {
-            ErrorMessage = $"I need the {permission.ToString()} permission.";
+            ErrorMessage = $"I need the {permission.ToString()} permission. Life is unfair.";
         }
     }
 }

@@ -125,7 +125,7 @@ namespace Namiko.Core.Util {
             {
                 string desc = "You find yourself in a strange place. You are all alone in the darkness. You have no waifus, no love, no purpose.\n\nBut perhaps all is not lost?\n\n"
                     + $"*A pillar of light reveals strange writtings*\n"
-                    + $"```{StaticSettings.prefix}daily\n{StaticSettings.prefix}weekly\n{StaticSettings.prefix}waifushop\n{StaticSettings.prefix}waifushopslides```";
+                    + $"```{Program.GetPrefix(user)}daily\n{Program.GetPrefix(user)}weekly\n{Program.GetPrefix(user)}waifushop\n{Program.GetPrefix(user)}waifushopslides```";
                 eb.WithDescription(desc);
             }
 

@@ -13,7 +13,7 @@ namespace Namiko.Resources.Database
         public DbSet<Toastie> Toasties { get; set; }
         public DbSet<Daily> Dailies { get; set; }
         public DbSet<WelcomeMessage> WelcomeMessages { get; set; }
-        public DbSet<WelcomeChannel> WelcomeChannels { get; set; }
+       // public DbSet<WelcomeChannel> WelcomeChannels { get; set; }
         public DbSet<Team> Teams { get; set; }
         public DbSet<PublicRole> PublicRoles { get; set; }
         public DbSet<ReactionImage> Images { get; set; }
