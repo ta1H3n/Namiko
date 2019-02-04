@@ -17,7 +17,7 @@ namespace Namiko.Core.Util
         {
             var contents = WaifuShopDb.GetWaifuStores(guildId);
 
-            if (contents == null || contents[0].GeneratedDate.Date < System.DateTime.Now.Date)
+            if (contents == null || contents[0].GeneratedDate.AddHours(12) < System.DateTime.Now)
             {
                 var list = GenerateWaifuList(guildId);
                 await WaifuShopDb.NewList(list);
@@ -30,6 +30,8 @@ namespace Namiko.Core.Util
         public static List<ShopWaifu> GenerateWaifuList(ulong guildId)
         {
             var date = System.DateTime.Now.Date;
+            if (DateTime.Now.Hour > 12)
+                date = date.AddHours(12);
             var waifus = new List<ShopWaifu>();
             var rand = new Random();
             int r = 0;
@@ -37,15 +39,23 @@ namespace Namiko.Core.Util
             var tier = WaifuDb.GetWaifusByTier(1);
             tier.AddRange(WaifuDb.GetWaifusByTier(0));
             ShopWaifu item = null;
+            
+            // LIMITED WAIFU
             for (int i = 0; i < 1; i++)
             {
                 r = rand.Next(0, tier.Count);
-                item = new ShopWaifu { Waifu = tier.ElementAt(r), GeneratedDate = date, Discount = GenerateDiscount(), Limited = 1, BoughtBy = 0, GuildId = guildId };
+                var limitedGirl = tier.ElementAt(r);
+                if(limitedGirl.Tier == 0)
+                    item = new ShopWaifu { Waifu = limitedGirl, GeneratedDate = date, Limited = 1, BoughtBy = 0, GuildId = guildId };
+                else
+                    item = new ShopWaifu { Waifu = limitedGirl, GeneratedDate = date, Discount = GenerateDiscount(), Limited = 1, BoughtBy = 0, GuildId = guildId };
                 waifus.Add(item);
                 tier.RemoveAt(r);
             }
+            tier.RemoveAll(x => x.Tier == 0);
 
-            for (int i = 0; i < 3; i++)
+            // TIER 1 WAIFUS
+            for (int i = 0; i < 2; i++)
             {
                 r = rand.Next(0, tier.Count);
                 item = new ShopWaifu { Waifu = tier.ElementAt(r), GeneratedDate = date, Limited = -1, BoughtBy = 0, GuildId = guildId };
@@ -53,8 +63,9 @@ namespace Namiko.Core.Util
                 tier.RemoveAt(r);
             }
 
+            // TIER 2 WAIFUS
             tier = WaifuDb.GetWaifusByTier(2);
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < 6; i++)
             {
                 r = rand.Next(0, tier.Count);
                 item = new ShopWaifu { Waifu = tier.ElementAt(r), GeneratedDate = date, Limited = -1, BoughtBy = 0, GuildId = guildId };
@@ -62,8 +73,9 @@ namespace Namiko.Core.Util
                 tier.RemoveAt(r);
             }
 
+            // TIER 3 WAIFUS
             tier = WaifuDb.GetWaifusByTier(3);
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 4; i++)
             {
                 r = rand.Next(0, tier.Count);
                 item = new ShopWaifu { Waifu = tier.ElementAt(r), GeneratedDate = date, Limited = -1, BoughtBy = 0, GuildId = guildId };
@@ -140,6 +152,40 @@ namespace Namiko.Core.Util
             eb.Color = BasicUtil.RandomColor();
             return eb;
         }
+        public static EmbedBuilder NewShopEmbed(List<ShopWaifu> waifus, string prefix)
+        {
+            var client = Program.GetClient();
+            var eb = new EmbedBuilder();
+            eb.WithAuthor("Waifu Store", client.CurrentUser.GetAvatarUrl());
+
+            string list = "";
+            foreach (var x in waifus)
+            {
+                string price = GetPriceString(x.Waifu.Tier, x.Discount).Count() > 5 ? GetPriceString(x.Waifu.Tier, x.Discount) : GetPriceString(x.Waifu.Tier, x.Discount) + "​‏ ‏‏‎";
+                string src = x.Waifu.Source.Length > 33 ? (x.Waifu.Source.Substring(0, 30) + "...") : x.Waifu.Source;
+                string listing = $"`T{x.Waifu.Tier}` `{price}` **{x.Waifu.Name}** - *{src}*\n";
+
+                if (x.Limited > -1)
+                {
+                    listing += "    **-Limited!**";
+                    if (x.Limited > 0)
+                        listing += $" {x.Limited} in stock!\n";
+                    else
+                        listing += $" OUT OF STOCK! Bought by: {client.GetUser(x.BoughtBy).Mention}\n";
+                    list += listing;
+                }
+                else
+                    list += listing;
+            }
+            list += "";
+
+            eb.AddField(":books: Commands", $"`{prefix}buywaifu [name]` | `{prefix}waifu [name]` | `{prefix}wss`", true);
+            eb.AddField(":revolving_hearts: Waifus", list, true);
+            //eb.WithThumbnailUrl(waifus[0].Waifu.ImageUrl);
+            eb.WithFooter($"Resets in {11 - DateTime.Now.Hour%12} Hours {60 - DateTime.Now.Minute} Minutes");
+            eb.Color = BasicUtil.RandomColor();
+            return eb;
+        }
         public static EmbedBuilder WaifuShopSlideEmbed(Waifu waifu)
         {
             var eb = new EmbedBuilder();
@@ -159,7 +205,8 @@ namespace Namiko.Core.Util
                 return GetPrice(tier).ToString("n0");
 
             else
-                return $"~~{GetPrice(tier).ToString("n0")}~~ {GetPrice(tier, discount).ToString("n0")} (-{discount}%)";
+               // return $"~~{GetPrice(tier).ToString("n0")}~~ {GetPrice(tier, discount).ToString("n0")} (-{discount}%)";
+                return $"{GetPrice(tier, discount).ToString("n0")} (-{discount}%)";
         }
         public static int GetPrice(int tier, int discount = 0)
         {

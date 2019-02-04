@@ -183,6 +183,13 @@ namespace Namiko.Resources.Database
                 return stores;
             }
         }
+        public static long TotalToasties(ulong guildId)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                return db.WaifuStores.Where(x => x.GuildId == guildId).Sum(x => Convert.ToInt64(Namiko.Core.Util.WaifuUtil.GetPrice(x.Waifu.Tier, 0)));
+            }
+        }
     }
 
     
@@ -200,20 +207,23 @@ namespace Namiko.Resources.Database
         {
             using (var dbContext = new SqliteDbContext())
             {
-                if(waifuStores.Count() > 0)
+                if(waifuStores.Any())
                 {
-                    foreach (var waifu in waifuStores)
+                    var oldShop = dbContext.WaifuStores.Where(x => x.GuildId == waifuStores.First().GuildId);
+                    dbContext.WaifuStores.RemoveRange(oldShop);
+                    await dbContext.SaveChangesAsync();
+                    foreach(var x in waifuStores)
                     {
-                        await AddWaifu(waifu);
+                        await AddWaifu(x);
                     }
                 }
             }
         }
-        public static ShopWaifu GetLastWaifuStore()
+        public static ShopWaifu GetLastWaifuStore(ulong guildId)
         {
             using (var dbContext = new SqliteDbContext())
             {
-                return dbContext.WaifuStores.LastOrDefault();
+                return dbContext.WaifuStores.LastOrDefault(x => x.GuildId == guildId);
             }
         }
         public static List<ShopWaifu> GetWaifuStores(ulong guildId)

@@ -60,7 +60,7 @@ namespace Namiko.Core.Modules
         public async Task GuildTest()
         {
             var msg = new CustomPaginatedMessage();
-            msg.Pages = CustomPaginatedMessage.PagesArray(Program.GetClient().Guilds, 20, (x) => $"`{x.Id}` - **{x.Name}**; `{x.OwnerId}` - **{x.Owner}**\n");
+            msg.Pages = CustomPaginatedMessage.PagesArray(Program.GetClient().Guilds, 20, (x) => $"`{x.Id}` - **{x.Name}**\n`{x.OwnerId}` - **{x.Owner}**\n");
             await PagedReplyAsync(msg);
         }
 

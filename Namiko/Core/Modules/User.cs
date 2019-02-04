@@ -25,7 +25,7 @@ namespace Namiko.Core.Modules {
 
             var waifus = UserInventoryDb.GetWaifus(user.Id, Context.Guild.Id);
 
-            if (waifus.Count <= 15)
+            if (waifus.Count <= 18)
             {
                 await Context.Channel.SendMessageAsync("", false, UserUtil.WaifusEmbed((SocketGuildUser)user).Build());
                 return;

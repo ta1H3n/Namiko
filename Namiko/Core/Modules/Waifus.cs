@@ -21,7 +21,7 @@ namespace Namiko.Core.Modules
         public async Task WaifuShop([Remainder] string str = "")
         {
             List<ShopWaifu> waifus = await WaifuUtil.GetShopWaifus(Context.Guild.Id);
-            var eb = WaifuUtil.WaifuShopEmbed(waifus, Program.GetPrefix(Context));
+            var eb = WaifuUtil.NewShopEmbed(waifus, Program.GetPrefix(Context));
             string desc = eb.Description;
             
             await Context.Channel.SendMessageAsync("", false, eb.Build());
@@ -342,10 +342,10 @@ namespace Namiko.Core.Modules
             await Context.Channel.SendMessageAsync("I'll try o7. Check if it worked.");
         }
         
-        [Command("BestWaifus"), Alias("bw"), Summary("Shows waifu worth of each person.\n**Usage**: `!wlb [page_number]`")]
-        public async Task BestWaifus(int page = 1, [Remainder] string str = "")
+        [Command("BestWaifus"), Alias("bw"), Summary("Shows most popular waifus.\n**Usage**: `!bw`")]
+        public async Task BestWaifus([Remainder] string str = "")
         {
-            var AllWaifus = UserInventoryDb.GetAllWaifuItems(Context.Guild.Id);
+            var AllWaifus = UserInventoryDb.GetAllWaifuItems();
             var waifus = new Dictionary<Waifu, int>();
 
             foreach(var x in AllWaifus)
@@ -365,10 +365,10 @@ namespace Namiko.Core.Modules
             await PagedReplyAsync(msg);
         }
 
-        [Command("WaifuLeaderboard"), Alias("wlb"), Summary("Shows most popular waifus.\n**Usage**: `!wlb [page_number]`")]
-        public async Task BestWaifus()
+        [Command("WaifuLeaderboard"), Alias("wlb"), Summary("Shows waifu worth of each person.\n**Usage**: `!wlb`")]
+        public async Task WaifuLeaderboard([Remainder] string str = "")
         {
-            var AllWaifus = UserInventoryDb.GetAllWaifuItems();
+            var AllWaifus = UserInventoryDb.GetAllWaifuItems(Context.Guild.Id);
             var users = new Dictionary<SocketUser, int>();
 
             foreach (var x in AllWaifus)

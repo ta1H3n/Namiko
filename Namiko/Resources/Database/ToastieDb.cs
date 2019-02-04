@@ -40,11 +40,11 @@ namespace Namiko.Resources.Database
             else
                 await SetToasties(UserId, GetToasties(UserId, GuildId) + Amount, GuildId);
         }
-        public static List<Toastie> GetAllToasties(ulong GuildId)
+        public static List<Toastie> GetAllToasties(ulong guildId)
         {
             using (var db = new SqliteDbContext())
             {
-                return db.Toasties.Where(x => x.Amount > 0 && x.GuildId == GuildId).ToList();
+                return db.Toasties.Where(x => x.Amount > 0 && x.GuildId == guildId).ToList();
             }
         }
         public static async Task DeleteByGuild(ulong guildId)
@@ -56,6 +56,13 @@ namespace Namiko.Resources.Database
             }
         }
 
+        public static long TotalToasties(ulong guildId)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                return db.Toasties.Where(x => x.Amount > 0 && x.GuildId == guildId).Sum(x => Convert.ToInt64(x.Amount));
+            }
+        }
     }
 
     public static class DailyDb

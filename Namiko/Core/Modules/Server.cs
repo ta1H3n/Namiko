@@ -15,8 +15,14 @@ using Discord.Addons.Interactive;
 
 namespace Namiko.Core.Modules
 {
-    public class Admin : InteractiveBase<SocketCommandContext>
+    public class Server : InteractiveBase<SocketCommandContext>
     {
+        [Command("Server"), Alias("serverinfo", "guild")] 
+        public async Task ServerInfo([Remainder] string str = "")
+        {
+            await Context.Channel.SendMessageAsync("", false, ServerUtil.ServerInfo(Context.Guild).Build());
+        }
+
         [Command("SetPrefix"), Alias("sp"), Summary("Sets a prefix for the bot in the server.\n**Usage**: `!sbp [prefix]`"), CustomUserPermission(GuildPermission.Administrator)]
         public async Task SetBotPrefix(string prefix)
         {
