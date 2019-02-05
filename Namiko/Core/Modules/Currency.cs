@@ -77,9 +77,13 @@ namespace Namiko.Core.Modules
                 daily.Streak++;
                 daily.Date = timeNow;
                 int amount = ToastieUtil.DailyAmount(daily.Streak);
+                int tax = ToastieUtil.DailyTax(amount, ToastieDb.GetToasties(Context.User.Id, Context.Guild.Id), ToastieDb.GetToasties(Context.Client.CurrentUser.Id, Context.Guild.Id), ToastieDb.TotalToasties(Context.Guild.Id));
+                amount -= tax / 2;
+                amount = amount > 2500 ? 2500 : amount;
+
                 await DailyDb.SetDaily(daily);
                 await ToastieDb.AddToasties(Context.User.Id, amount, Context.Guild.Id);
-                await ToastieDb.AddToasties(Context.Client.CurrentUser.Id, amount / 20, Context.Guild.Id);
+                await ToastieDb.AddToasties(Context.Client.CurrentUser.Id, tax, Context.Guild.Id);
 
                 await Context.Channel.SendMessageAsync("", false, ToastieUtil.DailyGetEmbed(Context.User, daily.Streak, amount, ToastieDb.GetToasties(Context.User.Id, Context.Guild.Id)).Build());
             }
@@ -110,9 +114,13 @@ namespace Namiko.Core.Modules
             if(weekly.Date == null ? true : weekly.Date.AddDays(7).CompareTo(DateTime.Now) < 0)
             {
                 int streak = DailyDb.GetHighest(Context.Guild.Id) + 15;
-                int amount = ToastieUtil.DailyAmount(streak, 10000);
+                int amount = ToastieUtil.DailyAmount(streak);
+                int tax = ToastieUtil.DailyTax(amount, ToastieDb.GetToasties(Context.User.Id, Context.Guild.Id), ToastieDb.GetToasties(Context.Client.CurrentUser.Id, Context.Guild.Id), ToastieDb.TotalToasties(Context.Guild.Id));
+                amount -= tax / 2;
+                amount = amount > 5000 ? 5000 : amount; 
 
                 await ToastieDb.AddToasties(Context.User.Id, amount, Context.Guild.Id);
+                await ToastieDb.AddToasties(Context.Client.CurrentUser.Id, tax / 2, Context.Guild.Id);
                 weekly.Date = DateTime.Now;
                 await WeeklyDb.SetWeekly(weekly);
                 await Context.Channel.SendMessageAsync("", false, ToastieUtil.WeeklyGetEmbed(amount, ToastieDb.GetToasties(Context.User.Id, Context.Guild.Id), Context.User).Build());

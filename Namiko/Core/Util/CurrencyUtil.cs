@@ -201,13 +201,33 @@ namespace Namiko.Core.Util
 
         // DAILIES
 
-        public static int DailyAmount(double streak, int limit = 2500)
+        public static int DailyAmount(double streak)
         {
             double amount = 0;
             double multiplier = 1.0 + streak / 5;
             int random = new Random().Next(10) + 5;
             amount = random * multiplier * 10;
-            return (int)amount > limit ? limit : (int)amount;
+
+            return (int)amount;
+        }
+        public static int DailyTax(double daily, double user, double bank, double all)
+        {
+            double tax = 0;
+            double x = 0;
+
+            x = bank / all;
+            double bankMultiplier = (1 / ( 20*x + 1.2 )) - 0.05;
+
+            x = user / all;
+            double userMultiplier = Math.Log10((5 * x) + 0.3) + 0.1;
+
+            double multiplier = bankMultiplier + userMultiplier;
+            multiplier = multiplier > 0.5 ? 0.5 :
+                         multiplier < 0.05 ? 0.05 :
+                         multiplier;
+            tax = daily * multiplier;
+
+            return (int)tax;
         }
         public static EmbedBuilder DailyGetEmbed(IUser user, int streak, int amount, int balance)
         {
