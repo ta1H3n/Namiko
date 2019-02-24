@@ -15,6 +15,8 @@ namespace Namiko.Core.Util
 {
     static class BasicUtil
     {
+        public readonly static string Patreon = "https://www.patreon.com/taiHen";
+
         public static Color RandomColor()
         {
             List<Color> colors = new List<Color>();
@@ -61,11 +63,11 @@ namespace Namiko.Core.Util
             eb.WithDescription(desc);
 
             string field = "Creator: taiHen#2839\n";
-            field += "Support Server: [Namiko Test Realm](https://discord.gg/QkWgWUK)\n";
+            field += "Support Server: [Namiko Test Realm](https://discord.gg/W6Ru5sM)\n";
             field += "Origin Server: [AMFWT](https://discord.gg/pBjSCVN)\n";
             field += "Invite Link: [Namiko](https://discordapp.com/oauth2/authorize?client_id=418823684459855882&scope=bot&permissions=268707844)\n";
             field += "Repository: [Github](https://github.com/ta1H3n/Namiko)\n";
-            field += "Donate:\n";
+            field += "Donate: [Patreon](https://www.patreon.com/taiHen)\n";
             eb.AddField("References", field);
 
             eb.WithAuthor(client.CurrentUser);

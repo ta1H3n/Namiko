@@ -104,7 +104,7 @@ namespace Namiko.Core.Modules
                 await context.Channel.SendMessageAsync(desc);
                 return true;
             }
-            await context.Channel.SendMessageAsync($":star: Type `{prefix}h [command_name]` for more information about a command.", false, eb.Build());
+            await context.Channel.SendMessageAsync($":star: Type `{prefix}h [command_name]` for more information about a command. `{prefix}info` to learn more about me!", false, eb.Build());
             return true;
         }
 

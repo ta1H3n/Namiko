@@ -81,7 +81,7 @@ namespace Namiko.Core.Util {
             if (waifu != null)
             {
                 eb.WithImageUrl(waifu.ImageUrl);
-                eb.AddField("Featured Waifu", $"*{waifu.LongName}* :revolving_hearts: ");
+                eb.AddField("Featured Waifu :revolving_hearts:", $"*{waifu.LongName}*");
             }
 
             string footer = "";

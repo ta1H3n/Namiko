@@ -232,7 +232,7 @@ namespace Namiko.Core.Util
         public static EmbedBuilder DailyGetEmbed(IUser user, int streak, int amount, int balance)
         {
             var eb = new EmbedBuilder();
-            eb.WithAuthor(user);
+            eb.WithAuthor(user.ToString(), user.GetAvatarUrl(), BasicUtil.Patreon);
             eb.WithDescription($"You're on a **{streak.ToString("n0")}** day streak. You receive **{amount.ToString("n0")}** {ToastieUtil.RandomEmote()}\nYou now have **{balance}** {ToastieUtil.RandomEmote()}");
             eb.WithColor(BasicUtil.RandomColor());
             return eb;
@@ -240,7 +240,7 @@ namespace Namiko.Core.Util
         public static EmbedBuilder DailyWaitEmbed(IUser user, int hours, int minutes, int seconds)
         {
             var eb = new EmbedBuilder();
-            eb.WithAuthor(user);
+            eb.WithAuthor(user.ToString(), user.GetAvatarUrl(), BasicUtil.Patreon);
             eb.WithDescription($"You already claimed your daily reward today.\nYou must wait `{hours} hours {minutes} minutes {seconds} seconds`");
             if (new Random().Next(20) == 1)
                 eb.WithImageUrl("https://i.imgur.com/LcqpKmo.png");
@@ -253,7 +253,7 @@ namespace Namiko.Core.Util
         public static EmbedBuilder WeeklyWaitEmbed(DateTime date, IUser user)
         {
             var eb = new EmbedBuilder();
-            eb.WithAuthor(user);
+            eb.WithAuthor(user.ToString(), user.GetAvatarUrl(), BasicUtil.Patreon);
             DateTime now = DateTime.Now;
             date = date.AddDays(7);
             string wait = $"{(date - now).Days} Days {(date - now).Hours} Hours {(date - now).Minutes} Minutes";
@@ -261,11 +261,10 @@ namespace Namiko.Core.Util
             eb.WithColor(BasicUtil.RandomColor());
             return eb;
         }
-
         public static EmbedBuilder WeeklyGetEmbed(int amount, int current, IUser user)
         {
             var eb = new EmbedBuilder();
-            eb.WithAuthor(user);
+            eb.WithAuthor(user.ToString(), user.GetAvatarUrl(), BasicUtil.Patreon);
             eb.WithDescription($"You received **{amount}** {RandomEmote()}\nNow you have **{current}** {RandomEmote()}");
             eb.WithColor(BasicUtil.RandomColor());
             return eb;

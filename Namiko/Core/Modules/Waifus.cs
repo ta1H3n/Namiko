@@ -22,7 +22,6 @@ namespace Namiko.Core.Modules
         {
             List<ShopWaifu> waifus = await WaifuUtil.GetShopWaifus(Context.Guild.Id);
             var eb = WaifuUtil.NewShopEmbed(waifus, Program.GetPrefix(Context));
-            string desc = eb.Description;
             
             await Context.Channel.SendMessageAsync("", false, eb.Build());
         }

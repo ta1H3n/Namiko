@@ -156,7 +156,7 @@ namespace Namiko.Core.Util
         {
             var client = Program.GetClient();
             var eb = new EmbedBuilder();
-            eb.WithAuthor("Waifu Store", client.CurrentUser.GetAvatarUrl());
+            eb.WithAuthor("Waifu Store", client.CurrentUser.GetAvatarUrl(), BasicUtil.Patreon);
 
             string list = "";
             foreach (var x in waifus)
