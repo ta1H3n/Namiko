@@ -18,11 +18,10 @@ namespace Namiko.Core.Modules
     public class Banroulettes : InteractiveBase<SocketCommandContext>
     {
         [Command("NewBanroulette"), Alias("nbr"), Summary("Starts a new game of ban roulette, where one participant is randomly banned from the server. Winners split toasties from the reward pool.\n" +
-            "**Usage**: `!nbr [ban_length_in_hours] [toastie_reward_pool] [required_role_name]`\n" +
-            "[toastie_reward_poll] - bot owner only, defaults to 0 otherwise.\n" +
-            "[required_role_name] - optional."), CustomBotPermission(GuildPermission.BanMembers), CustomUserPermission(GuildPermission.BanMembers)]
-        public async Task NewBanroulette(int hours, int reward = 0, [Remainder] string roleName = "")
+            "**Usage**: `!nbr [ban_length_in_hours] [required_role_name-optional]`\n"), CustomBotPermission(GuildPermission.BanMembers), CustomUserPermission(GuildPermission.BanMembers)]
+        public async Task NewBanroulette(int hours, [Remainder] string roleName = "")
         {
+            int reward = 0;
             if (hours < 0)
                 throw new IndexOutOfRangeException();
 
@@ -53,8 +52,14 @@ namespace Namiko.Core.Modules
             banroulette = new Namiko.Resources.Datatypes.Banroulette { Active = true, BanLengthHours = hours, ChannelId = Context.Channel.Id, MaxParticipants = 0, MinParticipants = 0,
             RewardPool = reward, ServerId = Context.Guild.Id, RoleReqId = (role == null ? 0 : role.Id) };
 
+            string prefix = Program.GetPrefix(Context);
             await BanrouletteDb.NewBanroulette(banroulette);
-            await Context.Channel.SendMessageAsync("Started a new game of Ban Roulette! It's on.\n\n" + BanrouletteUtil.BanrouletteDetails(banroulette, role) + $"\n\n*Type `{Program.GetPrefix(Context)}jbr` to join the game.*");
+            await Context.Channel.SendMessageAsync("Started a new game of Ban Roulette! It's on.\n\n" + BanrouletteUtil.BanrouletteDetails(banroulette, role) +
+                $"\n\n**More settings:**" +
+                $"\n`{prefix}sbrrp` - set reward pool" +
+                $"\n`{prefix}sbrmin` - minimum participants" +
+                $"\n`{prefix}sbrmax` - maximum participants" +
+                $"\n\n*Type `{prefix}jbr` to join the game.*");
         }
 
         [Command("Banroulette"), Alias("br"), Summary("Shows details of the current Ban Roulette.\n**Usage**: `!br`")]
@@ -69,7 +74,8 @@ namespace Namiko.Core.Modules
 
             var users = BasicUtil.UserList(Context.Client, BanrouletteDb.GetParticipants(banroulette));
             var role = Context.Guild.GetRole(banroulette.RoleReqId);
-            await Context.Channel.SendMessageAsync($"{BanrouletteUtil.BanrouletteDetails(banroulette, role)}\n\nParticipants:\n{BanrouletteUtil.BanrouletteParticipants(users)}");
+            string participants = users.Count > 0 ? $"\n\nParticipants:\n{BanrouletteUtil.BanrouletteParticipants(users)}" : "";
+            await Context.Channel.SendMessageAsync($"{BanrouletteUtil.BanrouletteDetails(banroulette, role, users.Count)}" + participants);
         }
 
         [Command("JoinBanroulette"), Alias("jbr"), Summary("Join the current Ban Roulette. Must be in the same channel.\n**Usage**: `!jbr`")]
@@ -170,7 +176,7 @@ namespace Namiko.Core.Modules
                 }
             }
             await Context.Channel.SendMessageAsync(msg);
-            await user.SendMessageAsync($"You won the ban roulette! You are banned from {Context.Guild.Name} guild for {banroulette.BanLengthHours} hours! Bai baaaai!");
+            await user.SendMessageAsync($"You won the ban roulette! You are banned from **{Context.Guild.Name}** for {banroulette.BanLengthHours} hours! Bai baaaai!");
 
             await BanrouletteDb.EndBanroulette(banroulette.Id);
 
@@ -204,6 +210,51 @@ namespace Namiko.Core.Modules
             banroulette.RewardPool += amount;
             await BanrouletteDb.UpdateBanroulette(banroulette);
             await Context.Channel.SendMessageAsync($"Added {amount} to the reward pool!");
+        }
+
+        [Command("SetBRRewardPool"), Alias("sbrrp"), Summary("Set the reward pool.\n**Usage**: `!sbrrp [amount]`"), CustomUserPermission(GuildPermission.Administrator)]
+        public async Task SetBRRewardPool(int amount)
+        {
+            var banroulette = BanrouletteDb.GetBanroulette(Context.Channel.Id);
+            if (banroulette == null)
+            {
+                await Context.Channel.SendMessageAsync(":x: There is no running Ban Roulette in this channel.");
+                return;
+            }
+
+            banroulette.RewardPool = amount;
+            await BanrouletteDb.UpdateBanroulette(banroulette);
+            await Context.Channel.SendMessageAsync($"Set the reward pool to {amount}!");
+        }
+
+        [Command("SetBRMinParticipants"), Alias("sbrmin"), Summary("Set minimum participants.\n**Usage**: `!sbrmin [amount]`"), CustomUserPermission(GuildPermission.BanMembers)]
+        public async Task SetBRMinParticipants(int amount)
+        {
+            var banroulette = BanrouletteDb.GetBanroulette(Context.Channel.Id);
+            if (banroulette == null)
+            {
+                await Context.Channel.SendMessageAsync(":x: There is no running Ban Roulette in this channel.");
+                return;
+            }
+
+            banroulette.MinParticipants = amount;
+            await BanrouletteDb.UpdateBanroulette(banroulette);
+            await Context.Channel.SendMessageAsync($"Set the minimum participants to {amount}!");
+        }
+
+        [Command("SetBRMaxParticipants"), Alias("sbrmax"), Summary("Set maximum participants.\n**Usage**: `!sbrmax [amount]`"), CustomUserPermission(GuildPermission.BanMembers)]
+        public async Task SetBRMaxParticipants(int amount)
+        {
+            var banroulette = BanrouletteDb.GetBanroulette(Context.Channel.Id);
+            if (banroulette == null)
+            {
+                await Context.Channel.SendMessageAsync(":x: There is no running Ban Roulette in this channel.");
+                return;
+            }
+
+            banroulette.MaxParticipants = amount;
+            await BanrouletteDb.UpdateBanroulette(banroulette);
+            await Context.Channel.SendMessageAsync($"Set the maximum participants to {amount}!");
         }
     }
 }
