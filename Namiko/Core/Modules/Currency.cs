@@ -117,7 +117,7 @@ namespace Namiko.Core.Modules
                 int amount = ToastieUtil.DailyAmount(streak);
                 int tax = ToastieUtil.DailyTax(amount, ToastieDb.GetToasties(Context.User.Id, Context.Guild.Id), ToastieDb.GetToasties(Context.Client.CurrentUser.Id, Context.Guild.Id), ToastieDb.TotalToasties(Context.Guild.Id));
                 amount -= tax / 2;
-                amount = amount > 5000 ? 5000 : amount; 
+                amount = amount > 2500 ? 2500 : amount;
 
                 await ToastieDb.AddToasties(Context.User.Id, amount, Context.Guild.Id);
                 await ToastieDb.AddToasties(Context.Client.CurrentUser.Id, tax / 2, Context.Guild.Id);

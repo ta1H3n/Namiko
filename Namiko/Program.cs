@@ -158,6 +158,8 @@ namespace Namiko
                 return;
             }
 
+            if (!Context.Message.Content.StartsWith(prefix))
+                return;
             var cmds = Commands.Search(Context, ArgPos);
             if (cmds.IsSuccess && Pause && Context.User.Id != StaticSettings.owner)
             {

@@ -25,7 +25,7 @@ namespace Namiko.Core.Modules {
 
             var waifus = UserInventoryDb.GetWaifus(user.Id, Context.Guild.Id);
 
-            if (waifus.Count <= 18)
+            if (waifus.Count <= 21)
             {
                 await Context.Channel.SendMessageAsync("", false, UserUtil.WaifusEmbed((SocketGuildUser)user).Build());
                 return;
@@ -42,7 +42,7 @@ namespace Namiko.Core.Modules {
             msg.Author = author;
 
             msg.Title = "Waifus";
-            msg.Pages = CustomPaginatedMessage.PagesArray(ordwaifus, 10, (x) => String.Format("**{0}** - *{1}*\n", x.Name, x.Source.Length > 33 ? x.Source.Substring(0, 33) + "..." : x.Source), false);
+            msg.Pages = CustomPaginatedMessage.PagesArray(ordwaifus, 15, (x) => String.Format("**{0}** - *{1}*\n", x.Name, x.Source.Length > 33 ? x.Source.Substring(0, 33) + "..." : x.Source), false);
 
             await PagedReplyAsync(msg);
         }

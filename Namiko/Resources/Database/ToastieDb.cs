@@ -23,22 +23,26 @@ namespace Namiko.Resources.Database
         {
             using (var DbContext = new SqliteDbContext())
             {
-                if (!DbContext.Toasties.Any(x => x.UserId == UserId))
+                var toasties = DbContext.Toasties.FirstOrDefault(x => x.UserId == UserId && x.GuildId == GuildId);
+
+                if (toasties == null)
                 {
                     DbContext.Add(new Toastie { UserId = UserId, Amount = Amount, GuildId = GuildId });
                 } else
                 {
-                    DbContext.Update(new Toastie { UserId = UserId, Amount = Amount, GuildId = GuildId });
+                    toasties.Amount = Amount;
+                    DbContext.Update(toasties);
                 }
                 await DbContext.SaveChangesAsync();
             }
         }
         public static async Task AddToasties(ulong UserId, int Amount, ulong GuildId)
         {
-            if ((GetToasties(UserId, GuildId) + Amount) < 0)
+            var amount = GetToasties(UserId, GuildId) + Amount;
+            if (amount < 0)
                 throw new Exception("You don't have enough toasties... qq");
             else
-                await SetToasties(UserId, GetToasties(UserId, GuildId) + Amount, GuildId);
+                await SetToasties(UserId, amount, GuildId);
         }
         public static List<Toastie> GetAllToasties(ulong guildId)
         {
@@ -80,13 +84,16 @@ namespace Namiko.Resources.Database
         {
             using (var DbContext = new SqliteDbContext())
             {
-                if (DbContext.Dailies.Any(x => x.UserId == Daily.UserId && x.GuildId == Daily.GuildId))
+                var daily = DbContext.Dailies.FirstOrDefault(x => x.UserId == Daily.UserId && x.GuildId == Daily.GuildId);
+                if (daily == null)
                 {
                     DbContext.Add(Daily);
                 }
                 else
                 {
-                    DbContext.Update(Daily);
+                    daily.Streak = Daily.Streak;
+                    daily.Date = Daily.Date;
+                    DbContext.Update(daily);
                 }
                 await DbContext.SaveChangesAsync();
             }
@@ -129,16 +136,18 @@ namespace Namiko.Resources.Database
                 return weekly;
             }
         }
-        public static async Task SetWeekly(Weekly weekly)
+        public static async Task SetWeekly(Weekly Weekly)
         {
             using (var db = new SqliteDbContext())
             {
-                if (db.Weeklies.Any(x => x.UserId == weekly.UserId && x.GuildId == weekly.GuildId))
+                var weekly = db.Weeklies.FirstOrDefault(x => x.UserId == Weekly.UserId && x.GuildId == Weekly.GuildId);
+                if (weekly == null)
                 {
-                    db.Add(weekly);
+                    db.Add(Weekly);
                 }
                 else
                 {
+                    weekly.Date = Weekly.Date;
                     db.Update(weekly);
                 }
                 await db.SaveChangesAsync();
