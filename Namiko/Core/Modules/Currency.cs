@@ -252,7 +252,7 @@ namespace Namiko.Core.Modules
             
             msg.Author = new EmbedAuthorBuilder() { Name = "Toastie Leaderboard" };
             msg.Title = "Toasties <:toastie3:454441133876183060>";
-            msg.Pages = CustomPaginatedMessage.PagesArray(parsed);
+            msg.Pages = CustomPaginatedMessage.PagesArray(parsed, 15);
 
             await PagedReplyAsync(msg);
         }
@@ -276,7 +276,7 @@ namespace Namiko.Core.Modules
 
             msg.Author = new EmbedAuthorBuilder() { Name = "Toastie Leaderboard" };
             msg.Title = "Daily Streak :calendar_spiral:";
-            msg.Pages = CustomPaginatedMessage.PagesArray(parsed);
+            msg.Pages = CustomPaginatedMessage.PagesArray(parsed, 15);
 
             await PagedReplyAsync(msg);
         }

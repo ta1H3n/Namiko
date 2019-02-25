@@ -384,7 +384,7 @@ namespace Namiko.Core.Modules
 
             msg.Author = new EmbedAuthorBuilder() { Name = "Waifu Leaderboard" };
             msg.Title = "Waifu Value <:toastie3:454441133876183060>";
-            msg.Pages = CustomPaginatedMessage.PagesArray(ordUsers, 10, (x) => $"{x.Key.Mention} - {x.Value}\n");
+            msg.Pages = CustomPaginatedMessage.PagesArray(ordUsers, 15, (x) => $"{x.Key.Mention} - {x.Value}\n");
 
             await PagedReplyAsync(msg);
         }
