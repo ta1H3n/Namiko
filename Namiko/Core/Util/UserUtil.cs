@@ -153,7 +153,7 @@ namespace Namiko.Core.Util {
             }
 
             //if its a regular quote
-            embed.WithAuthor(keyWord + "  Quote");
+            embed.WithAuthor(keyWord + " Quote");
             embed.WithDescription(quote);
             return embed;
         }
