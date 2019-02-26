@@ -142,12 +142,12 @@ namespace Namiko.Core.Modules
                 }
 
                 //if u have da waifu, but value error occurs
-                await Context.Channel.SendMessageAsync("You have this waifu, but there was a sales error\nPlease get it's \"Tier\" corrected");
+                await Context.Channel.SendMessageAsync("There was a sales error.\nPlease get the waifu's \"Tier\" corrected.");
                 return;
             }
 
             //doesnt have the waifu
-            await Context.Channel.SendMessageAsync("If you wanna play the pimp boi....\nYou're gonna have to actually buy dat' waifu");
+            await Context.Channel.SendMessageAsync($"Sure, here's 100k toasties, as imanigary as the waifu you're trying to sell. You don't own her, baaaaaaaaaka.");
         }
 
         [Command("GiveWaifu"), Alias("gw"), Summary("Transfers waifu to another user.\n**Usage**: `!gw [user] [waifu_name]`")]
@@ -157,19 +157,19 @@ namespace Namiko.Core.Modules
 
             if (waifu == null)
             {
-                await Context.Channel.SendMessageAsync("You don't have " + name);
+                await Context.Channel.SendMessageAsync($"Can't find '{name}'. I know they are not real, but this one *really is* just your imagination >_>");
                 return;
             }
             var waifus = UserInventoryDb.GetWaifus(Context.User.Id, Context.Guild.Id);
             if (!(waifus.Where(x => x.Name.Equals(waifu.Name)).Count() > 0))
             {
-                await Context.Channel.SendMessageAsync("You don't have " + name);
+                await Context.Channel.SendMessageAsync(waifu.Name + " is just like my love - you have none of it.");
                 return;
             }
             waifus = UserInventoryDb.GetWaifus(recipient.Id, Context.Guild.Id);
             if (waifus.Where(x => x.Name.Equals(waifu.Name)).Count() > 0)
             {
-                await Context.Channel.SendMessageAsync("They already have " + name);
+                await Context.Channel.SendMessageAsync("They already have " + waifu.Name);
                 return;
             }
 

@@ -28,7 +28,7 @@ namespace Namiko.Resources.Preconditions
 
         public override string GetName()
         {
-            return "HomeServer";
+            return "BotInsider";
         }
     }
 }

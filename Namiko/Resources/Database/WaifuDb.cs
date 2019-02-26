@@ -44,10 +44,10 @@ namespace Namiko.Resources.Database
                 {
                     waifus.AddRange(DbContext.Waifus.Where(x => x.Source == null ? false : x.Source.Contains(name, StringComparison.InvariantCultureIgnoreCase)).ToList());
                 }
-                if (waifus.Count == 0)
-                {
-                    waifus.AddRange(DbContext.Waifus.Where(x => x.Description == null ? false : x.Description.Equals(name, StringComparison.InvariantCultureIgnoreCase)).ToList());
-                }
+               // if (waifus.Count == 0)
+               // {
+               //     waifus.AddRange(DbContext.Waifus.Where(x => x.Description == null ? false : x.Description.Equals(name, StringComparison.InvariantCultureIgnoreCase)).ToList());
+               // }
 
                 return waifus;
             }

@@ -47,13 +47,13 @@ namespace Namiko.Core.Modules {
             await PagedReplyAsync(msg);
         }
 
-        [Command("setcolour"), Alias("setcolor", "sc"), Summary("Allows user to set profile colour for 150 toasties.\n**Usage**: `!sc [dark/light optional] [colour name or hex value]`")]
-        public async Task CustomColour(string shade, string colour = "",[Remainder] string str = "") {
+        [Command("SetColour"), Alias("setcolor", "sc"), Summary("Allows user to set profile colour for 150 toasties.\n**Usage**: `!sc [dark/light optional] [colour name or hex value]`")]
+        public async Task CustomColour(string shade = "", string colour = "",[Remainder] string str = "") {
 
              //
             //way to set it back to default
             shade = shade.ToLower();
-            if (shade.Equals("default")) {
+            if (shade.Equals("default") || shade.Equals("")) {
                 await UserDb.HexDefault(Context.User.Id);                    
                 
                 //creating comfermation embed

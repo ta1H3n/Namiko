@@ -30,7 +30,7 @@ namespace Namiko.Core.Util
         public static List<ShopWaifu> GenerateWaifuList(ulong guildId)
         {
             var date = System.DateTime.Now.Date;
-            if (DateTime.Now.Hour > 12)
+            if (DateTime.Now.Hour >= 12)
                 date = date.AddHours(12);
             var waifus = new List<ShopWaifu>();
             var rand = new Random();
