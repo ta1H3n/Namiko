@@ -2,10 +2,10 @@
 using Namiko.Core.Util;
 using Discord;
 using System;
-using Discord.Commands;
-using Namiko.Resources.Database;
-using Discord.WebSocket;
 using System.Linq;
+using Discord.Commands;
+using Discord.WebSocket;
+using Namiko.Resources.Database;
 using Discord.Addons.Interactive;
 
 namespace Namiko.Core.Modules {
@@ -74,11 +74,8 @@ namespace Namiko.Core.Modules {
 
 
              //
-            //setting start values
+            //setting start values & checking for possible name or hex value
             System.Drawing.Color color;
-
-            //checking for possible name or hex value, 
-            if (colour.StartsWith('#')) colour = colour.Remove(0, 1);
             if (UserUtil.GetNamedColour(ref color, colour, shade) || UserUtil.GetHexColour(ref color, colour)) {
 
                 //toastie + saving hex color try
@@ -177,9 +174,8 @@ namespace Namiko.Core.Modules {
             var waifu = FeaturedWaifuDb.GetFeaturedWaifu(user.Id, Context.Guild.Id);
 
             //checking featured exists
-            if (waifu == null)
-            {
-                await Context.Channel.SendMessageAsync(((isMe) ? "You Have No Featured Waifu qq" : $"{ user.Username } has No Featured waifu"));
+            if (waifu == null) {
+                await Context.Channel.SendMessageAsync(((isMe) ? "You Have" : $"{ user.Username } Has") + " No Featured Waifu qq");
                 return;
 
             }

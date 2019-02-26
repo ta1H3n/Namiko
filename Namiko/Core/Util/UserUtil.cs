@@ -1,9 +1,9 @@
 ﻿using Discord;
 using System;
 using System.Linq;
+using Discord.WebSocket;
 using System.Globalization;
 using Namiko.Resources.Database;
-using Discord.WebSocket;
 using Namiko.Resources.Datatypes;
 using System.Collections.Generic;
 
@@ -48,7 +48,8 @@ namespace Namiko.Core.Util {
         
         //Methods: Hex Code Operations - *only* uitility classes have access to HexToColor
         public static bool GetHexColour(ref System.Drawing.Color color, string colour) {
-            if(System.Text.RegularExpressions.Regex.IsMatch(colour, @"\A\b[0-9a-fA-F]+\b\Z")) {
+            if (colour.StartsWith('#')) colour = colour.Remove(0, 1);
+            if (System.Text.RegularExpressions.Regex.IsMatch(colour, @"\A\b[0-9a-fA-F]+\b\Z")) {
                 color = HexToColor(colour);
                 return true;
             } return false;
@@ -66,7 +67,6 @@ namespace Namiko.Core.Util {
         public static EmbedBuilder ProfileEmbed(SocketGuildUser user) {
             var eb = new EmbedBuilder();
             eb.WithAuthor(user);
-            eb.WithThumbnailUrl(user.GetAvatarUrl());
 
             var waifus = UserInventoryDb.GetWaifus(user.Id, user.Guild.Id);
             int waifucount = waifus.Count();
@@ -90,9 +90,12 @@ namespace Namiko.Core.Util {
                 footer += $", Playing: '{user.Activity.Name}'";
             eb.WithFooter(footer);
 
+
             string quote = UserDb.GetQuote(user.Id);
-            if (quote != null && !quote.Equals(""))
-                eb.WithDescription((WebUtil.IsValidUrl(quote))? $"*[Link to Custom Picture]({quote})*" : $"{quote}");
+            if (quote != null && !quote.Equals("")) {
+                if (WebUtil.IsValidUrl(quote)) eb.WithThumbnailUrl(quote);
+                else eb.WithDescription(quote);
+            }
             
             eb.Color = UserDb.CheckHex(out string colour, user.Id)? (Discord.Color) HexToColor(colour) : BasicUtil.RandomColor();
             return eb;
