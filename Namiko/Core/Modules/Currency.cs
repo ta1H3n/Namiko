@@ -79,7 +79,8 @@ namespace Namiko.Core.Modules
                 int amount = ToastieUtil.DailyAmount(daily.Streak);
                 int tax = ToastieUtil.DailyTax(amount, ToastieDb.GetToasties(Context.User.Id, Context.Guild.Id), ToastieDb.GetToasties(Context.Client.CurrentUser.Id, Context.Guild.Id), ToastieDb.TotalToasties(Context.Guild.Id));
                 amount -= tax / 2;
-                amount = amount > 2500 ? 2500 : amount;
+                int cap = Cost.dailycap;
+                amount = amount > cap ? cap : amount;
 
                 await DailyDb.SetDaily(daily);
                 await ToastieDb.AddToasties(Context.User.Id, amount, Context.Guild.Id);
@@ -117,7 +118,8 @@ namespace Namiko.Core.Modules
                 int amount = ToastieUtil.DailyAmount(streak);
                 int tax = ToastieUtil.DailyTax(amount, ToastieDb.GetToasties(Context.User.Id, Context.Guild.Id), ToastieDb.GetToasties(Context.Client.CurrentUser.Id, Context.Guild.Id), ToastieDb.TotalToasties(Context.Guild.Id));
                 amount -= tax / 2;
-                amount = amount > 2500 ? 2500 : amount;
+                int cap = Cost.weeklycap;
+                amount = amount > cap ? cap : amount;
 
                 await ToastieDb.AddToasties(Context.User.Id, amount, Context.Guild.Id);
                 await ToastieDb.AddToasties(Context.Client.CurrentUser.Id, tax / 2, Context.Guild.Id);
