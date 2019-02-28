@@ -1,10 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.Reflection;
-using Discord;
-using Discord.WebSocket;
-using Namiko.Data;
+﻿using Namiko.Data;
 using System.Threading.Tasks;
 using Namiko.Resources.Datatypes;
+using Microsoft.EntityFrameworkCore;
 
 namespace Namiko.Resources.Database
 {

@@ -8,7 +8,7 @@ namespace Namiko.Resources.Database {
 
          //
         //Methods: hex code check (also gets hex colour)
-        public static bool CheckHex(out string color, ulong UserId) {
+        public static bool GetHex(out string color, ulong UserId) {
             using (var DbContext = new SqliteDbContext()) {
 
                 //verafying user existance
@@ -35,7 +35,7 @@ namespace Namiko.Resources.Database {
 
                 //if this user has not set a custom colour
                 if (profile == null) {
-                    DbContext.Add(new Profile { UserId = UserId, ColorHex = colour, Quote = "" });
+                    DbContext.Add(new Profile { UserId = UserId, ColorHex = colour});
                     await DbContext.SaveChangesAsync();
                     return;
                 }
@@ -83,13 +83,44 @@ namespace Namiko.Resources.Database {
 
                 //if user does not exist
                 if (profile == null) {
-                    DbContext.Add(new Profile { UserId = UserId, ColorHex = "", Quote = quote });
+                    DbContext.Add(new Profile { UserId = UserId, Quote = quote });
                     await DbContext.SaveChangesAsync();
                     return;
                 }
 
                 //setting quote
                 profile.Quote = quote;
+                DbContext.Update(profile);
+                await DbContext.SaveChangesAsync();
+            }
+        }
+
+        //Methods: Images
+        public static string GetImage(ulong userId) {
+            using (var DbContext = new SqliteDbContext()) {
+
+                //verafying image existance
+                string image = DbContext.Profiles.Where(x => x.UserId == userId).Select(x => x.Image).FirstOrDefault();
+                if (image == "" || image == null)
+                    return null;
+
+                //if exists
+                return image;
+            }
+        }
+        public static async Task SetImage(ulong UserId, string image) {
+            using (var DbContext = new SqliteDbContext()) {
+                var profile = DbContext.Profiles.Where(x => x.UserId == UserId).FirstOrDefault();
+
+                //if user does not exist
+                if (profile == null) {
+                    DbContext.Add(new Profile { UserId = UserId, Image = image});
+                    await DbContext.SaveChangesAsync();
+                    return;
+                }
+
+                //setting image
+                profile.Image = image;
                 DbContext.Update(profile);
                 await DbContext.SaveChangesAsync();
             }
