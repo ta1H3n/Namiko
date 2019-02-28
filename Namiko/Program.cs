@@ -168,26 +168,37 @@ namespace Namiko
             }
             
             var Result = await Commands.ExecuteAsync(Context, ArgPos, Services);
+            string text = null;
 
             if(!Result.IsSuccess)
             {
                 if (await new Basic().Help(Context, Commands))
-                    return;
-                if (await new Images().SendRandomImage(Context))
-                    return;
+                    text = "help";
+                else if (await new Images().SendRandomImage(Context))
+                    text = "image";
 
-                if (!(Result.Error == CommandError.UnknownCommand))
+                else if (!(Result.Error == CommandError.UnknownCommand))
                 {
                     Console.WriteLine($"{DateTime.Now} at Commands] Text: {Message.Content} | Error: {Result.ErrorReason}");
                     string reason = Result.ErrorReason + "\n";
-                    if(!(Result.Error == CommandError.UnmetPrecondition))
+                    if (!(Result.Error == CommandError.UnmetPrecondition))
                         reason += CommandHelpString(MessageParam.Content.Split(null)[0].Replace(prefix, ""), prefix);
                     await Context.Channel.SendMessageAsync(reason);
                 }
                 return;
             }
 
-            Timers.CommandCallTickIncrement();
+            if (text == null)
+            {
+                text = Context.Message.Content;
+                text = text.Replace(prefix, "");
+                text = text.Split(' ')[0];
+                text = text.ToLower();
+            }
+
+            Core.Stats.IncrementServer(Context.Guild.Id);
+            Core.Stats.IncrementCommand(text);
+            Core.Stats.IncrementCalls();
         }
         private async Task Client_MessageReceivedSpecialModes(SocketMessage MessageParam)
         {

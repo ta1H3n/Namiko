@@ -64,8 +64,19 @@ namespace Namiko.Core.Modules
             await PagedReplyAsync(msg);
         }
 
+        [Command("HourlyTest"), OwnerPrecondition]
+        public async Task HourlyTest()
+        {
+            Timers.Timer_HourlyStats(null, null);
+        }
+        [Command("DailyTest"), OwnerPrecondition]
+        public async Task DailyTest()
+        {
+            Timers.Timer_DailyStats(null, null);
+        }
+
         // HELP COMMAND STUFF
-        
+
         public async Task<bool> Help(SocketCommandContext context, CommandService commandService)
         {
             string prefix = Program.GetPrefix(context);
