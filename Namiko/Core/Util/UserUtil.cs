@@ -90,14 +90,16 @@ namespace Namiko.Core.Util {
                 footer += $", Playing: '{user.Activity.Name}'";
             eb.WithFooter(footer);
 
-
+            //quote 
             string quote = UserDb.GetQuote(user.Id);
-            if (quote != null && !quote.Equals("")) {
-                if (WebUtil.IsValidUrl(quote)) eb.WithThumbnailUrl(quote);
-                else eb.WithDescription(quote);
-            }
-            
-            eb.Color = UserDb.CheckHex(out string colour, user.Id)? (Discord.Color) HexToColor(colour) : BasicUtil.RandomColor();
+            if (quote != null && !quote.Equals("") && !WebUtil.IsValidUrl(quote)) eb.WithDescription(quote);
+
+            //image
+            string image = UserDb.GetImage(user.Id); 
+            if (WebUtil.IsValidUrl(image)) eb.WithThumbnailUrl(image);
+
+
+            eb.Color = UserDb.GetHex(out string colour, user.Id)? (Discord.Color) HexToColor(colour) : BasicUtil.RandomColor();
             return eb;
         }
         public static EmbedBuilder WaifusEmbed(SocketGuildUser user)
@@ -132,29 +134,56 @@ namespace Namiko.Core.Util {
                 eb.WithDescription(desc);
             }
 
-            eb.WithColor(BasicUtil.RandomColor());
+            eb.WithColor(UserDb.GetHex(out string colour, user.Id) ? (Discord.Color)HexToColor(colour) : BasicUtil.RandomColor());
             return eb;
         }
-        public static EmbedBuilder QuoteEmbed(IUser User, bool isMe) {
+        public static EmbedBuilder PostEmbed(IUser User, bool isMe) {
 
             //necessary string variables 
             string quote = UserDb.GetQuote(User.Id);
-            string keyWord = (isMe) ? "Personal" : $"{ User.Username }'s ";
-
-            //creating embed
+            string image = UserDb.GetImage(User.Id);
             EmbedBuilder embed = new EmbedBuilder();
-            embed.WithColor(UserDb.CheckHex(out string colour, User.Id)? (Discord.Color) HexToColor(colour) : BasicUtil.RandomColor());
 
-            //checking if its a valid url
-            if (WebUtil.IsValidUrl(quote)) {
-                embed.WithAuthor(keyWord + " Picture");
-                embed.WithImageUrl(quote);
-                return embed;
+            //quote embed
+            if (quote == null & !WebUtil.IsValidUrl(image)) return null;
+            embed.WithColor(UserDb.GetHex(out string colour, User.Id)? (Discord.Color) HexToColor(colour) : BasicUtil.RandomColor());
+            embed.WithAuthor(((isMe) ? "Personal" : $"{ User.Username }'s ") + " Quote");
+            embed.WithDescription(quote);
+            embed.WithImageUrl(image);
+            return embed;
+        }
+        public static EmbedBuilder StitchedQuoteEmbed(IReadOnlyCollection<SocketUser> users, string image = null) {
+
+            //creating variables
+            int i = 0;
+            string quote = "";
+            string footer = "";
+            string aggregate_quote = "";
+            EmbedBuilder embed = new EmbedBuilder();
+            bool isImage = image != null && WebUtil.IsValidUrl(image);
+
+            //building quote and footer
+            foreach (SocketUser user in users) {
+                quote = UserDb.GetQuote(user.Id);
+                if( quote == "" || quote == null || WebUtil.IsValidUrl(quote))
+                    continue;
+                
+                //if quote exists and is not a web link
+                footer += $"{ user.Username } ";
+                aggregate_quote += quote + "\n";
+                if (++i >= 5) break;
             }
 
-            //if its a regular quote
-            embed.WithAuthor(keyWord + " Quote");
-            embed.WithDescription(quote);
+            //making sure quote exists
+            if(aggregate_quote == "")
+                return null;
+            
+
+            //making embed
+            embed.WithFooter(footer);
+            embed.WithDescription(aggregate_quote);
+            embed.WithColor(BasicUtil.RandomColor());
+            embed.WithAuthor($"Aggregate Quote");
             return embed;
         }
     }

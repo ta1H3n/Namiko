@@ -7,6 +7,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Namiko.Resources.Database;
 using Discord.Addons.Interactive;
+using System.Collections.Generic;
 
 namespace Namiko.Core.Modules {
     public class User : InteractiveBase<SocketCommandContext> {
@@ -48,7 +49,7 @@ namespace Namiko.Core.Modules {
         }
 
         [Command("SetColour"), Alias("setcolor", "sc"), Summary("Allows user to set profile colour for 150 toasties.\n**Usage**: `!sc [dark/light optional] [colour name or hex value]`")]
-        public async Task CustomColour(string shade = "", string colour = "",[Remainder] string str = "") {
+        public async Task SetPersonalColour(string shade = "", string colour = "",[Remainder] string str = "") {
 
              //
             //way to set it back to default
@@ -95,18 +96,18 @@ namespace Namiko.Core.Modules {
         }
 
         [Command("setquote"), Alias("sq"), Summary("Sets your personal quote on your profile.\n**Usage**: `!sq [quote]`")]
-        public async Task CustomQuote([Remainder] string quote = null) {
+        public async Task SetPersonalQuote([Remainder] string quote = null) {
 
-            if(quote == null)
-            {
+            //
+            if(quote == null) {
                 await UserDb.SetQuote(Context.User.Id, null);
                 await Context.Channel.SendMessageAsync("Quote removed.");
                 return;
             }
 
-            if (quote.Length > 200)
-            {
-                await Context.Channel.SendMessageAsync("Quotes have a 200 character limit.");
+            //
+            if (quote.Length > 400) {
+                await Context.Channel.SendMessageAsync("Quotes have a 400 character limit.");
                 return;
             }
 
@@ -121,28 +122,64 @@ namespace Namiko.Core.Modules {
             await UserDb.SetQuote(Context.User.Id, quote);
 
             //getting embed + re-getting quote
-            //quote = ;
-            EmbedBuilder embed = UserUtil.QuoteEmbed(Context.User, true);
+            EmbedBuilder embed = UserUtil.PostEmbed(Context.User, true);
             embed.WithAuthor($"Personal { ((isPic)? "Picture" : "Quote") } Updated");
             await Context.Channel.SendMessageAsync("", false, embed.Build());
         }
 
-        [Command("quote"), Alias("q"), Summary("Allows user to see their personal quote.\n**Usage**: `!q`")]
-        public async Task PersonalQuote(IUser iuser = null, [Remainder] string str = "") {
+        [Command("setimage"), Alias("si"), Summary("Displays Persoal Image. \n**Usage**: `!si`")]
+        public async Task SetPersonalImage([Remainder] string image = null) {
 
-            //variables
-            bool isMe = iuser == null;
-            IUser user = iuser ?? Context.User;
-
-            //checking quote
-            if(UserDb.GetQuote(user.Id) == null){
-                await Context.Channel.SendMessageAsync($"Gomen... { ((isMe)? "You haven't" : $"{ user.Username } hasn't") } added a Quote yet qq ");
+            //to delete image
+            if (image == null) {
+                await UserDb.SetImage(Context.User.Id, null);
+                await Context.Channel.SendMessageAsync("Image removed.");
                 return;
             }
 
-            //sending quote
-            EmbedBuilder embed = UserUtil.QuoteEmbed(user, isMe);
+            //url check
+            if (!WebUtil.IsValidUrl(image)) {
+                await Context.Channel.SendMessageAsync("Please use web links qq");
+                return;
+            }
+
+            //image validity check
+            if (!WebUtil.IsImageUrl(image)) {
+                await Context.Channel.SendMessageAsync("Gomen... I only accept **Image** links (ᗒᗩᗕ)");
+                return;
+            }
+
+            //building embed
+            await UserDb.SetImage(Context.User.Id, image);
+            EmbedBuilder embed = UserUtil.PostEmbed(Context.User, true);
             await Context.Channel.SendMessageAsync("", false, embed.Build());
+        }
+
+        [Command("quote"), Alias("q"), Summary("Allows user to see their personal quote.\n**Usage**: `!q`")]
+        public async Task DisplayPersonalQuote(IUser iuser = null, [Remainder] string str = "") {
+
+            //variables
+            EmbedBuilder embed;
+            bool isMe = iuser == null;
+            IUser user = iuser ?? Context.User;
+
+            //
+            IReadOnlyCollection<SocketUser> users = Context.Message.MentionedUsers;
+            if( users != null && users.Count > 1) {
+                embed = UserUtil.StitchedQuoteEmbed(users);
+                if (embed == null) await Context.Channel.SendMessageAsync("No one had a quote qq");
+                else await Context.Channel.SendMessageAsync("", false, embed.Build());
+                return;
+            }
+
+            //checking quote
+            embed = UserUtil.PostEmbed(user, isMe);
+            if(embed == null){
+                await Context.Channel.SendMessageAsync($"Gomen... { ((isMe)? "You haven't" : $"{ user.Username } hasn't") } added an Image/Quote yet qq ");
+                return;
+
+            //sending quote
+            } await Context.Channel.SendMessageAsync("", false, embed.Build());
         }
 
         [Command("SetFeaturedWaifu"), Alias("sfw"), Summary("Sets your waifu image on your profile.\n**Usage**: `!sfw [waifu_name]`")]
@@ -165,7 +202,7 @@ namespace Namiko.Core.Modules {
         }
 
         [Command("FeaturedWaifu"), Alias("fw"), Summary("Views Featured Waifu.\n**Usage**: `!fw`")]
-        public async Task FeaturedWaifu(IUser iuser = null, [Remainder] string str = "")
+        public async Task DisplayFeaturedWaifu(IUser iuser = null, [Remainder] string str = "")
         {
 
             //using variables for names
