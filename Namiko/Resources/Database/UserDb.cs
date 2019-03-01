@@ -52,7 +52,7 @@ namespace Namiko.Resources.Database {
 
                 //if this user is not in the database
                 if (profile == null) {
-                    DbContext.Add(new Profile { UserId = UserId, ColorHex = "", Quote = "" });
+                    DbContext.Add(new Profile { UserId = UserId });
                     await DbContext.SaveChangesAsync();
                     return;
                 }
