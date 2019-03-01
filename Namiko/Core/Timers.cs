@@ -9,6 +9,10 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Linq;
+using Discord;
+using Discord.Commands;
+using Discord.WebSocket;
+using Namiko.Resources.Datatypes;
 
 namespace Namiko.Core
 {
@@ -30,14 +34,15 @@ namespace Namiko.Core
             Minute5.AutoReset = true;
             Minute5.Enabled = true;
             Minute5.Elapsed += Timer_Unban;
+            Minute5.Elapsed += Timer_HourlyStats;
             
             Hour = new Timer(1000 * 60 * 60);
             Hour.AutoReset = true;
             Hour.Enabled = true;
             Hour.Elapsed += Timer_BackupData;
-            Hour.Elapsed += Timer_ResetCommandCallTick;
             Hour.Elapsed += Timer_ExpireTeamInvites;
             Hour.Elapsed += Timer_CleanData;
+            Hour.Elapsed += Timer_DailyStats;
 
             Console.WriteLine("Timers Ready.");
         }
@@ -102,16 +107,162 @@ namespace Namiko.Core
                 }
             }
         }
-        private static void Timer_ResetCommandCallTick(object sender, ElapsedEventArgs e)
+
+
+
+        // STATS
+        public static async void Timer_DailyStats(object sender, ElapsedEventArgs e)
         {
-            Console.WriteLine(e.SignalTime + " - " + CommandCallTick + " command calls.");
-            CommandCallTick = 0;
+            var date = System.DateTime.Now.Date;
+            bool cool = false;
+            List<ServerStat> servers = null;
+            List<CommandStat> commands = null;
+
+            using (SqliteStatsDbContext db = new SqliteStatsDbContext())
+            {
+                var sample = db.ServerStats.LastOrDefault();
+                if (sample == null || sample.Date.Date < date)
+                {
+                    servers = Stats.ParseServerStats();
+                    commands = Stats.ParseCommandStats();
+
+                    db.ServerStats.AddRange(servers);
+                    db.CommandStats.AddRange(commands);
+
+                    await db.SaveChangesAsync();
+                    cool = true;
+                }
+            }
+
+            if (cool)
+            {
+                List<UsageStat> usage = new SqliteStatsDbContext().UsageStats.Where(x => x.Date > date.AddDays(-1) && x.Date < date).ToList();
+                await UsageReport(servers, commands, usage);
+                Stats.CommandCalls.Clear();
+                Stats.ServerCommandCalls.Clear();
+            }
+        }
+        public static async void Timer_HourlyStats(object sender, ElapsedEventArgs e)
+        {
+            var date = System.DateTime.Now;
+            bool cool = false;
+
+            using (SqliteStatsDbContext db = new SqliteStatsDbContext())
+            {
+                var sample = db.UsageStats.LastOrDefault();
+                if (sample == null || sample.Date.AddHours(2) < date)
+                {
+                    db.UsageStats.Add(new UsageStat { Date = date.AddHours(-1).AddMinutes(-date.Minute).AddSeconds(-date.Second), Count = Stats.TotalCalls });
+
+                    await db.SaveChangesAsync();
+                    cool = true;
+                }
+            }
+
+            if (cool)
+            {
+                Stats.TotalCalls = 0;
+            }
         }
 
-
-        public static void CommandCallTickIncrement()
+        private static async Task UsageReport(List<ServerStat> servers, List<CommandStat> commands, List<UsageStat> usage)
         {
-            CommandCallTick++;
+            servers = servers.OrderByDescending(x => x.Count).ToList();
+            commands = commands.OrderByDescending(x => x.Count).ToList();
+            string small = SmallReport(servers, commands, usage);
+            string big = BigReport(servers, commands, usage);
+
+            using (var stream = GenerateStreamFromString(big)) {
+                await ((SocketTextChannel)Program.GetClient().GetChannel(487610923742134272)).SendFileAsync(stream, System.DateTime.Now.AddDays(-1).Date.ToString("yyyy-MM-dd") + "_Namiko.txt", small);
+            }
+        }
+        private static string SmallReport(List<ServerStat> servers, List<CommandStat> commands, List<UsageStat> usage)
+        {
+            string text = System.DateTime.Now.Date.ToString() + "\n\n";
+            usage = usage.OrderByDescending(x => x.Count).ToList();
+
+            text += "   Servers most used in:\n";
+            for(int i = 0; i<3; i++)
+            {
+                try
+                {
+                    text += ToString(servers[i]) + "\n";
+                } catch { break; }
+            }
+            
+            text += "\n   Most used commands:\n";
+            for (int i = 0; i < 3; i++)
+            {
+                try
+                {
+                    text += ToString(commands[i]) + "\n";
+                } catch { break; }
+            }
+
+            text += "\n   Peak usage:\n";
+            for (int i = 0; i < 3; i++)
+            {
+                try
+                {
+                    text += ToString(usage[i]) + "\n";
+                } catch { break; }
+            }
+
+            text += $"\n Total command calls: **{usage.Sum(x => x.Count)}**";
+
+            return text;
+        }
+        private static string BigReport(List<ServerStat> servers, List<CommandStat> commands, List<UsageStat> usage)
+        {
+            string text = System.DateTime.Now.Date.ToString() + "\n\n";
+
+            text += "   Servers usage:\n";
+            foreach(var x in servers)
+            {
+                text += ToString(x) + "\n";
+            }
+
+            text += "\n   Command usage:\n";
+            foreach (var x in commands)
+            {
+                text += ToString(x) + "\n";
+            }
+
+            text += "\n   Command usage:\n";
+            foreach (var x in usage)
+            {
+                text += ToString(x) + "\n";
+            }
+
+            return text;
+        }
+
+        private static string ToString(ServerStat serverStat)
+        {
+            string guildName = "";
+            try
+            {
+                guildName = Program.GetClient().GetGuild(serverStat.GuildId).Name;
+            } catch { }
+
+            return $"`{serverStat.GuildId}` - **{serverStat.Count}** - *{guildName}*";
+        }
+        private static string ToString(CommandStat commandStat)
+        {
+            return $"`{commandStat.Name}` - **{commandStat.Count}**";
+        }
+        private static string ToString(UsageStat usageStat)
+        {
+            return $"`{usageStat.Date.ToString("hhtt")}` - **{usageStat.Count}**";
+        }
+        public static Stream GenerateStreamFromString(string s)
+        {
+            var stream = new MemoryStream();
+            var writer = new StreamWriter(stream);
+            writer.Write(s);
+            writer.Flush();
+            stream.Position = 0;
+            return stream;
         }
     }
 }
