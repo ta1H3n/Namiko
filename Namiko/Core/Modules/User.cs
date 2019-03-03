@@ -55,15 +55,11 @@ namespace Namiko.Core.Modules {
             //way to set it back to default
             shade = shade.ToLower();
             if (shade.Equals("default") || shade.Equals("")) {
-                await UserDb.HexDefault(Context.User.Id);                    
+                await UserDb.HexDefault(Context.User.Id);
                 
-                //creating comfermation embed
-                EmbedBuilder embed = new EmbedBuilder();
-                embed.WithAuthor("Profile Colour");
-                embed.WithDescription($"{ Context.User.Username } set colour to **Default**\nSwitching to Default incurs no additional costs");
-                embed.WithColor(BasicUtil.RandomColor());
-
                 //sending embed + exception & error confermations 
+                EmbedBuilder embed = UserUtil.SetColourEmbed(Context.User);
+                embed.WithDescription($"{ Context.User.Username } set colour to **Default**");
                 await Context.Channel.SendMessageAsync("", false, embed.Build());
                 return;
 
@@ -82,17 +78,57 @@ namespace Namiko.Core.Modules {
                 //toastie + saving hex color try
                 try { await ToastieDb.AddToasties(Context.User.Id, -Cost.colour, Context.Guild.Id);
                     await UserDb.SetHex(color, Context.User.Id);
-
-                    //creating comfermation embed
-                    EmbedBuilder embed = new EmbedBuilder();
-                    embed.WithAuthor("Profile Colour");
-                    embed.WithDescription($"{ Context.User.Username } changed primary colour!");
-                    embed.WithColor((Discord.Color)color); 
-
+                    
                     //sending embed + exception & error confermations 
+                    EmbedBuilder embed = UserUtil.SetColourEmbed(Context.User);
                     await Context.Channel.SendMessageAsync("", false, embed.Build());
                 } catch (Exception ex) {await Context.Channel.SendMessageAsync(ex.Message); }
             } 
+        }
+
+        [Command("SetColourPrior"), Alias("setcolorprior", "scp"), Summary("Basically `CTRL + Z` for previous profile colours.\n**Usage**: `!scp`")]
+        public async Task SetColourPrior([Remainder] string str = "") {
+
+            //previous colour command names are pretty dumb
+            //reason: named for ease of use i.e 
+            //!sc is colour, so !scp & !scpl are easy mental additions
+            //apposed to seperate command letters, looks kind of dumb, but simpler for users
+
+            //stack check, dumb as fuck imo
+            IUser user = Context.User;
+            string stack = UserDb.GetHexStack(user.Id);
+            if( stack.Length < 6) {
+                await Context.Channel.SendMessageAsync("You have no colours in the stack.");
+                return;
+
+            //if they do
+            } await UserDb.PopStack(user.Id);
+
+            //creating comfermation embed
+            EmbedBuilder embed = UserUtil.SetColourEmbed(user);
+            await Context.Channel.SendMessageAsync("", false, embed.Build());
+        }
+
+        [Command("ShowColourPriorList"), Alias("showcolorpriorlist", "scpl"), Summary("Allows user to access previous profile colours.\n**Usage**: `!scpl`")]
+        public async Task ColourPriorList([Remainder] string str = "") {
+
+            //stack check, dumb as fuck imo
+            string stack = UserDb.GetHexStack(Context.User.Id);
+            if (stack.Length < 6) {
+                await Context.Channel.SendMessageAsync("You have no Colour List.");
+                return;
+            }
+
+            //making message
+            string message = "";
+            string[] stackItems = stack.Split(";");
+            foreach (string item in stackItems) message += item + "\n";
+
+            //getting embed
+            EmbedBuilder embed = UserUtil.SetColourEmbed(Context.User);
+            embed.WithDescription(message);
+            embed.WithAuthor("Previous Colours");
+            await Context.Channel.SendMessageAsync("", false, embed.Build());
         }
 
         [Command("SetQuote"), Alias("sq"), Summary("Sets your quote on profile.\n**Usage**: `!sq [quote]`")]

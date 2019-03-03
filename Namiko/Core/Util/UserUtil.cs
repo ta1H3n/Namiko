@@ -186,5 +186,12 @@ namespace Namiko.Core.Util {
             embed.WithFooter(footer + ((i == 1) ? " had the only \"Quote\"" : ""));
             return embed;
         }
+        public static EmbedBuilder SetColourEmbed(IUser user) {
+            EmbedBuilder embed = new EmbedBuilder();
+            embed.WithAuthor("Profile Colour");
+            embed.WithDescription($"{ user.Username } changed primary colour!");
+            embed.WithColor(UserDb.GetHex(out string colour, user.Id) ? (Discord.Color)HexToColor(colour) : BasicUtil.RandomColor());
+            return embed;
+        }
     }
 }
