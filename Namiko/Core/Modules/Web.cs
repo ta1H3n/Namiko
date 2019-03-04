@@ -64,7 +64,7 @@ namespace Namiko.Core.Modules
 
             for (int i = sauce.Results.Count - 1; i >= 0; i--)
             {
-                if (Double.Parse(sauce.Results[i].Similarity) < 50)
+                if (Double.Parse(sauce.Results[i].Similarity) < 42)
                     sauce.Results.RemoveAt(i);
             }
 

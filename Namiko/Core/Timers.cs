@@ -170,10 +170,10 @@ namespace Namiko.Core
             servers = servers.OrderByDescending(x => x.Count).ToList();
             commands = commands.OrderByDescending(x => x.Count).ToList();
             string small = SmallReport(servers, commands, usage);
-            string big = BigReport(servers, commands, usage);
+            string big = BigReport(servers, commands, usage).Replace("*", "").Replace("`", "");
 
             using (var stream = GenerateStreamFromString(big)) {
-                await ((SocketTextChannel)Program.GetClient().GetChannel(487610923742134272)).SendFileAsync(stream, System.DateTime.Now.AddDays(-1).Date.ToString("yyyy-MM-dd") + "_Namiko.txt", small);
+                await ((SocketTextChannel)Program.GetClient().GetChannel(550619142105989131)).SendFileAsync(stream, System.DateTime.Now.AddDays(-1).Date.ToString("yyyy-MM-dd") + "_Namiko.txt", small);
             }
         }
         private static string SmallReport(List<ServerStat> servers, List<CommandStat> commands, List<UsageStat> usage)
