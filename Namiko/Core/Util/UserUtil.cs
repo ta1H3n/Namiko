@@ -145,45 +145,52 @@ namespace Namiko.Core.Util {
             EmbedBuilder embed = new EmbedBuilder();
 
             //quote embed
-            if (quote == null & !WebUtil.IsValidUrl(image)) return null;
+            if (quote == null && !WebUtil.IsValidUrl(image)) return null;
             embed.WithColor(UserDb.GetHex(out string colour, User.Id)? (Discord.Color) HexToColor(colour) : BasicUtil.RandomColor());
-            embed.WithAuthor(((isMe) ? "Personal" : $"{ User.Username }'s ") + " Quote");
+            embed.WithAuthor(((isMe) ? "Personal" : $"{ User.Username }'s") + " Quote");
             embed.WithDescription(quote);
             embed.WithImageUrl(image);
             return embed;
         }
-        public static EmbedBuilder StitchedQuoteEmbed(IReadOnlyCollection<SocketUser> users, string image = null) {
+        public static EmbedBuilder StitchedQuoteEmbed(IReadOnlyCollection<SocketUser> users) {
 
             //creating variables
             int i = 0;
             string quote = "";
             string footer = "";
             string aggregate_quote = "";
+            int aggregateCap = Cost.aggregateCap;
             EmbedBuilder embed = new EmbedBuilder();
-            bool isImage = image != null && WebUtil.IsValidUrl(image);
 
             //building quote and footer
             foreach (SocketUser user in users) {
                 quote = UserDb.GetQuote(user.Id);
-                if( quote == "" || quote == null || WebUtil.IsValidUrl(quote))
+                if( quote == "" || quote == null )
                     continue;
                 
                 //if quote exists and is not a web link
-                footer += $"{ user.Username } ";
+                footer += ((i == 0)? "- " : ", " ) + $"{ user.Username }";
                 aggregate_quote += quote + "\n";
-                if (++i >= 5) break;
+                if (++i >= aggregateCap) break;
             }
 
             //making sure quote exists
-            if(aggregate_quote == "")
+            if( i == 0 )
                 return null;
             
 
             //making embed
-            embed.WithFooter(footer);
             embed.WithDescription(aggregate_quote);
             embed.WithColor(BasicUtil.RandomColor());
-            embed.WithAuthor($"Aggregate Quote");
+            embed.WithAuthor($"{ (( i == 1 )? "Failed " : "") }Aggregate Quote");
+            embed.WithFooter(footer + ((i == 1) ? " had the only \"Quote\"" : ""));
+            return embed;
+        }
+        public static EmbedBuilder SetColourEmbed(IUser user) {
+            EmbedBuilder embed = new EmbedBuilder();
+            embed.WithAuthor("Profile Colour");
+            embed.WithDescription($"{ user.Username } changed primary colour!");
+            embed.WithColor(UserDb.GetHex(out string colour, user.Id) ? (Discord.Color)HexToColor(colour) : BasicUtil.RandomColor());
             return embed;
         }
     }

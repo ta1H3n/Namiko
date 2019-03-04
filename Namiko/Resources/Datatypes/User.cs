@@ -10,6 +10,7 @@ namespace Namiko.Resources.Datatypes
         [Key]
         public ulong UserId { get; set; }
         public string ColorHex { get; set; }
+        public string PriorColorHexStack { get; set; }
         public string Quote { get; set; }
         public string Image { get; set; }
     }
