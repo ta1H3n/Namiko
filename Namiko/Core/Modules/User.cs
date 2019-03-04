@@ -86,51 +86,6 @@ namespace Namiko.Core.Modules {
             } 
         }
 
-        [Command("SetColourPrior"), Alias("setcolorprior", "scp"), Summary("Basically `CTRL + Z` for previous profile colours.\n**Usage**: `!scp`")]
-        public async Task SetColourPrior([Remainder] string str = "") {
-
-            //previous colour command names are pretty dumb
-            //reason: named for ease of use i.e 
-            //!sc is colour, so !scp & !scpl are easy mental additions
-            //apposed to seperate command letters, looks kind of dumb, but simpler for users
-
-            //stack check, dumb as fuck imo
-            IUser user = Context.User;
-            string stack = UserDb.GetHexStack(user.Id);
-            if( stack.Length < 6) {
-                await Context.Channel.SendMessageAsync("You have no colours in the stack.");
-                return;
-
-            //if they do
-            } await UserDb.PopStack(user.Id);
-
-            //creating comfermation embed
-            EmbedBuilder embed = UserUtil.SetColourEmbed(user);
-            await Context.Channel.SendMessageAsync("", false, embed.Build());
-        }
-
-        [Command("ShowColourPriorList"), Alias("showcolorpriorlist", "scpl"), Summary("Allows user to access previous profile colours.\n**Usage**: `!scpl`")]
-        public async Task ColourPriorList([Remainder] string str = "") {
-
-            //stack check, dumb as fuck imo
-            string stack = UserDb.GetHexStack(Context.User.Id);
-            if (stack.Length < 6) {
-                await Context.Channel.SendMessageAsync("You have no Colour List.");
-                return;
-            }
-
-            //making message
-            string message = "";
-            string[] stackItems = stack.Split(";");
-            foreach (string item in stackItems) message += item + "\n";
-
-            //getting embed
-            EmbedBuilder embed = UserUtil.SetColourEmbed(Context.User);
-            embed.WithDescription(message);
-            embed.WithAuthor("Previous Colours");
-            await Context.Channel.SendMessageAsync("", false, embed.Build());
-        }
-
         [Command("SetQuote"), Alias("sq"), Summary("Sets your quote on profile.\n**Usage**: `!sq [quote]`")]
         public async Task SetPersonalQuote([Remainder] string quote = null) {
 
@@ -152,39 +107,43 @@ namespace Namiko.Core.Modules {
 
             //getting embed + re-getting quote
             EmbedBuilder embed = UserUtil.PostEmbed(Context.User, true);
-            embed.WithAuthor("Personal Quote Updated");
-            await Context.Channel.SendMessageAsync("", false, embed.Build());
+            await Context.Channel.SendMessageAsync("Quote set!", false, embed.Build());
         }
 
-        [Command("SetImage"), Alias("si"), Summary("Sets thumbnail Image on profile. \n**Usage**: `!si [image url]`")]
+        [Command("SetImage"), Alias("si"), Summary("Sets thumbnail Image on profile. \n**Usage**: `!si [image_url_or_attachment]`")]
         public async Task SetPersonalImage([Remainder] string image = null) {
 
+            image = image ?? Context.Message.Attachments.FirstOrDefault()?.Url;
+
             //to delete image
-            if (image == null) {
+            if (image == null)
+            {
                 await UserDb.SetImage(Context.User.Id, null);
                 await Context.Channel.SendMessageAsync("Image removed.");
                 return;
             }
 
             //url check
-            if (!WebUtil.IsValidUrl(image)) {
-                await Context.Channel.SendMessageAsync("Please use web links qq");
+            if (!WebUtil.IsValidUrl(image))
+            {
+                await Context.Channel.SendMessageAsync("This URL is just like you... Invalid.");
                 return;
             }
 
             //image validity check
-            if (!WebUtil.IsImageUrl(image)) {
-                await Context.Channel.SendMessageAsync("Gomen... I only accept **Image** links (ᗒᗩᗕ)");
+            if (!WebUtil.IsImageUrl(image))
+            {
+                await Context.Channel.SendMessageAsync("This URL is not an image, what do you want me to do with it?");
                 return;
             }
 
             //building embed
             await UserDb.SetImage(Context.User.Id, image);
             EmbedBuilder embed = UserUtil.PostEmbed(Context.User, true);
-            await Context.Channel.SendMessageAsync("", false, embed.Build());
+            await Context.Channel.SendMessageAsync("Image set!", false, embed.Build());
         }
 
-        [Command("Quote"), Alias("q"), Summary("Allows user to see their personal quote and Image.\n**Usage**: `!q` [user(s) optional]")]
+        [Command("Quote"), Alias("q"), Summary("Allows user to see their personal quote and Image.\n**Usage**: `!q` [user(s)_optional]")]
         public async Task DisplayPersonalQuote(IUser iuser = null, [Remainder] string str = "") {
 
             //variables
@@ -246,6 +205,56 @@ namespace Namiko.Core.Modules {
 
             }
             await Context.Channel.SendMessageAsync(((isMe) ? $"You have { waifu.Name } as your" : $"{ user.Username } has { waifu.Name } as his") + " Featured waifu!", false, WaifuUtil.WaifuEmbedBuilder(waifu, true, Context).Build());
+        }
+
+        [Command("SetColourPrior"), Alias("setcolorprior", "scp"), Summary("Basically `CTRL + Z` for previous profile colours.\n**Usage**: `!scp`")]
+        public async Task SetColourPrior([Remainder] string str = "")
+        {
+
+            //previous colour command names are pretty dumb
+            //reason: named for ease of use i.e 
+            //!sc is colour, so !scp & !scpl are easy mental additions
+            //apposed to seperate command letters, looks kind of dumb, but simpler for users
+
+            //stack check, dumb as fuck imo
+            IUser user = Context.User;
+            string stack = UserDb.GetHexStack(user.Id);
+            if (stack.Length < 6)
+            {
+                await Context.Channel.SendMessageAsync("You have no colours in the stack.");
+                return;
+
+                //if they do
+            }
+            await UserDb.PopStack(user.Id);
+
+            //creating comfermation embed
+            EmbedBuilder embed = UserUtil.SetColourEmbed(user);
+            await Context.Channel.SendMessageAsync("", false, embed.Build());
+        }
+
+        [Command("ShowColourPriorList"), Alias("showcolorpriorlist", "scpl"), Summary("Allows user to access previous profile colours.\n**Usage**: `!scpl`")]
+        public async Task ColourPriorList([Remainder] string str = "")
+        {
+
+            //stack check, dumb as fuck imo
+            string stack = UserDb.GetHexStack(Context.User.Id);
+            if (stack.Length < 6)
+            {
+                await Context.Channel.SendMessageAsync("You have no Colour List.");
+                return;
+            }
+
+            //making message
+            string message = "";
+            string[] stackItems = stack.Split(";");
+            foreach (string item in stackItems) message += item + "\n";
+
+            //getting embed
+            EmbedBuilder embed = UserUtil.SetColourEmbed(Context.User);
+            embed.WithDescription(message);
+            embed.WithAuthor("Previous Colours");
+            await Context.Channel.SendMessageAsync("", false, embed.Build());
         }
     }
 }

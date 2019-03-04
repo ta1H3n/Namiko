@@ -136,6 +136,7 @@ namespace Namiko.Core.Modules
         public async Task Flip(string sAmount, string side = "t", [Remainder] string str = "")
         {
             var user = (SocketGuildUser) Context.User;
+            var rnd = new Random();
 
             if (!(side.Equals("t") || side.Equals("h") || side.Equals("tails") || side.Equals("heads")))
             {
@@ -171,12 +172,18 @@ namespace Namiko.Core.Modules
             {
                 await ToastieDb.AddToasties(user.Id, amount * 2, Context.Guild.Id);
                 await ToastieDb.AddToasties(Context.Client.CurrentUser.Id, -amount, Context.Guild.Id);
-                await Context.Channel.SendMessageAsync("", false, ToastieUtil.FlipWinEmbed(user, amount).Build());
+                string resp = "";
+                if (amount >= 50000 && rnd.Next(5) == 1)
+                    resp = "Tch... I'll get you next time.";
+                await Context.Channel.SendMessageAsync(resp, false, ToastieUtil.FlipWinEmbed(user, amount).Build());
             }
             else
             {
                 await ToastieDb.AddToasties(Context.Client.CurrentUser.Id, amount, Context.Guild.Id);
-                await Context.Channel.SendMessageAsync("", false, ToastieUtil.FlipLoseEmbed(user, amount).Build());
+                string resp = "";
+                if (amount >= 50000 && rnd.Next(5) == 1)
+                    resp = "I'll take those.";
+                await Context.Channel.SendMessageAsync(resp, false, ToastieUtil.FlipLoseEmbed(user, amount).Build());
             }
         }
 

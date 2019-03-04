@@ -163,7 +163,7 @@ namespace Namiko.Core.Modules
             var waifus = UserInventoryDb.GetWaifus(Context.User.Id, Context.Guild.Id);
             if (!(waifus.Where(x => x.Name.Equals(waifu.Name)).Count() > 0))
             {
-                await Context.Channel.SendMessageAsync(waifu.Name + " is just like my love - you have none of it.");
+                await Context.Channel.SendMessageAsync(waifu.Name + " is just like my love - you don't have it.");
                 return;
             }
             waifus = UserInventoryDb.GetWaifus(recipient.Id, Context.Guild.Id);
@@ -178,7 +178,7 @@ namespace Namiko.Core.Modules
             await Context.Channel.SendMessageAsync($"{recipient.Mention} You received {waifu.Name} from {Context.User.Mention}!", false, WaifuUtil.WaifuEmbedBuilder(waifu).Build());
         }
 
-        [Command("Waifu"), Alias("Husbando", "Trap"), Summary("Shows waifu details.\n**Usage**: `!waifu [name]`")]
+        [Command("Waifu"), Alias("Husbando", "Trap", "w"), Summary("Shows waifu details.\n**Usage**: `!waifu [name]`")]
         public async Task ShowWaifu([Remainder] string name)
         {
             var waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(name), name, Context.Channel);
@@ -194,11 +194,11 @@ namespace Namiko.Core.Modules
 
         }
 
-        [Command("AllWaifus"), Alias("aw"), Summary("Lists all waifus. Tier Optional.\n**Usage**: `!aw [tier]`")]
-        public async Task ListWaifus(int tier = 0)
-        {
-            await Context.Channel.SendMessageAsync("", false, WaifuUtil.WaifuListEmbedBuilder(tier).Build());
-        }
+     //   [Command("AllWaifus"), Alias("aw"), Summary("Lists all waifus. Tier Optional.\n**Usage**: `!aw [tier]`")]
+     //   public async Task ListWaifus(int tier = 0)
+     //   {
+     //       await Context.Channel.SendMessageAsync("", false, WaifuUtil.WaifuListEmbedBuilder(tier).Build());
+     //   }
 
         [Command("NewWaifu"), Alias("nw"), Summary("Adds a waifu to the database.\n**Usage**: `!nw [name] [tier(1-3)] [image_url]`"), HomePrecondition]
         public async Task NewWaifu(string name, int tier, string url = null)

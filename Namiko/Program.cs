@@ -223,7 +223,7 @@ namespace Namiko
             string mention = Client.CurrentUser.Mention.Replace("!", "");
             if (msg.Contains(mention) && (!msg.StartsWith(mention) || msg.Equals(mention)))
             {
-                await Message.Channel.SendMessageAsync($"Hi, {Message.Author.Mention} <a:loveme:536705504798441483>");
+                await Message.Channel.SendMessageAsync($"{Message.Author.Mention} <a:loveme:536705504798441483>");
             }
         }
         private async Task Client_JoinedGuild(SocketGuild arg)
