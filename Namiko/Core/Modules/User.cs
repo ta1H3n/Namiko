@@ -98,7 +98,7 @@ namespace Namiko.Core.Modules {
 
             //length check
             if (quote.Length > Cost.quoteCap) {
-                await Context.Channel.SendMessageAsync($"Quotes have a { Cost.quoteCap } character limit.");
+                await Context.Channel.SendMessageAsync($"Quotes have a { Cost.quoteCap } character limit. {quote.Length}/{Cost.quoteCap}");
                 return;
             }
 
@@ -163,7 +163,7 @@ namespace Namiko.Core.Modules {
             //checking quote
             embed = UserUtil.PostEmbed(user, isMe);
             if(embed == null){
-                await Context.Channel.SendMessageAsync($"Gomen... { ((isMe)? "You haven't" : $"{ user.Username } hasn't") } added an Image/Quote yet qq ");
+                await Context.Channel.SendMessageAsync($"{((isMe)? "You don't" : $"{ user.Username } doesn't") } have an image or a quote. Set one with `sq` and `si` commands.");
                 return;
 
             //sending quote

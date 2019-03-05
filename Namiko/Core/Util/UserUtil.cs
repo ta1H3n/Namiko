@@ -147,7 +147,7 @@ namespace Namiko.Core.Util {
             //quote embed
             if (quote == null && !WebUtil.IsValidUrl(image)) return null;
             embed.WithColor(UserDb.GetHex(out string colour, User.Id)? (Discord.Color) HexToColor(colour) : BasicUtil.RandomColor());
-            embed.WithAuthor(((isMe) ? "Personal" : $"{ User.Username }'s") + " Quote");
+            embed.WithAuthor($"{ User.Username }'s" + " Quote");
             embed.WithDescription(quote);
             embed.WithImageUrl(image);
             return embed;
