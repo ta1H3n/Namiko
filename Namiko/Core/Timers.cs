@@ -29,20 +29,20 @@ namespace Namiko.Core
             Minute.AutoReset = true;
             Minute.Enabled = true;
             Minute.Elapsed += Timer_TimeoutBlackjack;
+            Minute.Elapsed += Timer_HourlyStats;
 
             Minute5 = new Timer(1000 * 60 * 5);
             Minute5.AutoReset = true;
             Minute5.Enabled = true;
             Minute5.Elapsed += Timer_Unban;
-            Minute5.Elapsed += Timer_HourlyStats;
-            
+            Minute5.Elapsed += Timer_DailyStats;
+
             Hour = new Timer(1000 * 60 * 60);
             Hour.AutoReset = true;
             Hour.Enabled = true;
             Hour.Elapsed += Timer_BackupData;
             Hour.Elapsed += Timer_ExpireTeamInvites;
             Hour.Elapsed += Timer_CleanData;
-            Hour.Elapsed += Timer_DailyStats;
 
             Console.WriteLine("Timers Ready.");
         }

@@ -36,7 +36,7 @@ namespace Namiko.Core.Util
         {
             var eb = new EmbedBuilder();
             eb.WithAuthor(user);
-            eb.WithDescription($"You have {amount.ToString("n0")} {ToastieUtil.RandomEmote()}!");
+            eb.WithDescription($"You have **{amount.ToString("n0")}** {ToastieUtil.RandomEmote()}!");
             eb.WithColor(Color.Gold);
             return eb;
         }
