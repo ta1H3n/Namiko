@@ -17,10 +17,14 @@ namespace Namiko.Core.Modules
 {
     public class Basic : InteractiveBase<SocketCommandContext>
     {
-        [Command("Hi Namiko"), Alias("Hi", "ping"), Summary("Hi Namiko command")]
+        [Command("Hi Namiko"), Alias("Hi", "ping"), Summary("Hi Namiko command. Counts response time.")]
         public async Task HiNamiko([Remainder] string str = "")
         {
-            await Context.Channel.SendMessageAsync($"Hi {Context.User.Mention} :fox:");
+            var msgTime = Context.Message.CreatedAt;
+            var msg = await Context.Channel.SendMessageAsync($"Hi {Context.User.Mention} :fox: `Counting...`");
+            var msgTime2 = msg.CreatedAt;
+            var ping = msgTime2 - msgTime;
+            await msg.ModifyAsync(a => a.Content = $"Hi {Context.User.Mention} :fox: `{ping.TotalMilliseconds}ms`");
         }
 
         // [Command("RandomUser"), Alias("ru"), Summary("Randomly picks one user from all the reactions on a message.\nOnly works with default discord emotes.\n" +
@@ -77,7 +81,7 @@ namespace Namiko.Core.Modules
         [Command("Test"), OwnerPrecondition]
         public async Task Test()
         {
-            await Context.Channel.SendMessageAsync($"Type `!sp \"prefix\"` or `{Program.GetClient().CurrentUser.Mention} sp \"prefix\"` to change my prefix!");
+            await Context.Channel.SendMessageAsync($"Type `!sp [prefix]` or `@Namiko#8734 sp [prefix]` to change my prefix! The default is `!`");
         }
 
         // HELP COMMAND STUFF

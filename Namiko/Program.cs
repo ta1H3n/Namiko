@@ -203,7 +203,7 @@ namespace Namiko
         }
         private async Task Client_MessageReceivedSpecialModes(SocketMessage MessageParam)
         {
-            if (!SpecialModes.ChristmasModeEnable && !SpecialModes.SpookModeEnable)
+            if (!SpecialModes.ChristmasModeEnable && !SpecialModes.SpookModeEnable && !MessageParam.Author.IsBot)
                 return;
 
             var Message = MessageParam as SocketUserMessage;
@@ -220,6 +220,8 @@ namespace Namiko
         private async Task Client_MessageReceivedHeart(SocketMessage arg)
         {
             var Message = arg as SocketUserMessage;
+            if (Message.Author.IsBot)
+                return;
             string msg = Message.Content.Replace("!", "");
             string mention = Client.CurrentUser.Mention.Replace("!", "");
             if (msg.Contains(mention) && (!msg.StartsWith(mention) || msg.Equals(mention)))
@@ -248,9 +250,9 @@ namespace Namiko
             try
             {
                 await ch?.SendMessageAsync($"Helloooo! Take good care of me! Try `{server.Prefix}info` to learn more about me, or `{server.Prefix}help` for a list of my commands!\n" +
-                    $"Type `{server.Prefix}sp \"prefix\"` or `{Client.CurrentUser.Mention} sp \"prefix\"` to change my prefix! The default is `!`");
+                    $"Type `{server.Prefix}sp [prefix]` or `@Namiko#8734 sp [prefix]` to change my prefix! The default is `!`");
             } catch { }
-            await ((ISocketMessageChannel)Client.GetChannel(StaticSettings.log_channel)).SendMessageAsync($":white_check_mark: I joined `{arg.Id}` {arg.Name}.\nOwner: `{arg.Owner.Id}` {arg.Owner}");
+            await ((ISocketMessageChannel)Client.GetChannel(StaticSettings.log_channel)).SendMessageAsync($":white_check_mark: I joined `{arg.Id}` **{arg.Name}**.\nOwner: `{arg.Owner.Id}` **{arg.Owner}**");
         }
         private async Task Client_LeftGuild(SocketGuild arg)
         {
@@ -258,7 +260,7 @@ namespace Namiko
             server.LeaveDate = DateTime.Now;
             await ServerDb.UpdateServer(server);
 
-            await ((ISocketMessageChannel)Client.GetChannel(StaticSettings.log_channel)).SendMessageAsync($":x: I left `{arg.Id}` {arg.Name}.\nOwner: `{arg.Owner.Id}` {arg.Owner}");
+            await ((ISocketMessageChannel)Client.GetChannel(StaticSettings.log_channel)).SendMessageAsync($":x: I left `{arg.Id}` **{arg.Name}**.\nOwner: `{arg.Owner.Id}` **{arg.Owner}**");
         }
 
         // USER JOIN LOGS
