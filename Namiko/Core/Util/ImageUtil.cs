@@ -67,5 +67,9 @@ namespace Namiko.Core.Util
 
             return block + "```";
         }
+        public static bool IsAMFWT(ulong guildId, string imageName)
+        {
+            return imageName.Contains("post") && !(guildId == 417064769309245471 || guildId == 418900885079588884);
+        }
     }
 }

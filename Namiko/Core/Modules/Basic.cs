@@ -74,6 +74,11 @@ namespace Namiko.Core.Modules
         {
             Timers.Timer_DailyStats(null, null);
         }
+        [Command("Test"), OwnerPrecondition]
+        public async Task Test()
+        {
+            await Context.Channel.SendMessageAsync($"Type `!sp \"prefix\"` or `{Program.GetClient().CurrentUser.Mention} sp \"prefix\"` to change my prefix!");
+        }
 
         // HELP COMMAND STUFF
 

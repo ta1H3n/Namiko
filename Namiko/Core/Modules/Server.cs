@@ -17,7 +17,7 @@ namespace Namiko.Core.Modules
 {
     public class Server : InteractiveBase<SocketCommandContext>
     {
-        [Command("Server"), Alias("serverinfo", "guild")] 
+        [Command("Server"), Alias("serverinfo", "guild", "stats"), Summary("Stats about the server.\n**Usage**: `!server`")] 
         public async Task ServerInfo([Remainder] string str = "")
         {
             await Context.Channel.SendMessageAsync("", false, ServerUtil.ServerInfo(Context.Guild).Build());
@@ -114,7 +114,7 @@ namespace Namiko.Core.Modules
             await Context.Channel.SendMessageAsync($"Channel blacklisted. Use `{Program.GetPrefix(Context)}blch [channel_id]` in another channel to undo.\n The ID of this channel is `{Context.Channel.Id}`.");
         }
 
-        [Command("ListWelcome"), Alias("lw"), Summary("Lists all welcomes and their IDs.")]
+        [Command("ListWelcomes"), Alias("lw"), Summary("Lists all welcomes and their IDs.")]
         public async Task ListWelcome()
         {
 

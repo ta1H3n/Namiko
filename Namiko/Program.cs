@@ -152,13 +152,14 @@ namespace Namiko
             }
 
             int ArgPos = 0;
-            if (!(Message.HasStringPrefix(prefix, ref ArgPos) || Message.HasMentionPrefix(Client.CurrentUser, ref ArgPos)) && !Pause)
+            bool isPrefixed = Message.HasStringPrefix(prefix, ref ArgPos) || Message.HasMentionPrefix(Client.CurrentUser, ref ArgPos);
+            if (!isPrefixed && !Pause)
             {
                 await Blackjack.BlackjackInput(Context);
                 return;
             }
 
-            if (!Context.Message.Content.StartsWith(prefix))
+            if (!isPrefixed)
                 return;
             var cmds = Commands.Search(Context, ArgPos);
             if (cmds.IsSuccess && Pause && Context.User.Id != StaticSettings.owner)
@@ -246,7 +247,8 @@ namespace Namiko
             SocketTextChannel ch = arg.SystemChannel ?? arg.DefaultChannel;
             try
             {
-                await ch?.SendMessageAsync("Helloooo! Take good care of me! Try `!info` to learn more about me, or `!help` for a list of my commands!");
+                await ch?.SendMessageAsync($"Helloooo! Take good care of me! Try `{server.Prefix}info` to learn more about me, or `{server.Prefix}help` for a list of my commands!\n" +
+                    $"Type `{server.Prefix}sp \"prefix\"` or `{Client.CurrentUser.Mention} sp \"prefix\"` to change my prefix! The default is `!`");
             } catch { }
             await ((ISocketMessageChannel)Client.GetChannel(StaticSettings.log_channel)).SendMessageAsync($":white_check_mark: I joined `{arg.Id}` {arg.Name}.\nOwner: `{arg.Owner.Id}` {arg.Owner}");
         }

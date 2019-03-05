@@ -27,7 +27,7 @@ namespace Namiko.Core.Modules
             text = text.ToLower();
 
             var image = ImageDb.GetRandomImage(text);
-            if (image == null)
+            if (image == null || ImageUtil.IsAMFWT(Context.Guild.Id, image.Name))
             {
                 return false;
             }
@@ -52,7 +52,7 @@ namespace Namiko.Core.Modules
         public async Task Image(int id, [Remainder] string str = "")
         {
             var image = ImageDb.GetImage(id);
-            if (image == null)
+            if (image == null || ImageUtil.IsAMFWT(Context.Guild.Id, image.Name))
             {
                 await Context.Channel.SendMessageAsync($"There is no image with id: {id}");
                 return;
@@ -69,19 +69,22 @@ namespace Namiko.Core.Modules
 
             foreach (ReactionImage x in images)
             {
-                Boolean flag = true;
-                foreach (ImageCount a in names)
+                if (!ImageUtil.IsAMFWT(Context.Guild.Id, x.Name))
                 {
-                    if (a.Name.Equals(x.Name))
+                    Boolean flag = true;
+                    foreach (ImageCount a in names)
                     {
-                        a.Count++;
-                        flag = false;
-                        break;
+                        if (a.Name.Equals(x.Name))
+                        {
+                            a.Count++;
+                            flag = false;
+                            break;
+                        }
                     }
-                }
-                if (flag)
-                {
-                    names.Add(new ImageCount { Name = x.Name, Count = 1 });
+                    if (flag)
+                    {
+                        names.Add(new ImageCount { Name = x.Name, Count = 1 });
+                    }
                 }
             }
 
