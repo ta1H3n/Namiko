@@ -17,7 +17,7 @@ namespace Namiko.Core.Modules
 {
     public class Basic : InteractiveBase<SocketCommandContext>
     {
-        [Command("Hi Namiko"), Alias("Hi", "ping"), Summary("Hi Namiko command. Counts response time.")]
+        [Command("Hi Namiko"), Alias("Hi", "ping", "Awoo"), Summary("Hi Namiko command. Counts response time.")]
         public async Task HiNamiko([Remainder] string str = "")
         {
             var msgTime = Context.Message.CreatedAt;
