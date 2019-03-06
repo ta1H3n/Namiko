@@ -11,7 +11,7 @@ namespace Namiko.Core.Util {
     class UserUtil {
 
          //
-        //Method: named colours i.e "white"
+        //Method: basic named colours i.e "white"
         public static bool GetNamedColour(ref System.Drawing.Color color, string colour, string shade) {
             
             //checking named colours
@@ -92,11 +92,11 @@ namespace Namiko.Core.Util {
 
             //quote 
             string quote = UserDb.GetQuote(user.Id);
-            if (quote != null && !quote.Equals("") && !WebUtil.IsValidUrl(quote)) eb.WithDescription(quote);
+            if ( !String.IsNullOrEmpty(quote) & !WebUtil.IsValidUrl(quote)) eb.WithDescription(quote);
 
             //image
             string image = UserDb.GetImage(user.Id); 
-            if (WebUtil.IsValidUrl(image)) eb.WithThumbnailUrl(image);
+            if ( WebUtil.IsValidUrl(image) ) eb.WithThumbnailUrl(image);
 
 
             eb.Color = UserDb.GetHex(out string colour, user.Id)? (Discord.Color) HexToColor(colour) : BasicUtil.RandomColor();
@@ -145,9 +145,9 @@ namespace Namiko.Core.Util {
             EmbedBuilder embed = new EmbedBuilder();
 
             //quote embed
-            if (quote == null && !WebUtil.IsValidUrl(image)) return null;
+            if ( String.IsNullOrEmpty(quote) && !WebUtil.IsValidUrl(image)) return null;
             embed.WithColor(UserDb.GetHex(out string colour, User.Id)? (Discord.Color) HexToColor(colour) : BasicUtil.RandomColor());
-            embed.WithAuthor($"{ User.Username }'s" + " Quote");
+            embed.WithAuthor((( isMe )? "Your" : $"{ User.Username }'s" ) + " Quote");
             embed.WithDescription(quote);
             embed.WithImageUrl(image);
             return embed;
@@ -156,20 +156,18 @@ namespace Namiko.Core.Util {
 
             //creating variables
             int i = 0;
-            string quote = "";
             string footer = "";
             string aggregate_quote = "";
             int aggregateCap = Cost.aggregateCap;
-            EmbedBuilder embed = new EmbedBuilder();
 
             //building quote and footer
             foreach (SocketUser user in users) {
-                quote = UserDb.GetQuote(user.Id);
-                if( quote == "" || quote == null )
+                string quote = UserDb.GetQuote(user.Id);
+                if( String.IsNullOrEmpty(quote) )
                     continue;
                 
-                //if quote exists and is not a web link
-                footer += ((i == 0)? "- " : ", " ) + $"{ user.Username }";
+                //if quote exists
+                footer += ((i == 0)? "- " : ", " ) + user.Username;
                 aggregate_quote += quote + "\n";
                 if (++i >= aggregateCap) break;
             }
@@ -180,6 +178,7 @@ namespace Namiko.Core.Util {
             
 
             //making embed
+            EmbedBuilder embed = new EmbedBuilder();
             embed.WithDescription(aggregate_quote);
             embed.WithColor(BasicUtil.RandomColor());
             embed.WithAuthor($"{ (( i == 1 )? "Failed " : "") }Aggregate Quote");

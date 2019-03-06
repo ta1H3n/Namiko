@@ -10,18 +10,9 @@ namespace Namiko.Resources.Database {
         //Methods: hex code check (also gets hex colour)
         public static bool GetHex(out string color, ulong UserId) {
             using (var DbContext = new SqliteDbContext()) {
-
-                //verafying user existance
                 var profileColour = DbContext.Profiles.Where(x => x.UserId == UserId).Select(x => x.ColorHex).FirstOrDefault();
-
-                //default colour just incase
-                color = "";
-                if (profileColour == null || profileColour == "")
-                    return false;
-                
-                //getting colour
-                color = profileColour.ToString();
-                return true;
+                color = profileColour.ToString() ?? "";
+                return !String.IsNullOrEmpty(profileColour);
             }
         }
         public static async Task SetHex(Color color, ulong UserId) {
@@ -39,14 +30,9 @@ namespace Namiko.Resources.Database {
                     await DbContext.SaveChangesAsync();
                     return;
                 }
-
-                //if colour exists, update stack
-                //string stack = profile.ColorHex + " " + profile.PriorColorHexStack;
-                //if( stack.Split(" ").Length > 5) stack = stack.Substring(0, stack.LastIndexOf(" "));
-                string stack = PushStackManagement(profile.ColorHex, profile.PriorColorHexStack);
-
-                //setting profile values
-                profile.PriorColorHexStack = stack; //manualStack;
+                
+                //setting profile values + updating stack
+                profile.PriorColorHexStack = PushStackManagement(profile.ColorHex, profile.PriorColorHexStack);
                 profile.ColorHex = colour;
                 DbContext.Update(profile);
                 await DbContext.SaveChangesAsync();
@@ -62,16 +48,9 @@ namespace Namiko.Resources.Database {
                     await DbContext.SaveChangesAsync();
                     return;
                 }
-
-                //if colour exists, modify stack
-                string stack = PushStackManagement(profile.ColorHex, profile.PriorColorHexStack);
-
-                //string current = profile.ColorHex;
-                //string stack = ((current != null || current != "")? current + " " : "" ) + profile.PriorColorHexStack;
-                //if (stack.Split(" ").Length > 5) stack = stack.Substring(0, stack.LastIndexOf(" "));
-
-                //
-                profile.PriorColorHexStack = stack;
+                
+                //updating profile + stack change
+                profile.PriorColorHexStack = PushStackManagement(profile.ColorHex, profile.PriorColorHexStack);
                 profile.ColorHex = "";
                 DbContext.Update(profile);
                 await DbContext.SaveChangesAsync();
@@ -111,7 +90,7 @@ namespace Namiko.Resources.Database {
             }
         }
         private static string PushStackManagement(string current, string stack) {
-            stack = ((current == null || current == "") ? "" : current + ";") + stack;
+            stack = (( String.IsNullOrEmpty(current) ) ? "" : current + ";") + stack;
             return (stack.Split(";").Length > 3)? stack.Substring(0, stack.LastIndexOf(";")) : stack;
         }
         
@@ -119,14 +98,8 @@ namespace Namiko.Resources.Database {
         //Methods: quotes
         public static string GetQuote(ulong UserId) {
             using (var DbContext = new SqliteDbContext()) {
-
-                //verafying quote existance
                 string quote = DbContext.Profiles.Where(x => x.UserId == UserId).Select(x => x.Quote).FirstOrDefault();
-                if(quote == "" || quote == null)
-                    return null;
-
-                //if exists
-                return quote;
+                return String.IsNullOrEmpty(quote)? null : quote;
             }
         }
         public static async Task SetQuote(ulong UserId, string quote) {
@@ -151,14 +124,8 @@ namespace Namiko.Resources.Database {
         //Methods: Images
         public static string GetImage(ulong userId) {
             using (var DbContext = new SqliteDbContext()) {
-
-                //verafying image existance
                 string image = DbContext.Profiles.Where(x => x.UserId == userId).Select(x => x.Image).FirstOrDefault();
-                if (image == "" || image == null)
-                    return null;
-
-                //if exists
-                return image;
+                return String.IsNullOrEmpty(image)? null : image;
             }
         }
         public static async Task SetImage(ulong UserId, string image) {

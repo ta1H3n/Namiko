@@ -19,7 +19,7 @@ namespace Namiko.Core.Modules {
             await Context.Channel.SendMessageAsync("", false, UserUtil.ProfileEmbed((SocketGuildUser)user).Build());
         }
 
-        [Command("Waifus"), Alias("waifus"), Summary("Shows a users waifu list.\n**Usage**: `!waifus [user_optional]`")]
+        [Command("Waifus"), Summary("Shows a users waifu list.\n**Usage**: `!waifus [user_optional]`")]
         public async Task Waifus(IUser user = null, [Remainder] string str = "")
         {
             user = user ?? Context.User;
@@ -48,13 +48,12 @@ namespace Namiko.Core.Modules {
             await PagedReplyAsync(msg);
         }
 
-        [Command("SetColour"), Alias("setcolor", "sc"), Summary("Allows user to set profile colour.\n**Usage**: `!sc [colour_name or hex_value]`")]
+        [Command("SetColour"), Alias("SetColor", "sc"), Summary("Allows user to set profile colour.\n**Usage**: `!sc [colour_name or hex_value]`")]
         public async Task SetPersonalColour(string shade = "", string colour = "",[Remainder] string str = "") {
 
              //
             //way to set it back to default
-            shade = shade.ToLower();
-            if (shade.Equals("default") || shade.Equals("")) {
+            if ( shade.Equals("") ) {
                 await UserDb.HexDefault(Context.User.Id);
                 
                 //sending embed + exception & error confermations 
@@ -65,8 +64,7 @@ namespace Namiko.Core.Modules {
 
 
             //if no shade specified but colour value exists
-            } if (colour.Equals("")) colour = shade;
-            else colour = colour.ToLower();
+            } if ( colour.Equals("") ) colour = shade;
 
 
 
@@ -75,14 +73,12 @@ namespace Namiko.Core.Modules {
             System.Drawing.Color color;
             if (UserUtil.GetNamedColour(ref color, colour, shade) || UserUtil.GetHexColour(ref color, colour)) {
 
-                //toastie + saving hex color try
-                try { await ToastieDb.AddToasties(Context.User.Id, -Cost.colour, Context.Guild.Id);
+                //toastie + saving hex colour
+                try {
+                    await ToastieDb.AddToasties(Context.User.Id, -Cost.colour, Context.Guild.Id);
                     await UserDb.SetHex(color, Context.User.Id);
-                    
-                    //sending embed + exception & error confermations 
-                    EmbedBuilder embed = UserUtil.SetColourEmbed(Context.User);
-                    await Context.Channel.SendMessageAsync("", false, embed.Build());
-                } catch (Exception ex) {await Context.Channel.SendMessageAsync(ex.Message); }
+                    await Context.Channel.SendMessageAsync("", false, UserUtil.SetColourEmbed(Context.User).Build());
+                } catch (Exception ex) { await Context.Channel.SendMessageAsync(ex.Message); }
             } 
         }
 
@@ -101,13 +97,10 @@ namespace Namiko.Core.Modules {
                 await Context.Channel.SendMessageAsync($"Quotes have a { Cost.quoteCap } character limit. {quote.Length}/{Cost.quoteCap}");
                 return;
             }
-
-            //setting quote 
+            
+            //setting quote + getting embed & quote
             await UserDb.SetQuote(Context.User.Id, quote);
-
-            //getting embed + re-getting quote
-            EmbedBuilder embed = UserUtil.PostEmbed(Context.User, true);
-            await Context.Channel.SendMessageAsync("Quote set!", false, embed.Build());
+            await Context.Channel.SendMessageAsync("Quote set!", false, UserUtil.PostEmbed(Context.User, true).Build());
         }
 
         [Command("SetImage"), Alias("si"), Summary("Sets thumbnail Image on profile. \n**Usage**: `!si [image_url_or_attachment]`")]
@@ -207,7 +200,7 @@ namespace Namiko.Core.Modules {
             await Context.Channel.SendMessageAsync(((isMe) ? $"You have { waifu.Name } as your" : $"{ user.Username } has { waifu.Name } as his") + " Featured waifu!", false, WaifuUtil.WaifuEmbedBuilder(waifu, true, Context).Build());
         }
 
-        [Command("SetColourPrior"), Alias("setcolorprior", "scp"), Summary("Basically `CTRL + Z` for previous profile colours.\n**Usage**: `!scp`")]
+        [Command("SetColourPrior"), Alias("scp"), Summary("Basically `CTRL + Z` for previous profile colours.\n**Usage**: `!scp`")]
         public async Task SetColourPrior([Remainder] string str = "")
         {
 
@@ -224,16 +217,15 @@ namespace Namiko.Core.Modules {
                 await Context.Channel.SendMessageAsync("You have no colours in the stack.");
                 return;
 
-                //if they do
-            }
-            await UserDb.PopStack(user.Id);
+            //if they do
+            } await UserDb.PopStack(user.Id);
 
             //creating comfermation embed
             EmbedBuilder embed = UserUtil.SetColourEmbed(user);
             await Context.Channel.SendMessageAsync("", false, embed.Build());
         }
 
-        [Command("ShowColourPriorList"), Alias("showcolorpriorlist", "scpl"), Summary("Allows user to access previous profile colours.\n**Usage**: `!scpl`")]
+        [Command("ShowColourPriorList"), Alias("scpl"), Summary("Allows user to access previous profile colours.\n**Usage**: `!scpl`")]
         public async Task ColourPriorList([Remainder] string str = "")
         {
 
