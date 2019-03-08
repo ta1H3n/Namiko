@@ -11,7 +11,10 @@ namespace Namiko.Resources.Database {
         public static bool GetHex(out string color, ulong UserId) {
             using (var DbContext = new SqliteDbContext()) {
                 var profileColour = DbContext.Profiles.Where(x => x.UserId == UserId).Select(x => x.ColorHex).FirstOrDefault();
-                color = profileColour.ToString() ?? "";
+                if (profileColour == null)
+                    color = "";
+                else
+                    color = profileColour.ToString();
                 return !String.IsNullOrEmpty(profileColour);
             }
         }
