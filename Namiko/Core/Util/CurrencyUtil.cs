@@ -233,7 +233,9 @@ namespace Namiko.Core.Util
         {
             var eb = new EmbedBuilder();
             eb.WithAuthor(user.ToString(), user.GetAvatarUrl(), BasicUtil.Patreon);
-            eb.WithDescription($"You're on a **{streak.ToString("n0")}** day streak. You receive **{amount.ToString("n0")}** {ToastieUtil.RandomEmote()}\nYou now have **{balance}** {ToastieUtil.RandomEmote()}");
+            eb.WithDescription($"You're on a **{streak.ToString("n0")}** day streak. You receive **{amount.ToString("n0")}** {ToastieUtil.RandomEmote()}\n" +
+                $"Now you have **{balance}** {ToastieUtil.RandomEmote()}\n\n" +
+                $"  Vote for me on [Discord Bots!](https://discordbots.org/bot/418823684459855882/vote)");
             eb.WithColor(BasicUtil.RandomColor());
             return eb;
         }
