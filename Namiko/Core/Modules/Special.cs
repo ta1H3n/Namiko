@@ -76,8 +76,16 @@ namespace Namiko.Core.Modules
         public async Task GetInvite(ulong id, [Remainder] string str = "")
         {
             var guild = Context.Client.GetGuild(id);
-            var invite = (await guild.GetInvitesAsync()).FirstOrDefault().Url;
-            await Context.Channel.SendMessageAsync(invite);
+            var invite = (await guild.GetInvitesAsync()).FirstOrDefault();
+            await Context.Channel.SendMessageAsync(invite == null ? "Nada." : invite.Url);
+        }
+
+        [Command("CreateInvite"), Summary("Creates an invite to a server"), OwnerPrecondition]
+        public async Task CreateInvite(ulong id, [Remainder] string str = "")
+        {
+            var guild = Context.Client.GetGuild(id);
+            var invite = guild.TextChannels.FirstOrDefault();
+            await Context.Channel.SendMessageAsync(invite == null ? "Nada." : (await invite.CreateInviteAsync()).Url);
         }
 
         [Command("NewWelcome"), Alias("nwlc"), Summary("Adds a new welcome message. @_ will be replaced with a mention.\n**Usage**: `!nw [welcome]`"), HomePrecondition]

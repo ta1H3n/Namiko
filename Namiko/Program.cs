@@ -117,6 +117,12 @@ namespace Namiko
             var ch = arg.Guild.GetTextChannel(chid);
             await ch.SendMessageAsync(GetWelcomeMessageString(arg));
         }
+        private async Task Client_UserLeftToasties(SocketGuildUser arg)
+        {
+            var amount = ToastieDb.GetToasties(arg.Id, arg.Guild.Id) / 4;
+            ToastieDb.AddToasties(arg.Id, -amount, arg.Guild.Id);
+            ToastieDb.AddToasties(Client.CurrentUser.Id, amount, arg.Guild.Id);
+        }
         private async Task Client_Ready()
         {
             Task.Run(() => SetUpServers());

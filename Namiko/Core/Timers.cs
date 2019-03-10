@@ -1,18 +1,20 @@
 ﻿using Namiko.Data;
-using Namiko.Resources.Database;
 using Namiko.Core.Util;
+using Namiko.Resources.Database;
+using Namiko.Resources.Datatypes;
+
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using System.Timers;
 using System.Linq;
+using System.Text;
+using System.Timers;
+using System.Reflection;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using Namiko.Resources.Datatypes;
 
 namespace Namiko.Core
 {
@@ -43,24 +45,61 @@ namespace Namiko.Core
             Hour.Elapsed += Timer_BackupData;
             Hour.Elapsed += Timer_ExpireTeamInvites;
             Hour.Elapsed += Timer_CleanData;
+            Hour.Elapsed += Timer_NamikoSteal;
 
             Console.WriteLine("Timers Ready.");
         }
 
-        public static async void Timer_CleanData(object sender, ElapsedEventArgs e)
+        public static async void Timer_NamikoSteal(object sender, ElapsedEventArgs e)
+        {
+            if (new Random().Next(5) != 1)
+                return;
+
+            using (var db = new SqliteDbContext())
+            {
+                foreach(ulong id in db.Servers.Select(x => x.GuildId))
+                {
+                    var nam = db.Toasties.Where(x => x.UserId == Program.GetClient().CurrentUser.Id && x.GuildId == id).FirstOrDefault();
+
+                    if (nam == null)
+                        continue;
+
+                    if (nam.Amount > 200000)
+                        continue;
+
+                    var sum = db.Toasties.Where(x => x.Amount > 0 && x.GuildId == id).Sum(x => Convert.ToInt64(x.Amount));
+                    if (sum / 10 > nam.Amount)
+                    {
+                        int actualsum = 0;
+                        foreach (var user in db.Toasties.Where(x => x.GuildId == id && x.Amount > 100))
+                        {
+                            int take = user.Amount / 100;
+                            actualsum += take;
+                            user.Amount -= take;
+                            db.Toasties.Update(user);
+                        }
+                        nam.Amount += actualsum;
+                        db.Update(nam);
+                    }
+                }
+                await db.SaveChangesAsync();
+            }
+        }
+
+        private static async void Timer_CleanData(object sender, ElapsedEventArgs e)
         {
             var servers = ServerDb.GetOld();
             foreach(var x in servers)
             {
-                await PublicRoleDb.DeleteByGuild(x.GuildId);
                 await TeamDb.DeleteByGuild(x.GuildId);
-                await ToastieDb.DeleteByGuild(x.GuildId);
                 await DailyDb.DeleteByGuild(x.GuildId);
-                await WeeklyDb.DeleteByGuild(x.GuildId);
-                await UserInventoryDb.DeleteByGuild(x.GuildId);
-                await WaifuShopDb.DeleteByGuild(x.GuildId);
-                await FeaturedWaifuDb.DeleteByGuild(x.GuildId);
                 await ServerDb.DeleteServer(x.GuildId);
+                await WeeklyDb.DeleteByGuild(x.GuildId);
+                await ToastieDb.DeleteByGuild(x.GuildId);
+                await WaifuShopDb.DeleteByGuild(x.GuildId);
+                await PublicRoleDb.DeleteByGuild(x.GuildId);
+                await FeaturedWaifuDb.DeleteByGuild(x.GuildId);
+                await UserInventoryDb.DeleteByGuild(x.GuildId);
                 Console.WriteLine($"Cleared server {x.GuildId}");
             }
         }
@@ -108,11 +147,15 @@ namespace Namiko.Core
             }
         }
 
+        
 
 
         // STATS
         public static async void Timer_DailyStats(object sender, ElapsedEventArgs e)
         {
+            if (Program.GetClient().CurrentUser.Id != 418823684459855882)
+                return;
+
             var date = System.DateTime.Now.Date;
             bool cool = false;
             List<ServerStat> servers = null;

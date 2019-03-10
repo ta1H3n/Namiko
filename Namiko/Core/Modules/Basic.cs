@@ -81,7 +81,8 @@ namespace Namiko.Core.Modules
         [Command("Test"), OwnerPrecondition]
         public async Task Test()
         {
-            await Context.Channel.SendMessageAsync($"Type `!sp [prefix]` or `@Namiko#8734 sp [prefix]` to change my prefix! The default is `!`");
+            Timers.Timer_NamikoSteal(null, null);
+            await Context.Channel.SendMessageAsync($"It has been done.");
         }
 
         // HELP COMMAND STUFF
