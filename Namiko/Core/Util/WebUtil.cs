@@ -10,6 +10,8 @@ using System.Linq;
 using SauceNET;
 using System.Net;
 using System.Globalization;
+using JikanDotNet;
+using System.Threading;
 
 namespace Namiko.Core.Util
 {
@@ -73,6 +75,7 @@ namespace Namiko.Core.Util
         {
             return url.StartsWith(@"//") ? url.Insert(0, "https:") : url;
         }
+
 
         // SAUCENAO
 
@@ -138,6 +141,114 @@ namespace Namiko.Core.Util
             return  Uri.TryCreate(url, UriKind.Absolute, out Uri uriResult) && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps); 
 
             //return Uri.IsWellFormedUriString("https://www.google.com", UriKind.Absolute);
+        }
+
+        // ANIME SEARCH
+
+        private static Jikan jikan = new Jikan();
+
+        public static AnimeSearchResult AnimeSearch(string Query)
+        {
+            AnimeSearchResult animeSearch = jikan.SearchAnime(Query).Result; //animeSearch becomes a "list" of the results of query
+            return animeSearch;
+        }
+
+        public static EmbedBuilder SearchedAnimeList(AnimeSearchResult animeSearch)
+        {
+            List<string> AnimeList = new List<string>();
+            foreach (var anime in animeSearch.Results) { AnimeList.Add(anime.Title); }
+
+            var eb = new EmbedBuilder();
+            eb.WithColor(BasicUtil.RandomColor());
+            eb.Title = "List of anime found. Respond with 1-7 to search title";
+            eb.WithFooter("Results");
+
+            var QuiccList = new List<string>();
+            for (int i = 0; i < 7; i++)
+            {
+                int Speciali = i + 1; //Otherwise it would show 0-6
+                QuiccList.Add($"{Speciali}. " + AnimeList[i]);
+            }
+            string listboo = string.Join('\n', QuiccList);
+            eb.WithDescription(listboo);
+            return eb;
+        }
+
+        public static Anime GetAnime(long id)
+        {
+            return jikan.GetAnime(id).Result; //Gets anime machine
+        }
+
+        public static EmbedBuilder AnimeSearchEmbed(Anime EndAnime)
+        {
+            var eb = new EmbedBuilder();
+            eb.WithColor(BasicUtil.RandomColor());
+
+            eb.Title = $"**{EndAnime.Title}** ({EndAnime.TitleJapanese})  *{EndAnime.LinkCanonical}*"; // LinkCanonical is page link
+            eb.WithFooter($"Results of anime search");
+            eb.WithCurrentTimestamp(); //automatically put in footer
+            eb.WithDescription("Type: " + EndAnime.Type +
+                "\nAnime score: " + EndAnime.Score +
+                "\nRated: " + EndAnime.Rating +
+                "\nEpisodes: " + EndAnime.Episodes +
+                "\nGenres: " + string.Join('/', EndAnime.Genres) + "\n" + "\n" +
+                EndAnime.Synopsis);
+            eb.ImageUrl = EndAnime.ImageURL;
+            return eb;
+        }
+
+        // MANGA SEARCH
+
+        public static MangaSearchResult MangaSearch(string Query)
+        {
+            MangaSearchResult mangaSearch = jikan.SearchManga(Query).Result; //mangaSearch becomes a "list" of the results of query
+            return mangaSearch;
+        }
+
+        public static EmbedBuilder SearchedMangaList(MangaSearchResult mangaSearch)
+        {
+            List<string> MangaList = new List<string>();
+            foreach (var manga in mangaSearch.Results) { MangaList.Add(manga.Title); }
+
+            var eb = new EmbedBuilder();
+            eb.WithColor(BasicUtil.RandomColor());
+            eb.Title = "List of manga found. Respond with 1-7 to search title";
+            eb.WithFooter("Results | Respond with `x` to cancel search.");
+
+            var QuiccList = new List<string>();
+            for (int i = 0; i < 7; i++)
+            {
+                int Speciali = i + 1; //Otherwise it would show 0-6
+                QuiccList.Add($"{Speciali}. " + MangaList[i]);
+            }
+            string listboo = string.Join('\n', QuiccList);
+            eb.WithDescription(listboo);
+            return eb;
+        }
+
+        public static Manga GetManga(long id)
+        {
+            return jikan.GetManga(id).Result; //Gets manga machine
+        }
+
+        public static EmbedBuilder MangaSearchEmbed(Manga EndManga)
+        {
+            var eb = new EmbedBuilder();
+            eb.WithColor(BasicUtil.RandomColor());
+            string MangaState = "";
+            if (EndManga.Status == "Publishing") MangaState = "^"; else MangaState = EndManga.Chapters;
+
+            eb.Title = $"**{EndManga.Title}** ({EndManga.TitleJapanese})  *{EndManga.LinkCanonical}*";
+            eb.WithFooter($"Results of manga search");
+            eb.WithCurrentTimestamp();
+            eb.WithDescription("Type: " + EndManga.Type +
+                "\nManga score: " + EndManga.Score +
+                "\nStatus: " + EndManga.Status +
+                "\nChapters: " + MangaState +
+                "\nGenres: " + string.Join('/', EndManga.Genres) + "\n" + "\n" +
+                EndManga.Synopsis);
+            eb.ImageUrl = EndManga.ImageURL;
+            return eb;
         }
     }
 }
