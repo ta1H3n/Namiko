@@ -23,8 +23,8 @@ namespace Namiko.Core.Modules
             await Context.Channel.TriggerTypingAsync();
 
             url = !url.Equals("") ? url : Context.Message.Attachments.FirstOrDefault()?.Url;
-            
-            if(url == null)
+
+            if (url == null)
             {
                 await Context.Channel.SendMessageAsync("Can't get your attachment, there probably isn't one. *Heh, dummy...*");
                 return;
@@ -32,12 +32,12 @@ namespace Namiko.Core.Modules
 
             var result = await WebUtil.IqdbUrlSearchAsync(url);
 
-            if(!result.IsFound)
+            if (!result.IsFound)
             {
                 await Context.Channel.SendMessageAsync("No results. Too bad.");
                 return;
             }
-            
+
             await Context.Channel.SendMessageAsync("", false, WebUtil.IqdbSourceResultEmbed(result, url).Build());
         }
 
@@ -172,4 +172,5 @@ namespace Namiko.Core.Modules
                 await ResponseQuery.DeleteAsync();
             }
         }
+    }
 }
