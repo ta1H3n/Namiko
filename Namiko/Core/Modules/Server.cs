@@ -23,7 +23,7 @@ namespace Namiko.Core.Modules
             await Context.Channel.SendMessageAsync("", false, ServerUtil.ServerInfo(Context.Guild).Build());
         }
 
-        [Command("SetPrefix"), Alias("sp"), Summary("Sets a prefix for the bot in the server.\n**Usage**: `!sbp [prefix]`"), CustomUserPermission(GuildPermission.Administrator)]
+        [Command("SetPrefix"), Alias("sp", "sbp", "setbotprefix"), Summary("Sets a prefix for the bot in the server.\n**Usage**: `!sp [prefix]`"), CustomUserPermission(GuildPermission.Administrator)]
         public async Task SetBotPrefix(string prefix)
         {
             if (prefix.Length < 1)

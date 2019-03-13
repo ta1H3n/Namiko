@@ -35,12 +35,28 @@ namespace Namiko.Core.Modules
 
             if (guildUser.Roles.Contains(role))
             {
-                await guildUser.RemoveRoleAsync(role);
+                try
+                {
+                    await guildUser.RemoveRoleAsync(role);
+                }
+                catch
+                {
+                    await Context.Channel.SendMessageAsync($"I tried removing a role that is above my own role. *Coughs blood.* Discord wouldn't let me...");
+                    return;
+                }
                 await Context.Channel.SendMessageAsync($"Removed the `{role.Name}` role from you. Don't come back, BAAAAAAAAAAAAAAKA!");
             }
             else
             {
-                await guildUser.AddRoleAsync(role);
+                try
+                {
+                    await guildUser.AddRoleAsync(role);
+                }
+                catch
+                {
+                    await Context.Channel.SendMessageAsync($"I tried giving a role that is above my own role. *Coughs blood.* Discord wouldn't let me...");
+                    return;
+                }
                 await Context.Channel.SendMessageAsync($"Gave you the `{role.Name}` role! Welcome to the club! o7");
             }
         }
@@ -137,7 +153,14 @@ namespace Namiko.Core.Modules
             if (InviteDb.IsInvited(role.Id, Context.User.Id))
             {
                 var user = Context.Guild.GetUser(Context.User.Id);
-                await user.AddRoleAsync(role);
+                try
+                {
+                    await user.AddRoleAsync(role);
+                } catch
+                {
+                    await Context.Channel.SendMessageAsync($"I tried giving a role that is above my own role. *Coughs blood.* Discord wouldn't let me...");
+                    return;
+                }
                 await InviteDb.DeleteInvite(role.Id, user.Id);
                 await Context.Channel.SendMessageAsync($"Congratulations! You joined {role.Name}!");
                 ISocketMessageChannel ch = (ISocketMessageChannel)Context.Client.GetChannel(ServerDb.GetServer(Context.Guild.Id).TeamLogChannelId);
@@ -157,7 +180,16 @@ namespace Namiko.Core.Modules
                 return;
             }
 
-            await Context.Guild.GetUser(Context.User.Id).RemoveRoleAsync(role);
+            try
+            {
+                await Context.Guild.GetUser(Context.User.Id).RemoveRoleAsync(role);
+            }
+            catch
+            {
+                await Context.Channel.SendMessageAsync($"I tried removing a role that is above my own role. *Coughs blood.* Discord wouldn't let me...");
+                return;
+            }
+
             await Context.Channel.SendMessageAsync($@"Ha! You left {role.Name}! Too bad for them ¯\_(ツ)_/¯");
 
             ISocketMessageChannel ch = (ISocketMessageChannel)Context.Client.GetChannel(ServerDb.GetServer(Context.Guild.Id).TeamLogChannelId);

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using Namiko.Core;
 using Namiko.Resources.Datatypes;
 using Namiko.Resources.Database;
 using System.Threading.Tasks;
@@ -59,7 +60,6 @@ namespace Namiko.Resources.Database
                 await db.SaveChangesAsync();
             }
         }
-
         public static long TotalToasties(ulong guildId)
         {
             using (var db = new SqliteDbContext())
@@ -159,6 +159,56 @@ namespace Namiko.Resources.Database
             {
                 db.Weeklies.RemoveRange(db.Weeklies.Where(x => x.GuildId == guildId));
                 await db.SaveChangesAsync();
+            }
+        }
+    }
+
+    public static class LootBoxDb
+    {
+        public static int GetAmount(ulong UserId, LootBoxType type, ulong GuildId = 0)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                var box = db.LootBoxes.Where(x => x.UserId == UserId && x.Type == type && x.GuildId == GuildId).FirstOrDefault();
+
+                if (box == null)
+                    return 0;
+
+                return box.Amount;
+            }
+        }
+        public static async Task AddLootbox(ulong UserId, LootBoxType type, int amount, ulong GuildId = 0)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                var box = db.LootBoxes.Where(x => x.UserId == UserId && x.Type == type && x.GuildId == GuildId).FirstOrDefault();
+
+                if (box == null)
+                {
+                    db.LootBoxes.Add(new LootBox
+                    {
+                        UserId = UserId,
+                        GuildId = GuildId,
+                        Amount = amount,
+                        Type = type
+                    });
+                }
+                else
+                {
+                    box.Amount += amount;
+                    db.LootBoxes.Update(box);
+                }
+
+                await db.SaveChangesAsync();
+            }
+        }
+        public static List<LootBox> GetAll(ulong UserId, ulong GuildId)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                var box = db.LootBoxes.Where(x => x.UserId == UserId && (x.GuildId == GuildId || x.GuildId == 0)).ToList();
+                
+                return box;
             }
         }
     }

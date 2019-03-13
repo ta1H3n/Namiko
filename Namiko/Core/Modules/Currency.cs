@@ -218,12 +218,8 @@ namespace Namiko.Core.Modules
             }
 
             await ToastieDb.AddToasties(recipient.Id, amount, Context.Guild.Id);
-
-            EmbedBuilder eb = new EmbedBuilder();
-            eb.WithAuthor("Toasties");
-            eb.WithDescription($"{Context.User.Username} gave {recipient.Username} **{amount.ToString("n0")}** {ToastieUtil.RandomEmote()}!");
-            eb.WithColor(BasicUtil.RandomColor());
-            await Context.Channel.SendMessageAsync("", false, eb.Build());
+            
+            await Context.Channel.SendMessageAsync("", false, ToastieUtil.GiveEmbed(Context.User, recipient, amount).Build());
         }
 
         [Command("SetToasties"), Alias("st", "sett"), Summary("Sets the amount of toasties.\n**Usage**: `!st [user] [amount]`"), CustomUserPermission(GuildPermission.Administrator)]
@@ -288,6 +284,28 @@ namespace Namiko.Core.Modules
             msg.Pages = CustomPaginatedMessage.PagesArray(parsed, 15);
 
             await PagedReplyAsync(msg);
+        }
+
+        [Command("Beg"), Summary("Beg Namiko for toasties.\n**Usage**: `!beg`")]
+        public async Task Beg([Remainder] string str = "")
+        {
+            var amount = ToastieDb.GetToasties(Context.User.Id, Context.Guild.Id);
+            if(amount > 0)
+            {
+                await Context.Channel.SendMessageAsync("You already have toasties, you snob.");
+                return;
+            }
+
+            if(!ToastieUtil.Beg())
+            {
+                await Context.Channel.SendMessageAsync(ToastieUtil.GetFalseBegMessage());
+                return;
+            }
+
+            amount = Cost.begAmount;
+            await ToastieDb.AddToasties(Context.User.Id, amount, Context.Guild.Id);
+
+            await Context.Channel.SendMessageAsync("Fine. Just leave me alone.", false, ToastieUtil.GiveEmbed(Context.Client.CurrentUser, Context.User, amount).Build());
         }
     }
 }

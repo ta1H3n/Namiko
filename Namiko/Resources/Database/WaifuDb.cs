@@ -82,6 +82,13 @@ namespace Namiko.Resources.Database
                 return DbContext.Waifus.Where(x => x.Tier == tier).ToList();
             }
         }
+        public static List<Waifu> RandomWaifus(int tier, int amount)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                return db.Waifus.Where(x => x.Tier == tier).OrderBy(r => Guid.NewGuid()).Take(amount).ToList();
+            }
+        }
     }
 
     

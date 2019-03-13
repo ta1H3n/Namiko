@@ -169,6 +169,14 @@ namespace Namiko.Core.Util
             eb.WithFooter($"Page: {page / 10 + 1}");
             return eb;
         }
+        public static EmbedBuilder GiveEmbed(IUser from, IUser to, int amount)
+        {
+            EmbedBuilder eb = new EmbedBuilder();
+            eb.WithAuthor("Toasties");
+            eb.WithDescription($"{from.Username} gave {to.Username} **{amount.ToString("n0")}** {ToastieUtil.RandomEmote()}!");
+            eb.WithColor(BasicUtil.RandomColor());
+            return eb;
+        }
 
 
 
@@ -270,6 +278,53 @@ namespace Namiko.Core.Util
             eb.WithDescription($"You received **{amount}** {RandomEmote()}\nNow you have **{current}** {RandomEmote()}");
             eb.WithColor(BasicUtil.RandomColor());
             return eb;
+        }
+        
+        // BEG
+
+        public static bool Beg()
+        {
+            return new Random().Next(Cost.begChance) == 0;
+        }
+        public static string GetFalseBegMessage()
+        {
+            string[] msgs = {
+                "Go away.",
+                "Go away, you're annoying.",
+                "Ask someone else.",
+                "*Picks up a knife.*",
+                "Didn't you have enough?",
+                "It's your own fault for losing all of it."
+            };
+
+            return msgs[new Random().Next(msgs.Length)];
+        }
+
+        // LOOTBOX
+
+        public static bool IsWaifu(LootBoxType type)
+        {
+            var rnd = new Random();
+
+            if (type == LootBoxType.Vote)
+                return rnd.Next(Cost.voteWaifuChance) == 0;
+
+            return false;
+        }
+
+        public static Waifu BoxWaifu(LootBoxType type)
+        {
+            return WaifuDb.RandomWaifus(3, 1)[0];
+        }
+
+        public static int BoxToasties(LootBoxType type)
+        {
+            var rnd = new Random();
+
+            if (type == LootBoxType.Vote)
+                return Cost.voteToastieAmount;
+
+            return 0;
         }
     }
 }

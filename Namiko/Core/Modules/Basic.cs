@@ -13,6 +13,8 @@ using Discord.WebSocket;
 using Discord.Rest;
 using Discord.Addons.Interactive;
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+
 namespace Namiko.Core.Modules
 {
     public class Basic : InteractiveBase<SocketCommandContext>
@@ -26,28 +28,7 @@ namespace Namiko.Core.Modules
             var ping = msgTime2 - msgTime;
             await msg.ModifyAsync(a => a.Content = $"Hi {Context.User.Mention} :fox: `{ping.TotalMilliseconds}ms`");
         }
-
-        // [Command("RandomUser"), Alias("ru"), Summary("Randomly picks one user from all the reactions on a message.\nOnly works with default discord emotes.\n" +
-        //     "Message has to be in the same channel.\n**Usage**:`!ru [message_id]`")]
-        // public async Task RandomUser(ulong msgId, [Remainder] string str = "")
-        // {
-        //     var msg = await Context.Channel.GetMessageAsync(msgId) as RestUserMessage;
-        //     List<IUser> users = new List<IUser>();
-        //     foreach (var reaction in msg.Reactions)
-        //     {
-        //         try
-        //         {
-        //             var tUsers = msg.GetReactionUsersAsync(reaction.Key, 0);
-        //             users.AddRange(tUsers);
-        //         } catch { }
-        //     }
-        //     
-        //     users = users.Distinct(new DistintUserComparer()).ToList();
-        //     var user = users[new Random().Next(users.Count)];
-        //   
-        //     await Context.Channel.SendMessageAsync($"Aaaaaand ... it's {user.Username}! :star:");
-        // }
-
+        
         [Command("Info"), Alias("About"), Summary("Bot info.")]
         public async Task Info([Remainder] string str = "")
         {
@@ -73,11 +54,13 @@ namespace Namiko.Core.Modules
         {
             Timers.Timer_HourlyStats(null, null);
         }
+
         [Command("DailyTest"), OwnerPrecondition]
         public async Task DailyTest()
         {
             Timers.Timer_DailyStats(null, null);
         }
+
         [Command("Test"), OwnerPrecondition]
         public async Task Test()
         {

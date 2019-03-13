@@ -3,6 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
+    <RuntimeIdentifiers>ubuntu.18.04-arm64</RuntimeIdentifiers>
   </PropertyGroup>
 
   <ItemGroup>
@@ -35,8 +36,8 @@
 
   <ItemGroup>
     <PackageReference Include="Booru.Net" Version="1.0.0.3" />
-    <PackageReference Include="Discord.Addons.Interactive" Version="1.0.1" />
     <PackageReference Include="Discord.Net" Version="2.0.1" />
+    <PackageReference Include="DiscordBotsList.Api.Adapter.Discord.Net" Version="1.1.0" />
     <PackageReference Include="Imgur.API" Version="4.0.1" />
     <PackageReference Include="IqdbApi" Version="1.4.0" />
     <PackageReference Include="Kitsu" Version="1.4.1" />
@@ -50,6 +51,10 @@
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
     <PackageReference Include="SauceNET" Version="1.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="C:\Users\virma\source\repos\Discord.Addons.Interactive\Discord.Addons.Interactive\Discord.Addons.Interactive.csproj" />
   </ItemGroup>
 
 </Project>

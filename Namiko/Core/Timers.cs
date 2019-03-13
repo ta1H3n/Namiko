@@ -23,7 +23,7 @@ namespace Namiko.Core
         private static Timer Minute;
         private static Timer Minute5;
         private static Timer Hour;
-        private static int CommandCallTick;
+        //private static int CommandCallTick;
 
         public static void SetUp()
         {

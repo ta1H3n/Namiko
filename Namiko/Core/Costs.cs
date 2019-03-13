@@ -16,8 +16,12 @@ namespace Namiko.Core {
         public const int colour = 0;
 
 
+        //Begging
+        public const int begChance = 4;
+        public static int begAmount { get { return 1 + rnd.Next(9); } }
 
-         //Caps
+
+        //Caps
         //daily and weekly caps
         public const int dailycap = 2500;
         public static int weeklycap { get { return 3500 - rnd.Next(1000); } }
@@ -25,5 +29,12 @@ namespace Namiko.Core {
         //quote + aggregate user caps
         public const int quoteCap = 400; 
         public const int aggregateCap = 4;
+        
+
+        // --------------LOOTBOXES----------------- //
+
+        // Vote
+        public const int voteWaifuChance = 10;
+        public static int voteToastieAmount { get { return 200 + (rnd.Next(9) * 100); } }
     }
 }

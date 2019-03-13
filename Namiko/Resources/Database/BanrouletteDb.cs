@@ -91,12 +91,15 @@ namespace Namiko.Resources.Database
         {
             using (var db = new SqliteDbContext())
             {
-                var ban = db.BannedUsers.LastOrDefault(x => x.UserId == userId && x.ServerId == serverId);
-                if (ban == null)
+                var bans = db.BannedUsers.Where(x => x.UserId == userId && x.ServerId == serverId);
+                if (!bans.Any())
                     return;
 
-                ban.Active = false;
-                db.BannedUsers.Update(ban);
+                foreach (var ban in bans)
+                {
+                    ban.Active = false;
+                    db.BannedUsers.Update(ban);
+                }
                 await db.SaveChangesAsync();
             }
         }

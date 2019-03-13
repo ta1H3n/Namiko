@@ -171,7 +171,15 @@ namespace Namiko.Core.Util
                     if (x.Limited > 0)
                         listing += $" {x.Limited} in stock!\n";
                     else
-                        listing += $" OUT OF STOCK! Bought by: {client.GetUser(x.BoughtBy).Mention}\n";
+                    {
+                        try
+                        {
+                            listing += $" OUT OF STOCK! Bought by: {client.GetUser(x.BoughtBy).Mention}\n";
+                        } catch
+                        {
+                            listing += $" OUT OF STOCK!\n";
+                        }
+                    }
                     list += listing;
                 }
                 else

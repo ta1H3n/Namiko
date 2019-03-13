@@ -18,6 +18,7 @@ using Namiko.Resources.Database;
 using Microsoft.Extensions.DependencyInjection;
 using Discord.Addons.Interactive;
 using System.Collections.Generic;
+using System.Threading;
 
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
@@ -26,11 +27,13 @@ namespace Namiko
 {
     public class Program
     {
-        private static DiscordSocketClient Client;
+        private static DiscordShardedClient Client;
         private static CommandService Commands;
         private static IServiceProvider Services;
         private static bool Pause = false;
         private static Dictionary<ulong, string> Prefixes = new Dictionary<ulong, string>();
+        private static CancellationTokenSource cts = new CancellationTokenSource();
+        private static CancellationToken ct = cts.Token;
 
         static void Main(string[] args)
         => new Program().MainAsync().GetAwaiter().GetResult();
@@ -38,19 +41,20 @@ namespace Namiko
         {
             SetUpDebug();
             //SetUpRelease();
-            Task.Run(() => ImgurUtil.ImgurSetup());
             Timers.SetUp();
             SetUpPrefixes();
-
-            Client = new DiscordSocketClient();
+            
+            Client = new DiscordShardedClient();
+            
             Commands = new CommandService(new CommandServiceConfig
             {
                 CaseSensitiveCommands = false,
                 DefaultRunMode = RunMode.Async,
-                LogLevel = LogSeverity.Debug
+                LogLevel = LogSeverity.Verbose
             });
             
-            Client.Ready += Client_Ready;
+            //Client.Ready += Client_Ready;
+            Client.ShardReady += Client_ShardReady;
             Client.Log += Client_Log;
             Client.ReactionAdded += Client_ReactionAdded;
             Client.JoinedGuild += Client_JoinedGuild;
@@ -65,6 +69,7 @@ namespace Namiko
             Client.UserLeft += Client_UserLeftLog;
             Client.UserBanned += Client_UserBannedLog;
           
+            
             await Client.LoginAsync(TokenType.Bot, ParseSettingsJson());
             await Client.StartAsync();
 
@@ -74,10 +79,14 @@ namespace Namiko
                 .BuildServiceProvider();
 
             await Commands.AddModulesAsync(Assembly.GetEntryAssembly(), Services);
-
-            await Task.Delay(-1);
+            
+            try
+            {
+                await Task.Delay(-1, ct);
+            }
+            catch { }
+            cts.Dispose();
         }
-        
 
         // EVENTS
 
@@ -125,9 +134,22 @@ namespace Namiko
         }
         private async Task Client_Ready()
         {
-            Task.Run(() => SetUpServers());
             var ch = Client.GetChannel(StaticSettings.log_channel) as ISocketMessageChannel;
             await ch.SendMessageAsync($"`{DateTime.Now} - Ready`");
+        }
+        private async Task Client_ShardReady(DiscordSocketClient arg)
+        {
+            var ch = Client.GetChannel(StaticSettings.log_channel) as ISocketMessageChannel;
+            await ch.SendMessageAsync($"`{DateTime.Now} - Shard {arg.ShardId} Ready`");
+            await Ready();
+        }
+        private async Task Ready()
+        {
+            var ch = Client.GetChannel(StaticSettings.log_channel) as ISocketMessageChannel;
+            await SetUpServers();
+            await ch.SendMessageAsync($"`{DateTime.Now} - New Servers Ready`");
+            await ImgurUtil.ImgurSetup();
+            await ch.SendMessageAsync($"`{DateTime.Now} - Imgur Ready`");
         }
         private async Task Client_Log(LogMessage arg)
         {
@@ -140,7 +162,7 @@ namespace Namiko
                 return;
 
             var Message = MessageParam as SocketUserMessage;
-            var Context = new SocketCommandContext(Client, Message);
+            var Context = new ShardedCommandContext(Client, Message);
 
             string prefix = GetPrefix(Context);
 
@@ -213,7 +235,7 @@ namespace Namiko
                 return;
 
             var Message = MessageParam as SocketUserMessage;
-            var Context = new SocketCommandContext(Client, Message);
+            var Context = new ShardedCommandContext(Client, Message);
 
             if (Context.Message == null || Context.Message.Content == "")
                 return;
@@ -353,6 +375,7 @@ namespace Namiko
                     await ToastieDb.SetToasties(Client.CurrentUser.Id, 1000000, x.Id);
                     added++;
                 }
+                await Task.Delay(10);
             }
 
             int left = 0;
@@ -364,6 +387,7 @@ namespace Namiko
                     await ServerDb.UpdateServer(srv);
                     left++;
                 }
+                await Task.Delay(10);
             }
             Console.WriteLine($"Servers ready. Added {added}. Left {left}.");
         }
@@ -460,14 +484,12 @@ namespace Namiko
                 return "";
             }
         }
-
         //  public static EmbedBuilder CommandHelpEmbed(string commandName)
         //  {
         //      var cmd = Commands.Commands.Where(x => x.Aliases.Any(y => y.Equals(commandName))).FirstOrDefault();
         //      return new BasicCommands().CommandHelpEmbed(cmd);
         //  }
-
-        public static DiscordSocketClient GetClient()
+        public static DiscordShardedClient GetClient()
         {
             return Client;
         }
@@ -476,6 +498,10 @@ namespace Namiko
             string message = WelcomeMessageDb.GetRandomMessage();
             message = message.Replace("@_", user.Mention);
             return message;
+        }
+        public static CancellationTokenSource GetCts()
+        {
+            return cts;
         }
     }
 }

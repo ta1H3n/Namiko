@@ -28,6 +28,7 @@ namespace Namiko.Resources.Database
         public DbSet<Server> Servers { get; set; }
         public DbSet<BlacklistedChannel> BlacklistedChannels { get; set; }
         public DbSet<Weekly> Weeklies { get; set; }
+        public DbSet<LootBox> LootBoxes { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder Options)
         {

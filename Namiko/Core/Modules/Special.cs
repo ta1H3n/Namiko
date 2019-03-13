@@ -37,7 +37,7 @@ namespace Namiko.Core.Modules
             await ch.SendMessageAsync(str);
         }
 
-        [Command("Say"), Alias("s"), OwnerPrecondition]
+        [Command("Say"), OwnerPrecondition]
         public async Task SayChannel(ulong id, [Remainder] string str)
         {
             ISocketMessageChannel ch = Context.Client.GetChannel(id) as ISocketMessageChannel;
@@ -70,6 +70,15 @@ namespace Namiko.Core.Modules
         {
             int res = await SqliteDbContext.ExecuteSQL(str);
             await Context.Channel.SendMessageAsync($"{res} rows affected.");
+        }
+
+        [Command("Die"), Summary("Kills Namiko"), HomePrecondition]
+        public async Task Die()
+        {
+            await Context.Channel.SendMessageAsync("Bye bye... :wave:", false, ImageUtil.ToEmbed(ImageDb.GetRandomImage("sudoku")).Build());
+            var cts = Program.GetCts();
+            await Context.Client.StopAsync();
+            cts.Cancel();
         }
 
         [Command("GetInvite"), Summary("Gets an invite to a server"), OwnerPrecondition]
