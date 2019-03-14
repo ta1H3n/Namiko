@@ -29,6 +29,11 @@ namespace Namiko.Core.Modules
             }
             
             int amount = ToastieUtil.ParseAmount(sAmount, user);
+            if (amount <= 0) {
+                await Context.Channel.SendMessageAsync("Pick an amount!");
+                return;
+            }
+
             try
             {
                 await ToastieDb.AddToasties(user.Id, -amount, Context.Guild.Id);
