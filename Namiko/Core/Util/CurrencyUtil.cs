@@ -243,7 +243,7 @@ namespace Namiko.Core.Util
             eb.WithAuthor(user.ToString(), user.GetAvatarUrl(), BasicUtil.Patreon);
             eb.WithDescription($"You're on a **{streak.ToString("n0")}** day streak. You receive **{amount.ToString("n0")}** {ToastieUtil.RandomEmote()}\n" +
                 $"Now you have **{balance}** {ToastieUtil.RandomEmote()}\n\n" +
-                $"  Vote for me on [Discord Bots!](https://discordbots.org/bot/418823684459855882/vote)");
+                $"Vote for me on [Discord Bots](https://discordbots.org/bot/418823684459855882/vote) every day to receive a lootbox!");
             eb.WithColor(BasicUtil.RandomColor());
             return eb;
         }
@@ -311,12 +311,10 @@ namespace Namiko.Core.Util
 
             return false;
         }
-
         public static Waifu BoxWaifu(LootBoxType type)
         {
             return WaifuDb.RandomWaifus(3, 1)[0];
         }
-
         public static int BoxToasties(LootBoxType type)
         {
             var rnd = new Random();
@@ -325,6 +323,23 @@ namespace Namiko.Core.Util
                 return Cost.voteToastieAmount;
 
             return 0;
+        }
+        public static EmbedBuilder NoBoxEmbed(IUser author)
+        {
+            var eb = new EmbedBuilder();
+            eb.WithAuthor(author);
+            eb.WithColor(BasicUtil.RandomColor());
+            eb.WithDescription("You have no lootboxes!\nVote for me on [Discord Bots](https://discordbots.org/bot/418823684459855882/vote) to get one!");
+            return eb;
+        }
+        public static EmbedBuilder BoxOpeningEmbed(IUser author)
+        {
+            var eb = new EmbedBuilder();
+            eb.WithAuthor(author);
+            eb.WithColor(BasicUtil.RandomColor());
+            eb.WithDescription("Opening your lootbox!");
+            eb.WithImageUrl("https://data.whicdn.com/images/109950962/original.gif");
+            return eb;
         }
     }
 }

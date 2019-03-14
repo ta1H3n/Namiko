@@ -23,4 +23,11 @@ namespace Namiko.Resources.Datatypes
         public ulong WifeId { get; set; }
         public ulong GuildId { get; set; }
     }
+
+    public class Voter
+    {
+        [Key]
+        public int Id { get; set; }
+        public ulong UserId { get; set; }
+    }
 }

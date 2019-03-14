@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using DiscordBotsList.Api.Objects;
 
 namespace Namiko.Core
 {
@@ -32,6 +33,7 @@ namespace Namiko.Core
             Minute.Enabled = true;
             Minute.Elapsed += Timer_TimeoutBlackjack;
             Minute.Elapsed += Timer_HourlyStats;
+            Minute.Elapsed += Timer_Voters;
 
             Minute5 = new Timer(1000 * 60 * 5);
             Minute5.AutoReset = true;
@@ -85,7 +87,6 @@ namespace Namiko.Core
                 await db.SaveChangesAsync();
             }
         }
-
         private static async void Timer_CleanData(object sender, ElapsedEventArgs e)
         {
             var servers = ServerDb.GetOld();
@@ -306,6 +307,59 @@ namespace Namiko.Core
             writer.Flush();
             stream.Position = 0;
             return stream;
+        }
+
+
+        // DISCORBBOT VOTES
+        public static async void Timer_Voters(object sender, ElapsedEventArgs e)
+        {
+            IList<IDblEntity> voters = null;
+            try
+            {
+                voters = await WebUtil.GetVoters();
+            } catch { return; }
+            var old = VoteDb.GetVoters();
+
+            var votesNew = new Dictionary<ulong, int>();
+            var votesOld = new Dictionary<ulong, int>();
+
+            foreach (var x in voters)
+                if (!votesNew.ContainsKey(x.Id))
+                    votesNew.Add(x.Id, voters.Count(y => y.Id == x.Id));
+
+            foreach (var x in old)
+                if (!votesOld.ContainsKey(x.UserId))
+                    votesOld.Add(x.UserId, old.Count(y => y.UserId == x.UserId));
+
+            var add = new List<Voter>();
+            foreach (var x in votesNew)
+            {
+                if (votesOld.GetValueOrDefault(x.Key) < x.Value)
+                    add.Add(new Voter { UserId = x.Key });
+
+                else if (votesOld.GetValueOrDefault(x.Key) > x.Value)
+                    await VoteDb.DeleteLast(x.Key);
+
+                votesOld.Remove(x.Key);
+            }
+
+            foreach (var x in votesOld)
+            {
+                await VoteDb.DeleteLast(x.Key);
+            }
+
+            await VoteDb.AddVoters(add);
+            await SendRewards(add);
+        }
+        public static async Task SendRewards(List<Voter> voters)
+        {
+            foreach(var x in voters)
+            {
+                await LootBoxDb.AddLootbox(x.UserId, LootBoxType.Vote, 1);
+                var ch = await Program.GetClient().GetDMChannelAsync(x.UserId);
+                await ch.SendMessageAsync("Thanks for voting for me on DiscordBots! I have given you a lootbox! You can open it in a server of your choice by typing `!open`\nDon't forget to vote every day!");
+                Console.WriteLine($"Giving a box to {x.UserId}");
+            }
         }
     }
 }

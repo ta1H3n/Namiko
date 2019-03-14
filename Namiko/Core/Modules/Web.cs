@@ -77,100 +77,108 @@ namespace Namiko.Core.Modules
             await Context.Channel.SendMessageAsync("", false, WebUtil.SauceEmbed(sauce, url).Build());
         }
 
-        [Command("Anime", RunMode = RunMode.Async), Alias("AnimeSearch", "SearchAnime"), Summary("Searchs MAL for an anime and the following details.\n**Usage**: `!Anime [anime_title]`")]
+        [Command("Anime"), Alias("AnimeSearch", "SearchAnime"), Summary("Searchs MAL for an anime and the following details.\n**Usage**: `!Anime [anime_title]`")]
         public async Task AnimeSearch([Remainder]string Query)
         {
-            var searchmsg = await Context.Channel.SendMessageAsync("`I'll humour your request...`");  //Informs the user it is being searched
-            var animeSearch = WebUtil.AnimeSearch(Query); //animeSearch becomes the result of Query (will hold a list of searched results)
+            var searchmsg = await Context.Channel.SendMessageAsync("`I'll humour your request...`");        //Informs the user it is being searched
+            var animeSearch = await WebUtil.AnimeSearch(Query);                                             //mangaSearch becomes the result of Query (will hold a list of searched results)
+            await searchmsg.DeleteAsync();
 
-            if (animeSearch == null) { await searchmsg.DeleteAsync(); await Context.Channel.SendMessageAsync($"Even after humouring your request, you made **me** search for {Query}?! You're lucky there was no results..."); return; } //Quick If to see if anime had results
+            //Quick If to see if manga had results
+            if (animeSearch == null)
+            {
+                await Context.Channel.SendMessageAsync($"No results. Try harder.");
+                return;
+            }
 
-            await searchmsg.DeleteAsync(); //Unclutter chat
-            var ResponseQuery = await ReplyAsync("", false, WebUtil.SearchedAnimeList(animeSearch).Build()); //Sends embed of anime titles from results
-            SocketMessage UserResponse = null; //umu
-            UserResponse = await NextMessageAsync(timeout: TimeSpan.FromSeconds(20)); //Sets a timeout of 20 seconds, changable if needed
+            //Sends embed of manga titles from results
+            var ResponseQuery = await ReplyAsync("", false, WebUtil.AnimeListEmbed(animeSearch).Build());
+
+            //Sets a timeout of 20 seconds, changeable if needed
+            SocketMessage UserResponse = null;
+            UserResponse = await NextMessageAsync(timeout: TimeSpan.FromSeconds(20));
+
+            if (UserResponse.Content == "x" || UserResponse.Content == "X")
+            {
+                await ReplyAndDeleteAsync($"Cancelling...", timeout: TimeSpan.FromSeconds(5));
+                await ResponseQuery.DeleteAsync();
+                return;
+            };
+
             long id = 0;
-            if (UserResponse.Content == "x" || UserResponse.Content == "X") { await ReplyAndDeleteAsync($"I've cancelled your request for {Query}", timeout: TimeSpan.FromSeconds(5)); await ResponseQuery.DeleteAsync(); return; };
-
             try
             {
-                List<long> AnimeListId = new List<long>();
-                foreach (var anime in animeSearch.Results) { AnimeListId.Add(anime.MalId); }
-                for (int i = 0; i < 50; i++) //50 since thats how many results MAL gives
-                {
-                    if (Int64.Parse(UserResponse.Content) == i + 1)
-                    {
-                        id = AnimeListId[i];
-                    }
-                }
+                int i = int.Parse(UserResponse.Content);
+                id = animeSearch.Results.Skip(i - 1).FirstOrDefault().MalId;
             }
             catch
             {
                 //response is not a number
                 await ResponseQuery.DeleteAsync();
-                await ReplyAsync("I underestimated your ability to respond to simple options, sorry... I'll just cancel the search...");
+                await ReplyAsync("That's not 1-7, try harder next time.");
                 return;
             }
 
-            var EndAnime = WebUtil.GetAnime(id); //EndAnime becomes the anime, it uses ID to get propa page umu
             if (UserResponse != null)
             {
-                await Context.Channel.SendMessageAsync("", false, WebUtil.AnimeSearchEmbed(EndAnime).Build());
-            }
-            else
-            {
-                //If the user did not respond before the timeout
-                await ReplyAsync("Can you not even think about which option to pick? I'll just cancel the search...");
-                await ResponseQuery.DeleteAsync();
+                var endAnime = await WebUtil.GetAnime(id); //EndManga becomes the manga, it uses ID to get propa page umu
+                await Context.Channel.TriggerTypingAsync();
+                await Context.Channel.SendMessageAsync("", false, WebUtil.AnimeEmbed(endAnime).Build());
             }
 
+            await ResponseQuery.DeleteAsync();
         }
 
-        [Command("Manga", RunMode = RunMode.Async), Alias("MangaSearch", "SearchManga"), Summary("Searchs MAL for an manga and the following details.\n**Usage**: `!Manga [manga_title]`")]
+        [Command("Manga"), Alias("MangaSearch", "SearchManga"), Summary("Searchs MAL for an manga and the following details.\n**Usage**: `!Manga [manga_title]`")]
         public async Task MangaSearch([Remainder]string Query)
         {
-            var searchmsg = await Context.Channel.SendMessageAsync("`I'll humour your request...`");  //Informs the user it is being searched
-            var mangaSearch = WebUtil.MangaSearch(Query); //mangaSearch becomes the result of Query (will hold a list of searched results)
+            var searchmsg = await Context.Channel.SendMessageAsync("`I'll humour your request...`");        //Informs the user it is being searched
+            var mangaSearch = await WebUtil.MangaSearch(Query);                                             //mangaSearch becomes the result of Query (will hold a list of searched results)
+            await searchmsg.DeleteAsync();
 
-            if (mangaSearch == null) { await searchmsg.DeleteAsync(); await Context.Channel.SendMessageAsync($"Even after humouring your request, you made **me** search for {Query}?! You're lucky there was no results..."); return; } //Quick If to see if manga had results
-
-            await searchmsg.DeleteAsync(); //Unclutter chat
-            var ResponseQuery = await ReplyAsync("", false, WebUtil.SearchedMangaList(mangaSearch).Build()); //Sends embed of manga titles from results
-            SocketMessage UserResponse = null; //umu
-            UserResponse = await NextMessageAsync(timeout: TimeSpan.FromSeconds(20)); //Sets a timeout of 20 seconds, changable if needed
-            long id = 0;
-            if (UserResponse.Content == "x" || UserResponse.Content == "X") { await ReplyAndDeleteAsync($"I've cancelled your request for {Query}", timeout: TimeSpan.FromSeconds(5)); await ResponseQuery.DeleteAsync(); return; };
-            try
+            //Quick If to see if manga had results
+            if (mangaSearch == null)
             {
-                List<long> MangaListId = new List<long>();
-                foreach (var manga in mangaSearch.Results) { MangaListId.Add(manga.MalId); }
-                for (int i = 0; i < 50; i++) //50 since thats how many results MAL gives
-                {
-                    if (Int64.Parse(UserResponse.Content) == i + 1)
-                    {
-                        id = MangaListId[i];
-                    }
-                }
-            }
-            catch
-            {
-                //response is not a number
-                await ResponseQuery.DeleteAsync();
-                await ReplyAsync("I underestimated your ability to respond to simple options, sorry... I'll just cancel the search...");
+                await Context.Channel.SendMessageAsync($"No results. Try harder.");
                 return;
             }
 
-            var EndManga = WebUtil.GetManga(id); //EndManga becomes the manga, it uses ID to get propa page umu
+            //Sends embed of manga titles from results
+            var ResponseQuery = await ReplyAsync("", false, WebUtil.MangaListEmbed(mangaSearch).Build());
+
+            //Sets a timeout of 20 seconds, changeable if needed
+            SocketMessage UserResponse = null;
+            UserResponse = await NextMessageAsync(timeout: TimeSpan.FromSeconds(20));                       
+
+            if (UserResponse.Content == "x" || UserResponse.Content == "X")
+            {
+                await ReplyAndDeleteAsync($"Cancelling...", timeout: TimeSpan.FromSeconds(5));
+                await ResponseQuery.DeleteAsync();
+                return;
+            };
+
+            long id = 0;
+            try
+            {
+                int i = int.Parse(UserResponse.Content);
+                id = mangaSearch.Results.Skip(i - 1).FirstOrDefault().MalId;
+            }
+            catch 
+            {
+                //response is not a number
+                await ResponseQuery.DeleteAsync();
+                await ReplyAsync("That's not 1-7, try harder next time.");
+                return;
+            }
+
             if (UserResponse != null)
             {
-                await Context.Channel.SendMessageAsync("", false, WebUtil.MangaSearchEmbed(EndManga).Build());
+                await Context.Channel.TriggerTypingAsync();
+                var EndManga = await WebUtil.GetManga(id); //EndManga becomes the manga, it uses ID to get propa page umu
+                await Context.Channel.SendMessageAsync("", false, WebUtil.MangaEmbed(EndManga).Build());
             }
-            else
-            {
-                //If the user did not respond before the timeout
-                await ReplyAsync("Can you not even think about which option to pick? I'll just cancel the search...");
-                await ResponseQuery.DeleteAsync();
-            }
+
+            await ResponseQuery.DeleteAsync();
         }
     }
 }

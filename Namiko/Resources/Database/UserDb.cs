@@ -3,8 +3,10 @@ using System.Linq;
 using System.Drawing;
 using System.Threading.Tasks;
 using Namiko.Resources.Datatypes;
+using System.Collections.Generic;
+
 namespace Namiko.Resources.Database {
-    class UserDb {
+    public static class UserDb {
 
          //
         //Methods: hex code check (also gets hex colour)
@@ -146,6 +148,36 @@ namespace Namiko.Resources.Database {
                 profile.Image = image;
                 DbContext.Update(profile);
                 await DbContext.SaveChangesAsync();
+            }
+        }
+    }
+
+    public static class VoteDb
+    {
+        public static List<Voter> GetVoters()
+        {
+            using (var db = new SqliteDbContext())
+            {
+                return db.Voters.ToList();
+            }
+        }
+
+        public static async Task AddVoters(IEnumerable<Voter> voters)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                db.Voters.AddRange(voters);
+                await db.SaveChangesAsync();
+            }
+        }
+
+        public static async Task DeleteLast(ulong UserId)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                var delete = db.Voters.Where(x => x.UserId == UserId).FirstOrDefault();
+                db.Voters.Remove(delete);
+                await db.SaveChangesAsync();
             }
         }
     }

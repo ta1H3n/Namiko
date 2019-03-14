@@ -197,6 +197,13 @@ namespace Namiko.Resources.Database
                 return db.WaifuStores.Where(x => x.GuildId == guildId).Sum(x => Convert.ToInt64(Namiko.Core.Util.WaifuUtil.GetPrice(x.Waifu.Tier, 0)));
             }
         }
+        public static bool OwnsWaifu(ulong userId, Waifu waifu, ulong guildId)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                return db.UserInventories.Any(x => x.Waifu == waifu && x.UserId == userId && x.GuildId == guildId);
+            }
+        }
     }
 
     

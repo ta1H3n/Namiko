@@ -75,7 +75,11 @@ namespace Namiko.Core.Modules
         [Command("Die"), Summary("Kills Namiko"), HomePrecondition]
         public async Task Die()
         {
+            var ch = Context.Client.GetChannel(StaticSettings.log_channel) as ISocketMessageChannel;
+            await ch.SendMessageAsync($"Killed by {Context.User.Mention} :gun:");
+
             await Context.Channel.SendMessageAsync("Bye bye... :wave:", false, ImageUtil.ToEmbed(ImageDb.GetRandomImage("sudoku")).Build());
+
             var cts = Program.GetCts();
             await Context.Client.StopAsync();
             cts.Cancel();
@@ -121,6 +125,23 @@ namespace Namiko.Core.Modules
                 await WelcomeMessageDb.DeleteMessage(id);
                 await Context.Channel.SendMessageAsync($"Deleted welcome message with id: {id}");
             }
+        }
+
+        [Command("SendLootboxes"), OwnerPrecondition]
+        public async Task SendLootboxes()
+        {
+            var voters = await WebUtil.GetVoters();
+            var votesNew = new Dictionary<ulong, int>();
+
+            var add = new List<Voter>();
+            foreach (var x in voters)
+                if (!votesNew.ContainsKey(x.Id))
+                {
+                    votesNew.Add(x.Id, 1);
+                    add.Add(new Voter { UserId = x.Id });
+                }
+
+            await Timers.SendRewards(add);
         }
     }
 }

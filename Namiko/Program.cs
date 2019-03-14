@@ -43,7 +43,7 @@ namespace Namiko
             //SetUpRelease();
             Timers.SetUp();
             SetUpPrefixes();
-            
+
             Client = new DiscordShardedClient();
             
             Commands = new CommandService(new CommandServiceConfig
@@ -139,6 +139,7 @@ namespace Namiko
         }
         private async Task Client_ShardReady(DiscordSocketClient arg)
         {
+            WebUtil.SetUpDbl();
             var ch = Client.GetChannel(StaticSettings.log_channel) as ISocketMessageChannel;
             await ch.SendMessageAsync($"`{DateTime.Now} - Shard {arg.ShardId} Ready`");
             await Ready();
@@ -329,7 +330,7 @@ namespace Namiko
             Settings Settings = JsonConvert.DeserializeObject<Settings>(JSON);
             StaticSettings.owner = Settings.Owner;
             StaticSettings.prefix = Settings.Prefix;
-            StaticSettings.home_server = Settings.home_server;
+            StaticSettings.insider_role = Settings.home_server;
             StaticSettings.log_channel = Settings.log_channel;
             StaticSettings.version = Settings.Version;
 

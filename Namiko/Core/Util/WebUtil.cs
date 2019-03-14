@@ -11,11 +11,20 @@ using SauceNET;
 using System.Net;
 using System.Globalization;
 using JikanDotNet;
+using DiscordBotsList.Api.Internal;
+using DiscordBotsList.Api.Internal.Queries;
+using DiscordBotsList.Api.Objects;
+using DiscordBotsList.Api;
+using Namiko.Data;
 
 namespace Namiko.Core.Util
 {
     public static class WebUtil
     {
+        public const string MalIconUrl = "https://i.imgur.com/vZL4XkO.png";
+        private static readonly Jikan Jikan = new Jikan();
+        private static AuthDiscordBotListApi DblApi;
+
         // IQDB
 
         public static async Task<SearchResult> IqdbUrlSearchAsync(string url)
@@ -143,110 +152,119 @@ namespace Namiko.Core.Util
 
         // ANIME SEARCH
 
-        private static Jikan jikan = new Jikan();
-
-        public static AnimeSearchResult AnimeSearch(string Query)
+        public static async Task<AnimeSearchResult> AnimeSearch(string Query)
         {
-            AnimeSearchResult animeSearch = jikan.SearchAnime(Query).Result; //animeSearch becomes a "list" of the results of query
-            return animeSearch;
+            //animeSearch becomes a "list" of the results of query
+            return await Task.Run(() => Jikan.SearchAnime(Query).Result);
         }
-
-        public static EmbedBuilder SearchedAnimeList(AnimeSearchResult animeSearch)
+        public static EmbedBuilder AnimeListEmbed(AnimeSearchResult animeSearch)
         {
-            List<string> AnimeList = new List<string>();
-            foreach (var anime in animeSearch.Results) { AnimeList.Add(anime.Title); }
+            int i = 1;
+            string listboo = "";
+            foreach (var x in animeSearch.Results)
+            {
+                listboo += $"**{i++}.** {x.Title}\n";
+                if (i > 7)
+                    break;
+            }
 
             var eb = new EmbedBuilder();
             eb.WithColor(BasicUtil.RandomColor());
-            eb.Title = "List of anime found. Respond with 1-7 to search title";
-            eb.WithFooter("Results");
-
-            var QuiccList = new List<string>();
-            for (int i = 0; i < 7; i++)
-            {
-                int Speciali = i + 1; //Otherwise it would show 0-6
-                QuiccList.Add($"{Speciali}. " + AnimeList[i]);
-            }
-            string listboo = string.Join('\n', QuiccList);
+            eb.WithAuthor("Anime search results. Select by typing 1-7", MalIconUrl);
+            eb.WithFooter("Type `x` to cancel search.");
             eb.WithDescription(listboo);
+            eb.WithThumbnailUrl(animeSearch.Results.First().ImageURL);
             return eb;
         }
-
-        public static Anime GetAnime(long id)
+        public static async Task<Anime> GetAnime(long id)
         {
-            return jikan.GetAnime(id).Result; //Gets anime machine
+            return await Task.Run(() => Jikan.GetAnime(id).Result); //Gets anime machine
         }
-
-        public static EmbedBuilder AnimeSearchEmbed(Anime EndAnime)
+        public static EmbedBuilder AnimeEmbed(Anime anime)
         {
             var eb = new EmbedBuilder();
             eb.WithColor(BasicUtil.RandomColor());
-
-            eb.Title = $"**{EndAnime.Title}** ({EndAnime.TitleJapanese})  *{EndAnime.LinkCanonical}*"; // LinkCanonical is page link
+            eb.WithAuthor($"{anime.Title} ({anime.TitleJapanese})", MalIconUrl, anime.LinkCanonical);
             eb.WithFooter($"Results of anime search");
             eb.WithCurrentTimestamp(); //automatically put in footer
-            eb.WithDescription("Type: " + EndAnime.Type +
-                "\nAnime score: " + EndAnime.Score +
-                "\nRated: " + EndAnime.Rating +
-                "\nEpisodes: " + EndAnime.Episodes +
-                "\nGenres: " + string.Join('/', EndAnime.Genres) + "\n" + "\n" +
-                EndAnime.Synopsis);
-            eb.ImageUrl = EndAnime.ImageURL;
+            eb.WithDescription("**Type:** " + anime.Type +
+                "\n**Anime score:** " + anime.Score +
+                "\n**Rated:** " + anime.Rating +
+                "\n**Episodes:** " + anime.Episodes +
+                "\n**Genres:** " + string.Join('/', anime.Genres) + "\n" + "\n" +
+                anime.Synopsis);
+            eb.ThumbnailUrl = anime.ImageURL;
             return eb;
         }
 
         // MANGA SEARCH
 
-        public static MangaSearchResult MangaSearch(string Query)
+        public static async  Task<MangaSearchResult> MangaSearch(string Query)
         {
-            MangaSearchResult mangaSearch = jikan.SearchManga(Query).Result; //mangaSearch becomes a "list" of the results of query
-            return mangaSearch;
+            //mangaSearch becomes a "list" of the results of query
+            return await Task.Run(() => Jikan.SearchManga(Query).Result);
         }
-
-        public static EmbedBuilder SearchedMangaList(MangaSearchResult mangaSearch)
+        public static EmbedBuilder MangaListEmbed(MangaSearchResult mangaSearch)
         {
-            List<string> MangaList = new List<string>();
-            foreach (var manga in mangaSearch.Results) { MangaList.Add(manga.Title); }
+            int i = 1;
+            string listboo = "";
+            foreach(var x in mangaSearch.Results)
+            {
+                listboo += $"**{i++}.** {x.Title}\n";
+                if (i > 7)
+                    break;
+            }
 
             var eb = new EmbedBuilder();
             eb.WithColor(BasicUtil.RandomColor());
-            eb.Title = "List of manga found. Respond with 1-7 to search title";
-            eb.WithFooter("Results | Respond with `x` to cancel search.");
-
-            var QuiccList = new List<string>();
-            for (int i = 0; i < 7; i++)
-            {
-                int Speciali = i + 1; //Otherwise it would show 0-6
-                QuiccList.Add($"{Speciali}. " + MangaList[i]);
-            }
-            string listboo = string.Join('\n', QuiccList);
+            eb.WithAuthor("Manga search results. Select by typing 1-7", MalIconUrl);
+            eb.WithFooter("Type `x` to cancel search.");
             eb.WithDescription(listboo);
+            eb.WithThumbnailUrl(mangaSearch.Results.First().ImageURL);
             return eb;
         }
-
-        public static Manga GetManga(long id)
+        public static async Task<Manga> GetManga(long id)
         {
-            return jikan.GetManga(id).Result; //Gets manga machine
+            return await Task.Run(() => Jikan.GetManga(id).Result); //Gets manga machine
         }
-
-        public static EmbedBuilder MangaSearchEmbed(Manga EndManga)
+        public static EmbedBuilder MangaEmbed(Manga manga)
         {
+            string MangaState = "";
+            if (manga.Status == "Publishing") MangaState = "^"; else MangaState = manga.Chapters;
+
             var eb = new EmbedBuilder();
             eb.WithColor(BasicUtil.RandomColor());
-            string MangaState = "";
-            if (EndManga.Status == "Publishing") MangaState = "^"; else MangaState = EndManga.Chapters;
-
-            eb.Title = $"**{EndManga.Title}** ({EndManga.TitleJapanese})  *{EndManga.LinkCanonical}*";
+            eb.WithAuthor($"{manga.Title} ({manga.TitleJapanese})", MalIconUrl, manga.LinkCanonical);
             eb.WithFooter($"Results of manga search");
             eb.WithCurrentTimestamp();
-            eb.WithDescription("Type: " + EndManga.Type +
-                "\nManga score: " + EndManga.Score +
-                "\nStatus: " + EndManga.Status +
-                "\nChapters: " + MangaState +
-                "\nGenres: " + string.Join('/', EndManga.Genres) + "\n" + "\n" +
-                EndManga.Synopsis);
-            eb.ImageUrl = EndManga.ImageURL;
+            eb.WithDescription("**Type:** " + manga.Type +
+                "\n**Manga score:** " + manga.Score +
+                "\n**Status:** " + manga.Status +
+                "\n**Chapters:*** " + MangaState +
+                "\n**Genres:** " + string.Join('/', manga.Genres) + "\n" + "\n" +
+                manga.Synopsis);
+            eb.ThumbnailUrl = manga.ImageURL;
             return eb;
+        }
+        
+        // DISCORD BOTS ORG
+
+        public static async Task<IList<IDblEntity>> GetVoters()
+        {
+            return await DblApi.GetVotersAsync();
+        }
+
+        public static void SetUpDbl()
+        {
+            try
+            {
+                var id = Program.GetClient().CurrentUser.Id;
+                string token = File.ReadAllText(Locations.DblTokenTxt);
+                DblApi = new AuthDiscordBotListApi(id, token);
+            } catch
+            {
+                Console.WriteLine("No DBL token");
+            }
         }
     }
 }

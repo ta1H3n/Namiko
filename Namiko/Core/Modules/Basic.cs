@@ -101,7 +101,7 @@ namespace Namiko.Core.Modules
                 } catch { };
             }
             else
-                eb = AllHelpEmbed(commandService, context.Guild == null ? false : ((SocketGuildUser)context.User).Roles.Any(x => x.Id == StaticSettings.home_server));
+                eb = AllHelpEmbed(commandService, context.Guild == null ? false : ((SocketGuildUser)context.User).Roles.Any(x => x.Id == StaticSettings.insider_role));
 
             if(!desc.Equals(""))
             {
