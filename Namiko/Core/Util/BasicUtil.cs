@@ -42,7 +42,7 @@ namespace Namiko.Core.Util
             }
             return new Color(255, 255, 255);
         }
-        public static List<SocketUser> UserList(DiscordSocketClient client, List<ulong> ids)
+        public static List<SocketUser> UserList(DiscordShardedClient client, List<ulong> ids)
         {
             var users = new List<SocketUser>();
             foreach(var x in ids)

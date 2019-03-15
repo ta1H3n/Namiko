@@ -355,10 +355,15 @@ namespace Namiko.Core
         {
             foreach(var x in voters)
             {
-                await LootBoxDb.AddLootbox(x.UserId, LootBoxType.Vote, 1);
-                var ch = await Program.GetClient().GetDMChannelAsync(x.UserId);
-                await ch.SendMessageAsync("Thanks for voting for me on DiscordBots! I have given you a lootbox! You can open it in a server of your choice by typing `!open`\nDon't forget to vote every day!");
-                Console.WriteLine($"Giving a box to {x.UserId}");
+                try
+                {
+                    Console.WriteLine($"Giving a box to {x.UserId}");
+                    await LootBoxDb.AddLootbox(x.UserId, LootBoxType.Vote, 1);
+                    var ch = await Program.GetClient().GetUser(x.UserId).GetOrCreateDMChannelAsync();
+                    await ch.SendMessageAsync("Thanks for voting for me on DiscordBots! I have given you a lootbox! You can open it in a server of your choice by typing `!open`\nDon't forget to vote every day!");
+                    Console.WriteLine($"Success.");
+                }
+                catch { }
             }
         }
     }

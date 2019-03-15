@@ -55,9 +55,7 @@ namespace Namiko.Core
     {
         public CustomPaginatedAppearance() : base()
         {
-            Info = null;
-            Jump = null;
-            Timeout = TimeSpan.FromMinutes(3);
+            Timeout = TimeSpan.FromMinutes(1);
             Back = Emote.Parse("<:KannaPointingLeft:543086063057502219>");
             Next = Emote.Parse("<:KannaPointingRight:543086063380332555>");
             First = Emote.Parse("<:KannaFirst:543118180181344256>");

@@ -15,7 +15,7 @@ using Discord.Addons.Interactive;
 
 namespace Namiko.Core.Modules
 {
-    public class Roles : InteractiveBase<SocketCommandContext>
+    public class Roles : InteractiveBase<ShardedCommandContext>
     {
         [Command("Role"), Alias("r"), Summary("Adds or removes a public role from the user.\n**Usage**: `!r [name]`"), CustomBotPermission(GuildPermission.ManageRoles)]
         public async Task Role([Remainder] string name)

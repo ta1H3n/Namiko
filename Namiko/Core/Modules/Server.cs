@@ -15,7 +15,7 @@ using Discord.Addons.Interactive;
 
 namespace Namiko.Core.Modules
 {
-    public class Server : InteractiveBase<SocketCommandContext>
+    public class Server : InteractiveBase<ShardedCommandContext>
     {
         [Command("Server"), Alias("serverinfo", "guild", "stats"), Summary("Stats about the server.\n**Usage**: `!server`")] 
         public async Task ServerInfo([Remainder] string str = "")

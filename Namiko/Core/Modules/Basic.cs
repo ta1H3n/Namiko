@@ -17,7 +17,7 @@ using Discord.Addons.Interactive;
 
 namespace Namiko.Core.Modules
 {
-    public class Basic : InteractiveBase<SocketCommandContext>
+    public class Basic : InteractiveBase<ShardedCommandContext>
     {
         [Command("Hi Namiko"), Alias("Hi", "ping", "Awoo"), Summary("Hi Namiko command. Counts response time.")]
         public async Task HiNamiko([Remainder] string str = "")

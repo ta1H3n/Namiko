@@ -13,7 +13,7 @@ using Discord.Addons.Interactive;
 
 namespace Namiko.Core.Modules
 {
-    public class Waifus : InteractiveBase<SocketCommandContext>
+    public class Waifus : InteractiveBase<ShardedCommandContext>
     {
         private static Dictionary<ulong, Object> slideLock = new Dictionary<ulong, Object>();
 
@@ -342,7 +342,7 @@ namespace Namiko.Core.Modules
             await Context.Channel.SendMessageAsync("I'll try o7. Check if it worked.");
         }
         
-        [Command("BestWaifus"), Alias("bw"), Summary("Shows most popular waifus.\n**Usage**: `!bw`")]
+        [Command("TopWaifus"), Alias("bw", "BestWaifus", "tw"), Summary("Shows most popular waifus.\n**Usage**: `!bw`")]
         public async Task BestWaifus([Remainder] string str = "")
         {
             var AllWaifus = UserInventoryDb.GetAllWaifuItems();
@@ -355,12 +355,17 @@ namespace Namiko.Core.Modules
             }
 
             var ordWaifus = waifus.OrderByDescending(x => x.Value);
-
             var msg = new CustomPaginatedMessage();
-
-            msg.Author = new EmbedAuthorBuilder() { Name = "Waifu Leaderboard" };
-            msg.Title = "Globaly Bought :two_hearts:";
-            msg.Pages = CustomPaginatedMessage.PagesArray(ordWaifus, 10, (x) => $"**{x.Key.Name}** - {x.Value}\n");
+            
+            msg.Title = ":two_hearts: Waifu Leaderboards";
+            var fields = new List<FieldPages>();
+            fields.Add(new FieldPages
+            {
+                Title = "Globaly Bought",
+                Pages = CustomPaginatedMessage.PagesArray(ordWaifus, 10, (x) => $"**{x.Key.Name}** - {x.Value}\n")
+            });
+            msg.Fields = fields;
+            msg.ThumbnailUrl = ordWaifus.First().Key.ImageUrl;
 
             await PagedReplyAsync(msg);
         }
@@ -382,10 +387,15 @@ namespace Namiko.Core.Modules
             var ordUsers = users.OrderByDescending(x => x.Value);
 
             var msg = new CustomPaginatedMessage();
-
-            msg.Author = new EmbedAuthorBuilder() { Name = "Waifu Leaderboard" };
-            msg.Title = "Waifu Value <:toastie3:454441133876183060>";
-            msg.Pages = CustomPaginatedMessage.PagesArray(ordUsers, 15, (x) => $"{x.Key.Mention} - {x.Value}\n");
+            
+            msg.Title = "User Leaderboards";
+            var fields = new List<FieldPages>();
+            fields.Add(new FieldPages
+            {
+                Title = "Waifu Value <:toastie3:454441133876183060>",
+                Pages = CustomPaginatedMessage.PagesArray(ordUsers, 10, (x) => $"{x.Key.Mention} - {x.Value}\n")
+            });
+            msg.Fields = fields;
 
             await PagedReplyAsync(msg);
         }

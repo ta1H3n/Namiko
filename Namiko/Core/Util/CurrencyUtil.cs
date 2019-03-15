@@ -293,8 +293,10 @@ namespace Namiko.Core.Util
                 "Go away, you're annoying.",
                 "Ask someone else.",
                 "*Picks up a knife.*",
-                "Didn't you have enough?",
-                "It's your own fault for losing all of it."
+                "Have you not had enough?",
+                "It's your own fault for losing it all.",
+                "Your ideal heart rate is 0.",
+                "You need a high-five... on the face... with a chair."
             };
 
             return msgs[new Random().Next(msgs.Length)];

@@ -16,7 +16,7 @@ using Discord.Addons.Interactive;
 
 namespace Namiko.Core.Modules
 {
-    public class SpecialModes : InteractiveBase<SocketCommandContext>
+    public class SpecialModes : InteractiveBase<ShardedCommandContext>
     {
         public static bool ChristmasModeEnable { get; set; }
         public static int ChristmasModeRate { get; set; }

@@ -17,7 +17,7 @@ using Discord.Addons.Interactive;
 
 namespace Namiko.Core.Modules
 {
-    public class Images : InteractiveBase<SocketCommandContext>
+    public class Images : InteractiveBase<ShardedCommandContext>
     {
         public async Task<bool> SendRandomImage(SocketCommandContext Context)
         {

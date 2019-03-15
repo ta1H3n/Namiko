@@ -15,7 +15,7 @@ using Discord.Addons.Interactive;
 
 namespace Namiko.Core.Modules
 {
-    public class Banroulettes : InteractiveBase<SocketCommandContext>
+    public class Banroulettes : InteractiveBase<ShardedCommandContext>
     {
         [Command("NewBanroulette"), Alias("nbr"), Summary("Starts a new game of ban roulette, where one participant is randomly banned from the server. Winners split toasties from the reward pool.\n" +
             "**Usage**: `!nbr [ban_length_in_hours] [required_role_name-optional]`\n"), CustomBotPermission(GuildPermission.BanMembers), CustomUserPermission(GuildPermission.BanMembers)]

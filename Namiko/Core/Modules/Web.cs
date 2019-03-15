@@ -15,7 +15,7 @@ using Discord.Addons.Interactive;
 
 namespace Namiko.Core.Modules
 {
-    public class Web : InteractiveBase<SocketCommandContext>
+    public class Web : InteractiveBase<ShardedCommandContext>
     {
         [Command("IQDB"), Summary("Finds the source of an image in iqdb.\n**Usage**: `!iqdb [image_url]` or `!iqdb` with attached image.")]
         public async Task Iqdb(string url = "", [Remainder] string str = "")

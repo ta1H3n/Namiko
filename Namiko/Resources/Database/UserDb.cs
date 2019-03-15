@@ -176,6 +176,10 @@ namespace Namiko.Resources.Database {
             using (var db = new SqliteDbContext())
             {
                 var delete = db.Voters.Where(x => x.UserId == UserId).FirstOrDefault();
+
+                if (delete == null)
+                    return;
+
                 db.Voters.Remove(delete);
                 await db.SaveChangesAsync();
             }

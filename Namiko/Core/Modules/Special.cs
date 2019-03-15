@@ -14,9 +14,11 @@ using Discord.Rest;
 using Namiko.Core.Util;
 using Discord.Addons.Interactive;
 
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+
 namespace Namiko.Core.Modules
 {
-    public class Special : InteractiveBase<SocketCommandContext>
+    public class Special : InteractiveBase<ShardedCommandContext>
     {
         static ISocketMessageChannel ch;
 
@@ -76,9 +78,9 @@ namespace Namiko.Core.Modules
         public async Task Die()
         {
             var ch = Context.Client.GetChannel(StaticSettings.log_channel) as ISocketMessageChannel;
-            await ch.SendMessageAsync($"Killed by {Context.User.Mention} :gun:");
+            Task.Run(() => ch.SendMessageAsync($"Killed by {Context.User.Mention} :gun:"));
 
-            await Context.Channel.SendMessageAsync("Bye bye... :wave:", false, ImageUtil.ToEmbed(ImageDb.GetRandomImage("sudoku")).Build());
+            Task.Run(() => Context.Channel.SendMessageAsync("Bye bye... :wave:", false, ImageUtil.ToEmbed(ImageDb.GetRandomImage("sudoku")).Build()));
 
             var cts = Program.GetCts();
             await Context.Client.StopAsync();

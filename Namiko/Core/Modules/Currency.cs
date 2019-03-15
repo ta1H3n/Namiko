@@ -14,7 +14,7 @@ using System.Linq;
 
 namespace Namiko.Core.Modules
 {
-    public class Currency : InteractiveBase<SocketCommandContext>
+    public class Currency : InteractiveBase<ShardedCommandContext>
     {
         [Command("Blackjack"), Alias("bj"), Summary("Starts a game of blackjack.\n**Usage**: `!bj [amount]`")]
         public async Task BlackjackCommand(string sAmount, [Remainder] string str = "")
@@ -241,6 +241,8 @@ namespace Namiko.Core.Modules
             await Context.Channel.SendMessageAsync("", false, ToastieUtil.ToastieEmbed(user, ToastieDb.GetToasties(user.Id, Context.Guild.Id)).Build());
         }
 
+        //VERY UGLY COMMAND DONT LOOK AT IT
+        //FIX IT
         [Command("ToastieLeaderboard"), Alias("tlb"), Summary("Toastie Leaderboard.\n**Usage**: `!tlb [page_number]`")]
         public async Task ToastieLeaderboard(int page = 1, [Remainder] string str = "")
         {
@@ -258,11 +260,36 @@ namespace Namiko.Core.Modules
                 { return null; }
             }).Where(x => x != null && x.User != null).OrderByDescending(x => x.Amount);
 
-            var msg = new CustomPaginatedMessage();
+            var AllWaifus = UserInventoryDb.GetAllWaifuItems(Context.Guild.Id);
+            var users = new Dictionary<SocketUser, int>();
 
-            msg.Author = new EmbedAuthorBuilder() { Name = "Toastie Leaderboard" };
-            msg.Title = "Toasties <:toastie3:454441133876183060>";
-            msg.Pages = CustomPaginatedMessage.PagesArray(parsed, 15);
+            foreach (var x in AllWaifus)
+            {
+                var user = Context.Guild.GetUser(x.UserId);
+                if (user != null)
+                    if (!users.ContainsKey(user))
+                        users.Add(user, WaifuUtil.WaifuValue(UserInventoryDb.GetWaifus(user.Id, Context.Guild.Id)));
+            }
+
+            var ordUsers = users.OrderByDescending(x => x.Value);
+
+            var msg = new CustomPaginatedMessage();
+            
+            msg.Title = "User Leaderboards";
+            var fields = new List<FieldPages>();
+            fields.Add(new FieldPages
+            {
+                Title = "Toasties <:toastie3:454441133876183060>",
+                Pages = CustomPaginatedMessage.PagesArray(parsed, 10),
+                Inline = true
+            });
+            fields.Add(new FieldPages
+            {
+                Title = "Waifu Value <:toastie3:454441133876183060>",
+                Pages = CustomPaginatedMessage.PagesArray(ordUsers, 10, (x) => $"{x.Key.Mention} - {x.Value}\n"),
+                Inline = true
+            });
+            msg.Fields = fields;
 
             await PagedReplyAsync(msg);
         }
@@ -284,9 +311,9 @@ namespace Namiko.Core.Modules
 
             var msg = new CustomPaginatedMessage();
 
-            msg.Author = new EmbedAuthorBuilder() { Name = "Toastie Leaderboard" };
+            msg.Author = new EmbedAuthorBuilder() { Name = "User Leaderboards" };
             msg.Title = "Daily Streak :calendar_spiral:";
-            msg.Pages = CustomPaginatedMessage.PagesArray(parsed, 15);
+            msg.Pages = CustomPaginatedMessage.PagesArray(parsed, 10);
 
             await PagedReplyAsync(msg);
         }
@@ -313,10 +340,13 @@ namespace Namiko.Core.Modules
             await Context.Channel.SendMessageAsync("Fine. Just leave me alone.", false, ToastieUtil.GiveEmbed(Context.Client.CurrentUser, Context.User, amount).Build());
         }
 
-        [Command("Open"), Alias("OpenLootbox"), Summary("Open a lootbox if you have one.\n**Usage**: `!open`")]
+        [Command("Open"), Alias("OpenLootbox", "Lootbox"), Summary("Open a lootbox if you have one.\n**Usage**: `!open`"), RequireContext(ContextType.Guild)]
         public async Task Open([Remainder] string str = "")
         {
-            var amount = LootBoxDb.GetAmount(Context.User.Id, LootBoxType.Vote);
+            //TO-DO Add selection what type of lootbox to open when more are made
+            var type = LootBoxType.Vote;
+
+            var amount = LootBoxDb.GetAmount(Context.User.Id, type);
 
             if(amount <= 0)
             {
@@ -325,24 +355,29 @@ namespace Namiko.Core.Modules
             }
 
             var msg = await Context.Channel.SendMessageAsync("", false, ToastieUtil.BoxOpeningEmbed(Context.User).Build());
-            await LootBoxDb.AddLootbox(Context.User.Id, LootBoxType.Vote, -1);
-            await Task.Delay(4400);
-            await msg.DeleteAsync();
+            await LootBoxDb.AddLootbox(Context.User.Id, type, -1);
+            await Task.Delay(4300);
 
-            if (ToastieUtil.IsWaifu(LootBoxType.Vote))
+            if (ToastieUtil.IsWaifu(type))
             {
-                var waifu = ToastieUtil.BoxWaifu(LootBoxType.Vote);
+                var waifu = ToastieUtil.BoxWaifu(type);
                 while(UserInventoryDb.OwnsWaifu(Context.User.Id, waifu, Context.Guild.Id))
-                    waifu = ToastieUtil.BoxWaifu(LootBoxType.Vote);
+                    waifu = ToastieUtil.BoxWaifu(type);
 
                 await UserInventoryDb.AddWaifu(Context.User.Id, waifu, Context.Guild.Id);
-                await Context.Channel.SendMessageAsync($"Congratulations! You found **{waifu.Name}!**", false, WaifuUtil.WaifuEmbedBuilder(waifu).Build());
+                await msg.ModifyAsync(x => {
+                    x.Embed = WaifuUtil.WaifuEmbedBuilder(waifu).Build();
+                    x.Content = $"{Context.User.Mention} Congratulations! You found **{waifu.Name}!**";
+                });
                 return;
             }
 
-            var amountWon = ToastieUtil.BoxToasties(LootBoxType.Vote);
+            var amountWon = ToastieUtil.BoxToasties(type);
             await ToastieDb.AddToasties(Context.User.Id, amountWon, Context.Guild.Id);
-            await Context.Channel.SendMessageAsync($"Congratulations! You found **{amountWon.ToString("n0")}** {ToastieUtil.RandomEmote()}!");
+            await msg.ModifyAsync(x => {
+                x.Embed = ToastieUtil.ToastieEmbed(Context.User, ToastieDb.GetToasties(Context.User.Id, Context.Guild.Id)).Build();
+                x.Content = $"{Context.User.Mention} Congratulations! You found **{amountWon.ToString("n0")}** {ToastieUtil.RandomEmote()}!";
+            });
         }
     }
 }

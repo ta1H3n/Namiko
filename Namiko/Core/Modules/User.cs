@@ -10,7 +10,7 @@ using Discord.Addons.Interactive;
 using System.Collections.Generic;
 
 namespace Namiko.Core.Modules {
-    public class User : InteractiveBase<SocketCommandContext> {
+    public class User : InteractiveBase<ShardedCommandContext> {
 
         [Command("Profile"), Summary("Showsa a users profile.\n**Usage**: `!profile [user_optional]`")]
         public async Task Profile(IUser user = null, [Remainder] string str = "")
@@ -42,7 +42,8 @@ namespace Namiko.Core.Modules {
             };
             msg.Author = author;
 
-            msg.Title = "Waifus";
+            msg.Title = "Waifus :revolving_hearts:";
+            msg.ThumbnailUrl = FeaturedWaifuDb.GetFeaturedWaifu(user.Id, Context.Guild.Id).ImageUrl;
             msg.Pages = CustomPaginatedMessage.PagesArray(ordwaifus, 15, (x) => String.Format("**{0}** - *{1}*\n", x.Name, x.Source.Length > 33 ? x.Source.Substring(0, 33) + "..." : x.Source), false);
 
             await PagedReplyAsync(msg);
