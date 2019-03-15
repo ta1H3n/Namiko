@@ -172,8 +172,7 @@ namespace Namiko.Core.Util
         public static EmbedBuilder GiveEmbed(IUser from, IUser to, int amount)
         {
             EmbedBuilder eb = new EmbedBuilder();
-            eb.WithAuthor("Toasties");
-            eb.WithDescription($"{from.Username} gave {to.Username} **{amount.ToString("n0")}** {ToastieUtil.RandomEmote()}!");
+            eb.AddField("Toasties <:toastie3:454441133876183060>", $"{from.Username} gave {to.Username} **{amount.ToString("n0")}** {ToastieUtil.RandomEmote()}!");
             eb.WithColor(BasicUtil.RandomColor());
             return eb;
         }
@@ -339,7 +338,7 @@ namespace Namiko.Core.Util
             var eb = new EmbedBuilder();
             eb.WithAuthor(author);
             eb.WithColor(BasicUtil.RandomColor());
-            eb.WithDescription("Opening your lootbox!");
+            eb.WithTitle("Opening your lootbox!");
             eb.WithImageUrl("https://data.whicdn.com/images/109950962/original.gif");
             return eb;
         }

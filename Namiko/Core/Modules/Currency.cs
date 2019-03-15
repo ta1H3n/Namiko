@@ -367,16 +367,22 @@ namespace Namiko.Core.Modules
                 await UserInventoryDb.AddWaifu(Context.User.Id, waifu, Context.Guild.Id);
                 await msg.ModifyAsync(x => {
                     x.Embed = WaifuUtil.WaifuEmbedBuilder(waifu).Build();
-                    x.Content = $"{Context.User.Mention} Congratulations! You found **{waifu.Name}!**";
+                    x.Content = $"{Context.User.Mention} Congratulations! You found **{waifu.Name}**!";
                 });
                 return;
             }
 
             var amountWon = ToastieUtil.BoxToasties(type);
             await ToastieDb.AddToasties(Context.User.Id, amountWon, Context.Guild.Id);
+            var bal = ToastieDb.GetToasties(Context.User.Id, Context.Guild.Id);
             await msg.ModifyAsync(x => {
-                x.Embed = ToastieUtil.ToastieEmbed(Context.User, ToastieDb.GetToasties(Context.User.Id, Context.Guild.Id)).Build();
-                x.Content = $"{Context.User.Mention} Congratulations! You found **{amountWon.ToString("n0")}** {ToastieUtil.RandomEmote()}!";
+                x.Embed = new EmbedBuilder()
+                .WithAuthor($"{Context.User} | Lootbox", Context.User.GetAvatarUrl())
+                .WithColor(BasicUtil.RandomColor())
+                .WithThumbnailUrl("https://i.imgur.com/4JQmxa6.png")
+                .WithDescription($"Congratulations! You found **{amountWon.ToString("n0")}** {ToastieUtil.RandomEmote()}!\nNow you have **{bal.ToString("n0")}** {ToastieUtil.RandomEmote()}!")
+                //.AddField($"<:toastie3:454441133876183060> {Context.User} | Lootbox", $"Congratulations! You found **{amountWon.ToString("n0")}** {ToastieUtil.RandomEmote()}!\nNow you have **{bal.ToString("n0")}** {ToastieUtil.RandomEmote()}!")
+                .Build();
             });
         }
     }
