@@ -264,10 +264,10 @@ namespace Namiko
             Resources.Datatypes.Server server = ServerDb.GetServer(arg.Id) ?? new Resources.Datatypes.Server
             {
                 GuildId = arg.Id,
-                JoinDate = now,
-                Prefix = StaticSettings.prefix
+                JoinDate = now
             };
             server.LeaveDate = new DateTime(0);
+            server.Prefix = StaticSettings.prefix;
             await ServerDb.UpdateServer(server);
 
             if(server.JoinDate.Equals(now))
@@ -279,7 +279,8 @@ namespace Namiko
             try
             {
                 await ch?.SendMessageAsync($"Helloooo! Take good care of me! Try `{server.Prefix}info` to learn more about me, or `{server.Prefix}help` for a list of my commands!\n" +
-                    $"Type `{server.Prefix}sp [prefix]` or `@Namiko#8734 sp [prefix]` to change my prefix! The default is `!`");
+                    $"Type `{server.Prefix}sp [prefix]` or `@Namiko#8734 sp [prefix]` to change my prefix! The default is `!`\n" +
+                    $"You can find my usage guide here: <https://github.com/ta1H3n/Namiko/wiki>");
             } catch { }
             await ((ISocketMessageChannel)Client.GetChannel(StaticSettings.log_channel)).SendMessageAsync($":white_check_mark: I joined `{arg.Id}` **{arg.Name}**.\nOwner: `{arg.Owner.Id}` **{arg.Owner}**");
         }
