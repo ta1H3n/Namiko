@@ -240,7 +240,7 @@ namespace Namiko.Core.Util
             eb.WithDescription("**Type:** " + manga.Type +
                 "\n**Manga score:** " + manga.Score +
                 "\n**Status:** " + manga.Status +
-                "\n**Chapters:*** " + MangaState +
+                "\n**Chapters:** " + MangaState +
                 "\n**Genres:** " + string.Join('/', manga.Genres) + "\n" + "\n" +
                 manga.Synopsis);
             eb.ThumbnailUrl = manga.ImageURL;
