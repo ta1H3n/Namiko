@@ -101,7 +101,7 @@ namespace Namiko.Core.Modules {
             
             //setting quote + getting embed & quote
             await UserDb.SetQuote(Context.User.Id, quote);
-            await Context.Channel.SendMessageAsync("Quote set!", false, UserUtil.PostEmbed(Context.User, true).Build());
+            await Context.Channel.SendMessageAsync("Quote set!", false, UserUtil.PostEmbed(Context.User).Build());
         }
 
         [Command("SetImage"), Alias("si"), Summary("Sets thumbnail Image on profile. \n**Usage**: `!si [image_url_or_attachment]`")]
@@ -133,7 +133,7 @@ namespace Namiko.Core.Modules {
 
             //building embed
             await UserDb.SetImage(Context.User.Id, image);
-            EmbedBuilder embed = UserUtil.PostEmbed(Context.User, true);
+            EmbedBuilder embed = UserUtil.PostEmbed(Context.User);
             await Context.Channel.SendMessageAsync("Image set!", false, embed.Build());
         }
 
@@ -155,7 +155,7 @@ namespace Namiko.Core.Modules {
             }
 
             //checking quote
-            embed = UserUtil.PostEmbed(user, isMe);
+            embed = UserUtil.PostEmbed(user);
             if(embed == null){
                 await Context.Channel.SendMessageAsync($"{((isMe)? "You don't" : $"{ user.Username } doesn't") } have an image or a quote. Set one with `sq` and `si` commands.");
                 return;

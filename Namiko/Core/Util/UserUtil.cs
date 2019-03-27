@@ -9,8 +9,7 @@ using System.Collections.Generic;
 
 namespace Namiko.Core.Util {
     class UserUtil {
-
-         //
+        
         //Method: basic named colours i.e "white"
         public static bool GetNamedColour(ref System.Drawing.Color color, string colour, string shade) {
             
@@ -62,7 +61,7 @@ namespace Namiko.Core.Util {
         }
 
 
-         // Embedz
+        // Embeds
         //Embed Method: profile
         public static EmbedBuilder ProfileEmbed(SocketGuildUser user) {
             var eb = new EmbedBuilder();
@@ -81,7 +80,7 @@ namespace Namiko.Core.Util {
             if (waifu != null)
             {
                 eb.WithImageUrl(waifu.ImageUrl);
-                eb.AddField("Featured Waifu :revolving_hearts:", $"*{waifu.LongName}*");
+                eb.AddField("Featured Waifu", $"**{waifu.Name}** - *{waifu.Source}* <:MiaHug:536580304018735135>");
             }
 
             string footer = "";
@@ -137,7 +136,7 @@ namespace Namiko.Core.Util {
             eb.WithColor(UserDb.GetHex(out string colour, user.Id) ? (Discord.Color)HexToColor(colour) : BasicUtil.RandomColor());
             return eb;
         }
-        public static EmbedBuilder PostEmbed(IUser User, bool isMe) {
+        public static EmbedBuilder PostEmbed(IUser User) {
 
             //necessary string variables 
             string quote = UserDb.GetQuote(User.Id);
@@ -147,7 +146,7 @@ namespace Namiko.Core.Util {
             //quote embed
             if ( String.IsNullOrEmpty(quote) && !WebUtil.IsValidUrl(image)) return null;
             embed.WithColor(UserDb.GetHex(out string colour, User.Id)? (Discord.Color) HexToColor(colour) : BasicUtil.RandomColor());
-            embed.WithAuthor((( isMe )? "Your" : $"{ User.Username }'s" ) + " Quote");
+            embed.WithAuthor(User.Username + "'s Quote");
             embed.WithDescription(quote);
             embed.WithImageUrl(image);
             return embed;

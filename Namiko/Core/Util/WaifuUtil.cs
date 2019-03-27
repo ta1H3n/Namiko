@@ -37,7 +37,6 @@ namespace Namiko.Core.Util
             int r = 0;
 
             var tier = WaifuDb.GetWaifusByTier(1);
-            tier.AddRange(WaifuDb.GetWaifusByTier(0));
             ShopWaifu item = null;
             
             // LIMITED WAIFU
@@ -52,9 +51,9 @@ namespace Namiko.Core.Util
                 waifus.Add(item);
                 tier.RemoveAt(r);
             }
-            tier.RemoveAll(x => x.Tier == 0);
 
             // TIER 1 WAIFUS
+            tier.AddRange(WaifuDb.GetWaifusByTier(0));
             for (int i = 0; i < 2; i++)
             {
                 r = rand.Next(0, tier.Count);
@@ -65,7 +64,7 @@ namespace Namiko.Core.Util
 
             // TIER 2 WAIFUS
             tier = WaifuDb.GetWaifusByTier(2);
-            for (int i = 0; i < 6; i++)
+            for (int i = 0; i < 7; i++)
             {
                 r = rand.Next(0, tier.Count);
                 item = new ShopWaifu { Waifu = tier.ElementAt(r), GeneratedDate = date, Limited = -1, BoughtBy = 0, GuildId = guildId };
@@ -75,7 +74,7 @@ namespace Namiko.Core.Util
 
             // TIER 3 WAIFUS
             tier = WaifuDb.GetWaifusByTier(3);
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < 6; i++)
             {
                 r = rand.Next(0, tier.Count);
                 item = new ShopWaifu { Waifu = tier.ElementAt(r), GeneratedDate = date, Limited = -1, BoughtBy = 0, GuildId = guildId };
