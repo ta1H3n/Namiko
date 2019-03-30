@@ -171,6 +171,23 @@ namespace Namiko.Resources.Database {
             }
         }
 
+        public static async Task AddVoters(IEnumerable<ulong> voters)
+        {
+            foreach(var x in voters)
+            {
+                await AddVoter(new Voter { UserId = x });
+            }
+        }
+
+        public static async Task AddVoter(Voter voter)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                db.Voters.Add(voter);
+                await db.SaveChangesAsync();
+            }
+        }
+
         public static async Task DeleteLast(ulong UserId)
         {
             using (var db = new SqliteDbContext())
@@ -182,6 +199,13 @@ namespace Namiko.Resources.Database {
 
                 db.Voters.Remove(delete);
                 await db.SaveChangesAsync();
+            }
+        }
+        public static List<Voter> GetVoters(int amount)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                return db.Voters.Skip(db.Voters.Count() - amount).Take(amount).ToList();
             }
         }
     }

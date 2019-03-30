@@ -102,7 +102,7 @@ namespace Namiko.Resources.Database
         {
             using (var db = new SqliteDbContext())
             {
-                return db.Dailies.Where(x => x.GuildId == GuildId).ToList();
+                return db.Dailies.Where(x => (x.GuildId == GuildId) && ((x.Date + 48*60*60*1000) > DateTimeOffset.Now.ToUnixTimeMilliseconds())).ToList();
             }
         }
         public static int GetHighest(ulong GuildId)

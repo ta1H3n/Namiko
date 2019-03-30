@@ -24,7 +24,6 @@ namespace Namiko.Core
         private static Timer Minute;
         private static Timer Minute5;
         private static Timer Hour;
-        //private static int CommandCallTick;
 
         public static void SetUp()
         {
@@ -33,7 +32,7 @@ namespace Namiko.Core
             Minute.Enabled = true;
             Minute.Elapsed += Timer_TimeoutBlackjack;
             Minute.Elapsed += Timer_HourlyStats;
-            Minute.Elapsed += Timer_Voters;
+            Minute.Elapsed += Timer_Voters2;
 
             Minute5 = new Timer(1000 * 60 * 5);
             Minute5.AutoReset = true;
@@ -48,6 +47,7 @@ namespace Namiko.Core
             Hour.Elapsed += Timer_ExpireTeamInvites;
             Hour.Elapsed += Timer_CleanData;
             Hour.Elapsed += Timer_NamikoSteal;
+            Hour.Elapsed += Timer_UpdateDBLGuildCount;
 
             Console.WriteLine("Timers Ready.");
         }
@@ -147,8 +147,6 @@ namespace Namiko.Core
                 }
             }
         }
-
-        
 
 
         // STATS
@@ -310,61 +308,123 @@ namespace Namiko.Core
         }
 
 
-        // DISCORBBOT VOTES
-        public static async void Timer_Voters(object sender, ElapsedEventArgs e)
+        // DISCORBBOTLIST
+        public static void Timer_UpdateDBLGuildCount(object sender, ElapsedEventArgs e)
+        {
+            int amount = 0;
+            amount = Program.GetClient().Guilds.Count;
+            WebUtil.UpdateGuildCount(amount);
+        }
+        //public static async void Timer_Voters(object sender, ElapsedEventArgs e)
+        //{
+        //    IList<IDblEntity> voters = null;
+        //    try
+        //    {
+        //        voters = await WebUtil.GetVoters();
+        //    }
+        //    catch { return; }
+        //    var old = VoteDb.GetVoters();
+
+        //    var votesNew = new Dictionary<ulong, int>();
+        //    var votesOld = new Dictionary<ulong, int>();
+
+        //    foreach (var x in voters)
+        //        if (!votesNew.ContainsKey(x.Id))
+        //            votesNew.Add(x.Id, voters.Count(y => y.Id == x.Id));
+
+        //    foreach (var x in old)
+        //        if (!votesOld.ContainsKey(x.UserId))
+        //            votesOld.Add(x.UserId, old.Count(y => y.UserId == x.UserId));
+
+        //    var add = new List<Voter>();
+        //    foreach (var x in votesNew)
+        //    {
+        //        if (votesOld.GetValueOrDefault(x.Key) < x.Value)
+        //            add.Add(new Voter { UserId = x.Key });
+
+        //        else if (votesOld.GetValueOrDefault(x.Key) > x.Value)
+        //            await VoteDb.DeleteLast(x.Key);
+
+        //        votesOld.Remove(x.Key);
+        //    }
+
+        //    foreach (var x in votesOld)
+        //    {
+        //        await VoteDb.DeleteLast(x.Key);
+        //    }
+
+        //    await VoteDb.AddVoters(add);
+        //    await SendRewards(add);
+        //}
+        public static async void Timer_Voters2(object sender, ElapsedEventArgs e)
         {
             IList<IDblEntity> voters = null;
             try
             {
-                voters = await WebUtil.GetVoters();
-            } catch { return; }
-            var old = VoteDb.GetVoters();
-
-            var votesNew = new Dictionary<ulong, int>();
-            var votesOld = new Dictionary<ulong, int>();
-
-            foreach (var x in voters)
-                if (!votesNew.ContainsKey(x.Id))
-                    votesNew.Add(x.Id, voters.Count(y => y.Id == x.Id));
-
-            foreach (var x in old)
-                if (!votesOld.ContainsKey(x.UserId))
-                    votesOld.Add(x.UserId, old.Count(y => y.UserId == x.UserId));
-
-            var add = new List<Voter>();
-            foreach (var x in votesNew)
-            {
-                if (votesOld.GetValueOrDefault(x.Key) < x.Value)
-                    add.Add(new Voter { UserId = x.Key });
-
-                else if (votesOld.GetValueOrDefault(x.Key) > x.Value)
-                    await VoteDb.DeleteLast(x.Key);
-
-                votesOld.Remove(x.Key);
+                voters = await WebUtil.GetVotersAsync();
             }
+            catch { return; }
+            var old = VoteDb.GetVoters(1000);
+            var votersParsed = voters.Select(x => x.Id).ToList();
+            votersParsed.Reverse();
 
-            foreach (var x in votesOld)
+            List<ulong> add = NewEntries(old.Select(x => x.UserId).ToList(), votersParsed);
+
+            if(add.Count > 500)
             {
-                await VoteDb.DeleteLast(x.Key);
+                var ch = await Program.GetClient().GetUser(StaticSettings.owner).GetOrCreateDMChannelAsync();
+                await ch.SendMessageAsync($"Found {add.Count} new voters.");
+                return;
             }
 
             await VoteDb.AddVoters(add);
             await SendRewards(add);
         }
-        public static async Task SendRewards(List<Voter> voters)
+        public static List<T> NewEntries<T>(List<T> oldList, List<T> newList, Func<T, T, bool> equal = null)
+        {
+            equal = equal ?? delegate (T x, T y) { return x.Equals(y); };
+            List<T> list = new List<T>();
+
+            bool done = false;
+            while (!done)
+            {
+                done = true;
+                int diff = newList.Count - oldList.Count;
+                for (int i = newList.Count-1; i >= 0 && (i - diff) >= 0; i--)
+                {
+                    T x = newList[i];
+                    T y = oldList[i - diff];
+                    if (!equal(x, y))
+                    {
+                        int j = newList.Count - 1;
+                        list.Add(newList[j]);
+                        newList.RemoveAt(j);
+                        done = false;
+                        break;
+                    }
+                }
+            }
+
+            list.Reverse();
+            return list;
+        }
+        public static async Task SendRewards(List<ulong> voters)
         {
             foreach(var x in voters)
             {
                 try
                 {
-                    Console.WriteLine($"Giving a box to {x.UserId}");
-                    await LootBoxDb.AddLootbox(x.UserId, LootBoxType.Vote, 1);
-                    var ch = await Program.GetClient().GetUser(x.UserId).GetOrCreateDMChannelAsync();
+                    Console.WriteLine($"Giving a box to {x}");
+                    await LootBoxDb.AddLootbox(x, LootBoxType.Vote, 1);
+                    var ch = await Program.GetClient().GetUser(x).GetOrCreateDMChannelAsync();
                     await ch.SendMessageAsync("Thanks for voting for me on DiscordBots! I have given you a lootbox! You can open it in a server of your choice by typing `!open`\nDon't forget to vote every day!");
                     Console.WriteLine($"Success.");
                 }
                 catch { }
             }
         }
+
+
+        // PERFORMANCE MONITORING
     }
 }

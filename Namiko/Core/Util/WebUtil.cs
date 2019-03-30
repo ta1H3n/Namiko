@@ -240,7 +240,7 @@ namespace Namiko.Core.Util
             eb.WithDescription("**Type:** " + manga.Type +
                 "\n**Manga score:** " + manga.Score +
                 "\n**Status:** " + manga.Status +
-                "\n**Chapters:*** " + MangaState +
+                "\n**Chapters:** " + MangaState +
                 "\n**Genres:** " + string.Join('/', manga.Genres) + "\n" + "\n" +
                 manga.Synopsis);
             eb.ThumbnailUrl = manga.ImageURL;
@@ -249,22 +249,24 @@ namespace Namiko.Core.Util
         
         // DISCORD BOTS ORG
 
-        public static async Task<IList<IDblEntity>> GetVoters()
+        public static async Task<IList<IDblEntity>> GetVotersAsync()
         {
             return await DblApi.GetVotersAsync();
         }
-
-        public static void SetUpDbl()
+        public static void SetUpDbl(ulong id)
         {
             try
             {
-                var id = Program.GetClient().CurrentUser.Id;
                 string token = File.ReadAllText(Locations.DblTokenTxt);
                 DblApi = new AuthDiscordBotListApi(id, token);
             } catch
             {
                 Console.WriteLine("No DBL token");
             }
+        }
+        public static void UpdateGuildCount(int amount)
+        {
+            Task.Run(() => DblApi.UpdateStats(amount));
         }
     }
 }

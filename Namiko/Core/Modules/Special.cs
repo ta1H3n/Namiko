@@ -132,18 +132,45 @@ namespace Namiko.Core.Modules
         [Command("SendLootboxes"), OwnerPrecondition]
         public async Task SendLootboxes()
         {
-            var voters = await WebUtil.GetVoters();
+            var voters = await WebUtil.GetVotersAsync();
             var votesNew = new Dictionary<ulong, int>();
 
-            var add = new List<Voter>();
+            var add = new List<ulong>();
             foreach (var x in voters)
                 if (!votesNew.ContainsKey(x.Id))
                 {
                     votesNew.Add(x.Id, 1);
-                    add.Add(new Voter { UserId = x.Id });
+                    add.Add(x.Id);
                 }
 
             await Timers.SendRewards(add);
+        }
+
+        [Command("MessageVoters"), OwnerPrecondition]
+        public async Task MessageVoters([Remainder] string msg = "")
+        {
+            var voters = await WebUtil.GetVotersAsync();
+            var votesNew = new List<ulong>();
+
+            foreach (var x in voters)
+                if (!votesNew.Contains(x.Id))
+                {
+                    votesNew.Add(x.Id);
+                }
+
+            int sent = 0;
+            foreach (var x in votesNew)
+            {
+                try
+                {
+                    var ch = await Program.GetClient().GetUser(x).GetOrCreateDMChannelAsync();
+                    await ch.SendMessageAsync(msg);
+                    sent++;
+                }
+                catch { }
+            }
+
+            Context.Channel.SendMessageAsync($"Broadcasted to {sent} users.");
         }
     }
 }
