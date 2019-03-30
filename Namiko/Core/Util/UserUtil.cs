@@ -45,7 +45,7 @@ namespace Namiko.Core.Util {
             } return true;
         }
         
-        //Methods: Hex Code Operations - *only* uitility classes have access to HexToColor
+        //Methods: Hex Code Operations - *only* utility classes have access to HexToColor
         public static bool GetHexColour(ref System.Drawing.Color color, string colour) {
             if (colour.StartsWith('#')) colour = colour.Remove(0, 1);
             if (System.Text.RegularExpressions.Regex.IsMatch(colour, @"\A\b[0-9a-fA-F]+\b\Z")) {

@@ -56,7 +56,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="C:\Users\virma\source\repos\Discord.Addons.Interactive\Discord.Addons.Interactive\Discord.Addons.Interactive.csproj" />
+    <ProjectReference Include="A:\Programming\Discord\Discord.Addons.Interactive\Discord.Addons.Interactive.csproj" />
   </ItemGroup>
 
 </Project>

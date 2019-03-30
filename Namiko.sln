@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.28010.2019
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Namiko", "Namiko\Namiko.csproj", "{8D472380-F0CC-445B-A057-087595C9CF1B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Discord.Addons.Interactive", "C:\Users\virma\source\repos\Discord.Addons.Interactive\Discord.Addons.Interactive\Discord.Addons.Interactive.csproj", "{31E1C644-20A2-496D-AC0B-5DFB656F6E03}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Discord.Addons.Interactive", "A:\Programming\Discord\Discord.Addons.Interactive\Discord.Addons.Interactive.csproj", "{31E1C644-20A2-496D-AC0B-5DFB656F6E03}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
