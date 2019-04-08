@@ -128,7 +128,13 @@ namespace Namiko.Core.Modules
 
                     string commandList = "";
                     foreach (var y in x.Commands)
-                        commandList += $"`{y.Name}` ";
+                    {
+                        bool prec = y.Preconditions.Any(z => (z.GetType() == typeof(HomePrecondition)) || (z.GetType() == typeof(OwnerPrecondition)));
+                        if (!prec || all)
+                        {
+                            commandList += $"`{y.Name}` ";
+                        }
+                    }
 
                     fb.Value = commandList;
                     eb.AddField(fb);

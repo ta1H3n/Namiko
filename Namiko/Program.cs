@@ -139,7 +139,7 @@ namespace Namiko
         }
         private async Task Client_ShardReady(DiscordSocketClient arg)
         {
-            WebUtil.SetUpDbl(418823684459855882);
+            WebUtil.SetUpDbl(Client.CurrentUser.Id);
             var ch = Client.GetChannel(StaticSettings.log_channel) as ISocketMessageChannel;
             await ch.SendMessageAsync($"`{DateTime.Now} - Shard {arg.ShardId} Ready`");
             await Ready();

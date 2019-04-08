@@ -140,7 +140,7 @@ namespace Namiko.Core.Modules
         }
 
         [Command("Join"), Summary("Accept an invite to a team.\n**Usage**: `!join [team_name]`"), CustomBotPermission(GuildPermission.ManageRoles)]
-        public async Task Join(string teamName, [Remainder] string str = "")
+        public async Task Join([Remainder] string teamName)
         {
             var role = RoleUtil.GetRoleByName(Context.Guild, teamName);
 

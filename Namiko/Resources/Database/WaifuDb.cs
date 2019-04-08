@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using Namiko.Resources.Datatypes;
 using Namiko.Resources.Database;
 using System.Threading.Tasks;
@@ -39,15 +40,31 @@ namespace Namiko.Resources.Database
                     return waifus;
                 }
 
-                waifus.AddRange(DbContext.Waifus.Where(x => x.LongName == null ? false : x.LongName.Contains(name, StringComparison.InvariantCultureIgnoreCase)).ToList());
-                if(waifus.Count == 0)
+                waifus = DbContext.Waifus.Where(x => 
+                    (x.Name.Contains(name, StringComparison.InvariantCultureIgnoreCase)) ||
+                    (x.LongName == null ? false : x.LongName.Contains(name, StringComparison.InvariantCultureIgnoreCase)) ||
+                    (x.Source == null ? false : x.Source.Contains(name, StringComparison.InvariantCultureIgnoreCase))).ToList();
+
+              //  if (waifus.Count == 0)
+              //  {
+              //      waifus.AddRange(DbContext.Waifus.Where(x => 
+              //          x.LongName == null ? false : x.LongName.Contains(name, StringComparison.InvariantCultureIgnoreCase) ||
+              //          x.Source == null ? false : x.Source.Contains(name, StringComparison.InvariantCultureIgnoreCase)));
+              //  }
+              //
+              //  if (waifus.Count == 0)
+              //  {
+              //      waifus.AddRange(DbContext.Waifus.Where(x => x.LongName == null ? false : x.LongName.Contains(name, StringComparison.InvariantCultureIgnoreCase)));
+              //  }
+              //  if (waifus.Count == 0)
+              //  {
+              //      waifus.AddRange(DbContext.Waifus.Where(x => x.Source == null ? false : x.Source.Contains(name, StringComparison.InvariantCultureIgnoreCase)));
+              //  }
+
+                if (waifus.Count == 0)
                 {
-                    waifus.AddRange(DbContext.Waifus.Where(x => x.Source == null ? false : x.Source.Contains(name, StringComparison.InvariantCultureIgnoreCase)).ToList());
+                    waifus.AddRange(DbContext.Waifus.Where(x => (x.Description == null ? false : x.Description.Equals(name, StringComparison.InvariantCultureIgnoreCase))).Take(10));
                 }
-               // if (waifus.Count == 0)
-               // {
-               //     waifus.AddRange(DbContext.Waifus.Where(x => x.Description == null ? false : x.Description.Equals(name, StringComparison.InvariantCultureIgnoreCase)).ToList());
-               // }
 
                 return waifus;
             }
@@ -159,15 +176,8 @@ namespace Namiko.Resources.Database
               //      x.Waifu = x.Waifu;
               //  return items.ToList();
 
-                var items = db.UserInventories;
-
-                var waifus = items.Select(x => x.Waifu).ToList();
-                var stores = items.ToList();
-                for (int i = 0; i < stores.Count; i++)
-                {
-                    stores[i].Waifu = waifus[i];
-                }
-                return stores;
+                var items = db.UserInventories.Include(x => x.Waifu).ToList();
+                return items;
             }
         }
         public static List<UserInventory> GetAllWaifuItems(ulong GuildId)
@@ -178,16 +188,9 @@ namespace Namiko.Resources.Database
                 //  foreach (var x in items)
                 //      x.Waifu = x.Waifu;
                 //  return items.ToList();
-
-                var items = db.UserInventories.Where(x => x.GuildId == GuildId);
-
-                var waifus = items.Select(x => x.Waifu).ToList();
-                var stores = items.ToList();
-                for (int i = 0; i < stores.Count; i++)
-                {
-                    stores[i].Waifu = waifus[i];
-                }
-                return stores;
+                
+                var items = db.UserInventories.Include(x => x.Waifu).Where(x => x.GuildId == GuildId).ToList();
+                return items;
             }
         }
         public static long TotalToasties(ulong guildId)
@@ -237,7 +240,7 @@ namespace Namiko.Resources.Database
         {
             using (var dbContext = new SqliteDbContext())
             {
-                return dbContext.WaifuStores.LastOrDefault(x => x.GuildId == guildId);
+                return dbContext.WaifuStores.Include(x => x.Waifu).LastOrDefault(x => x.GuildId == guildId);
             }
         }
         public static List<ShopWaifu> GetWaifuStores(ulong guildId)
@@ -247,14 +250,8 @@ namespace Namiko.Resources.Database
                 var waifu = dbContext.WaifuStores.LastOrDefault(x => x.GuildId == guildId);
                 if (waifu == null)
                     return null;
-                var storesque = dbContext.WaifuStores.Where(x => x.GeneratedDate.Equals(waifu.GeneratedDate) && x.GuildId == guildId).OrderBy(x => x.Id);
 
-                var waifus = storesque.Select(x => x.Waifu).ToList();
-                var stores = storesque.ToList();
-                for(int i=0; i<stores.Count; i++)
-                {
-                    stores[i].Waifu = waifus[i];
-                }
+                var stores = dbContext.WaifuStores.Include(x => x.Waifu).Where(x => x.GeneratedDate.Equals(waifu.GeneratedDate) && x.GuildId == guildId).OrderBy(x => x.Id).ToList();
                 return stores;
             }
         }
@@ -318,6 +315,67 @@ namespace Namiko.Resources.Database
             {
                 db.FeaturedWaifus.RemoveRange(db.FeaturedWaifus.Where(x => x.GuildId == guildId));
                 await db.SaveChangesAsync();
+            }
+        }
+    }
+
+    public class WaifuWishlistDb
+    {
+        public static async Task AddWaifuWish(ulong userId, Waifu waifu, ulong guildId)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                var entry = new WaifuWish { UserId = userId, Waifu = waifu, GuildId = guildId };
+
+                db.WaifuWishlist.Update(entry);
+                if (db.WaifuWishlist.Where(x => x.UserId == userId && x.GuildId == guildId).Count() > 5)
+                    db.WaifuWishlist.Remove(db.WaifuWishlist.Where(x => x.UserId == userId && x.GuildId == guildId).First());
+
+                await db.SaveChangesAsync();
+            }
+        }
+        public static List<Waifu> GetWishlist(ulong userId, ulong guildId)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                var waifus = db.WaifuWishlist.Where(x => x.UserId == userId && x.GuildId == guildId).Select(x => x.Waifu).ToList();
+                return waifus;
+            }
+        }
+        public static List<WaifuWish> GetWishlist(ulong guildId)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                var wishes = db.WaifuWishlist.Include(x => x.Waifu).Where(x => x.GuildId == guildId).ToList();
+                return wishes;
+            }
+        }
+        public static List<WaifuWish> GetWishlist(ulong guildId, string waifuName)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                var wishes = db.WaifuWishlist.Include(x => x.Waifu).Where(x => x.GuildId == guildId && x.Waifu.Name == waifuName).ToList();
+                return wishes;
+            }
+        }
+        public static async Task DeleteByGuild(ulong guildId)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                db.WaifuWishlist.RemoveRange(db.WaifuWishlist.Where(x => x.GuildId == guildId));
+                await db.SaveChangesAsync();
+            }
+        }
+        public static async Task DeleteWaifuWish(ulong userId, Waifu waifu, ulong guildId)
+        {
+            using (var DbContext = new SqliteDbContext())
+            {
+                var userWaifu = DbContext.WaifuWishlist.Where(x => x.UserId == userId && x.Waifu.Equals(waifu) && x.GuildId == guildId).FirstOrDefault();
+                if (userWaifu != null)
+                {
+                    DbContext.WaifuWishlist.Remove(userWaifu);
+                    await DbContext.SaveChangesAsync();
+                }
             }
         }
     }

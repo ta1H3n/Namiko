@@ -53,6 +53,10 @@ namespace Namiko.Core.Util
             }
             return users;
         }
+        public static string ShortenString(string str, int max = 33, int cut = 28, string suffix = "...")
+        {
+            return str.Length > max ? (str.Substring(0, cut) + suffix) : str;
+        }
 
         public static EmbedBuilder InfoEmbed()
         {

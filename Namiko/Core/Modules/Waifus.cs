@@ -22,7 +22,7 @@ namespace Namiko.Core.Modules
         {
             List<ShopWaifu> waifus = await WaifuUtil.GetShopWaifus(Context.Guild.Id);
             var eb = WaifuUtil.NewShopEmbed(waifus, Program.GetPrefix(Context));
-            
+
             await Context.Channel.SendMessageAsync("", false, eb.Build());
         }
 
@@ -31,9 +31,9 @@ namespace Namiko.Core.Modules
         {
             List<ShopWaifu> waifus = await WaifuUtil.GetShopWaifus(Context.Guild.Id);
             waifus.RemoveAt(0);
-            
+
             var lockObj = new Object();
-            if(slideLock.ContainsKey(Context.Channel.Id))
+            if (slideLock.ContainsKey(Context.Channel.Id))
                 slideLock.Remove(Context.Channel.Id);
             slideLock.Add(Context.Channel.Id, lockObj);
 
@@ -49,7 +49,7 @@ namespace Namiko.Core.Modules
                 eb = WaifuUtil.WaifuShopSlideEmbed(waifus[i].Waifu);
                 await msg.ModifyAsync(x => x.Embed = eb.Build());
                 await Task.Delay(5000);
-            } 
+            }
 
             eb = WaifuUtil.WaifuShopSlideEmbed(waifus[new Random().Next(waifus.Count)].Waifu);
             eb.WithFooter("Slideshow ended.");
@@ -110,6 +110,7 @@ namespace Namiko.Core.Modules
             }
 
             await UserInventoryDb.AddWaifu(Context.User.Id, waifu, Context.Guild.Id);
+            await WaifuWishlistDb.DeleteWaifuWish(Context.User.Id, waifu, Context.Guild.Id);
             await Context.Channel.SendMessageAsync($"Congratulations! You bought **{waifu.Name}**!", false, WaifuUtil.WaifuEmbedBuilder(waifu).Build());
             await ToastieDb.AddToasties(Context.Client.CurrentUser.Id, price / 13, Context.Guild.Id);
         }
@@ -133,7 +134,7 @@ namespace Namiko.Core.Modules
                 if (worth > 0) {
 
                     //giving u the money for da waifu
-                    try { await ToastieDb.AddToasties(Context.User.Id, worth, Context.Guild.Id); } 
+                    try { await ToastieDb.AddToasties(Context.User.Id, worth, Context.Guild.Id); }
                     catch (Exception ex) { await Context.Channel.SendMessageAsync(ex.Message); }
 
                     //removing waifu + confirmation
@@ -175,11 +176,12 @@ namespace Namiko.Core.Modules
             }
 
             await UserInventoryDb.AddWaifu(recipient.Id, waifu, Context.Guild.Id);
+            await WaifuWishlistDb.DeleteWaifuWish(recipient.Id, waifu, Context.Guild.Id);
             await UserInventoryDb.DeleteWaifu(Context.User.Id, waifu, Context.Guild.Id);
             await Context.Channel.SendMessageAsync($"{recipient.Mention} You received {waifu.Name} from {Context.User.Mention}!", false, WaifuUtil.WaifuEmbedBuilder(waifu).Build());
         }
 
-        [Command("Waifu"), Alias("Husbando", "Trap", "w"), Summary("Shows waifu details.\n**Usage**: `!waifu [name_or_source]`")]
+        [Command("Waifu"), Alias("Husbando", "Trap", "w"), Summary("Shows waifu details.\n**Usage**: `!waifu [search]`")]
         public async Task ShowWaifu([Remainder] string name)
         {
             var waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(name), name, Context.Channel);
@@ -195,11 +197,11 @@ namespace Namiko.Core.Modules
 
         }
 
-     //   [Command("AllWaifus"), Alias("aw"), Summary("Lists all waifus. Tier Optional.\n**Usage**: `!aw [tier]`")]
-     //   public async Task ListWaifus(int tier = 0)
-     //   {
-     //       await Context.Channel.SendMessageAsync("", false, WaifuUtil.WaifuListEmbedBuilder(tier).Build());
-     //   }
+        //   [Command("AllWaifus"), Alias("aw"), Summary("Lists all waifus. Tier Optional.\n**Usage**: `!aw [tier]`")]
+        //   public async Task ListWaifus(int tier = 0)
+        //   {
+        //       await Context.Channel.SendMessageAsync("", false, WaifuUtil.WaifuListEmbedBuilder(tier).Build());
+        //   }
 
         [Command("NewWaifu"), Alias("nw"), Summary("Adds a waifu to the database.\n**Usage**: `!nw [name] [tier(1-3)] [image_url]`"), HomePrecondition]
         public async Task NewWaifu(string name, int tier, string url = null)
@@ -337,31 +339,58 @@ namespace Namiko.Core.Modules
         [Command("ResetWaifuShop"), Alias("rws"), Summary("Resets the waifu shop contents."), HomePrecondition]
         public async Task ResetWaifuShop()
         {
-
             await WaifuShopDb.NewList(WaifuUtil.GenerateWaifuList(Context.Guild.Id));
-            await Context.Channel.SendMessageAsync("I'll try o7. Check if it worked.");
+            await WaifuShop();
         }
-        
-        [Command("TopWaifus"), Alias("bw", "BestWaifus", "tw"), Summary("Shows most popular waifus.\n**Usage**: `!bw`")]
-        public async Task BestWaifus([Remainder] string str = "")
+
+        [Command("TopWaifus"), Alias("tw"), Summary("Shows most popular waifus.\n**Usage**: `!tw`")]
+        public async Task TopWaifus([Remainder] string str = "")
         {
             var AllWaifus = UserInventoryDb.GetAllWaifuItems();
             var waifus = new Dictionary<Waifu, int>();
 
-            foreach(var x in AllWaifus)
+            foreach (var x in AllWaifus)
             {
-                if(!waifus.ContainsKey(x.Waifu))
+                if (!waifus.ContainsKey(x.Waifu))
                     waifus.Add(x.Waifu, AllWaifus.Count(y => y.Waifu.Equals(x.Waifu)));
             }
 
             var ordWaifus = waifus.OrderByDescending(x => x.Value);
             var msg = new CustomPaginatedMessage();
-            
+
             msg.Title = ":two_hearts: Waifu Leaderboards";
             var fields = new List<FieldPages>();
             fields.Add(new FieldPages
             {
                 Title = "Globaly Bought",
+                Pages = CustomPaginatedMessage.PagesArray(ordWaifus, 10, (x) => $"**{x.Key.Name}** - {x.Value}\n")
+            });
+            msg.Fields = fields;
+            msg.ThumbnailUrl = ordWaifus.First().Key.ImageUrl;
+
+            await PagedReplyAsync(msg);
+        }
+
+        [Command("ServerTopWaifus"), Alias("stw"), Summary("Shows most popular waifus in the server.\n**Usage**: `!stw`")]
+        public async Task ServerTopWaifus([Remainder] string str = "")
+        {
+            var AllWaifus = UserInventoryDb.GetAllWaifuItems(Context.Guild.Id);
+            var waifus = new Dictionary<Waifu, int>();
+
+            foreach (var x in AllWaifus)
+            {
+                if (!waifus.ContainsKey(x.Waifu))
+                    waifus.Add(x.Waifu, AllWaifus.Count(y => y.Waifu.Equals(x.Waifu)));
+            }
+
+            var ordWaifus = waifus.OrderByDescending(x => x.Value);
+            var msg = new CustomPaginatedMessage();
+
+            msg.Title = ":two_hearts: Waifu Leaderboards";
+            var fields = new List<FieldPages>();
+            fields.Add(new FieldPages
+            {
+                Title = "Bought Here",
                 Pages = CustomPaginatedMessage.PagesArray(ordWaifus, 10, (x) => $"**{x.Key.Name}** - {x.Value}\n")
             });
             msg.Fields = fields;
@@ -383,11 +412,11 @@ namespace Namiko.Core.Modules
                     if (!users.ContainsKey(user))
                         users.Add(user, WaifuUtil.WaifuValue(UserInventoryDb.GetWaifus(user.Id, Context.Guild.Id)));
             }
-            
+
             var ordUsers = users.OrderByDescending(x => x.Value);
 
             var msg = new CustomPaginatedMessage();
-            
+
             msg.Title = "User Leaderboards";
             var fields = new List<FieldPages>();
             fields.Add(new FieldPages
@@ -398,6 +427,67 @@ namespace Namiko.Core.Modules
             msg.Fields = fields;
 
             await PagedReplyAsync(msg);
+        }
+
+        [Command("WishWaifu"), Alias("ww"), Summary("Add a waifu to your wishlist to be notified when it appears in shop.\nLimited to 5.\n**Usage**: `!ww [waifu]`")]
+        public async Task WishWaifu(string name, [Remainder] string str = "")
+        {
+            var user = Context.User;
+            Waifu waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(name), name, Context.Channel);
+            if (waifu == null)
+            {
+                await Context.Channel.SendMessageAsync($"Can't find **{name}**.");
+                return;
+            }
+
+            var waifus = WaifuWishlistDb.GetWishlist(user.Id, Context.Guild.Id);
+            if (waifus.Any(x => x.Name == waifu.Name))
+            {
+                await Context.Channel.SendMessageAsync($"**{waifu.Name}** is already in your wishlist. Baka.");
+                return;
+            }
+
+            if(UserInventoryDb.OwnsWaifu(user.Id, waifu, Context.Guild.Id))
+            {
+                await Context.Channel.SendMessageAsync($"You already own **{waifu.Name}**. Baka.");
+                return;
+            }
+
+            await WaifuWishlistDb.AddWaifuWish(Context.User.Id, waifu, Context.Guild.Id);
+            
+            waifus = WaifuWishlistDb.GetWishlist(user.Id, Context.Guild.Id);
+            await Context.Channel.SendMessageAsync($"Added **{waifu.Name}** to your wishlist!", false, WaifuUtil.WishlistEmbed(waifus, (SocketGuildUser)user).Build());
+        }
+
+        [Command("WaifuWishlist"), Alias("wwl"), Summary("Shows yours or someone's waifu wishlist.\n**Usage**: `!wwl [user_optional]`")]
+        public async Task WaifuWishlist(IUser user = null, [Remainder] string str = "")
+        {
+            user = user ?? Context.User;
+            var waifus = WaifuWishlistDb.GetWishlist(user.Id, Context.Guild.Id);
+
+            await Context.Channel.SendMessageAsync(null, false, WaifuUtil.WishlistEmbed(waifus, (SocketGuildUser)user).Build());
+        }
+
+        [Command("RemoveWaifuWish"), Alias("rww"), Summary("Removes a waifu from your wishlist.\n**Usage**: `!rww [waifu]`")]
+        public async Task RemoveWaifuWish(string name, [Remainder] string str = "")
+        {
+            var user = Context.User;
+            Waifu waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(name), name, Context.Channel);
+            if (waifu == null)
+            {
+                await Context.Channel.SendMessageAsync($"Can't find **{name}**.");
+                return;
+            }
+
+            var waifus = WaifuWishlistDb.GetWishlist(user.Id, Context.Guild.Id);
+            if(!waifus.Any(x => x.Name == waifu.Name))
+            {
+                await Context.Channel.SendMessageAsync($"**{waifu.Name}** is not in your wishlist. Baka.");
+                return;
+            }
+
+            await WaifuWishlistDb.DeleteWaifuWish(user.Id, waifu, Context.Guild.Id);
+            await Context.Channel.SendMessageAsync("You don't want her anymore, huh...");
         }
     }
 }

@@ -48,4 +48,13 @@ namespace Namiko.Resources.Datatypes
         public ulong UserId { get; set; }
         public Waifu Waifu { get; set; }
     }
+
+    public class WaifuWish
+    {
+        [Key]
+        public int Id { get; set; }
+        public ulong GuildId { get; set; }
+        public ulong UserId { get; set; }
+        public Waifu Waifu { get; set; }
+    }
 }

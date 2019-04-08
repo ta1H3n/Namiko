@@ -56,7 +56,7 @@ namespace Namiko.Core.Modules
             await Blackjack.GameContinue(Context, game);
         }
 
-        [Command("Daily"), Alias("dailies"), Summary("Gives daily toasties.")]
+        [Command("Daily"), Alias("dailies", "daywy", "daiwy"), Summary("Gives daily toasties.")]
         public async Task DailyCmd()
         {
             Daily daily = DailyDb.GetDaily(Context.User.Id, Context.Guild.Id);
@@ -103,7 +103,7 @@ namespace Namiko.Core.Modules
             }
         }
 
-        [Command("Weekly"), Alias("weeklies"), Summary("Gives weekly toasties.")]
+        [Command("Weekly"), Alias("weeklies", "weekwy"), Summary("Gives weekly toasties.")]
         public async Task Weekly()
         {
             var weekly = WeeklyDb.GetWeekly(Context.User.Id, Context.Guild.Id);
@@ -137,7 +137,7 @@ namespace Namiko.Core.Modules
             await Context.Channel.SendMessageAsync("", false, ToastieUtil.WeeklyWaitEmbed(weekly.Date, Context.User).Build());
         }
 
-        [Command("Flip"), Alias("f"), Summary("Flip a coin for toasties, defaults to tails.\n**Usage**: `!flip [amount] [heads_or_tails]`")]
+        [Command("Flip"), Alias("f", "fwip"), Summary("Flip a coin for toasties, defaults to tails.\n**Usage**: `!flip [amount] [heads_or_tails]`")]
         public async Task Flip(string sAmount, string side = "t", [Remainder] string str = "")
         {
             var user = (SocketGuildUser)Context.User;
@@ -202,7 +202,7 @@ namespace Namiko.Core.Modules
             await Context.Channel.SendMessageAsync("", false, ToastieUtil.ToastieEmbed(User, ToastieDb.GetToasties(User.Id, Context.Guild.Id)).Build());
         }
 
-        [Command("Give"), Summary("Give a user some of you toasties.\n**Usage**: `!give [user] [amount]`")]
+        [Command("Give"), Summary("Give a user some of your toasties.\n**Usage**: `!give [user] [amount]`")]
         public async Task Give(IUser recipient, string sAmount, [Remainder] string str = "")
         {
             int amount = ToastieUtil.ParseAmount(sAmount, (SocketGuildUser)Context.User);
@@ -225,6 +225,12 @@ namespace Namiko.Core.Modules
             await ToastieDb.AddToasties(recipient.Id, amount, Context.Guild.Id);
 
             await Context.Channel.SendMessageAsync("", false, ToastieUtil.GiveEmbed(Context.User, recipient, amount).Build());
+        }
+
+        [Command("Give"), Summary("Give a user some of your toasties.\n**Usage**: `!give [user] [amount]`")]
+        public async Task GiveReverse(string sAmount, IUser recipient, [Remainder] string str = "")
+        {
+            await Give(recipient, sAmount, str);
         }
 
         [Command("SetToasties"), Alias("st", "sett"), Summary("Sets the amount of toasties.\n**Usage**: `!st [user] [amount]`"), CustomUserPermission(GuildPermission.Administrator)]
@@ -252,7 +258,7 @@ namespace Namiko.Core.Modules
                 {
                     return new UserAmountView()
                     {
-                        User = Context.Client.GetUser(x.UserId),
+                        User = Context.Guild.GetUser(x.UserId),
                         Amount = x.Amount
                     };
                 }
@@ -302,7 +308,7 @@ namespace Namiko.Core.Modules
                 {
                     return new UserAmountView()
                     {
-                        User = Context.Client.GetUser(x.UserId),
+                        User = Context.Guild.GetUser(x.UserId),
                         Amount = x.Streak
                     };
                 } catch
@@ -340,7 +346,7 @@ namespace Namiko.Core.Modules
             await Context.Channel.SendMessageAsync("Fine. Just leave me alone.", false, ToastieUtil.GiveEmbed(Context.Client.CurrentUser, Context.User, amount).Build());
         }
 
-        [Command("Open"), Alias("OpenLootbox", "Lootbox"), Summary("Open a lootbox if you have one.\n**Usage**: `!open`"), RequireContext(ContextType.Guild)]
+        [Command("Open"), Alias("OpenLootbox", "Lootbox", "Lootbowox"), Summary("Open a lootbox if you have one.\n**Usage**: `!open`"), RequireContext(ContextType.Guild)]
         public async Task Open([Remainder] string str = "")
         {
             //TO-DO Add selection what type of lootbox to open when more are made

@@ -82,8 +82,27 @@ namespace Namiko.Core.Util
                 tier.RemoveAt(r);
             }
 
+            NotifyWishlist(waifus.Select(x => x.Waifu), guildId);
             return waifus;
         }
+        public static async void NotifyWishlist(IEnumerable<Waifu> waifus, ulong guildId)
+        {
+            var wishes = WaifuWishlistDb.GetWishlist(guildId);
+            foreach(var wish in wishes)
+            {
+                if(waifus.Any(x => x.Name == wish.Waifu.Name))
+                {
+                    try
+                    {
+                        var guild = Program.GetClient().GetGuild(guildId);
+                        var ch = await guild.GetUser(wish.UserId).GetOrCreateDMChannelAsync();
+                        await ch.SendMessageAsync($"**{wish.Waifu.Name}** is now for sale in **{guild.Name}**", false, WaifuEmbedBuilder(wish.Waifu).Build());
+                    }
+                    catch { }
+                }
+            }
+        }
+
         public static EmbedBuilder GetShopEmbed(List<ShopWaifu> waifus, string prefix)
         {
             var client = Program.GetClient();
@@ -186,7 +205,7 @@ namespace Namiko.Core.Util
             }
             list += "";
 
-            eb.AddField(":books: Commands", $"`{prefix}buywaifu [name]` | `{prefix}waifu [name]` | `{prefix}wss`", true);
+            eb.AddField(":books: Commands", $"`{prefix}buywaifu [name]` | `{prefix}waifu [search]` | `{prefix}wss`", true);
             eb.AddField(":revolving_hearts: Waifus", list, true);
             //eb.WithThumbnailUrl(waifus[0].Waifu.ImageUrl);
             eb.WithFooter($"Resets in {11 - DateTime.Now.Hour%12} Hours {60 - DateTime.Now.Minute} Minutes");
@@ -201,6 +220,7 @@ namespace Namiko.Core.Util
             eb.WithColor(BasicUtil.RandomColor());
             return eb;
         }
+
         public static int GenerateDiscount()
         {
             var rand = new Random();
@@ -245,7 +265,8 @@ namespace Namiko.Core.Util
             if (num < 10) return worth + worth / (num * 4);
             return worth;
         }
-        public static EmbedBuilder WaifuEmbedBuilder(Waifu waifu, bool footerDetails = false, SocketCommandContext context = null)
+
+        public static EmbedBuilder WaifuEmbedBuilder(Waifu waifu, bool guildDetails = false, SocketCommandContext context = null)
         {
             EmbedBuilder eb = new EmbedBuilder();
             eb.WithAuthor(waifu.Name);
@@ -269,11 +290,17 @@ namespace Namiko.Core.Util
             if (waifu.ImageUrl != null)
                 eb.WithImageUrl(waifu.ImageUrl);
 
-            if (footerDetails)
+            if (guildDetails)
             {
                 string footer = ($"Tier: {waifu.Tier}");
                 footer += WaifuOwnerString(waifu, context);
                 eb.WithFooter(footer);
+
+                var wishes = WaifuWishlistDb.GetWishlist(context.Guild.Id, waifu.Name);
+                if(wishes.Any())
+                {
+                    eb.AddField("Wanted By", WaifuWantedString(wishes, context));
+                }
             }
             
 
@@ -291,10 +318,23 @@ namespace Namiko.Core.Util
                 {
                     try
                     {
-                        var mention = context.Client.GetUser(id).Username;
+                        var mention = context.Guild.GetUser(id).Username;
                         str += $"`{mention}` ";
                     }catch { }
                 }
+            }
+            return str;
+        }
+        public static string WaifuWantedString(IEnumerable<WaifuWish> wishes, SocketCommandContext context)
+        {
+            string str = "";
+            foreach (var wish in wishes)
+            {
+                try
+                {
+                    str += $"`{context.Guild.GetUser(wish.UserId).Username}` ";
+                }
+                catch { }
             }
             return str;
         }
@@ -328,12 +368,23 @@ namespace Namiko.Core.Util
             eb.Color = BasicUtil.RandomColor();
             return eb;
         }
-        public static string FoundWaifusCodeBlock(List<Waifu> waifus)
+        public static string FoundWaifusCodeBlock(List<Waifu> waifusRaw)
         {
-            string text = "```WAIFUS FOUND:\n\n";
-            foreach (var x in waifus)
+            var waifus = waifusRaw.OrderBy(x => x.Source).ThenBy(x => x.Name);
+            var grouped = waifus.GroupBy(x => x.Source);
+
+            string text = "```json\nWAIFUS FOUND:\n\n";
+           // foreach (var x in waifus)
+           // {
+           //     text += String.Format("{0, 11} - {1}- {2}\n", x.Name, BasicUtil.ShortenString(x.Source, 35, 35, ""), BasicUtil.ShortenString(x.LongName, 35, 34, "-"));
+           // }
+            foreach (var x in grouped)
             {
-                text += String.Format("{0, 10} - {1}\n", x.Name, x.LongName);
+                text += String.Format("\"{0}\"\n", x.Key);
+                foreach(var waifu in x)
+                {
+                    text += String.Format("{0, 11} - {1}\n", waifu.Name, BasicUtil.ShortenString(waifu.LongName, 35, 34, "-"));
+                }
             }
             text += "```";
             return text;
@@ -378,6 +429,35 @@ namespace Namiko.Core.Util
             return total;
         }
 
+        public static EmbedBuilder WishlistEmbed(IEnumerable<Waifu> waifus, SocketGuildUser user)
+        {
+            var eb = new EmbedBuilder();
+            eb.WithAuthor(user);
+
+            if (waifus.Count() > 0)
+            {
+                string wstr = "";
+                foreach (var x in waifus)
+                {
+                    if (x.Source.Length > 45)
+                        x.Source = x.Source.Substring(0, 33) + "...";
+                    x.Source = x.Source ?? "";
+                    wstr += String.Format("**{0}** - *{1}*\n", x.Name, x.Source);
+                }
+                eb.AddField("Wishlist", wstr);
+                eb.WithImageUrl(waifus.Last().ImageUrl);
+            }
+            else
+            {
+                string desc = "Your mind is empty, you have no desires. You do not wish for any waifus.\n\n"
+                    + $"*A pillar of light reveals strange texts*\n"
+                    + $"```{Program.GetPrefix(user)}waifu\n{Program.GetPrefix(user)}wishwaifu```";
+                eb.WithDescription(desc);
+            }
+
+            eb.WithColor(UserDb.GetHex(out string colour, user.Id) ? (Discord.Color)UserUtil.HexToColor(colour) : BasicUtil.RandomColor());
+            return eb;
+        }
 
         public static async Task<Waifu> ProcessWaifuListAndRespond(List<Waifu> waifus, string inputName, ISocketMessageChannel channel = null)
         {

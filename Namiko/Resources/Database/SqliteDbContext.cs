@@ -30,6 +30,7 @@ namespace Namiko.Resources.Database
         public DbSet<Weekly> Weeklies { get; set; }
         public DbSet<LootBox> LootBoxes { get; set; }
         public DbSet<Voter> Voters { get; set; }
+        public DbSet<WaifuWish> WaifuWishlist { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder Options)
         {
