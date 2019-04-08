@@ -328,7 +328,7 @@ namespace Namiko.Resources.Database
                 var entry = new WaifuWish { UserId = userId, Waifu = waifu, GuildId = guildId };
 
                 db.WaifuWishlist.Update(entry);
-                if (db.WaifuWishlist.Where(x => x.UserId == userId && x.GuildId == guildId).Count() > 5)
+                if (db.WaifuWishlist.Where(x => x.UserId == userId && x.GuildId == guildId).Count() >= 5)
                     db.WaifuWishlist.Remove(db.WaifuWishlist.Where(x => x.UserId == userId && x.GuildId == guildId).First());
 
                 await db.SaveChangesAsync();
