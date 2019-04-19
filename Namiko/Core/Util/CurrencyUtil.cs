@@ -281,10 +281,6 @@ namespace Namiko.Core.Util
         
         // BEG
 
-        public static bool Beg()
-        {
-            return new Random().Next(Cost.begChance) == 0;
-        }
         public static string GetFalseBegMessage()
         {
             string[] msgs = {
@@ -295,7 +291,41 @@ namespace Namiko.Core.Util
                 "Have you not had enough?",
                 "It's your own fault for losing it all.",
                 "Your ideal heart rate is 0.",
-                "You need a high-five... on the face... with a chair."
+                "You need a high-five... on the face... with a chair.",
+                "If you were orphaned when you were a child, I feel sorry for you, but not for your parents.",
+                "I bet your brain feels as good as new, seeing that you've never used it.",
+                "Don't let your mind wander, it's far too small to be out by itself.",
+                "People can't say that you have absolutely nothing! After all, you have inferiority!",
+                "If we were to kill everybody who hates you, it wouldn't be murder; it would be genocide!",
+                "I called your boyfriend gay and he hit me with his purse!",
+                "I'd slap you, but that would be animal abuse.",
+                "The next time you shave, could you stand a little closer to the razor?",
+                "Everyone is entitled to be stupid, but you abuse the privilege.",
+                "Don't piss me off today, I'm running out of places to hide the bodies.",
+                "Until you called me I couldn't remember the last time I wanted to break somebody's fingers so badly.",
+                "Beauty is skin deep, but ugly is to the bone.",
+                "Sorry I can't think of an insult stupid enough for you.",
+                "Let's see... I've walked the dog, cleaned my room, gone shopping and gossiped with my friends... Nope, this list doesn't say that I'm required to talk to you.",
+                "Earth is full. Go home.",
+                "If I could be one person for a day, it sure as hell wouldn't be you.",
+                "Roses are red violets are blue, God made me pretty, what the hell happened to you?",
+                "I am not anti-social, I just don't like you.",
+                "There are some stupid people in this world. You just helped me realize it.",
+                "A-are you talking? Did I give you permission to talk...?",
+                "OK, and that's supposed to make me feel what?",
+                "Damn not you again.",
+                "I'm sorry I'm busy right now, can I ignore you some other time?",
+                "Oh please help me, I'm sooo hurt by your hurtful comments!",
+                "Before you came along we were hungry. Now we are fed up.",
+                "Cancel my subscriptions, I'm tired of your issues!",
+                "You have your whole life to be a jerk... So why don't you take a day off?",
+                "You don't know me, you just wish you did.",
+                "My Mom said never talk to strangers and well, since you're really strange... I guess that means I can't talk to you!",
+                "People like you are the reason I'm on medication.",
+                "If you're gonna act like a dick you should wear a condom on your head so you can at least look like one!",
+                "I don't discriminate, I hate everyone.",
+                "You know the drill... You leave a message and I ignore it!",
+                "Hey, I am away from my phone but in the meantime, why don't you go play in traffic?!"
             };
 
             return msgs[new Random().Next(msgs.Length)];

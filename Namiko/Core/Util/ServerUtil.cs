@@ -20,15 +20,29 @@ namespace Namiko.Core.Util
 
             string field = "";
             field += $"Total toasties: **{toasties.Sum(x => x.Amount).ToString("n0")}**\n";
-            var user = GetGuildUser(guild, toasties.Select(x => x.UserId).ToArray());
-            field += $"Richest user: {user.Mention} - **{toasties.FirstOrDefault(x => x.UserId == user.Id).Amount.ToString("n0")}**\n";
+            var user = guild.GetUser(toasties.FirstOrDefault().UserId);
+            if(user != null)
+                field += $"Richest user: {user.Mention} - **{toasties.FirstOrDefault(x => x.UserId == user.Id).Amount.ToString("n0")}**\n";
             var bank = toasties.FirstOrDefault(x => x.UserId == Program.GetClient().CurrentUser.Id);
             field += $"Bank balance: **{(bank == null ? "0" : bank.Amount.ToString("n0"))}**\n";
             eb.AddField("Toasties <:toastie3:454441133876183060>", field);
 
             field = "";
             field += $"Total waifus: **{waifus.Count}**\n";
-            field += $"Total waifu value: **{waifus.Sum(x => Convert.ToInt64(Namiko.Core.Util.WaifuUtil.GetPrice(x.Waifu.Tier, 0))).ToString("n0")}**\n";
+            field += $"Total waifu value: **{waifus.Sum(x => Convert.ToInt64(WaifuUtil.GetPrice(x.Waifu.Tier, 0))).ToString("n0")}**\n";
+            var groupedwaifus = waifus.GroupBy(x => x.UserId).OrderByDescending(x => x.Count());
+            var most = groupedwaifus.FirstOrDefault();
+            user = guild.GetUser(most.Key);
+            if (most != null && user != null)
+            {
+                field += $"Most waifus: {user.Mention} - **{most.Count()}**\n";
+            }
+            most = groupedwaifus.OrderByDescending(x => x.Sum(y => WaifuUtil.GetPrice(y.Waifu.Tier, 0))).FirstOrDefault();
+            user = guild.GetUser(most.Key);
+            if (most != null && user != null)
+            {
+                field += $"Highest value: {user.Mention} - **{most.Sum(y => WaifuUtil.GetPrice(y.Waifu.Tier, 0))}**\n";
+            }
             eb.AddField("Waifus :two_hearts:", field);
 
             eb.WithColor(BasicUtil.RandomColor());

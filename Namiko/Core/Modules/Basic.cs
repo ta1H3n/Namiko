@@ -61,12 +61,12 @@ namespace Namiko.Core.Modules
             Timers.Timer_DailyStats(null, null);
         }
 
-        [Command("Test"), OwnerPrecondition]
-        public async Task Test()
-        {
-            Timers.Timer_NamikoSteal(null, null);
-            await Context.Channel.SendMessageAsync($"It has been done.");
-        }
+      //  [Command("Test"), OwnerPrecondition]
+      //  public async Task Test()
+      //  {
+      //      Timers.Timer_NamikoSteal(null, null);
+      //      await Context.Channel.SendMessageAsync($"It has been done.");
+      //  }
 
         // HELP COMMAND STUFF
 

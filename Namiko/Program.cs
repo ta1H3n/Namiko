@@ -218,8 +218,8 @@ namespace Namiko
                     if (!(Result.Error == CommandError.UnmetPrecondition))
                         reason += CommandHelpString(MessageParam.Content.Split(null)[0].Replace(prefix, ""), prefix);
                     await Context.Channel.SendMessageAsync(reason);
+                    return;
                 }
-                return;
             }
 
             if (text == null)

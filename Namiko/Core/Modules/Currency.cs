@@ -334,7 +334,7 @@ namespace Namiko.Core.Modules
                 return;
             }
 
-            if (!ToastieUtil.Beg())
+            if (!Cost.beg)
             {
                 await Context.Channel.SendMessageAsync(ToastieUtil.GetFalseBegMessage());
                 return;
