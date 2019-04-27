@@ -25,31 +25,37 @@ namespace Namiko.Core
         private static Timer Minute5;
         private static Timer Hour;
 
-        public static void SetUp()
+        public static void SetUpDebug()
         {
             Minute = new Timer(1000 * 60);
             Minute.AutoReset = true;
             Minute.Enabled = true;
             Minute.Elapsed += Timer_TimeoutBlackjack;
-            Minute.Elapsed += Timer_HourlyStats;
-            Minute.Elapsed += Timer_Voters2;
 
             Minute5 = new Timer(1000 * 60 * 5);
             Minute5.AutoReset = true;
             Minute5.Enabled = true;
-            Minute5.Elapsed += Timer_Unban;
-            Minute5.Elapsed += Timer_DailyStats;
 
             Hour = new Timer(1000 * 60 * 60);
             Hour.AutoReset = true;
             Hour.Enabled = true;
-            Hour.Elapsed += Timer_BackupData;
             Hour.Elapsed += Timer_ExpireTeamInvites;
-            Hour.Elapsed += Timer_CleanData;
             Hour.Elapsed += Timer_NamikoSteal;
-            Hour.Elapsed += Timer_UpdateDBLGuildCount;
+        }
 
-            Console.WriteLine("Timers Ready.");
+        public static void SetUp()
+        {
+            SetUpDebug();
+
+            Minute.Elapsed += Timer_HourlyStats;
+            Minute.Elapsed += Timer_Voters2;
+
+            Minute5.Elapsed += Timer_Unban;
+            Minute5.Elapsed += Timer_DailyStats;
+
+            Hour.Elapsed += Timer_BackupData;
+            Hour.Elapsed += Timer_CleanData;
+            Hour.Elapsed += Timer_UpdateDBLGuildCount;
         }
 
         public static async void Timer_NamikoSteal(object sender, ElapsedEventArgs e)

@@ -41,7 +41,6 @@ namespace Namiko
         {
             SetUpDebug();
             //SetUpRelease();
-            Timers.SetUp();
             SetUpPrefixes();
 
             Client = new DiscordShardedClient();
@@ -353,6 +352,7 @@ namespace Namiko
         private static void SetUpDebug()
         {
             Locations.SetUpDebug();
+            Timers.SetUpDebug();
         }
         private static void SetUpRelease()
         {
@@ -360,6 +360,7 @@ namespace Namiko
             Console.WriteLine(Locations.SettingsJSON);
             Console.WriteLine(Locations.SpookyLinesXml);
             Console.WriteLine(Locations.SqliteDb);
+            Timers.SetUp();
         }
         private static async Task SetUpServers()
         {
