@@ -20,7 +20,7 @@ namespace Namiko.Core.Util
         public static int ParseAmount(string sAmount, SocketGuildUser user)
         {
             int amount = 0;
-            if (sAmount.Equals("all"))
+            if (sAmount.Equals("all", StringComparison.InvariantCultureIgnoreCase))
             {
                 amount = ToastieDb.GetToasties(user.Id, user.Guild.Id);
                 if (amount > 10000)
@@ -325,7 +325,14 @@ namespace Namiko.Core.Util
                 "If you're gonna act like a dick you should wear a condom on your head so you can at least look like one!",
                 "I don't discriminate, I hate everyone.",
                 "You know the drill... You leave a message and I ignore it!",
-                "Hey, I am away from my phone but in the meantime, why don't you go play in traffic?!"
+                "Life may be temporary, but your stupidity is eternal.",
+                "If I agreed with you, then we'd both be wrong.",
+                "Could you stop talking?",
+                "Do you know what a tsundere is? That's me except I actually don't like you.",
+                "The ideal heart rate? For you... 0.",
+                "If humans are 70% water, how are you 100% bullshit?",
+                "Toasties? It's your life you should be begging for...",
+                "Jokes aside, you're pathetic."
             };
 
             return msgs[new Random().Next(msgs.Length)];

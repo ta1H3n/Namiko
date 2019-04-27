@@ -127,24 +127,41 @@ namespace Namiko.Core.Modules
 
             //getting waifus u own
             var waifus = UserInventoryDb.GetWaifus(Context.User.Id, Context.Guild.Id);
-            if (waifus.Where(x => x.Name.Equals(waifu.Name)).Count() > 0) {
-
-                //checking worth
+            if (waifus.Any(x => x.Name.Equals(waifu.Name)))
+            {
                 int worth = WaifuUtil.GetSalePrice(waifu.Tier);
-                if (worth > 0) {
 
-                    //giving u the money for da waifu
+                var bought = new DialogueBoxOption();
+                bought.Action = async delegate (IUserMessage message)
+                {
                     try { await ToastieDb.AddToasties(Context.User.Id, worth, Context.Guild.Id); }
                     catch (Exception ex) { await Context.Channel.SendMessageAsync(ex.Message); }
 
                     //removing waifu + confirmation
                     await UserInventoryDb.DeleteWaifu(Context.User.Id, waifu, Context.Guild.Id);
-                    await Context.Channel.SendMessageAsync($"Congratulations! You sold **{waifu.Name}** for {worth.ToString("n0")} toasties", false, ToastieUtil.ToastieEmbed(Context.User, ToastieDb.GetToasties(Context.User.Id, Context.Guild.Id)).Build());
+                    await message.ModifyAsync(x => {
+                        x.Content = $"Congratulations! You sold **{waifu.Name}** for **{worth.ToString("n0")}** toasties.";
+                        x.Embed = ToastieUtil.ToastieEmbed(Context.User, ToastieDb.GetToasties(Context.User.Id, Context.Guild.Id)).Build();
+                    });
+                        
                     return;
-                }
+                };
+                bought.EndDialogue = true;
 
-                //if u have da waifu, but value error occurs
-                await Context.Channel.SendMessageAsync("There was a sales error.\nPlease get the waifu's \"Tier\" corrected.");
+                var cancel = new DialogueBoxOption();
+                cancel.Action = async (IUserMessage message) => await message.DeleteAsync();
+                cancel.EndDialogue = true;
+
+                var dia = new DialogueBox();
+                dia.Options.Add(new Emoji("✅"), bought);
+                dia.Options.Add(new Emoji("❌"), cancel);
+                dia.Embed = new EmbedBuilder()
+                    .WithAuthor(Context.User)
+                    .WithColor(BasicUtil.RandomColor())
+                    .WithDescription($"Sell **{waifu.Name}** for **{worth.ToString("n0")}** toasties?").Build();
+
+                await DialogueReplyAsync(dia);
+
                 return;
             }
 

@@ -262,7 +262,7 @@ namespace Namiko.Core.Util
                                                 0.55));
 
             //random 3 in 17 chance to have increased sale
-            if (num < 10) return worth + worth / (num * 4);
+            //if (num < 10) return worth + worth / (num * 4);
             return worth;
         }
 
