@@ -60,6 +60,7 @@ namespace Namiko.Core
             Next = Emote.Parse("<:KannaPointingRight:543086063380332555>");
             First = Emote.Parse("<:KannaFirst:543118180181344256>");
             Last = Emote.Parse("<:KannaLast:543118179841605642>");
+            Jump = Emote.Parse("<:KannaJump:571689854996447252>");
         }
     }
 
