@@ -434,7 +434,7 @@ namespace Namiko.Core.Util
             var eb = new EmbedBuilder();
             eb.WithAuthor(user);
 
-            if (waifus.Count() > 0)
+            if (waifus.Any())
             {
                 string wstr = "";
                 foreach (var x in waifus)

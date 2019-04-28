@@ -107,7 +107,7 @@ namespace Namiko.Core.Util {
             eb.WithAuthor(user);
             var waifus = UserInventoryDb.GetWaifus(user.Id, user.Guild.Id).OrderBy(x => x.Source).ThenBy(x => x.Name);
 
-            if (waifus.Count() > 0)
+            if (waifus.Any())
             {
                 string wstr = "";
                 foreach (var x in waifus)

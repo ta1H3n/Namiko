@@ -13,7 +13,7 @@ namespace Namiko.Resources.Database
         {
             using (var DbContext = new SqliteDbContext())
             {
-                return DbContext.PublicRoles.Where(x => x.RoleId == roleId).Count() > 0;
+                return DbContext.PublicRoles.Any(x => x.RoleId == roleId);
             }
         }
         public static async Task Add(ulong roleId, ulong guildId)

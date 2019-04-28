@@ -177,22 +177,22 @@ namespace Namiko.Core.Modules
                 return;
             }
             var waifus = UserInventoryDb.GetWaifus(Context.User.Id, Context.Guild.Id);
-            if (!(waifus.Where(x => x.Name.Equals(waifu.Name)).Count() > 0))
+            if (!(waifus.Any(x => x.Name.Equals(waifu.Name))))
             {
-                await Context.Channel.SendMessageAsync(waifu.Name + " is just like my love - you don't have it.");
+                await Context.Channel.SendMessageAsync($"**{waifu.Name}** is just like my love - you don't have it.");
                 return;
             }
             waifus = UserInventoryDb.GetWaifus(recipient.Id, Context.Guild.Id);
-            if (waifus.Where(x => x.Name.Equals(waifu.Name)).Count() > 0)
+            if (waifus.Any(x => x.Name.Equals(waifu.Name)))
             {
-                await Context.Channel.SendMessageAsync("They already have " + waifu.Name);
+                await Context.Channel.SendMessageAsync($"They already have **{waifu.Name}**.");
                 return;
             }
 
             await UserInventoryDb.AddWaifu(recipient.Id, waifu, Context.Guild.Id);
             await WaifuWishlistDb.DeleteWaifuWish(recipient.Id, waifu, Context.Guild.Id);
             await UserInventoryDb.DeleteWaifu(Context.User.Id, waifu, Context.Guild.Id);
-            await Context.Channel.SendMessageAsync($"{recipient.Mention} You received {waifu.Name} from {Context.User.Mention}!", false, WaifuUtil.WaifuEmbedBuilder(waifu).Build());
+            await Context.Channel.SendMessageAsync($"{recipient.Mention} You received **{waifu.Name}** from {Context.User.Mention}!", false, WaifuUtil.WaifuEmbedBuilder(waifu).Build());
         }
 
         [Command("Waifu"), Alias("Husbando", "Trap", "w"), Summary("Shows waifu details.\n**Usage**: `!waifu [search]`")]
