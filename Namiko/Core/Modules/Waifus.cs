@@ -70,9 +70,9 @@ namespace Namiko.Core.Modules
                 return;
             }
             var waifus = UserInventoryDb.GetWaifus(Context.User.Id, Context.Guild.Id);
-            if (waifus.Where(x => x.Name.Equals(waifu.Name)).Count() > 0)
+            if (waifus.Any(x => x.Name.Equals(waifu.Name)))
             {
-                await Context.Channel.SendMessageAsync("You already have " + name);
+                await Context.Channel.SendMessageAsync("You already have **" + waifu.Name + "**.");
                 return;
             }
             var shopwaifus = WaifuShopDb.GetWaifuStores(Context.Guild.Id);
@@ -86,7 +86,7 @@ namespace Namiko.Core.Modules
             }
             if (shopWaifu == null)
             {
-                await Context.Channel.SendMessageAsync($"{name} is not currently for sale! Try the `waifushop` command.");
+                await Context.Channel.SendMessageAsync($"**{waifu.Name}** is not currently for sale! Try the `waifushop` command.");
                 return;
             }
 
@@ -131,8 +131,8 @@ namespace Namiko.Core.Modules
             {
                 int worth = WaifuUtil.GetSalePrice(waifu.Tier);
 
-                var bought = new DialogueBoxOption();
-                bought.Action = async delegate (IUserMessage message)
+                var sell = new DialogueBoxOption();
+                sell.Action = async (IUserMessage message) =>
                 {
                     try { await ToastieDb.AddToasties(Context.User.Id, worth, Context.Guild.Id); }
                     catch (Exception ex) { await Context.Channel.SendMessageAsync(ex.Message); }
@@ -140,28 +140,25 @@ namespace Namiko.Core.Modules
                     //removing waifu + confirmation
                     await UserInventoryDb.DeleteWaifu(Context.User.Id, waifu, Context.Guild.Id);
                     await message.ModifyAsync(x => {
-                        x.Content = $"Congratulations! You sold **{waifu.Name}** for **{worth.ToString("n0")}** toasties.";
+                        x.Content = $"You sold **{waifu.Name}** for **{worth.ToString("n0")}** toasties.";
                         x.Embed = ToastieUtil.ToastieEmbed(Context.User, ToastieDb.GetToasties(Context.User.Id, Context.Guild.Id)).Build();
                     });
-                        
-                    return;
                 };
-                bought.EndDialogue = true;
+                sell.After = OnExecute.RemoveReactions;
 
                 var cancel = new DialogueBoxOption();
-                cancel.Action = async (IUserMessage message) => await message.DeleteAsync();
-                cancel.EndDialogue = true;
+                cancel.After = OnExecute.Delete;
 
                 var dia = new DialogueBox();
-                dia.Options.Add(new Emoji("✅"), bought);
+                dia.Options.Add(new Emoji("✅"), sell);
                 dia.Options.Add(new Emoji("❌"), cancel);
+                dia.Timeout = new TimeSpan(0, 1, 0);
                 dia.Embed = new EmbedBuilder()
                     .WithAuthor(Context.User)
                     .WithColor(BasicUtil.RandomColor())
                     .WithDescription($"Sell **{waifu.Name}** for **{worth.ToString("n0")}** toasties?").Build();
 
                 await DialogueReplyAsync(dia);
-
                 return;
             }
 
