@@ -34,6 +34,7 @@ namespace Namiko
         private static Dictionary<ulong, string> Prefixes = new Dictionary<ulong, string>();
         private static CancellationTokenSource cts = new CancellationTokenSource();
         private static CancellationToken ct = cts.Token;
+        public static bool Debug = false;
 
         static void Main(string[] args)
         => new Program().MainAsync().GetAwaiter().GetResult();
@@ -141,19 +142,18 @@ namespace Namiko
             WebUtil.SetUpDbl(Client.CurrentUser.Id);
             var ch = Client.GetChannel(StaticSettings.log_channel) as ISocketMessageChannel;
             await ch.SendMessageAsync($"`{DateTime.Now} - Shard {arg.ShardId} Ready`");
-            await Ready();
-           // var list = await WebUtil.GetVotersAsync();
-           // var votersParsed = list.Select(x => x.Id).ToList();
-           // votersParsed.Reverse();
-           // await VoteDb.AddVoters(votersParsed);
+            if(arg.ShardId == 0)
+                await Ready();
         }
         private async Task Ready()
         {
-            var ch = Client.GetChannel(StaticSettings.log_channel) as ISocketMessageChannel;
-            await SetUpServers();
-            await ch.SendMessageAsync($"`{DateTime.Now} - New Servers Ready`");
-            await ImgurUtil.ImgurSetup();
-            await ch.SendMessageAsync($"`{DateTime.Now} - Imgur Ready`");
+            if (!Debug)
+            {
+                var ch = Client.GetChannel(StaticSettings.log_channel) as ISocketMessageChannel;
+                int[] res = await SetUpServers();
+                await ch.SendMessageAsync($"`{DateTime.Now} - Servers Ready. Joined {res[0]}, left {res[1]}`");
+                ImgurAPI.Poke();
+            }
         }
         private async Task Client_Log(LogMessage arg)
         {
@@ -351,8 +351,9 @@ namespace Namiko
         }
         private static void SetUpDebug()
         {
+            Debug = true;
             Locations.SetUpDebug();
-            Timers.SetUpDebug();
+            Timers.SetUp();
         }
         private static void SetUpRelease()
         {
@@ -360,9 +361,9 @@ namespace Namiko
             Console.WriteLine(Locations.SettingsJSON);
             Console.WriteLine(Locations.SpookyLinesXml);
             Console.WriteLine(Locations.SqliteDb);
-            Timers.SetUp();
+            Timers.SetUpRelease();
         }
-        private static async Task SetUpServers()
+        private static async Task<int[]> SetUpServers()
         {
             var guilds = Client.Guilds;
             var servers = ServerDb.GetAll();
@@ -397,6 +398,8 @@ namespace Namiko
                 await Task.Delay(10);
             }
             Console.WriteLine($"Servers ready. Added {added}. Left {left}.");
+
+            return new int[2] { added, left };
         }
 
         // PREFIXES

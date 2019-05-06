@@ -45,7 +45,7 @@ namespace Namiko.Core.Modules
             }
 
             var album = ImageDb.GetAlbum(name);
-            await Context.Channel.SendMessageAsync(ImgurUtil.ParseAlbumLink(album.AlbumId));
+            await Context.Channel.SendMessageAsync(ImgurAPI.ParseAlbumLink(album.AlbumId));
         }
 
         [Command("Image"), Alias("i"), Summary("Sends a reaction image by id.\n**Usage**: `!i [id]`")]
@@ -122,17 +122,17 @@ namespace Namiko.Core.Modules
             string albumId = null;
             if (!ImageDb.Exists(name))
             {
-                albumId = (await ImgurUtil.CreateAlbumAsync(name)).Id;
+                albumId = (await ImgurAPI.CreateAlbumAsync(name)).Id;
                 await ImageDb.CreateAlbum(name, albumId);
             }
             else albumId = ImageDb.GetAlbum(name).AlbumId;
 
-            var iImage = await ImgurUtil.UploadImageAsync(url, albumId);
+            var iImage = await ImgurAPI.UploadImageAsync(url, albumId);
             await ImageDb.AddImage(name.ToLower(), iImage.Link);
 
             //Test
             var image = ImageDb.GetLastImage();
-            await ImgurUtil.EditImageAsync(iImage.Id.ToString(), null, image.Id.ToString());
+            await ImgurAPI.EditImageAsync(iImage.Id.ToString(), null, image.Id.ToString());
             await Context.Channel.SendMessageAsync("", false, ImageUtil.ToEmbed(image).Build());
         }
 
@@ -149,7 +149,7 @@ namespace Namiko.Core.Modules
 
             await ImageDb.DeleteImage(id);
             await Context.Channel.SendMessageAsync($"Image {id} is gone forever. Why have you done this?");
-            await ImgurUtil.EditImageAsync(ImgurUtil.ParseId(image.Url), null, image.Id.ToString() + " [DELETED]");
+            await ImgurAPI.EditImageAsync(ImgurAPI.ParseId(image.Url), null, image.Id.ToString() + " [DELETED]");
         }
 
         public class ImageCount

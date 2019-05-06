@@ -31,6 +31,8 @@ namespace Namiko.Resources.Database
         public DbSet<LootBox> LootBoxes { get; set; }
         public DbSet<Voter> Voters { get; set; }
         public DbSet<WaifuWish> WaifuWishlist { get; set; }
+        public DbSet<SpecialChannel> SpecialChannels { get; set; }
+        public DbSet<RedditPost> RedditPosts { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder Options)
         {

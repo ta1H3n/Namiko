@@ -9,4 +9,10 @@ namespace Namiko.Core
     {
         Vote = 1
     }
+
+    [Flags]
+    public enum ChannelType
+    {
+        Animemes = 1
+    }
 }

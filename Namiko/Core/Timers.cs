@@ -16,6 +16,7 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using DiscordBotsList.Api.Objects;
+using Reddit.Controllers;
 
 namespace Namiko.Core
 {
@@ -25,7 +26,7 @@ namespace Namiko.Core
         private static Timer Minute5;
         private static Timer Hour;
 
-        public static void SetUpDebug()
+        public static void SetUp()
         {
             Minute = new Timer(1000 * 60);
             Minute.AutoReset = true;
@@ -43,15 +44,16 @@ namespace Namiko.Core
             Hour.Elapsed += Timer_NamikoSteal;
         }
 
-        public static void SetUp()
+        public static void SetUpRelease()
         {
-            SetUpDebug();
+            SetUp();
 
             Minute.Elapsed += Timer_HourlyStats;
             Minute.Elapsed += Timer_Voters2;
 
             Minute5.Elapsed += Timer_Unban;
             Minute5.Elapsed += Timer_DailyStats;
+            Minute5.Elapsed += Timer_Animemes;
 
             Hour.Elapsed += Timer_BackupData;
             Hour.Elapsed += Timer_CleanData;
@@ -431,6 +433,63 @@ namespace Namiko.Core
         }
 
 
-        // PERFORMANCE MONITORING
+        // REDDIT POST
+        private static async void Timer_Animemes(object sender, ElapsedEventArgs e)
+        {
+            var hot = await RedditAPI.GetHot("Animemes");
+            await Post(hot.Where(x => x.UpVotes > 2000));
+        }
+        public static async Task Post(IEnumerable<Post> hot)
+        {
+            var channels = SpecialChannelDb.GetIdsByType(ChannelType.Animemes);
+            var client = Program.GetClient();
+
+            foreach (var post in hot)
+            {
+                if (!RedditDb.Exists(post.Fullname))
+                {
+                    await RedditDb.AddPost(post.Fullname, post.Permalink);
+
+                    var eb = new EmbedBuilder()
+                        .WithColor(BasicUtil.RandomColor())
+                        .WithAuthor(post.Title, "https://i.imgur.com/LowWu1Z.png", "https://www.reddit.com" + post.Permalink);
+                    try
+                    {
+                        eb.WithDescription(((SelfPost)post).SelfText);
+                    } catch { }
+                    try
+                    {
+                        eb.WithImageUrl(((LinkPost)post).URL);
+                    } catch { }
+                    try
+                    {
+                        if(eb.Description == null)
+                            eb.WithDescription(post.Comments.Top[0].Body);
+                    }
+                    catch { }
+
+                    if (eb.Description == null && eb.ImageUrl == null)
+                        return;
+                    var embed = eb.Build();
+                    
+                    foreach (var id in channels)
+                    {
+                        try
+                        {
+                            SocketTextChannel ch = null;
+                            await Task.Run(() => ch = (SocketTextChannel)client.GetChannel(id));
+                            var msg = await ch.SendMessageAsync(embed: embed);
+                            _ = Task.Run(async () =>
+                            {
+                                await msg.AddReactionAsync(Emote.Parse("<:Upvote:575031499330420757>"));
+                                await msg.AddReactionAsync(Emote.Parse("<:Downvote:575031499385077806>"));
+                            });
+                        } catch { }
+                    }
+
+                    return;
+                }
+            }
+        }
     }
 }

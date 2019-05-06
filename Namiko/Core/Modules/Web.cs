@@ -180,5 +180,20 @@ namespace Namiko.Core.Modules
 
             await ResponseQuery.DeleteAsync();
         }
+
+        [Command("Animemes"), Summary("Sets a channel where Namiko will post popular anime memes.\n**Usage**: `!Animemes`"), CustomUserPermission(GuildPermission.ManageChannels), RequireContext(ContextType.Guild)]
+        public async Task Animemes([Remainder] string str = "")
+        {
+            if(SpecialChannelDb.IsType(Context.Channel.Id, ChannelType.Animemes))
+            {
+                await SpecialChannelDb.Delete(Context.Channel.Id, ChannelType.Animemes);
+                await Context.Channel.SendMessageAsync("I'll stop posting anime memes here. You're no fun...");
+            }
+            else
+            {
+                await SpecialChannelDb.AddChannel(Context.Channel.Id, ChannelType.Animemes, Context.Guild.Id);
+                await Context.Channel.SendMessageAsync("Channel set as an anime memes channel! I will post popular memes here!");
+            }
+        }
     }
 }

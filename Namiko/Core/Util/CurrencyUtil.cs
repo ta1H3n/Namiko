@@ -332,7 +332,9 @@ namespace Namiko.Core.Util
                 "The ideal heart rate? For you... 0.",
                 "If humans are 70% water, how are you 100% bullshit?",
                 "Toasties? It's your life you should be begging for...",
-                "Jokes aside, you're pathetic."
+                "Jokes aside, you're pathetic.",
+                "STOP... SPAMMING... ME!",
+                "You should've been aborted by your mother."
             };
 
             return msgs[new Random().Next(msgs.Length)];

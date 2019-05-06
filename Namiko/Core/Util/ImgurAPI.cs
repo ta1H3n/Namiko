@@ -13,9 +13,14 @@ using Newtonsoft.Json;
 
 namespace Namiko.Core.Util
 {
-    public static class ImgurUtil
+    public static class ImgurAPI
     {
         private static ImgurClient Client;
+
+        static ImgurAPI()
+        {
+            _ = ImgurSetup();
+        }
 
         public async static Task ImgurSetup()
         {
@@ -27,7 +32,7 @@ namespace Namiko.Core.Util
                 JSON = ReadSettings.ReadToEnd();
             }
 
-            ImgurLogin settings = JsonConvert.DeserializeObject<ImgurLogin>(JSON);
+            ApiLogin settings = JsonConvert.DeserializeObject<ApiLogin>(JSON);
 
             Client = new ImgurClient(settings.ClientId, settings.ClientSecret);
             var endpoint = new OAuth2Endpoint(Client);
@@ -48,7 +53,7 @@ namespace Namiko.Core.Util
             }
 
             Client.SetOAuth2Token(token);
-
+            
             Console.WriteLine("Imgur Ready.");
         }
 
@@ -94,6 +99,11 @@ namespace Namiko.Core.Util
         public static string ParseId(string imgurUrl)
         {
             return imgurUrl.Split('/').Last().Split('.').First();
+        }
+
+        public static void Poke()
+        {
+
         }
     }
 }

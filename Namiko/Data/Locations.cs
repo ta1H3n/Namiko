@@ -17,6 +17,7 @@ namespace Namiko.Data
         {
             SettingsJSON = Assembly.GetEntryAssembly().Location.Replace(@"Namiko.dll", @"data/Settings.json");
             ImgurJSON = Assembly.GetEntryAssembly().Location.Replace(@"Namiko.dll", @"data/Imgur.json");
+            ImgurJSON = Assembly.GetEntryAssembly().Location.Replace(@"Namiko.dll", @"data/Reddit.json");
             DblTokenTxt = Assembly.GetEntryAssembly().Location.Replace(@"Namiko.dll", @"data/DblToken.txt");
             SqliteDb = Assembly.GetEntryAssembly().Location.Replace(@"Namiko.dll", @"data/");
             SpookyLinesXml = Assembly.GetEntryAssembly().Location.Replace(@"Namiko.dll", @"xml/SpookyLines.xml");
@@ -25,6 +26,7 @@ namespace Namiko.Data
         {
             SettingsJSON = Assembly.GetEntryAssembly().Location.Replace(@"bin\Debug\netcoreapp2.1\Namiko.dll", @"Data\Settings.json");
             ImgurJSON = Assembly.GetEntryAssembly().Location.Replace(@"bin\Debug\netcoreapp2.1\Namiko.dll", @"Data\Imgur.json");
+            ImgurJSON = Assembly.GetEntryAssembly().Location.Replace(@"bin\Debug\netcoreapp2.1\Namiko.dll", @"Data\Reddit.json");
             DblTokenTxt = Assembly.GetEntryAssembly().Location.Replace(@"bin\Debug\netcoreapp2.1\Namiko.dll", @"Data\DblToken.txt");
             SqliteDb = Assembly.GetEntryAssembly().Location.Replace(@"bin\Debug\netcoreapp2.1\Namiko.dll", @"Data\");
             SpookyLinesXml =  Assembly.GetEntryAssembly().Location.Replace(@"bin\Debug\netcoreapp2.1\Namiko.dll", @"Resources\Xml\SpookyLines.xml");
