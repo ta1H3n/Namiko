@@ -32,7 +32,6 @@ namespace Namiko.Core
             Minute.AutoReset = true;
             Minute.Enabled = true;
             Minute.Elapsed += Timer_TimeoutBlackjack;
-            Minute.Elapsed += Timer_Animemes;
 
             Minute5 = new Timer(1000 * 60 * 5);
             Minute5.AutoReset = true;
