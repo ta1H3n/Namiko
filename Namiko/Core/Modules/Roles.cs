@@ -17,7 +17,7 @@ namespace Namiko.Core.Modules
 {
     public class Roles : InteractiveBase<ShardedCommandContext>
     {
-        [Command("Role"), Alias("r"), Summary("Adds or removes a public role from the user.\n**Usage**: `!r [name]`"), CustomBotPermission(GuildPermission.ManageRoles)]
+        [Command("Role"), Alias("r, iam"), Summary("Adds or removes a public role from the user.\n**Usage**: `!r [name]`"), CustomBotPermission(GuildPermission.ManageRoles)]
         public async Task Role([Remainder] string name)
         {
             var role = RoleUtil.GetRoleByName(Context.Guild, name);
@@ -171,7 +171,7 @@ namespace Namiko.Core.Modules
         }
 
         [Command("LeaveTeam"), Alias("lt"), Summary("Leave your team.\n**Usage**: `!lt`"), CustomBotPermission(GuildPermission.ManageRoles)]
-        public async Task Leave()
+        public async Task Leave([Remainder] string str = "")
         {
             var role = RoleUtil.GetMember(Context.Guild, Context.User);
             if (role == null)
@@ -243,7 +243,7 @@ namespace Namiko.Core.Modules
         }
 
         [Command("DeleteTeam"), Alias("dt"), Summary("Deletes a team.\n**Usage**: `!dt [Leader or Team RoleName]`"), CustomUserPermission(GuildPermission.ManageRoles)]
-        public async Task NewTeam(string teamName)
+        public async Task DeleteTeam([Remainder] string teamName)
         {
             var role = RoleUtil.GetRoleByName(Context.Guild, teamName);
 

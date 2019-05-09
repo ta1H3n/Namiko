@@ -9,19 +9,40 @@ namespace Namiko.Resources.Database
 {
     public static class RedditDb
     {
-        public static async Task AddPost(string name, string permalink)
+        public static bool Exists(string permalink, int upvotes = 0)
         {
             using (var db = new SqliteDbContext())
             {
-                db.RedditPosts.Add(new RedditPost() { FullName = name, PermaLink = permalink });
+                return db.RedditPosts.Any(x => x.PermaLink == permalink && x.Upvotes > upvotes);
+            }
+        }
+        public static async Task AddPost(string permalink, int upvotes)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                var post = db.RedditPosts.FirstOrDefault(x => x.PermaLink == permalink);
+
+                if (post == null)
+                {
+                    db.RedditPosts.Add(new RedditPost() { PermaLink = permalink, Upvotes = upvotes });
+                }
+                else
+                {
+                    post.Upvotes = upvotes;
+                    db.Update(post);
+                }
                 await db.SaveChangesAsync();
             }
         }
-        public static bool Exists(string name)
+        public static int GetUpvotes(string permaling)
         {
             using (var db = new SqliteDbContext())
             {
-                return db.RedditPosts.Any(x => x.FullName == name);
+                var res = db.RedditPosts.FirstOrDefault(x => x.PermaLink == permaling);
+                if (res == null)
+                    return 0;
+
+                return res.Upvotes;
             }
         }
     }

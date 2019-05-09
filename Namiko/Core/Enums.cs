@@ -13,6 +13,6 @@ namespace Namiko.Core
     [Flags]
     public enum ChannelType
     {
-        Animemes = 1
+        Reddit = 1
     }
 }

@@ -114,6 +114,13 @@ namespace Namiko.Resources.Database
                 return db.SpecialChannels.Where(x => x.Type == type).Select(x => x.ChannelId).ToList();
             }
         }
+        public static List<SpecialChannel> GetChannelsByType(ChannelType type)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                return db.SpecialChannels.Where(x => x.Type == type).ToList();
+            }
+        }
         public static async Task Delete(ulong channelId, ChannelType type)
         {
             using (var db = new SqliteDbContext())
@@ -126,7 +133,7 @@ namespace Namiko.Resources.Database
                 }
             }
         }
-        public static async Task<int> AddChannel(ulong channelId, ChannelType type, ulong guildId)
+        public static async Task<int> AddChannel(ulong channelId, ChannelType type, ulong guildId, string args = "")
         {
             using (var db = new SqliteDbContext())
             {
@@ -137,7 +144,8 @@ namespace Namiko.Resources.Database
                 {
                     ChannelId = channelId,
                     GuildId = guildId,
-                    Type = type
+                    Type = type,
+                    Args = args
                 });
                 return await db.SaveChangesAsync();
             }

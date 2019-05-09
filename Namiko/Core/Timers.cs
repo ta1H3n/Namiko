@@ -32,6 +32,7 @@ namespace Namiko.Core
             Minute.AutoReset = true;
             Minute.Enabled = true;
             Minute.Elapsed += Timer_TimeoutBlackjack;
+            Minute.Elapsed += Timer_Animemes;
 
             Minute5 = new Timer(1000 * 60 * 5);
             Minute5.AutoReset = true;
@@ -317,6 +318,7 @@ namespace Namiko.Core
 
 
         // DISCORBBOTLIST
+        private static bool VoteLock = false;
         public static void Timer_UpdateDBLGuildCount(object sender, ElapsedEventArgs e)
         {
             int amount = 0;
@@ -366,13 +368,17 @@ namespace Namiko.Core
         //}
         public static async void Timer_Voters2(object sender, ElapsedEventArgs e)
         {
+            if (VoteLock)
+                return;
+
+            VoteLock = true;
             IList<IDblEntity> voters = null;
             try
             {
                 voters = await WebUtil.GetVotersAsync();
             }
             catch { return; }
-            var old = VoteDb.GetVoters(1000);
+            var old = VoteDb.GetVoters(500);
             var votersParsed = voters.Select(x => x.Id).ToList();
             votersParsed.Reverse();
 
@@ -387,6 +393,7 @@ namespace Namiko.Core
 
             await VoteDb.AddVoters(add);
             await SendRewards(add);
+            VoteLock = false;
         }
         public static List<T> NewEntries<T>(List<T> oldList, List<T> newList, Func<T, T, bool> equal = null)
         {
@@ -434,21 +441,70 @@ namespace Namiko.Core
 
 
         // REDDIT POST
+        private static bool RedditLock = false;
         private static async void Timer_Animemes(object sender, ElapsedEventArgs e)
         {
-            var hot = await RedditAPI.GetHot("Animemes");
-            await Post(hot.Where(x => x.UpVotes > 2000));
+            if (RedditLock)
+                return;
+
+            RedditLock = true;
+
+            var ids = SpecialChannelDb.GetChannelsByType(ChannelType.Reddit);
+            var channels = await GetChannels(ids);
+            var grouped = channels.GroupBy(x => x.Subreddit);
+
+            foreach(var sub in grouped)
+            {
+                await Post(sub);
+                await Task.Delay(5000);
+            }
+
+            RedditLock = false;
+        }
+        public static async Task Post(IGrouping<string, RedditChannel> sub)
+        {
+            var hot = await RedditAPI.GetHot(sub.Key);
+
+            foreach(var post in hot)
+            {
+                var dbUpvotes = RedditDb.GetUpvotes(post.Permalink);
+                var channels = sub.Where(ch => ch.Upvotes < post.UpVotes && ch.Upvotes > dbUpvotes && !(post.NSFW && !ch.Channel.IsNsfw));
+                if (!channels.Any())
+                    continue;
+
+                await RedditDb.AddPost(post.Permalink, post.UpVotes);
+                var eb = RedditPostEmbed(post);
+                if (eb == null)
+                    continue;
+                var embed = eb.Build();
+
+                foreach (var ch in channels)
+                {
+                    try
+                    {
+                        var msg = await ch.Channel.SendMessageAsync(embed: embed);
+                        _ = Task.Run(async () =>
+                        {
+                            await msg.AddReactionAsync(Emote.Parse("<:Upvote:575031499330420757>"));
+                            await msg.AddReactionAsync(Emote.Parse("<:Downvote:575031499385077806>"));
+                        });
+                    }
+                    catch { }
+                }
+
+                return;
+            }
         }
         public static async Task Post(IEnumerable<Post> hot)
         {
-            var channels = SpecialChannelDb.GetIdsByType(ChannelType.Animemes);
+            var channels = SpecialChannelDb.GetIdsByType(ChannelType.Reddit);
             var client = Program.GetClient();
 
             foreach (var post in hot)
             {
                 if (!RedditDb.Exists(post.Fullname))
                 {
-                    await RedditDb.AddPost(post.Fullname, post.Permalink);
+                    await RedditDb.AddPost(post.Permalink, 0);
 
                     var eb = new EmbedBuilder()
                         .WithColor(BasicUtil.RandomColor())
@@ -491,5 +547,84 @@ namespace Namiko.Core
                 }
             }
         }
+        public static EmbedBuilder RedditPostEmbed(Post post)
+        {
+            var eb = new EmbedBuilder()
+                        .WithColor(BasicUtil.RandomColor())
+                        .WithAuthor(post.Title, "https://i.imgur.com/GthCice.png", "https://www.reddit.com" + post.Permalink);
+            try
+            {
+                eb.WithDescription(((SelfPost)post).SelfText);
+            }
+            catch { }
+            try
+            {
+                eb.WithImageUrl(((LinkPost)post).URL);
+            }
+            catch { }
+            try
+            {
+                if (eb.Description == null && post.Comments.Top[0].UpVotes > 40)
+                    eb.WithDescription(post.Comments.Top[0].Body);
+            }
+            catch { }
+
+            if (eb.Description == null && eb.ImageUrl == null)
+                return null;
+
+            return eb;
+        }
+        public static async Task<List<RedditChannel>> GetChannels(IEnumerable<SpecialChannel> ids)
+        {
+            var client = Program.GetClient();
+            var channels = new List<RedditChannel>();
+            await Task.Run(() =>
+            {
+                foreach (var x in ids)
+                {
+                    try
+                    {
+                        var ch = client.GetChannel(x.ChannelId);
+                        if (ch.GetType() == typeof(SocketTextChannel))
+                            channels.Add(new RedditChannel
+                            {
+                                Channel = (SocketTextChannel)ch,
+                                Subreddit = x.Args.Split(',')[0],
+                                Upvotes = Int32.Parse(x.Args.Split(',')[1])
+                            });
+                    }
+                    catch { }
+                }
+            });
+            return channels;
+        }
+
+
+        // RANDOM
+        public static async Task<List<SocketTextChannel>> GetChannels(IEnumerable<ulong> ids)
+        {
+            var client = Program.GetClient();
+            var channels = new List<SocketTextChannel>();
+            await Task.Run(() =>
+            {
+                foreach (var id in ids)
+                {
+                    try
+                    {
+                        var ch = client.GetChannel(id);
+                        if (ch.GetType() == typeof(SocketTextChannel))
+                            channels.Add((SocketTextChannel)ch);
+                    }
+                    catch { }
+                }
+            });
+            return channels;
+        }
+    }
+    public class RedditChannel
+    {
+        public string Subreddit { get; set; }
+        public SocketTextChannel Channel { get; set; }
+        public int Upvotes { get; set; }
     }
 }

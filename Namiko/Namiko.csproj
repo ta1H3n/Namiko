@@ -33,6 +33,8 @@
     <Compile Remove="Migrations\20190120230934_weekly.cs" />
     <Compile Remove="Migrations\20190120231309_weekly.cs" />
     <Compile Remove="Migrations\20190314005823_voters.cs" />
+    <Compile Remove="Migrations\20190506180532_reddit.cs" />
+    <Compile Remove="Migrations\20190509135536_reddit.cs" />
   </ItemGroup>
 
   <ItemGroup>

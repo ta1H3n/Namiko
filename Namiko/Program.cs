@@ -219,6 +219,8 @@ namespace Namiko
                     await Context.Channel.SendMessageAsync(reason);
                     return;
                 }
+                if (text == null)
+                    return;
             }
 
             if (text == null)

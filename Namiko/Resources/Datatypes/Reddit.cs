@@ -8,7 +8,7 @@ namespace Namiko.Resources.Datatypes
     public class RedditPost
     {
         [Key]
-        public string FullName { get; set; }
         public string PermaLink { get; set; }
+        public int Upvotes { get; set; }
     }
 }

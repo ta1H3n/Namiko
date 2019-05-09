@@ -9,7 +9,7 @@ using Namiko.Resources.Database;
 namespace Namiko.Migrations
 {
     [DbContext(typeof(SqliteDbContext))]
-    [Migration("20190506180532_reddit")]
+    [Migration("20190509170148_reddit")]
     partial class reddit
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -236,12 +236,12 @@ namespace Namiko.Migrations
 
             modelBuilder.Entity("Namiko.Resources.Datatypes.RedditPost", b =>
                 {
-                    b.Property<string>("FullName")
+                    b.Property<string>("PermaLink")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("PermaLink");
+                    b.Property<int>("Upvotes");
 
-                    b.HasKey("FullName");
+                    b.HasKey("PermaLink");
 
                     b.ToTable("RedditPosts");
                 });
@@ -296,6 +296,8 @@ namespace Namiko.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Args");
 
                     b.Property<ulong>("ChannelId");
 

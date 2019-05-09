@@ -10,12 +10,12 @@ namespace Namiko.Migrations
                 name: "RedditPosts",
                 columns: table => new
                 {
-                    FullName = table.Column<string>(nullable: false),
-                    PermaLink = table.Column<string>(nullable: true)
+                    PermaLink = table.Column<string>(nullable: false),
+                    Upvotes = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_RedditPosts", x => x.FullName);
+                    table.PrimaryKey("PK_RedditPosts", x => x.PermaLink);
                 });
 
             migrationBuilder.CreateTable(
@@ -26,6 +26,7 @@ namespace Namiko.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     ChannelId = table.Column<ulong>(nullable: false),
                     Type = table.Column<int>(nullable: false),
+                    Args = table.Column<string>(nullable: true),
                     GuildId = table.Column<ulong>(nullable: false)
                 },
                 constraints: table =>

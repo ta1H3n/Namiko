@@ -234,12 +234,12 @@ namespace Namiko.Migrations
 
             modelBuilder.Entity("Namiko.Resources.Datatypes.RedditPost", b =>
                 {
-                    b.Property<string>("FullName")
+                    b.Property<string>("PermaLink")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("PermaLink");
+                    b.Property<int>("Upvotes");
 
-                    b.HasKey("FullName");
+                    b.HasKey("PermaLink");
 
                     b.ToTable("RedditPosts");
                 });
@@ -294,6 +294,8 @@ namespace Namiko.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Args");
 
                     b.Property<ulong>("ChannelId");
 
