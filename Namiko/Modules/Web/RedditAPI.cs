@@ -43,6 +43,13 @@ namespace Namiko
             return posts;
         }
 
+        public static async Task<Subreddit> GetSubreddit(string subredditName)
+        {
+            var sub = Client.Subreddit(subredditName);
+            await Task.Run(() => sub = sub.About());
+            return sub;
+        }
+
         public static void Poke()
         {
 

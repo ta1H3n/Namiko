@@ -34,11 +34,11 @@ namespace Namiko
                 await db.SaveChangesAsync();
             }
         }
-        public static int GetUpvotes(string permaling)
+        public static int GetUpvotes(string permalink)
         {
             using (var db = new SqliteDbContext())
             {
-                var res = db.RedditPosts.FirstOrDefault(x => x.PermaLink == permaling);
+                var res = db.RedditPosts.FirstOrDefault(x => x.PermaLink == permalink);
                 if (res == null)
                     return 0;
 

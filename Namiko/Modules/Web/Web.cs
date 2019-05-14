@@ -12,6 +12,7 @@ using System;
 using Discord.WebSocket;
 
 using Discord.Addons.Interactive;
+using Reddit.Controllers;
 
 namespace Namiko
 {
@@ -180,20 +181,85 @@ namespace Namiko
 
             await ResponseQuery.DeleteAsync();
         }
-
-        [Command("Animemes"), Summary("Sets a channel where Namiko will post popular anime memes.\n**Usage**: `!Animemes`"), CustomUserPermission(GuildPermission.ManageChannels), RequireContext(ContextType.Guild)]
-        public async Task Animemes([Remainder] string str = "")
+        
+        [Command("Subreddit"), Alias("sub"), Summary("Set a subreddit for Namiko to post hot posts from.\n**Usage**: `!sub [subreddit_name] [min_upvotes]`"), CustomUserPermission(GuildPermission.ManageChannels), RequireContext(ContextType.Guild)]
+        public async Task Subreddit(string name, int upvotes)
         {
-            if(SpecialChannelDb.IsType(Context.Channel.Id, ChannelType.Reddit))
+            var subs = SpecialChannelDb.GetChannelsByGuild(Context.Guild.Id, ChannelType.Reddit);
+            if(subs.Count() >= 1)
             {
-                await SpecialChannelDb.Delete(Context.Channel.Id, ChannelType.Reddit);
-                await Context.Channel.SendMessageAsync("I'll stop posting anime memes here. You're no fun...");
+                await Context.Channel.SendMessageAsync("Limit 1 subscription per guild.");
+                return;
             }
-            else
+
+            if (upvotes < 100)
             {
-                await SpecialChannelDb.AddChannel(Context.Channel.Id, ChannelType.Reddit, Context.Guild.Id);
-                await Context.Channel.SendMessageAsync("Channel set as an anime memes channel! I will post popular memes here!");
+                await Context.Channel.SendMessageAsync("Upvote minimum must be at least 100.");
+                return;
             }
+
+            await Context.Channel.TriggerTypingAsync();
+            Subreddit sub = null;
+            try
+            {
+                sub = await RedditAPI.GetSubreddit(name);
+            } catch
+            {
+                await Context.Channel.SendMessageAsync($"Subreddit **{name}** not found.");
+                return;
+            }
+            if (sub.Subscribers < 25000)
+            {
+                await Context.Channel.SendMessageAsync("Subreddit must have at least 25,000 subscribers.");
+                return;
+            }
+            try
+            {
+                if (sub.Over18.Value && !((SocketTextChannel)Context.Channel).IsNsfw)
+                {
+                    await Context.Channel.SendMessageAsync($"**{sub.Name}** is a NSFW subreddit. This channel must be marked as NSFW.");
+                    return;
+                }
+            } catch { }
+
+            var old = subs.FirstOrDefault(x => x.ChannelId == Context.Channel.Id && x.Args.Split(",")[0].Equals(sub.Name));
+            if(old != null)
+            {
+                await SpecialChannelDb.Delete(old);
+            }
+
+            await SpecialChannelDb.AddChannel(Context.Channel.Id, ChannelType.Reddit, Context.Guild.Id, sub.Name + "," + upvotes);
+            await Context.Channel.SendMessageAsync(embed: WebUtil.SubredditSubscribedEmbed(sub, upvotes).Build());
+        }
+
+        [Command("Unsubscribe"), Alias("unsub"), Summary("Unsubscribe from a subreddit.\n**Usage**: `!unsub [subreddit_name]`"), CustomUserPermission(GuildPermission.ManageChannels)]
+        public async Task Subreddit(string name)
+        {
+            await Context.Channel.TriggerTypingAsync();
+            Subreddit sub = null;
+            try
+            {
+                sub = await RedditAPI.GetSubreddit(name);
+            }
+            catch
+            {
+                await Context.Channel.SendMessageAsync($"Subreddit **{name}** not found.");
+                return;
+            }
+
+            var subs = SpecialChannelDb.GetChannelsByGuild(Context.Guild.Id, ChannelType.Reddit);
+            var olds = subs.Where(x => x.Args.Split(",")[0].Equals(sub.Name));
+            foreach (var old in olds)
+            {
+                await SpecialChannelDb.Delete(old);
+                await Context.Channel.SendMessageAsync($"Unsubscribed from **{sub.Name}**. Were their posts not good enough?");
+            }
+        }
+
+        [Command("SubList"), Summary("Subreddits you are subscribed to.\n**Usage**: `!sublist`")]
+        public async Task SubList()
+        {
+            await Context.Channel.SendMessageAsync(embed: WebUtil.SubListEmbed(Context.Guild.Id).Build());
         }
     }
 }

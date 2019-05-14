@@ -230,8 +230,6 @@ namespace Namiko
         {
             if (!arg3.IsSuccess)
                 return;
-
-            Console.WriteLine(arg1.Value.Name);
             
             Stats.IncrementServer(arg2.Guild.Id);
             Stats.IncrementCommand(arg1.Value.Name);

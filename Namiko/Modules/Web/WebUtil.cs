@@ -16,6 +16,7 @@ using DiscordBotsList.Api.Internal.Queries;
 using DiscordBotsList.Api.Objects;
 using DiscordBotsList.Api;
 using Namiko.Data;
+using Reddit.Controllers;
 
 namespace Namiko
 {
@@ -267,6 +268,40 @@ namespace Namiko
         public static void UpdateGuildCount(int amount)
         {
             Task.Run(() => DblApi.UpdateStats(amount));
+        }
+
+        // REDDIT
+
+        public static EmbedBuilder SubredditSubscribedEmbed(Subreddit sub, int upvotes)
+        {
+            var eb = new EmbedBuilder();
+
+            eb.WithAuthor(sub.Title, sub.CommunityIcon, "https://www.reddit.com" + sub.URL);
+            try { eb.WithImageUrl(sub.BannerImg); } catch { }
+            eb.WithDescription($"Subscribed to hot posts from **{sub.Name}** that reach **{upvotes}** or more upvotes.");
+            eb.WithColor(BasicUtil.RandomColor());
+            eb.WithFooter($"Type `!unsub {sub.Name}` to unsubscribe.");
+
+            return eb;
+        }
+
+        public static EmbedBuilder SubListEmbed(ulong guildId)
+        {
+            var eb = new EmbedBuilder();
+            var subs = SpecialChannelDb.GetChannelsByGuild(guildId, ChannelType.Reddit);
+
+            string desc = "";
+            foreach(var sub in subs)
+            {
+                string[] args = sub.Args.Split(",");
+                desc += $"1. *{args[0]}* - **{args[1]}** upvotes\n";
+            }
+
+            eb.WithDescription(desc == "" ? "-" : desc);
+            eb.WithAuthor("Subreddits subscribed in this server");
+            eb.WithColor(BasicUtil.RandomColor());
+            eb.WithFooter($"Type `!unsub [name]` to unsubscribe.");
+            return eb;
         }
     }
 }

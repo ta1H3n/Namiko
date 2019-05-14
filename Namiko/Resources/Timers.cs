@@ -321,47 +321,6 @@ namespace Namiko
             amount = Program.GetClient().Guilds.Count;
             WebUtil.UpdateGuildCount(amount);
         }
-        //public static async void Timer_Voters(object sender, ElapsedEventArgs e)
-        //{
-        //    IList<IDblEntity> voters = null;
-        //    try
-        //    {
-        //        voters = await WebUtil.GetVoters();
-        //    }
-        //    catch { return; }
-        //    var old = VoteDb.GetVoters();
-
-        //    var votesNew = new Dictionary<ulong, int>();
-        //    var votesOld = new Dictionary<ulong, int>();
-
-        //    foreach (var x in voters)
-        //        if (!votesNew.ContainsKey(x.Id))
-        //            votesNew.Add(x.Id, voters.Count(y => y.Id == x.Id));
-
-        //    foreach (var x in old)
-        //        if (!votesOld.ContainsKey(x.UserId))
-        //            votesOld.Add(x.UserId, old.Count(y => y.UserId == x.UserId));
-
-        //    var add = new List<Voter>();
-        //    foreach (var x in votesNew)
-        //    {
-        //        if (votesOld.GetValueOrDefault(x.Key) < x.Value)
-        //            add.Add(new Voter { UserId = x.Key });
-
-        //        else if (votesOld.GetValueOrDefault(x.Key) > x.Value)
-        //            await VoteDb.DeleteLast(x.Key);
-
-        //        votesOld.Remove(x.Key);
-        //    }
-
-        //    foreach (var x in votesOld)
-        //    {
-        //        await VoteDb.DeleteLast(x.Key);
-        //    }
-
-        //    await VoteDb.AddVoters(add);
-        //    await SendRewards(add);
-        //}
         public static async void Timer_Voters2(object sender, ElapsedEventArgs e)
         {
             if (VoteLock)
@@ -481,7 +440,7 @@ namespace Namiko
                     continue;
 
                 await RedditDb.AddPost(post.Permalink, post.UpVotes);
-                var eb = RedditPostEmbed(post);
+                var eb = RedditPostEmbed(post, sub.Key);
                 if (eb == null)
                     continue;
                 var embed = eb.Build();
@@ -493,8 +452,8 @@ namespace Namiko
                         var msg = await ch.Channel.SendMessageAsync(embed: embed);
                         _ = Task.Run(async () =>
                         {
-                            await msg.AddReactionAsync(Emote.Parse("<:Upvote:575031499330420757>"));
-                            await msg.AddReactionAsync(Emote.Parse("<:Downvote:575031499385077806>"));
+                            await msg.AddReactionAsync(Emote.Parse("<:SignUpvote:577919849250947072>"));
+                            await msg.AddReactionAsync(Emote.Parse("<:SignDownvote:577919848554823680>"));
                         });
                     }
                     catch { }
@@ -503,63 +462,12 @@ namespace Namiko
                 return;
             }
         }
-        public static async Task Post(IEnumerable<Post> hot)
-        {
-            var channels = SpecialChannelDb.GetIdsByType(ChannelType.Reddit);
-            var client = Program.GetClient();
-
-            foreach (var post in hot)
-            {
-                if (!RedditDb.Exists(post.Fullname))
-                {
-                    await RedditDb.AddPost(post.Permalink, 0);
-
-                    var eb = new EmbedBuilder()
-                        .WithColor(BasicUtil.RandomColor())
-                        .WithAuthor(post.Title, "https://i.imgur.com/LowWu1Z.png", "https://www.reddit.com" + post.Permalink);
-                    try
-                    {
-                        eb.WithDescription(((SelfPost)post).SelfText);
-                    } catch { }
-                    try
-                    {
-                        eb.WithImageUrl(((LinkPost)post).URL);
-                    } catch { }
-                    try
-                    {
-                        if(eb.Description == null)
-                            eb.WithDescription(post.Comments.Top[0].Body);
-                    }
-                    catch { }
-
-                    if (eb.Description == null && eb.ImageUrl == null)
-                        return;
-                    var embed = eb.Build();
-                    
-                    foreach (var id in channels)
-                    {
-                        try
-                        {
-                            SocketTextChannel ch = null;
-                            await Task.Run(() => ch = (SocketTextChannel)client.GetChannel(id));
-                            var msg = await ch.SendMessageAsync(embed: embed);
-                            _ = Task.Run(async () =>
-                            {
-                                await msg.AddReactionAsync(Emote.Parse("<:Upvote:575031499330420757>"));
-                                await msg.AddReactionAsync(Emote.Parse("<:Downvote:575031499385077806>"));
-                            });
-                        } catch { }
-                    }
-
-                    return;
-                }
-            }
-        }
-        public static EmbedBuilder RedditPostEmbed(Post post)
+        public static EmbedBuilder RedditPostEmbed(Post post, string sub)
         {
             var eb = new EmbedBuilder()
                         .WithColor(BasicUtil.RandomColor())
-                        .WithAuthor(post.Title, "https://i.imgur.com/GthCice.png", "https://www.reddit.com" + post.Permalink);
+                        .WithAuthor(post.Title, "https://i.imgur.com/GthCice.png", "https://www.reddit.com" + post.Permalink)
+                        .WithFooter("r/" + sub + " - " + post.UpVotes + " upvotes");
             try
             {
                 eb.WithDescription(((SelfPost)post).SelfText);

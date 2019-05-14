@@ -149,6 +149,14 @@ namespace Namiko
                 }
             }
         }
+        public static async Task Delete(SpecialChannel ch)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                db.Remove(ch);
+                await db.SaveChangesAsync();
+            }
+        }
         public static async Task<int> AddChannel(ulong channelId, ChannelType type, ulong guildId, string args = "")
         {
             using (var db = new SqliteDbContext())
@@ -164,6 +172,17 @@ namespace Namiko
                     Args = args
                 });
                 return await db.SaveChangesAsync();
+            }
+        }
+        public static List<SpecialChannel> GetChannelsByGuild(ulong guildId, ChannelType? type = null)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                if (type.HasValue)
+                {
+                    return db.SpecialChannels.Where(x => x.GuildId == guildId && x.Type == type.Value).ToList();
+                }
+                return db.SpecialChannels.Where(x => x.GuildId == guildId).ToList();
             }
         }
     }
