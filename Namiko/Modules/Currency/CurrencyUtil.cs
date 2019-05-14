@@ -25,8 +25,29 @@ namespace Namiko
                 amount = ToastieDb.GetToasties(user.Id, user.Guild.Id);
                 if (amount > 10000)
                     amount = 10000;
+                return amount;
             }
-            else if (!Int32.TryParse(sAmount, out amount))
+            if (sAmount.Equals("half", StringComparison.InvariantCultureIgnoreCase))
+            {
+                amount = ToastieDb.GetToasties(user.Id, user.Guild.Id) / 2;
+                return amount;
+            }
+            var div = sAmount.Split('/');
+            if(div.Length == 2)
+            {
+                try
+                {
+                    double x = Int32.Parse(div[0]);
+                    double y = Int32.Parse(div[1]);
+                    if (x / y > 0 && x / y <= 1)
+                    {
+                        amount = (int)(ToastieDb.GetToasties(user.Id, user.Guild.Id) * x / y);
+                        return amount;
+                    }
+                } catch { }
+            }
+
+            if (!Int32.TryParse(sAmount, out amount))
             {
                 amount = 0;
             }

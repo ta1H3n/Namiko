@@ -39,8 +39,6 @@
 
   <ItemGroup>
     <None Remove="Database.sqlite" />
-    <None Remove="Data\Database.sqlite" />
-    <None Remove="Data\stats.sqlite" />
   </ItemGroup>
 
   <ItemGroup>

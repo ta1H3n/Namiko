@@ -1,8 +1,5 @@
 ﻿using Namiko.Data;
 
-
-
-
 using System;
 using System.IO;
 using System.Linq;
