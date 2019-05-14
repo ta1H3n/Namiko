@@ -29,8 +29,14 @@ namespace Namiko
             }
 
             int amount = ToastieUtil.ParseAmount(sAmount, user);
-            if (amount <= 0) {
-                await Context.Channel.SendMessageAsync("Pick an amount!");
+            if (amount < 0)
+            {
+                await Context.Channel.SendMessageAsync("Pick an amount! number, all, half, or x/y.");
+                return;
+            }
+            if (amount == 0)
+            {
+                await Context.Channel.SendMessageAsync("You have no toasties...");
                 return;
             }
 
@@ -142,6 +148,7 @@ namespace Namiko
         {
             var user = (SocketGuildUser)Context.User;
             var rnd = new Random();
+            side = side.ToLower();
 
             if (!(side.Equals("t") || side.Equals("h") || side.Equals("tails") || side.Equals("heads")))
             {
@@ -150,9 +157,14 @@ namespace Namiko
             }
 
             int amount = ToastieUtil.ParseAmount(sAmount, user);
-            if (amount <= 0)
+            if (amount < 0)
             {
-                await Context.Channel.SendMessageAsync("Pick an amount!");
+                await Context.Channel.SendMessageAsync("Pick an amount! number, all, half, or x/y.");
+                return;
+            }
+            if (amount == 0)
+            {
+                await Context.Channel.SendMessageAsync("You have no toasties...");
                 return;
             }
 
@@ -206,9 +218,14 @@ namespace Namiko
         public async Task Give(IUser recipient, string sAmount, [Remainder] string str = "")
         {
             int amount = ToastieUtil.ParseAmount(sAmount, (SocketGuildUser)Context.User);
-            if (amount <= 0)
+            if (amount < 0)
             {
-                await Context.Channel.SendMessageAsync("Pick an amount!");
+                await Context.Channel.SendMessageAsync("Pick an amount! number, all, half, or x/y.");
+                return;
+            }
+            if (amount == 0)
+            {
+                await Context.Channel.SendMessageAsync("You have no toasties...");
                 return;
             }
 

@@ -37,8 +37,8 @@ namespace Namiko
             {
                 try
                 {
-                    double x = Int32.Parse(div[0]);
-                    double y = Int32.Parse(div[1]);
+                    double x = double.Parse(div[0]);
+                    double y = double.Parse(div[1]);
                     if (x / y > 0 && x / y <= 1)
                     {
                         amount = (int)(ToastieDb.GetToasties(user.Id, user.Guild.Id) * x / y);
@@ -49,9 +49,9 @@ namespace Namiko
 
             if (!Int32.TryParse(sAmount, out amount))
             {
-                amount = 0;
+                amount = -1;
             }
-            return amount;
+            return amount == 0 ? -1 : amount;
         }
         public static EmbedBuilder ToastieEmbed(IUser user, int amount)
         {
