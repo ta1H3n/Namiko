@@ -274,3 +274,6 @@ __pycache__/
 /Namiko/Properties/PublishProfiles/ARM64.pubxml
 /Tests
 /Namiko/Data/DiscordBotsToken.txt
+/Namiko/Data/Database.sqlite
+/Namiko/Data/DblToken.txt
+/Namiko/Data/stats.sqlite
