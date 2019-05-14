@@ -7,21 +7,20 @@ using System.Linq;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using Namiko.Resources.Datatypes;
-using Namiko.Core.Modules;
+
+
 using Newtonsoft.Json;
-using Namiko.Core.Util;
+
 using Namiko.Data;
 using System.Timers;
-using Namiko.Core;
-using Namiko.Resources.Database;
+
+
 using Microsoft.Extensions.DependencyInjection;
 using Discord.Addons.Interactive;
 using System.Collections.Generic;
 using System.Threading;
 
-#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+#pragma warning disable CS1998
 
 namespace Namiko
 {
@@ -34,6 +33,7 @@ namespace Namiko
         private static Dictionary<ulong, string> Prefixes = new Dictionary<ulong, string>();
         private static CancellationTokenSource cts = new CancellationTokenSource();
         private static CancellationToken ct = cts.Token;
+        private static bool Launch = true;
         public static bool Debug = false;
 
         static void Main(string[] args)
@@ -44,13 +44,15 @@ namespace Namiko
             //SetUpRelease();
             SetUpPrefixes();
 
-            Client = new DiscordShardedClient();
+            Client = new DiscordShardedClient(new DiscordSocketConfig {
+                LogLevel = LogSeverity.Info
+            });
             
             Commands = new CommandService(new CommandServiceConfig
             {
                 CaseSensitiveCommands = false,
                 DefaultRunMode = RunMode.Async,
-                LogLevel = LogSeverity.Verbose
+                LogLevel = LogSeverity.Critical
             });
             
             //Client.Ready += Client_Ready;
@@ -68,7 +70,9 @@ namespace Namiko
             Client.UserJoined += Client_UserJoinedLog;
             Client.UserLeft += Client_UserLeftLog;
             Client.UserBanned += Client_UserBannedLog;
-          
+
+            Commands.Log += Client_Log;
+            Commands.CommandExecuted += Commands_CommandExecuted;
             
             await Client.LoginAsync(TokenType.Bot, ParseSettingsJson());
             await Client.StartAsync();
@@ -78,8 +82,19 @@ namespace Namiko
                 .AddSingleton<InteractiveService>()
                 .BuildServiceProvider();
 
-            await Commands.AddModulesAsync(Assembly.GetEntryAssembly(), Services);
-            
+            //await Commands.AddModulesAsync(Assembly.GetEntryAssembly(), Services);
+            await Commands.AddModuleAsync(typeof(Banroulettes), Services);
+            await Commands.AddModuleAsync(typeof(Basic), Services);
+            await Commands.AddModuleAsync(typeof(Currency), Services);
+            await Commands.AddModuleAsync(typeof(Images), Services);
+            await Commands.AddModuleAsync(typeof(Roles), Services);
+            await Commands.AddModuleAsync(typeof(ServerModule), Services);
+            await Commands.AddModuleAsync(typeof(Special), Services);
+            await Commands.AddModuleAsync(typeof(SpecialModes), Services);
+            await Commands.AddModuleAsync(typeof(User), Services);
+            await Commands.AddModuleAsync(typeof(Waifus), Services);
+            await Commands.AddModuleAsync(typeof(Web), Services);
+
             try
             {
                 await Task.Delay(-1, ct);
@@ -87,6 +102,7 @@ namespace Namiko
             catch { }
             cts.Dispose();
         }
+        
 
         // EVENTS
 
@@ -129,36 +145,16 @@ namespace Namiko
         private async Task Client_UserLeftToasties(SocketGuildUser arg)
         {
             var amount = ToastieDb.GetToasties(arg.Id, arg.Guild.Id) / 4;
-            ToastieDb.AddToasties(arg.Id, -amount, arg.Guild.Id);
-            ToastieDb.AddToasties(Client.CurrentUser.Id, amount, arg.Guild.Id);
-        }
-        private async Task Client_Ready()
-        {
-            var ch = Client.GetChannel(StaticSettings.log_channel) as ISocketMessageChannel;
-            await ch.SendMessageAsync($"`{DateTime.Now} - Ready`");
-        }
-        private async Task Client_ShardReady(DiscordSocketClient arg)
-        {
-            WebUtil.SetUpDbl(Client.CurrentUser.Id);
-            var ch = Client.GetChannel(StaticSettings.log_channel) as ISocketMessageChannel;
-            await ch.SendMessageAsync($"`{DateTime.Now} - Shard {arg.ShardId} Ready`");
-            if(arg.ShardId == 0)
-                await Ready();
-        }
-        private async Task Ready()
-        {
-            if (!Debug)
-            {
-                var ch = Client.GetChannel(StaticSettings.log_channel) as ISocketMessageChannel;
-                int[] res = await SetUpServers();
-                await ch.SendMessageAsync($"`{DateTime.Now} - Servers Ready. Joined {res[0]}, left {res[1]}`");
-                ImgurAPI.Poke();
-            }
+            await ToastieDb.AddToasties(arg.Id, -amount, arg.Guild.Id);
+            await ToastieDb.AddToasties(Client.CurrentUser.Id, amount, arg.Guild.Id);
         }
         private async Task Client_Log(LogMessage arg)
         {
-            string message = $"`{DateTime.Now} at {arg.Source}] {arg.Message}`";
+            string message = $"{DateTime.Now} at {arg.Source}] {arg.Message}";
             Console.WriteLine(message);
+
+            if(arg.Severity == LogSeverity.Critical)
+            await (await Client.GetUser(StaticSettings.owner).GetOrCreateDMChannelAsync()).SendMessageAsync($"`{message}`");
         }
         private async Task Client_MessageReceived(SocketMessage MessageParam)
         {
@@ -193,11 +189,14 @@ namespace Namiko
 
             if (!isPrefixed)
                 return;
-            var cmds = Commands.Search(Context, ArgPos);
-            if (cmds.IsSuccess && Pause && Context.User.Id != StaticSettings.owner)
+            if (Pause && Context.User.Id != StaticSettings.owner)
             {
-                await Context.Channel.SendMessageAsync("Commands disabled temporarily. Try again later.");
-                return;
+                var cmds = Commands.Search(Context, ArgPos);
+                if (cmds.IsSuccess && Pause && Context.User.Id != StaticSettings.owner)
+                {
+                    await Context.Channel.SendMessageAsync("Commands disabled temporarily. Try again later.");
+                    return;
+                }
             }
             
             var Result = await Commands.ExecuteAsync(Context, ArgPos, Services);
@@ -206,34 +205,37 @@ namespace Namiko
             if(!Result.IsSuccess)
             {
                 if (await new Basic().Help(Context, Commands))
-                    text = "help";
+                    text = "Help";
                 else if (await new Images().SendRandomImage(Context))
-                    text = "image";
+                    text = "ReactionImage";
 
                 else if (!(Result.Error == CommandError.UnknownCommand))
                 {
-                    Console.WriteLine($"{DateTime.Now} at Commands] Text: {Message.Content} | Error: {Result.ErrorReason}");
                     string reason = Result.ErrorReason + "\n";
                     if (!(Result.Error == CommandError.UnmetPrecondition))
                         reason += CommandHelpString(MessageParam.Content.Split(null)[0].Replace(prefix, ""), prefix);
                     await Context.Channel.SendMessageAsync(reason);
                     return;
                 }
-                if (text == null)
-                    return;
             }
 
             if (text == null)
-            {
-                text = Context.Message.Content;
-                text = text.Replace(prefix, "");
-                text = text.Split(' ')[0];
-                text = text.ToLower();
-            }
+                return;
 
-            Core.Stats.IncrementServer(Context.Guild.Id);
-            Core.Stats.IncrementCommand(text);
-            Core.Stats.IncrementCalls();
+            Stats.IncrementServer(Context.Guild.Id);
+            Stats.IncrementCommand(text);
+            Stats.IncrementCalls();
+        }
+        private async Task Commands_CommandExecuted(Optional<CommandInfo> arg1, ICommandContext arg2, IResult arg3)
+        {
+            if (!arg3.IsSuccess)
+                return;
+
+            Console.WriteLine(arg1.Value.Name);
+            
+            Stats.IncrementServer(arg2.Guild.Id);
+            Stats.IncrementCommand(arg1.Value.Name);
+            Stats.IncrementCalls();
         }
         private async Task Client_MessageReceivedSpecialModes(SocketMessage MessageParam)
         {
@@ -266,7 +268,7 @@ namespace Namiko
         private async Task Client_JoinedGuild(SocketGuild arg)
         {
             DateTime now = DateTime.Now;
-            Resources.Datatypes.Server server = ServerDb.GetServer(arg.Id) ?? new Resources.Datatypes.Server
+            Server server = ServerDb.GetServer(arg.Id) ?? new Server
             {
                 GuildId = arg.Id,
                 JoinDate = now
@@ -283,9 +285,7 @@ namespace Namiko
             SocketTextChannel ch = arg.SystemChannel ?? arg.DefaultChannel;
             try
             {
-                await ch?.SendMessageAsync($"Helloooo! Take good care of me! Try `{server.Prefix}info` to learn more about me, or `{server.Prefix}help` for a list of my commands!\n" +
-                    $"Type `{server.Prefix}sp [prefix]` or `@Namiko#8734 sp [prefix]` to change my prefix! The default is `!`\n" +
-                    $"You can find my usage guide here: <https://github.com/ta1H3n/Namiko/wiki>");
+                await ch?.SendMessageAsync("Hi! Please take good care of me!", false, BasicUtil.GuildJoinEmbed(server.Prefix).Build());
             } catch { }
             await ((ISocketMessageChannel)Client.GetChannel(StaticSettings.log_channel)).SendMessageAsync($":white_check_mark: I joined `{arg.Id}` **{arg.Name}**.\nOwner: `{arg.Owner.Id}` **{arg.Owner}**");
         }
@@ -321,8 +321,41 @@ namespace Namiko
             return (SocketTextChannel) guild.GetChannel(ServerDb.GetServer(guild.Id).JoinLogChannelId);
         }
 
-        // SET-UP / TECHNICAL
+        // SET-UP / READY
 
+        private async Task Client_ShardReady(DiscordSocketClient arg)
+        {
+            var ch = Client.GetChannel(StaticSettings.log_channel) as ISocketMessageChannel;
+            Console.WriteLine($"{DateTime.Now} - Shard {arg.ShardId} Ready");
+            _ = ch.SendMessageAsync($"`{DateTime.Now} - Shard {arg.ShardId} Ready`");
+            int res = 0;
+            if (Launch)
+            {
+                Ready();
+                res = await CheckLeftGuilds();
+                if (res > 0)
+                {
+                    Console.WriteLine($"{DateTime.Now} - Left {res} Guilds.");
+                    _ = ch.SendMessageAsync($"`{DateTime.Now} - Left {res} Guilds.`");
+                }
+            }
+            
+            res = await CheckJoinedGuilds(arg);
+            if (res > 0)
+            {
+                Console.WriteLine($"{DateTime.Now} - Joined {res} Guilds.");
+                _ = ch.SendMessageAsync($"`{DateTime.Now} - Joined {res} Guilds.`");
+            }
+        }
+        private void Ready()
+        {
+            if (!Debug)
+            {
+                RedditAPI.Poke();
+                ImgurAPI.Poke();
+                WebUtil.SetUpDbl(Client.CurrentUser.Id);
+            }
+        }
         private static string ParseSettingsJson()
         {
             string JSON = "";
@@ -365,9 +398,66 @@ namespace Namiko
             Console.WriteLine(Locations.SqliteDb);
             Timers.SetUpRelease();
         }
-        private static async Task<int[]> SetUpServers()
+        private static async Task<int> CheckJoinedGuilds(DiscordSocketClient shard = null)
+        {
+            IReadOnlyCollection<SocketGuild> guilds = null;
+            if (shard == null)
+                guilds = Client.Guilds;
+            else
+                guilds = shard.Guilds;
+
+            var servers = ServerDb.GetNotLeft();
+            HashSet<ulong> existingIds = new HashSet<ulong>(servers.Select(x => x.GuildId));
+            var zerotime = new DateTime(0);
+
+            int added = 0;
+            foreach(var guild in guilds)
+            {
+                if(!existingIds.Contains(guild.Id))
+                {
+                    var server = new Server
+                    {
+                        GuildId = guild.Id,
+                        JoinDate = System.DateTime.Now,
+                        LeaveDate = zerotime,
+                        Prefix = StaticSettings.prefix
+                    };
+                    await ServerDb.UpdateServer(server);
+                    await ToastieDb.SetToasties(Client.CurrentUser.Id, 1000000, guild.Id);
+                    added++;
+                }
+            }
+
+            return added;
+        }
+        private static async Task<int> CheckLeftGuilds()
         {
             var guilds = Client.Guilds;
+            HashSet<ulong> existingIds = new HashSet<ulong>(guilds.Select(x => x.Id));
+
+            var servers = ServerDb.GetNotLeft();
+
+            int left = 0;
+            foreach (var srv in servers)
+            {
+                if (!existingIds.Contains(srv.GuildId))
+                {
+                    srv.LeaveDate = DateTime.Now;
+                    await ServerDb.UpdateServer(srv);
+                    left++;
+                }
+            }
+
+            return left;
+        }
+        private static async Task<int[]> SetUpServers(DiscordSocketClient shard = null)
+        {
+            IReadOnlyCollection<SocketGuild> guilds = null;
+            if (shard == null)
+                guilds = Client.Guilds;
+            else
+                guilds = shard.Guilds;
+
             var servers = ServerDb.GetAll();
 
             int added = 0;
@@ -375,7 +465,7 @@ namespace Namiko
             {
                 if(!servers.Any(y => y.GuildId == x.Id))
                 {
-                    var server = new Resources.Datatypes.Server
+                    var server = new Server
                     {
                         GuildId = x.Id,
                         JoinDate = System.DateTime.Now,
@@ -385,19 +475,19 @@ namespace Namiko
                     await ToastieDb.SetToasties(Client.CurrentUser.Id, 1000000, x.Id);
                     added++;
                 }
-                await Task.Delay(10);
+                await Task.Delay(2);
             }
 
             int left = 0;
-            foreach(var srv in servers)
+            foreach(var srv in servers.Where(x => x.LeaveDate == new DateTime(0)))
             {
-                if(srv.LeaveDate == new DateTime(0) && !guilds.Any(y => y.Id == srv.GuildId))
+                if(!guilds.Any(y => y.Id == srv.GuildId))
                 {
                     srv.LeaveDate = DateTime.Now;
                     await ServerDb.UpdateServer(srv);
                     left++;
                 }
-                await Task.Delay(10);
+                await Task.Delay(2);
             }
             Console.WriteLine($"Servers ready. Added {added}. Left {left}.");
 
@@ -504,6 +594,14 @@ namespace Namiko
         public static DiscordShardedClient GetClient()
         {
             return Client;
+        }
+        public static CommandService GetCommands()
+        {
+            return Commands;
+        }
+        public static IServiceProvider GetServices()
+        {
+            return Services;
         }
         private static string GetWelcomeMessageString(SocketUser user)
         {

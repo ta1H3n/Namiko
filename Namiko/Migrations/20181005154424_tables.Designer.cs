@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Namiko.Resources.Database;
+
 
 namespace Namiko.Migrations
 {
@@ -18,7 +18,7 @@ namespace Namiko.Migrations
             modelBuilder
                 .HasAnnotation("ProductVersion", "2.1.4-rtm-31024");
 
-            modelBuilder.Entity("Namiko.Resources.Datatypes.Daily", b =>
+            modelBuilder.Entity("Namiko.Daily", b =>
                 {
                     b.Property<ulong>("UserId")
                         .ValueGeneratedOnAdd();
@@ -32,7 +32,7 @@ namespace Namiko.Migrations
                     b.ToTable("Dailies");
                 });
 
-            modelBuilder.Entity("Namiko.Resources.Datatypes.Invite", b =>
+            modelBuilder.Entity("Namiko.Invite", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -46,7 +46,7 @@ namespace Namiko.Migrations
                     b.ToTable("Invites");
                 });
 
-            modelBuilder.Entity("Namiko.Resources.Datatypes.PublicRole", b =>
+            modelBuilder.Entity("Namiko.PublicRole", b =>
                 {
                     b.Property<ulong>("RoleId")
                         .ValueGeneratedOnAdd();
@@ -56,7 +56,7 @@ namespace Namiko.Migrations
                     b.ToTable("PublicRoles");
                 });
 
-            modelBuilder.Entity("Namiko.Resources.Datatypes.ReactionImage", b =>
+            modelBuilder.Entity("Namiko.ReactionImage", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -70,7 +70,7 @@ namespace Namiko.Migrations
                     b.ToTable("Images");
                 });
 
-            modelBuilder.Entity("Namiko.Resources.Datatypes.ShopWaifu", b =>
+            modelBuilder.Entity("Namiko.ShopWaifu", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -92,7 +92,7 @@ namespace Namiko.Migrations
                     b.ToTable("WaifuStores");
                 });
 
-            modelBuilder.Entity("Namiko.Resources.Datatypes.Team", b =>
+            modelBuilder.Entity("Namiko.Team", b =>
                 {
                     b.Property<ulong>("LeaderRoleId")
                         .ValueGeneratedOnAdd();
@@ -104,7 +104,7 @@ namespace Namiko.Migrations
                     b.ToTable("Teams");
                 });
 
-            modelBuilder.Entity("Namiko.Resources.Datatypes.Toastie", b =>
+            modelBuilder.Entity("Namiko.Toastie", b =>
                 {
                     b.Property<ulong>("UserId")
                         .ValueGeneratedOnAdd();
@@ -116,7 +116,7 @@ namespace Namiko.Migrations
                     b.ToTable("Toasties");
                 });
 
-            modelBuilder.Entity("Namiko.Resources.Datatypes.UserInventory", b =>
+            modelBuilder.Entity("Namiko.UserInventory", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -134,7 +134,7 @@ namespace Namiko.Migrations
                     b.ToTable("UserInventories");
                 });
 
-            modelBuilder.Entity("Namiko.Resources.Datatypes.Waifu", b =>
+            modelBuilder.Entity("Namiko.Waifu", b =>
                 {
                     b.Property<string>("Name")
                         .ValueGeneratedOnAdd();
@@ -158,7 +158,7 @@ namespace Namiko.Migrations
                     b.ToTable("Waifus");
                 });
 
-            modelBuilder.Entity("Namiko.Resources.Datatypes.WelcomeMessage", b =>
+            modelBuilder.Entity("Namiko.WelcomeMessage", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -170,16 +170,16 @@ namespace Namiko.Migrations
                     b.ToTable("WelcomeMessages");
                 });
 
-            modelBuilder.Entity("Namiko.Resources.Datatypes.ShopWaifu", b =>
+            modelBuilder.Entity("Namiko.ShopWaifu", b =>
                 {
-                    b.HasOne("Namiko.Resources.Datatypes.Waifu", "Waifu")
+                    b.HasOne("Namiko.Waifu", "Waifu")
                         .WithMany()
                         .HasForeignKey("WaifuName");
                 });
 
-            modelBuilder.Entity("Namiko.Resources.Datatypes.UserInventory", b =>
+            modelBuilder.Entity("Namiko.UserInventory", b =>
                 {
-                    b.HasOne("Namiko.Resources.Datatypes.Waifu", "Waifu")
+                    b.HasOne("Namiko.Waifu", "Waifu")
                         .WithMany()
                         .HasForeignKey("WaifuName");
                 });

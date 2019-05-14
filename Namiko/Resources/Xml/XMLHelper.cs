@@ -7,7 +7,7 @@ using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace Namiko.Resources.Xml
+namespace Namiko
 {
     public static class XmlHelper
     {

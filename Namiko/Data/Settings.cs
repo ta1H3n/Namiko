@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Namiko.Resources.Datatypes
+namespace Namiko
 {
     class Settings
     {

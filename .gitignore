@@ -273,3 +273,4 @@ __pycache__/
 /Namiko/Scripts
 /Namiko/Properties/PublishProfiles/ARM64.pubxml
 /Tests
+/Namiko/Data/DiscordBotsToken.txt

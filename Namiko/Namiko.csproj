@@ -38,6 +38,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Database.sqlite" />
+    <None Remove="Data\Database.sqlite" />
+    <None Remove="Data\stats.sqlite" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Booru.Net" Version="1.0.0.3" />
     <PackageReference Include="Discord.Net" Version="2.0.1" />
     <PackageReference Include="DiscordBotsList.Api.Adapter.Discord.Net" Version="1.1.0" />
@@ -56,10 +62,6 @@
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
     <PackageReference Include="Reddit" Version="1.1.1" />
     <PackageReference Include="SauceNET" Version="1.0.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="C:\Users\virma\source\repos\Discord.Addons.Interactive\Discord.Addons.Interactive\Discord.Addons.Interactive.csproj" />
   </ItemGroup>
 
 </Project>
