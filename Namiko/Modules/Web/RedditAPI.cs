@@ -22,7 +22,7 @@ namespace Namiko
         private static void RedditSetup()
         {
             string JSON = "";
-            string JSONLocation = Locations.ImgurJSON;
+            string JSONLocation = Locations.RedditJSON;
             using (var Stream = new FileStream(JSONLocation, FileMode.Open, FileAccess.Read))
             using (var ReadSettings = new StreamReader(Stream))
             {

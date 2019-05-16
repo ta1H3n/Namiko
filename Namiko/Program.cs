@@ -40,9 +40,8 @@ namespace Namiko
         => new Program().MainAsync().GetAwaiter().GetResult();
         private async Task MainAsync()
         {
-            SetUpDebug();
-            //SetUpRelease();
-            SetUpPrefixes();
+            //SetUpDebug();
+            SetUpRelease();
 
             Client = new DiscordShardedClient(new DiscordSocketConfig {
                 LogLevel = LogSeverity.Info
@@ -387,14 +386,14 @@ namespace Namiko
             Debug = true;
             Locations.SetUpDebug();
             Timers.SetUp();
+            SetUpPrefixes();
         }
         private static void SetUpRelease()
         {
+            Console.WriteLine("Entry: " + Assembly.GetEntryAssembly().Location);
             Locations.SetUpRelease();
-            Console.WriteLine(Locations.SettingsJSON);
-            Console.WriteLine(Locations.SpookyLinesXml);
-            Console.WriteLine(Locations.SqliteDb);
             Timers.SetUpRelease();
+            SetUpPrefixes();
         }
         private static async Task<int> CheckJoinedGuilds(DiscordSocketClient shard = null)
         {

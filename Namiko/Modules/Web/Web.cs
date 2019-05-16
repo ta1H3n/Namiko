@@ -181,7 +181,7 @@ namespace Namiko
 
             await ResponseQuery.DeleteAsync();
         }
-        
+        /*
         [Command("Subreddit"), Alias("sub"), Summary("Set a subreddit for Namiko to post hot posts from.\n**Usage**: `!sub [subreddit_name] [min_upvotes]`"), CustomUserPermission(GuildPermission.ManageChannels), RequireContext(ContextType.Guild)]
         public async Task Subreddit(string name, int upvotes)
         {
@@ -261,5 +261,6 @@ namespace Namiko
         {
             await Context.Channel.SendMessageAsync(embed: WebUtil.SubListEmbed(Context.Guild.Id).Build());
         }
+        */
     }
 }
