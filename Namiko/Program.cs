@@ -40,8 +40,8 @@ namespace Namiko
         => new Program().MainAsync().GetAwaiter().GetResult();
         private async Task MainAsync()
         {
-            //SetUpDebug();
-            SetUpRelease();
+            SetUpDebug();
+            //SetUpRelease();
 
             Client = new DiscordShardedClient(new DiscordSocketConfig {
                 LogLevel = LogSeverity.Info
