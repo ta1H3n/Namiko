@@ -165,12 +165,11 @@ namespace Namiko {
         }
 
         [Command("SetFeaturedWaifu"), Alias("sfw"), Summary("Sets your waifu image on your profile.\n**Usage**: `!sfw [waifu_name]`")]
-        public async Task SetFeaturedWaifu(string name, [Remainder] string str = "")
+        public async Task SetFeaturedWaifu([Remainder] string str = "")
         {
-            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(name), name, Context.Channel);
+            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(str, false, UserInventoryDb.GetWaifus(Context.User.Id, Context.Guild.Id)), this);
             if (waifu == null)
             {
-                await Context.Channel.SendMessageAsync($"{name} not found.");
                 return;
             }
 

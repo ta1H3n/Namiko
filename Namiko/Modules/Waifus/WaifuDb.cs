@@ -27,21 +27,25 @@ namespace Namiko
                 return await DbContext.SaveChangesAsync();
             }
         }
-        public static List<Waifu> SearchWaifus(string query)
+        public static List<Waifu> SearchWaifus(string query, bool primaryName = false, IEnumerable<Waifu> from = null)
         {
             using (var DbContext = new SqliteDbContext())
             {
                 List<Waifu> waifus = new List<Waifu>();
 
-                Waifu waifu = DbContext.Waifus.Where(x => x.Name.Equals(query, StringComparison.InvariantCultureIgnoreCase)).SingleOrDefault();
-                if(waifu != null)
+                var waifuQuery = from == null ? DbContext.Waifus : from.AsQueryable();
+
+                if (primaryName)
                 {
-                    waifus.Add(waifu);
-                    return waifus;
+                    Waifu waifu = waifuQuery.Where(x => x.Name.Equals(query, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+                    if (waifu != null)
+                    {
+                        waifus.Add(waifu);
+                        return waifus;
+                    }
                 }
 
                 var words = query.Split(' ');
-                IQueryable<Waifu> waifuQuery = DbContext.Waifus;
 
                 foreach (var word in words)
                 {
@@ -52,27 +56,6 @@ namespace Namiko
                 }
 
                 waifus = waifuQuery.ToList();
-
-              //  if (waifus.Count == 0)
-              //  {
-              //      waifus.AddRange(DbContext.Waifus.Where(x => 
-              //          x.LongName == null ? false : x.LongName.Contains(name, StringComparison.InvariantCultureIgnoreCase) ||
-              //          x.Source == null ? false : x.Source.Contains(name, StringComparison.InvariantCultureIgnoreCase)));
-              //  }
-              //
-              //  if (waifus.Count == 0)
-              //  {
-              //      waifus.AddRange(DbContext.Waifus.Where(x => x.LongName == null ? false : x.LongName.Contains(name, StringComparison.InvariantCultureIgnoreCase)));
-              //  }
-              //  if (waifus.Count == 0)
-              //  {
-              //      waifus.AddRange(DbContext.Waifus.Where(x => x.Source == null ? false : x.Source.Contains(name, StringComparison.InvariantCultureIgnoreCase)));
-              //  }
-
-                if (waifus.Count == 0)
-                {
-                    waifus.AddRange(DbContext.Waifus.Where(x => (x.Description == null ? false : x.Description.Equals(query, StringComparison.InvariantCultureIgnoreCase))).Take(10));
-                }
 
                 return waifus;
             }

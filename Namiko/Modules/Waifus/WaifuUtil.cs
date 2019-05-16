@@ -9,6 +9,8 @@ using Discord.WebSocket;
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Discord.Addons.Interactive;
+
 namespace Namiko
 {
     public static class WaifuUtil
@@ -392,6 +394,42 @@ namespace Namiko
             text += "```";
             return text;
         }
+        public static EmbedBuilder FoundWaifusEmbedBuilder(IEnumerable<IGrouping<string, Waifu>> waifus)
+        {
+            var eb = new EmbedBuilderPrepared();
+
+            int i = 1;
+            foreach (var x in waifus)
+            {
+                if (x.Count() > 15)
+                {
+                    var split = x.GroupBy(10);
+                    foreach (var y in split)
+                    {
+                        string list = "";
+                        foreach (var waifu in y)
+                        {
+                            list += $"`#{i++}` **{waifu.Name}** - *{BasicUtil.ShortenString(waifu.LongName, 28, 27, "-")}*\n";
+                        }
+                        eb.AddField(x.Key + "#" + (y.Key+1), list);
+                    }
+                }
+                else
+                {
+                    string list = "";
+                    foreach (var waifu in x)
+                    {
+                        list += $"`#{i++}` **{waifu.Name}** - *{BasicUtil.ShortenString(waifu.LongName, 28, 27, "-")}*\n";
+                    }
+                    eb.AddField(x.Key, list);
+                }
+            }
+
+            eb.WithTitle("Waifus Found :sparkling_heart:");
+            eb.WithDescription("Enter the number of the waifu you wish to select.");
+            eb.WithFooter("Times out in 23 seconds.");
+            return eb;
+        }
         public static EmbedBuilder WaifuLeaderboardEmbed(IOrderedEnumerable<KeyValuePair<Waifu, int>> waifus, IOrderedEnumerable<KeyValuePair<SocketUser, int>> users, int page)
         {
             var eb = new EmbedBuilder();
@@ -431,6 +469,13 @@ namespace Namiko
             }
             return total;
         }
+        public static IEnumerable<IGrouping<int, TSource>> GroupBy<TSource>(this IEnumerable<TSource> source, int itemsPerGroup)
+        {
+            return source.Zip(Enumerable.Range(0, source.Count()),
+                              (s, r) => new { Group = r / itemsPerGroup, Item = s })
+                         .GroupBy(i => i.Group, g => g.Item)
+                         .ToList();
+        }
 
         public static EmbedBuilder WishlistEmbed(IEnumerable<Waifu> waifus, SocketGuildUser user)
         {
@@ -462,22 +507,47 @@ namespace Namiko
             return eb;
         }
 
-        public static async Task<Waifu> ProcessWaifuListAndRespond(List<Waifu> waifus, string inputName, ISocketMessageChannel channel = null)
+        public static async Task<Waifu> ProcessWaifuListAndRespond(List<Waifu> waifus, InteractiveBase<ShardedCommandContext> interactive = null)
         {
-            //  if (waifus.Count == 1)
-            //  {
-            //      if (waifus[0].Name.Equals(inputName, StringComparison.InvariantCultureIgnoreCase))
-            //          return waifus[0];
-            //  }
-
             if (waifus.Count == 1)
                 return waifus[0];
 
-            if (waifus.Count > 0 && channel != null)
+            if (interactive != null)
             {
-                await channel.SendMessageAsync(WaifuUtil.FoundWaifusCodeBlock(waifus));
-            }
+                if (waifus.Count > 0)
+                {
+                    var ordered = waifus.OrderBy(x => x.Source).ThenBy(x => x.Name).ToList();
+                    var grouped = ordered.GroupBy(x => x.Source);
+                    var msg = await interactive.Context.Channel.SendMessageAsync(embed: FoundWaifusEmbedBuilder(grouped).Build());
+                    var response = await interactive.NextMessageAsync(
+                        new Criteria<IMessage>()
+                        .AddCriterion(new EnsureSourceUserCriterion())
+                        .AddCriterion(new EnsureSourceChannelCriterion())
+                        .AddCriterion(new EnsureRangeCriterion(waifus.Count, Program.GetPrefix(interactive.Context) + "w")),
+                        new TimeSpan(0, 0, 23));
 
+                    _ = msg.DeleteAsync();
+                    int i = 0;
+                    try
+                    {
+                        i = int.Parse(response.Content);
+                    }
+                    catch
+                    {
+                        _ = interactive.Context.Message.DeleteAsync();
+                        return null;
+                    }
+                    _ = response.DeleteAsync();
+
+                    return ordered[i - 1];
+                }
+
+                _ = interactive.Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared()
+                    .WithTitle("Waifus Found")
+                    .WithDescription(":x: No results.")
+                    .Build());
+            }
+            
             return null;
         }
     }
