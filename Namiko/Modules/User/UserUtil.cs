@@ -3,8 +3,6 @@ using System;
 using System.Linq;
 using Discord.WebSocket;
 using System.Globalization;
-
-
 using System.Collections.Generic;
 
 namespace Namiko {
@@ -53,7 +51,7 @@ namespace Namiko {
                 return true;
             } return false;
         }
-        internal static System.Drawing.Color HexToColor(string colour) {
+        public static System.Drawing.Color HexToColor(string colour) {
             return new Color(   int.Parse(colour.Substring(0, 2), NumberStyles.AllowHexSpecifier), 
                                 int.Parse(colour.Substring(2, 2), NumberStyles.AllowHexSpecifier),
                                 int.Parse(colour.Substring(4, 2), NumberStyles.AllowHexSpecifier));

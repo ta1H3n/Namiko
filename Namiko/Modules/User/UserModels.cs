@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Text;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Namiko
@@ -21,6 +21,7 @@ namespace Namiko
         public int Id { get; set; }
         public ulong UserId { get; set; }
         public ulong WifeId { get; set; }
+        public bool IsMarried { get; set; }
         public ulong GuildId { get; set; }
     }
 
