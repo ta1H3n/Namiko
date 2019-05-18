@@ -177,7 +177,11 @@ namespace Namiko {
                 await DbContext.SaveChangesAsync();
             }
         }
-        public static ulong GetWife(ulong userID, ulong guildID) { using (var DbContext = new SqliteDbContext()) return DbContext.Marriages.Where(x => x.UserId == userID).Where(x => x.GuildId == guildID).Select(x => x.WifeId).FirstOrDefault(); }
+        public static ulong GetWife(ulong userID, ulong guildID)
+        {
+            using (var DbContext = new SqliteDbContext())
+                return DbContext.Marriages.Where(x => x.UserId == userID).Where(x => x.GuildId == guildID).Select(x => x.WifeId).FirstOrDefault();
+        }
 
         //Methods: marriage status, isMarried should *only* be used after SetWife
         public static async Task SetIsMarried(ulong userID, ulong guildID, bool isMarried = false) {
@@ -192,6 +196,77 @@ namespace Namiko {
             }
         }
         public static bool GetIsMarried(ulong userID, ulong guildID) { using (var DbContext = new SqliteDbContext()) return DbContext.Marriages.Where(x => x.UserId == userID).Where(x => x.GuildId == guildID).Select(x => x.IsMarried).FirstOrDefault(); }
+
+        // tai's
+        // Returns empty lists if none are found
+        // Works both ways, returs a list of all active marriages a user has in a guild
+        public static List<Marriage> GetMarriages(ulong userId, ulong guildId)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                return db.Marriages.Where(x => x.IsMarried == true && (x.UserId == userId || x.WifeId == userId) && x.GuildId == guildId).ToList();
+            }
+        }
+        public static List<Marriage> GetProposalsReceived(ulong userId, ulong guildId)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                return db.Marriages.Where(x => x.IsMarried == false && x.WifeId == userId && x.GuildId == guildId).ToList();
+            }
+        }
+        public static List<Marriage> GetProposalsSent(ulong userId, ulong guildId)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                return db.Marriages.Where(x => x.IsMarried == false && x.UserId == userId && x.GuildId == guildId).ToList();
+            }
+        }
+
+        // userId is the user who proposed, wifeId is the user who received the proposal, date = now, married = false
+        public static async Task Propose(ulong userId, ulong wifeId, ulong guildId)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                db.Marriages.Add(new Marriage
+                {
+                    GuildId = guildId,
+                    UserId = userId,
+                    WifeId = wifeId,
+                    IsMarried = false,
+                    Date = System.DateTime.Now
+                });
+                await db.SaveChangesAsync();
+            }
+        }
+        // You already have the marriage obj at the point you want to set married to true, so you can do it manually and just update
+        public static async Task UpdateMarriage(Marriage marriage)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                db.Marriages.Update(marriage);
+                await db.SaveChangesAsync();
+
+            }
+        }
+        // Deletes all matching results, userId and wifeId order doesn't matter
+        public static async Task DeleteMarriageOrProposal(ulong userId, ulong wifeId, ulong guildId)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                var items = db.Marriages.Where(x => ((x.UserId == userId && x.WifeId == wifeId) || (x.UserId == wifeId && x.WifeId == userId)) && x.GuildId == guildId);
+                db.Marriages.RemoveRange(items);
+                await db.SaveChangesAsync();
+            }
+        }
+        // To delete the marriage you want to delete and not all of them
+        public static async Task DeleteMarriageOrProposal(Marriage marriage)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                db.Marriages.Remove(marriage);
+                await db.SaveChangesAsync();
+            }
+        }
     }
 
     public static class VoteDb
