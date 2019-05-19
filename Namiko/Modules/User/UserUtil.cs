@@ -99,6 +99,54 @@ namespace Namiko {
             eb.Color = UserDb.GetHex(out string colour, user.Id)? (Discord.Color) HexToColor(colour) : BasicUtil.RandomColor();
             return eb;
         }
+        public static EmbedBuilder ProposalsEmbed(IUser user, SocketGuild guild) {
+
+            //embed basics
+            EmbedBuilder embed = new EmbedBuilder();
+            embed.WithAuthor(user);
+            embed.WithColor(UserDb.GetHex(out string colour, user.Id) ? (Discord.Color)UserUtil.HexToColor(colour) : BasicUtil.RandomColor());
+
+            //proposals
+            List<Marriage> sent = MarriageDb.GetProposalsSent(user.Id, guild.Id);
+            List<Marriage> received = MarriageDb.GetProposalsReceived(user.Id, guild.Id);
+
+            //fields aggregation 
+            int users = 1;
+            string field1 = "", field2 = "";
+            foreach (Marriage proposals in sent)
+                field1 += $"#{users++} {guild.GetUser(proposals.WifeId) }\n";
+
+            //
+            users = 1;
+            foreach (Marriage proposals in received)
+                field2 += $"#{users++} {guild.GetUser(proposals.UserId) }\n";
+
+            //if this dude is #ForeverAlone
+            if( String.IsNullOrEmpty(field1) && String.IsNullOrEmpty(field2)) 
+                embed.WithDescription("You have not sent or Received any Proposals");
+            
+            //do columns, sent on the left received on the right (or some shit)
+            if( !String.IsNullOrEmpty(field1) ) embed.AddField("Sent", field1, true);
+            if( !String.IsNullOrEmpty(field2) ) embed.AddField("Received", field2, true);
+            return embed;
+        }
+        public static EmbedBuilder MarriagesEmbed(IUser user, SocketGuild guild) {
+
+            //embed basics
+            int numUsers = 1;
+            string partners = "";
+            List<Marriage> marriages = MarriageDb.GetMarriages(user.Id, guild.Id);
+            foreach (Marriage marriage in marriages)
+                partners += $"#{numUsers++} {guild.GetUser(marriage.WifeId) }\n";
+            
+            //embed
+            EmbedBuilder embed = new EmbedBuilder();
+            embed.WithColor(UserDb.GetHex(out string colour, user.Id) ? (Discord.Color)UserUtil.HexToColor(colour) : BasicUtil.RandomColor());
+            if (!String.IsNullOrEmpty(partners)) embed.AddField("Current Marriages", partners, true);
+            else embed.WithDescription("You are currently Unmarried.");
+            embed.WithAuthor(user);
+            return embed;
+        }
         public static EmbedBuilder WaifusEmbed(SocketGuildUser user)
         {
             var eb = new EmbedBuilder();

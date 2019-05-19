@@ -48,159 +48,188 @@ namespace Namiko {
         }
 
         [Command("Marry"), Alias("m"), Summary("Allows 2 users to marry each other, no more than 1 partner per person is allowed.\n**Usage**:  `!m [user]`")]
-        public async Task Marriage(IUser partner = null, [Remainder] string str = "") {
+        public async Task Marriage(IUser wife = null, [Remainder] string str = "") {
 
-            //commonly used variables
-            IUser user = Context.User;
-            ulong guildID = Context.Guild.Id;
-
-            //pre-building embed basics
+            //commonly used variables + embed basics
             EmbedBuilder embed = new EmbedBuilder();
-            embed.WithAuthor(user);
             embed.WithColor(UserDb.GetHex(out string colour, Context.User.Id) ? (Discord.Color)UserUtil.HexToColor(colour) : BasicUtil.RandomColor());
+            ulong guildID = Context.Guild.Id;
+            IUser user = Context.User;
+            embed.WithAuthor(user);
 
-            // Checks
+             // checks
             //making sure u cant do anything weird 
-            if (partner == null || partner == user) {
-                embed.WithDescription($"You can't propose to { ((partner == null)? "no one" : "yourself") } unfortunately.");
+            if ( wife == null || wife == user || wife.IsBot) {
+                embed.WithDescription($"You can't propose to { ((wife == null) ? "no one" : (wife.IsBot) ? "bots" : "yourself ") } unfortunately.");
+                await Context.Channel.SendMessageAsync("", false, embed.Build());
+                return;
+            }
+            
+            //checking marriage status
+            Marriage marriage = MarriageDb.GetMarriageOrProposal(wife.Id, Context.User.Id, Context.Guild.Id);
+            if (marriage == null) {
+                await MarriageDb.Propose(user.Id, wife.Id, guildID);
+
+                embed.WithAuthor(wife);
+                embed.WithDescription($"**{ user.Mention }** has proposed to you.");
+                embed.WithFooter("`!accept [user]` or `!decline [user]`");
+                await Context.Channel.SendMessageAsync($"{ wife.Mention }", false, embed.Build());
+                return;
+            }
+
+            //if already married
+            if (marriage.IsMarried == true) {
+                embed.WithDescription($"You're already married to **{ wife }**");
                 await Context.Channel.SendMessageAsync("", false, embed.Build());
                 return;
             }
 
-            //checking if one of you is already married
-            if ( MarriageDb.GetIsMarried(user.Id, guildID) || MarriageDb.GetIsMarried(partner.Id, guildID) ) {
+            //checking marriage cap
+            if (MarriageDb.GetMarriages(Context.User.Id, Context.Guild.Id).Count >= Cost.MarriageLimit || MarriageDb.GetMarriages(wife.Id, Context.Guild.Id).Count >= Cost.MarriageLimit) {
+                embed.WithDescription($"One of you has already reached the maximum number of marriages");
+                embed.WithFooter($"Current max: { Cost.MarriageLimit }");
                 await Context.Channel.SendMessageAsync("", false, embed.Build());
-                embed.WithDescription("One of you is already married.");
-                return;
-            }
-
-            //checking if ur partner already proposed to you + embed stuffz
-            if ( MarriageDb.GetWife(user.Id, guildID) == partner.Id) {
-
-                //accepting marriage
-                await MarriageDb.SetIsMarried(Context.User.Id, Context.Guild.Id, true);
-                await MarriageDb.SetWife(partner.Id, Context.User.Id, Context.Guild.Id);
-                await MarriageDb.SetIsMarried(partner.Id, Context.Guild.Id, true);
-
-                //marriage message
-                embed.WithDescription($"**Congratulations**! you and **{ partner }** are now married");
-                await Context.Channel.SendMessageAsync($"{ partner.Mention }", false, embed.Build());
                 return;
             }
 
 
-            // Proposal
-            //context user
-            await MarriageDb.SetWife(user.Id, 0, guildID);
-            await MarriageDb.SetIsMarried(user.Id, guildID);
-
-            //user partner
-            await MarriageDb.SetWife(partner.Id, user.Id, guildID);
-            await MarriageDb.SetIsMarried(partner.Id, guildID);
-
-            //embed and message 
-            embed.WithAuthor(partner);
-            embed.WithDescription($"you have been proposed to by { user.Mention }");
-            await Context.Channel.SendMessageAsync($"{ partner.Mention }", false, embed.Build());
+            // Marry em'
+            //if the user has already proposed to you
+            marriage.IsMarried = true;
+            await MarriageDb.UpdateMarriage(marriage);
+            embed.WithDescription($"**Congratulations**! you and **{ wife }** are now married");
+            await Context.Channel.SendMessageAsync($"{ wife.Mention }", false, embed.Build());
         }
 
         [Command("Accept"), Alias("AcceptMarriage", "AcceptMarraige", "am"), Summary("Allows you to accept proposal.\n**Usage**: `!am`")]
-        public async Task AcceptMarriage([Remainder] string str = "") {
+        public async Task AcceptMarriage(IUser wife, [Remainder] string str = "") {
 
             //variable thangs + embed basics
             EmbedBuilder embed = new EmbedBuilder();
             embed.WithAuthor(Context.User);
             embed.WithColor(UserDb.GetHex(out string colour, Context.User.Id) ? (Discord.Color)UserUtil.HexToColor(colour) : BasicUtil.RandomColor());
-            bool marraigeState = MarriageDb.GetMarriageState(Context.User.Id, out ulong wife, Context.Guild.Id);
-            var partner = Context.Guild.GetUser(wife);
+            Marriage marriage = MarriageDb.GetMarriageOrProposal(wife.Id, Context.User.Id, Context.Guild.Id);
 
             //check wifes existence
-            if (wife == 0 || partner == null) {
-                embed.WithDescription("You haven't been proposed to yet.");
+            if ( wife == null ) {
+                embed.WithDescription("You need to accept someone specific.");
+                embed.WithFooter("try: `!accept [user]`");
                 await Context.Channel.SendMessageAsync("", false, embed.Build());
                 return;
             }
 
-            //checking marriage state
-            if (!marraigeState) {
-
-                //accepting marriage
-                await MarriageDb.SetIsMarried(Context.User.Id, Context.Guild.Id, true);
-                await MarriageDb.SetWife(partner.Id, Context.User.Id, Context.Guild.Id);
-                await MarriageDb.SetIsMarried(partner.Id, Context.Guild.Id, true);
-
-                //marriage message
-                embed.WithDescription($"**Congratulations**! you and **{ partner }** are now married");
-                await Context.Channel.SendMessageAsync($"{ partner.Mention }", false, embed.Build());
+            //checking marriage status
+            if ( marriage == null ) {
+                embed.WithDescription($"No proposal has been sent too you from **{ wife }**");
+                await Context.Channel.SendMessageAsync("", false, embed.Build());
+                return;
+            }
+            
+            //if you're already married
+            if( marriage.IsMarried == true ) {
+                embed.WithDescription($"You're already married to **{ wife }**");
+                await Context.Channel.SendMessageAsync("", false, embed.Build());
                 return;
             }
 
-            //if already married
-            embed.WithDescription($"You're already married to **{ partner }**");
-            await Context.Channel.SendMessageAsync("", false, embed.Build());
+            //checking marriage cap
+            if ( MarriageDb.GetMarriages(Context.User.Id, Context.Guild.Id).Count >= Cost.MarriageLimit  ||  MarriageDb.GetMarriages(wife.Id, Context.Guild.Id).Count >= Cost.MarriageLimit ) {
+                embed.WithDescription($"One of you has already reached the maximum number of marriages");
+                embed.WithFooter($"Current max: { Cost.MarriageLimit }");
+                await Context.Channel.SendMessageAsync("", false, embed.Build());
+                return;
+            }
+
+
+             //
+            //accepting marriage 
+            marriage.IsMarried = true;
+            await MarriageDb.UpdateMarriage(marriage);
+            embed.WithDescription($"**Congratulations**! you and **{ wife }** are now married");
+            await Context.Channel.SendMessageAsync($"{ wife.Mention }", false, embed.Build());
+            return;
         }
-        
+
+        [Command("ShowProposals"), Alias("Proposals"),Summary("Display sent & received proposals.\n**Usage**: `!proposals`")]
+        public async Task Proposals(IUser user = null, [Remainder] string str = "") {
+            await Context.Channel.SendMessageAsync("", false, UserUtil.ProposalsEmbed(user ?? Context.User, Context.Guild).Build());
+        }
+
+        [Command("ShowMarriages"), Alias("Marriages", "Marraiges", "sm"), Summary("Displays current marriages.\n**Usage**: `!sm`")]
+        public async Task Marriages(IUser user = null, [Remainder] string str = "") {
+            await Context.Channel.SendMessageAsync("", false, UserUtil.MarriagesEmbed(user ?? Context.User, Context.Guild).Build());
+        }
+
         [Command("Divorce"), Alias("Devorce", "d"), Summary("Allows you to divorce your partner.\n**Usage**: `!d`")]
-        public async Task Divorce([Remainder] string str = "") {
+        public async Task Divorce(IUser wife = null, [Remainder] string str = "") {
 
             //common variables
             IUser user = Context.User;
             EmbedBuilder embed = new EmbedBuilder();
             Discord.Color userColour = UserDb.GetHex(out string colour, user.Id) ? (Discord.Color)UserUtil.HexToColor(colour) : BasicUtil.RandomColor();
-
-            //these will be used no matter the answer
-            embed.WithAuthor(user);
             embed.WithColor(userColour);
+            embed.WithAuthor(user);
+            
 
-            //checking marriage status
-            if ( MarriageDb.GetMarriageState(Context.User.Id, out ulong wife, Context.Guild.Id) ){
-                var partner = Context.Guild.GetUser(wife);
-
-                //creating divorce action
-                var divorce = new DialogueBoxOption {
-                    Action = async (IUserMessage message) => {
-                        await MarriageDb.SetIsMarried(user.Id, Context.Guild.Id);
-                        await MarriageDb.SetIsMarried(partner.Id, Context.Guild.Id);
-                        await MarriageDb.SetWife(partner.Id, 0, Context.Guild.Id);
-                        embed.WithDescription($"You have divorced **{ partner }**\n*~ May you both find happiness elsewhere ~*");
-                        await Context.Channel.SendMessageAsync("", false, embed.Build());
-
-                    //execution condition
-                    }, After = OnExecute.RemoveReactions
-                };
-
-                //creating cancel 
-                var cancel = new DialogueBoxOption { After = OnExecute.Delete };
-
-                //making dialog embed
-                var dia = new DialogueBox();
-                dia.Options.Add(Emote.Parse("<:TickYes:577838859107303424>"), divorce);
-                dia.Options.Add(Emote.Parse("<:TickNo:577838859077943306>"), cancel);
-                dia.Timeout = new TimeSpan(0, 1, 0);
-                dia.Embed = new EmbedBuilder()
-                    .WithAuthor(user)
-                    .WithColor(userColour)
-                    .WithDescription($"Are you sure you wish Divorce **{ partner }**?").Build();
-
-                //final crap
-                await DialogueReplyAsync(dia);
+             // checks
+            //making sue u have someone selected
+            if (wife == null) {
+                embed.WithDescription("You need to divorce someone specific.");
+                embed.WithFooter("try: `!divorce [user]`");
+                await Context.Channel.SendMessageAsync("", false, embed.Build());
                 return;
             }
 
-            //unmarried embed
-            embed.WithDescription("You don't currently have a partner");
-            await Context.Channel.SendMessageAsync("", false, embed.Build());
+            //checking marriage status
+            Marriage marriage = MarriageDb.GetMarriageOrProposal(user.Id, wife.Id, Context.Guild.Id);
+            if ( marriage == null ) {
+                embed.WithDescription($"no proposal has been sent to or from **{ wife }**");
+                await Context.Channel.SendMessageAsync("", false, embed.Build());
+                return;
+            }
+
+            //making sure ur married
+            if( marriage.IsMarried == false) {
+                embed.WithDescription($"You're not married to **{ wife }** yet.");
+                await Context.Channel.SendMessageAsync("", false, embed.Build());
+                return;
+            }
+            
+
+             // 
+            //creating divorce action
+            var divorce = new DialogueBoxOption {
+                Action = async (IUserMessage message) => {
+                    await MarriageDb.DeleteMarriageOrProposal(user.Id, wife.Id, Context.Guild.Id);
+                    embed.WithDescription($"You have divorced **{ wife }**\n*~ May you both find happiness elsewhere ~*");
+                    await Context.Channel.SendMessageAsync("", false, embed.Build());
+
+                //execution condition
+                }, After = OnExecute.RemoveReactions
+            };
+
+            //creating cancel 
+            var cancel = new DialogueBoxOption { After = OnExecute.Delete };
+
+            //making dialog embed
+            var dia = new DialogueBox();
+            dia.Options.Add(Emote.Parse("<:TickYes:577838859107303424>"), divorce);
+            dia.Options.Add(Emote.Parse("<:TickNo:577838859077943306>"), cancel);
+            dia.Timeout = new TimeSpan(0, 1, 0);
+            dia.Embed = new EmbedBuilder()
+                .WithAuthor(user)
+                .WithColor(userColour)
+                .WithDescription($"Are you sure you wish Divorce **{ wife }**?").Build();
+
+            //
+            await DialogueReplyAsync(dia);
         }
         
-        [Command("Decline"), Alias("DeclineMarriage", "DeclineMarraige", "dm"), Summary("Allows you to divorce your partner.\n**Usage**: `!d`")]
-        public async Task Decline([Remainder] string str = "") {
+        [Command("Decline"), Alias("DeclineMarriage", "DeclineMarraige", "dm"), Summary("Allows you to divorce your partner.\n**Usage**: `!dm`")]
+        public async Task Decline(IUser wife = null, [Remainder] string str = "") {
 
             //common variables
             IUser user = Context.User;
-            ulong wife = MarriageDb.GetWife(user.Id, Context.Guild.Id);
-            var partner = Context.Guild.GetUser(wife);
-            
-            //these will be used no matter the answer
             EmbedBuilder embed = new EmbedBuilder();
             embed.WithAuthor(user);
             embed.WithColor(UserDb.GetHex(out string colour, user.Id) ? (Discord.Color)UserUtil.HexToColor(colour) : BasicUtil.RandomColor());
@@ -208,15 +237,25 @@ namespace Namiko {
 
              // checks
             //proposal check
-            if ( wife == 0 || partner == null) {
-                embed.WithDescription("You haven't been proposed to yet.");
+            if ( wife == null ) {
+                embed.WithDescription("Need to decline someone specific.");
+                embed.WithFooter("try: `!decline [user]`");
                 await Context.Channel.SendMessageAsync("", false, embed.Build());
                 return;
             }
 
-            //if ur already married
-            if( MarriageDb.GetIsMarried(user.Id, Context.Guild.Id)) {
-                embed.WithDescription("Usually, if you're married you don't decline them; you **divorce** them");
+            //checking if a user has proposed - only makes sure at least one has proposed
+            Marriage marriage = MarriageDb.GetMarriageOrProposal(wife.Id, user.Id, Context.Guild.Id);
+            if( marriage == null ) {
+                embed.WithDescription($"no proposal has been sent too or from **{ wife }**");
+                await Context.Channel.SendMessageAsync("", false, embed.Build());
+                return;
+            }
+
+            //if ur already married to that person
+            if ( marriage.IsMarried == true ) {
+                embed.WithDescription("Usually, if you're married you don't decline your partner");
+                embed.WithFooter("try: `divorce [user]`");
                 await Context.Channel.SendMessageAsync("", false, embed.Build());
                 return;
             }
@@ -226,10 +265,12 @@ namespace Namiko {
             //creating decline action
             var decline = new DialogueBoxOption {
                 Action = async (IUserMessage message) => {
-                    await MarriageDb.SetWife(user.Id, 0, Context.Guild.Id);
-                    embed.WithAuthor(partner);
-                    embed.WithDescription($"You have been declined; Better luck next time **{ partner }**");
-                    await Context.Channel.SendMessageAsync($"{ partner.Mention }", false, embed.Build());
+                    await MarriageDb.DeleteMarriageOrProposal(marriage);
+
+                    //embed
+                    embed.WithAuthor(wife);
+                    embed.WithDescription($"You have been declined; Better luck next time **{ wife }**");
+                    await Context.Channel.SendMessageAsync($"{ wife.Mention }", false, embed.Build());
 
                 //execution condition
                 }, After = OnExecute.RemoveReactions
@@ -245,7 +286,7 @@ namespace Namiko {
             dia.Timeout = new TimeSpan(0, 1, 0);
             dia.Embed = new EmbedBuilder()
                 .WithAuthor(user)
-                .WithDescription($"Are you sure you wish Decline **{ partner }**?").Build();
+                .WithDescription($"Are you sure you wish Decline **{ wife }**?").Build();
 
             //
             await DialogueReplyAsync(dia);

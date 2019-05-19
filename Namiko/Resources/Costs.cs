@@ -27,6 +27,9 @@ namespace Namiko {
         //colour, dont laugh at my coments
         public const int colour = 0;
 
+        //maximum number of partners 
+        public const int MarriageLimit = 1;
+
 
         // --------------LOOTBOXES----------------- //
 

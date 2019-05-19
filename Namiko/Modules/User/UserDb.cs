@@ -152,53 +152,9 @@ namespace Namiko {
     }
 
     public static class MarriageDb {
-        public static bool GetMarriageState(ulong userID, out ulong wife, ulong guildID) {
 
-            //the C# compiler should wrap this into a single Db call
-            wife = GetWife(userID, guildID);
-            return GetIsMarried(userID, guildID);
-        }
-        
-        //Methods: wife basics 
-        public static async Task SetWife(ulong userID, ulong wifeID, ulong guildID) {
-            using (var DbContext = new SqliteDbContext()) {
-                var wife = DbContext.Marriages.Where(x => x.UserId == userID).Where(x => x.GuildId == guildID).FirstOrDefault();
-
-                //basic null check
-                if (wife == null) {
-                    DbContext.Add(new Marriage { UserId = userID, WifeId = wifeID, GuildId = guildID });
-                    await DbContext.SaveChangesAsync();
-                    return;
-                }
-
-                //if marriage exists, just change wives 
-                wife.WifeId = wifeID;
-                DbContext.Update(wife);
-                await DbContext.SaveChangesAsync();
-            }
-        }
-        public static ulong GetWife(ulong userID, ulong guildID)
-        {
-            using (var DbContext = new SqliteDbContext())
-                return DbContext.Marriages.Where(x => x.UserId == userID).Where(x => x.GuildId == guildID).Select(x => x.WifeId).FirstOrDefault();
-        }
-
-        //Methods: marriage status, isMarried should *only* be used after SetWife
-        public static async Task SetIsMarried(ulong userID, ulong guildID, bool isMarried = false) {
-            using (var DbContext = new SqliteDbContext()) {
-                var wife = DbContext.Marriages.Where(x => x.UserId == userID).Where(x => x.GuildId == guildID).FirstOrDefault();
-
-                //basic null check
-                if(wife == null) return;
-                wife.IsMarried = isMarried;
-                DbContext.Update(wife);
-                await DbContext.SaveChangesAsync();
-            }
-        }
-        public static bool GetIsMarried(ulong userID, ulong guildID) { using (var DbContext = new SqliteDbContext()) return DbContext.Marriages.Where(x => x.UserId == userID).Where(x => x.GuildId == guildID).Select(x => x.IsMarried).FirstOrDefault(); }
-
-        // tai's
-        // Returns empty lists if none are found
+          // tai's
+         // Returns empty lists if none are found
         // Works both ways, returs a list of all active marriages a user has in a guild
         public static List<Marriage> GetMarriages(ulong userId, ulong guildId)
         {
@@ -222,6 +178,12 @@ namespace Namiko {
             }
         }
 
+        //Method: get specific proposal or marriage
+        public static Marriage GetMarriageOrProposal(ulong userId, ulong wifeId, ulong guildId) {
+            using (var db = new SqliteDbContext()) {
+                return db.Marriages.Where(x => (x.UserId == userId && x.WifeId == wifeId) && x.GuildId == guildId).FirstOrDefault();
+            }
+        }
         // userId is the user who proposed, wifeId is the user who received the proposal, date = now, married = false
         public static async Task Propose(ulong userId, ulong wifeId, ulong guildId)
         {
