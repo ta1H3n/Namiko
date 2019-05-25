@@ -10,7 +10,6 @@ namespace Namiko
         public DbSet<Balance> Toasties { get; set; }
         public DbSet<Daily> Dailies { get; set; }
         public DbSet<WelcomeMessage> WelcomeMessages { get; set; }
-       // public DbSet<WelcomeChannel> WelcomeChannels { get; set; }
         public DbSet<Team> Teams { get; set; }
         public DbSet<PublicRole> PublicRoles { get; set; }
         public DbSet<ReactionImage> Images { get; set; }
@@ -33,6 +32,7 @@ namespace Namiko
         public DbSet<WaifuWish> WaifuWishlist { get; set; }
         public DbSet<SpecialChannel> SpecialChannels { get; set; }
         public DbSet<RedditPost> RedditPosts { get; set; }
+        public DbSet<Premium> Premiums { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder Options)
         {

@@ -239,10 +239,10 @@ namespace Namiko
         }
         public static int GetPrice(int tier, int discount = 0)
         {
-            int price = tier == 1 ? Cost.tier1 :
-                        tier == 2 ? Cost.tier2 :
-                        tier == 3 ? Cost.tier3 :
-                        tier == 0 ? Cost.tier0 : 
+            int price = tier == 1 ? Constants.tier1 :
+                        tier == 2 ? Constants.tier2 :
+                        tier == 3 ? Constants.tier3 :
+                        tier == 0 ? Constants.tier0 : 
                         
                         //default
                         0;

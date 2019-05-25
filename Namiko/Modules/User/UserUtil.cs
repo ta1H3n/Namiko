@@ -203,7 +203,7 @@ namespace Namiko {
             int i = 0;
             string footer = "";
             string aggregate_quote = "";
-            int aggregateCap = Cost.aggregateCap;
+            int aggregateCap = Constants.aggregateCap;
 
             //building quote and footer
             foreach (SocketUser user in users) {

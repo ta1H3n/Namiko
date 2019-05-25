@@ -55,8 +55,41 @@ namespace Namiko
             Hour.Elapsed += Timer_BackupData;
             Hour.Elapsed += Timer_CleanData;
             Hour.Elapsed += Timer_UpdateDBLGuildCount;
+            Hour.Elapsed += Timer_ExpirePremium;
         }
 
+        private static async void Timer_ExpirePremium(object sender, ElapsedEventArgs e)
+        {
+            var now = System.DateTime.Now;
+            var expired = PremiumDb.GetAllPremiums(now.AddMonths(-1).AddDays(-1));
+            var client = Program.GetClient();
+
+            foreach(var premium in expired)
+            {
+                var ntr = client.GetGuild((ulong)PremiumType.GuildId_NOTAPREMIUMTYPE);
+                SocketGuildUser user = null;
+                try
+                {
+                    user = ntr.GetUser(premium.UserId);
+                } catch { }
+
+                if (user == null)
+                {
+                    await PremiumDb.DeletePremium(premium);
+                }
+
+                else if (!user.Roles.Any(x => x.Id == (ulong)premium.Type))
+                {
+                    await PremiumDb.DeletePremium(premium);
+                }
+
+                else
+                {
+                    premium.ClaimDate = now;
+                    await PremiumDb.UpdatePremium(premium);
+                }
+            }
+        }
         public static async void Timer_NamikoSteal(object sender, ElapsedEventArgs e)
         {
             if (new Random().Next(5) != 1)
@@ -102,11 +135,15 @@ namespace Namiko
                 await ServerDb.DeleteServer(x.GuildId);
                 await WeeklyDb.DeleteByGuild(x.GuildId);
                 await ToastieDb.DeleteByGuild(x.GuildId);
+                await MarriageDb.DeleteByGuild(x.GuildId);
                 await WaifuShopDb.DeleteByGuild(x.GuildId);
                 await PublicRoleDb.DeleteByGuild(x.GuildId);
                 await FeaturedWaifuDb.DeleteByGuild(x.GuildId);
                 await UserInventoryDb.DeleteByGuild(x.GuildId);
+                await WaifuWishlistDb.DeleteByGuild(x.GuildId);
+                await SpecialChannelDb.DeleteByGuild(x.GuildId);
                 Console.WriteLine($"Cleared server {x.GuildId}");
+                await Task.Delay(5000);
             }
         }
         private static async void Timer_ExpireTeamInvites(object sender, ElapsedEventArgs e)

@@ -1,7 +1,7 @@
 ﻿using System;
 
 namespace Namiko {
-    internal static class Cost {
+    internal static class Constants {
         private static Random rnd = new Random();
 
         
@@ -13,7 +13,7 @@ namespace Namiko {
         
         //Begging
         public const int begChance = 4;
-        public static bool beg { get { return rnd.Next(Cost.begChance) == 0; } }
+        public static bool beg { get { return rnd.Next(Constants.begChance) == 0; } }
         public static int begAmount { get { return 5 + rnd.Next(6); } }
         
         //daily and weekly caps

@@ -6,8 +6,7 @@ using System.Collections.Generic;
 
 namespace Namiko {
     public static class UserDb {
-
-         //
+        
         //Methods: hex code check (also gets hex colour)
         public static bool GetHex(out string color, ulong UserId) {
             using (var DbContext = new SqliteDbContext()) {
@@ -98,7 +97,6 @@ namespace Namiko {
             return (stack.Split(";").Length > 3)? stack.Substring(0, stack.LastIndexOf(";")) : stack;
         }
         
-
         //Methods: quotes
         public static string GetQuote(ulong UserId) {
             using (var DbContext = new SqliteDbContext()) {
@@ -123,8 +121,7 @@ namespace Namiko {
                 await DbContext.SaveChangesAsync();
             }
         }
-
-
+        
         //Methods: Images
         public static string GetImage(ulong userId) {
             using (var DbContext = new SqliteDbContext()) {
@@ -229,6 +226,14 @@ namespace Namiko {
                 await db.SaveChangesAsync();
             }
         }
+        public static async Task DeleteByGuild(ulong guildId)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                db.Marriages.RemoveRange(db.Marriages.Where(x => x.GuildId == guildId));
+                await db.SaveChangesAsync();
+            }
+        }
     }
 
     public static class VoteDb
@@ -285,6 +290,76 @@ namespace Namiko {
             using (var db = new SqliteDbContext())
             {
                 return db.Voters.Skip(db.Voters.Count() - amount).Take(amount).ToList();
+            }
+        }
+    }
+
+    public static class PremiumDb
+    {
+        public static List<Premium> GetUserPremium(ulong UserId)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                return db.Premiums.Where(x => x.UserId == UserId).ToList();
+            }
+        }
+        public static List<Premium> GetGuildPremium(ulong GuildId)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                return db.Premiums.Where(x => x.GuildId == GuildId).ToList();
+            }
+        }
+        public static bool IsPremium(ulong Id, PremiumType type)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                return db.Premiums.Any(x => x.Type == type && (x.GuildId == Id || x.UserId == Id));
+            }
+        }
+        public static List<Premium> GetAllPremiums()
+        {
+            using (var db = new SqliteDbContext())
+            {
+                return db.Premiums.ToList();
+            }
+        }
+        public static List<Premium> GetAllPremiums(DateTime ClaimedBefore)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                return db.Premiums.Where(x => x.ClaimDate < ClaimedBefore).ToList();
+            }
+        }
+
+        public async static Task<int> UpdatePremium(Premium premium)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                db.Premiums.Update(premium);
+                return await db.SaveChangesAsync();
+            }
+        }
+        public async static Task<int> DeletePremium(Premium premium)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                db.Premiums.Remove(premium);
+                return await db.SaveChangesAsync();
+            }
+        }
+        public async static Task<int> AddPremium(ulong userId, PremiumType type, ulong guildId = 0)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                db.Premiums.Add(new Premium
+                {
+                    GuildId = guildId,
+                    UserId = userId,
+                    Type = type,
+                    ClaimDate = System.DateTime.Now
+                });
+                return await db.SaveChangesAsync();
             }
         }
     }

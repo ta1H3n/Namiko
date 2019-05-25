@@ -368,7 +368,7 @@ namespace Namiko
             var rnd = new Random();
 
             if (type == LootBoxType.Vote)
-                return rnd.Next(Cost.voteWaifuChance) == 0;
+                return rnd.Next(Constants.voteWaifuChance) == 0;
 
             return false;
         }
@@ -381,7 +381,7 @@ namespace Namiko
             var rnd = new Random();
 
             if (type == LootBoxType.Vote)
-                return Cost.voteToastieAmount;
+                return Constants.voteToastieAmount;
 
             return 0;
         }

@@ -85,9 +85,9 @@ namespace Namiko {
             }
 
             //checking marriage cap
-            if (MarriageDb.GetMarriages(Context.User.Id, Context.Guild.Id).Count >= Cost.MarriageLimit || MarriageDb.GetMarriages(wife.Id, Context.Guild.Id).Count >= Cost.MarriageLimit) {
+            if (MarriageDb.GetMarriages(Context.User.Id, Context.Guild.Id).Count >= Constants.MarriageLimit || MarriageDb.GetMarriages(wife.Id, Context.Guild.Id).Count >= Constants.MarriageLimit) {
                 embed.WithDescription($"One of you has already reached the maximum number of marriages");
-                embed.WithFooter($"Current max: { Cost.MarriageLimit }");
+                embed.WithFooter($"Current max: { Constants.MarriageLimit }");
                 await Context.Channel.SendMessageAsync("", false, embed.Build());
                 return;
             }
@@ -133,9 +133,9 @@ namespace Namiko {
             }
 
             //checking marriage cap
-            if ( MarriageDb.GetMarriages(Context.User.Id, Context.Guild.Id).Count >= Cost.MarriageLimit  ||  MarriageDb.GetMarriages(wife.Id, Context.Guild.Id).Count >= Cost.MarriageLimit ) {
+            if ( MarriageDb.GetMarriages(Context.User.Id, Context.Guild.Id).Count >= Constants.MarriageLimit  ||  MarriageDb.GetMarriages(wife.Id, Context.Guild.Id).Count >= Constants.MarriageLimit ) {
                 embed.WithDescription($"One of you has already reached the maximum number of marriages");
-                embed.WithFooter($"Current max: { Cost.MarriageLimit }");
+                embed.WithFooter($"Current max: { Constants.MarriageLimit }");
                 await Context.Channel.SendMessageAsync("", false, embed.Build());
                 return;
             }
@@ -319,7 +319,7 @@ namespace Namiko {
 
                 //toastie + saving hex colour
                 try {
-                    await ToastieDb.AddToasties(Context.User.Id, -Cost.colour, Context.Guild.Id);
+                    await ToastieDb.AddToasties(Context.User.Id, -Constants.colour, Context.Guild.Id);
                     await UserDb.SetHex(color, Context.User.Id);
                     await Context.Channel.SendMessageAsync("", false, UserUtil.SetColourEmbed(Context.User).Build());
                 } catch (Exception ex) { await Context.Channel.SendMessageAsync(ex.Message); }
@@ -337,8 +337,8 @@ namespace Namiko {
             }
 
             //length check
-            if (quote.Length > Cost.quoteCap) {
-                await Context.Channel.SendMessageAsync($"Quotes have a { Cost.quoteCap } character limit. {quote.Length}/{Cost.quoteCap}");
+            if (quote.Length > Constants.quoteCap) {
+                await Context.Channel.SendMessageAsync($"Quotes have a { Constants.quoteCap } character limit. {quote.Length}/{Constants.quoteCap}");
                 return;
             }
             
@@ -443,7 +443,7 @@ namespace Namiko {
             await Context.Channel.SendMessageAsync(((isMe) ? $"You have { waifu.Name } as your" : $"{ user.Username } has { waifu.Name } as his") + " Featured waifu!", false, WaifuUtil.WaifuEmbedBuilder(waifu, true, Context).Build());
         }
 
-        [Command("SetColourPrior"), Alias("scp"), Summary("Basically `CTRL + Z` for previous profile colours.\n**Usage**: `!scp`")]
+        [Command("UndoColor"), Alias("uc"), Summary("Switch back to a previous color.\n**Usage**: `!scp`")]
         public async Task SetColourPrior([Remainder] string str = "")
         {
 
@@ -468,7 +468,7 @@ namespace Namiko {
             await Context.Channel.SendMessageAsync("", false, embed.Build());
         }
 
-        [Command("ShowColourPriorList"), Alias("scpl"), Summary("Allows user to access previous profile colours.\n**Usage**: `!scpl`")]
+        [Command("ColorHistory"), Alias("clrh"), Summary("List of your previous colors.\n**Usage**: `!scpl`")]
         public async Task ColourPriorList([Remainder] string str = "")
         {
 
@@ -490,6 +490,118 @@ namespace Namiko {
             embed.WithDescription(message);
             embed.WithAuthor("Previous Colours");
             await Context.Channel.SendMessageAsync("", false, embed.Build());
+        }
+
+        [Command("ActivatePremium"), Alias("ap"), Summary("Activates premium subscriptions associated with this account.\n**Usage**: `!ap`")]
+        public async Task ActivatePremium([Remainder] string GuildId = "0")
+        {
+            var ntr = Context.Client.GetGuild((ulong)PremiumType.GuildId_NOTAPREMIUMTYPE);
+            SocketGuildUser user = ntr.GetUser(Context.User.Id);
+
+            if (user == null)
+            {
+                await Context.Channel.SendMessageAsync("You are not in my server! https://discord.gg/W6Ru5sM");
+                return;
+            }
+
+            var current = PremiumDb.GetUserPremium(user.Id);
+            var roles = user.Roles;
+
+            string text = "";
+            foreach(var role in roles)
+            {
+                if(role.Id == (ulong) PremiumType.Toastie)
+                {
+                    if (current.Any(x => x.Type == PremiumType.Toastie))
+                        text += "You already have **Toastie Premium**!\n";
+                    else
+                    {
+                        await PremiumDb.AddPremium(user.Id, PremiumType.Toastie);
+                        text += "**Toastie Premium** activated!\n";
+                    }
+                }
+                if (role.Id == (ulong)PremiumType.Waifu)
+                {
+                    if (current.Any(x => x.Type == PremiumType.Waifu))
+                        text += "You already have **Waifu Premium**!\n";
+                    else
+                    {
+                        await PremiumDb.AddPremium(user.Id, PremiumType.Waifu);
+                        text += "**Waifu Premium** activated!\n";
+                    }
+                }
+            }
+            if (text == "")
+                text += $"You have no user premium... Try `{Program.GetPrefix(Context)}donate`";
+
+            await Context.Channel.SendMessageAsync(text);
+        }
+
+        [Command("ActivateServerPremium"), Alias("asp"), Summary("Activates server premium in the current server.\n**Usage**: `!asp [tier]`")]
+        public async Task ActivateServerPremium(string tier = "", [Remainder] string str = "")
+        {
+            var ntr = Context.Client.GetGuild((ulong)PremiumType.GuildId_NOTAPREMIUMTYPE);
+            SocketGuildUser user = ntr.GetUser(Context.User.Id);
+
+            if (user == null)
+            {
+                await Context.Channel.SendMessageAsync("You are not in my server! https://discord.gg/W6Ru5sM");
+                return;
+            }
+
+            tier = tier.ToLower();
+            if (tier != "t1" && tier != "t2")
+            {
+                string prefix = Program.GetPrefix(Context);
+                await Context.Channel.SendMessageAsync($"Please specify the Server Premium Tier: `{prefix}asp T1` or `{prefix}asp T2`");
+                return;
+            }
+
+            var current = PremiumDb.GetGuildPremium(Context.Guild.Id);
+            var roles = user.Roles;
+
+            string text = "";
+            foreach (var role in roles)
+            {
+                if (role.Id == (ulong)PremiumType.ServerT1 && tier == "t1")
+                {
+                    if (current.Any(x => x.Type == PremiumType.ServerT1))
+                        text += "**T1 Premium** is already activated in this server!\n";
+                    else
+                    {
+                        if (PremiumDb.IsPremium(user.Id, PremiumType.ServerT1))
+                            text += "You used your T1 Server premium upgrade in another server...\n";
+
+                        else
+                        {
+                            await PremiumDb.AddPremium(user.Id, PremiumType.ServerT1, Context.Guild.Id);
+                            text += "**T1 Premium** activated!\n";
+                        }
+                    }
+                }
+                if (role.Id == (ulong)PremiumType.ServerT2 && tier == "t2")
+                {
+                    if (current.Any(x => x.Type == PremiumType.ServerT1))
+                        text += "**T1 Premium** is already activated in this server!\n";
+                    else if (current.Any(x => x.Type == PremiumType.ServerT2))
+                        text += "**T2 Premium** is already activated in this server!\n";
+                    else
+                    {
+                        if (PremiumDb.IsPremium(user.Id, PremiumType.ServerT2))
+                            text += "You used your T2 Server premium upgrade in another server...\n";
+
+                        else
+                        {
+                            await PremiumDb.AddPremium(user.Id, PremiumType.ServerT2, Context.Guild.Id);
+                            text += "**T2 Premium** activated!\n";
+                        }
+                    }
+                }
+            }
+            if (text == "")
+                text += $"You have no server premium... Try `{Program.GetPrefix(Context)}donate`";
+
+            await Context.Channel.SendMessageAsync(text);
         }
     }
 }

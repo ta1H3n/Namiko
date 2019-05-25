@@ -90,7 +90,7 @@ namespace Namiko
                 int amount = ToastieUtil.DailyAmount(daily.Streak);
                 int tax = ToastieUtil.DailyTax(amount, ToastieDb.GetToasties(Context.User.Id, Context.Guild.Id), ToastieDb.GetToasties(Context.Client.CurrentUser.Id, Context.Guild.Id), ToastieDb.TotalToasties(Context.Guild.Id));
                 amount -= tax / 2;
-                int cap = Cost.dailycap;
+                int cap = Constants.dailycap;
                 amount = amount > cap ? cap : amount;
 
                 await DailyDb.SetDaily(daily);
@@ -129,7 +129,7 @@ namespace Namiko
                 int amount = ToastieUtil.DailyAmount(streak);
                 int tax = ToastieUtil.DailyTax(amount, ToastieDb.GetToasties(Context.User.Id, Context.Guild.Id), ToastieDb.GetToasties(Context.Client.CurrentUser.Id, Context.Guild.Id), ToastieDb.TotalToasties(Context.Guild.Id));
                 amount -= tax / 2;
-                int cap = Cost.weeklycap;
+                int cap = Constants.weeklycap;
                 amount = amount > cap ? cap : amount;
 
                 await ToastieDb.AddToasties(Context.User.Id, amount, Context.Guild.Id);
@@ -245,7 +245,7 @@ namespace Namiko
         }
 
         [Command("Give"), Summary("Give a user some of your toasties.\n**Usage**: `!give [user] [amount]`")]
-        public async Task GiveReverse(string sAmount, IUser recipient, [Remainder] string str = "")
+        public async Task Give(string sAmount, IUser recipient, [Remainder] string str = "")
         {
             await Give(recipient, sAmount, str);
         }
@@ -351,13 +351,13 @@ namespace Namiko
                 return;
             }
 
-            if (!Cost.beg)
+            if (!Constants.beg)
             {
                 await Context.Channel.SendMessageAsync(ToastieUtil.GetFalseBegMessage());
                 return;
             }
 
-            amount = Cost.begAmount;
+            amount = Constants.begAmount;
             await ToastieDb.AddToasties(Context.User.Id, amount, Context.Guild.Id);
 
             await Context.Channel.SendMessageAsync("Fine. Just leave me alone.", false, ToastieUtil.GiveEmbed(Context.Client.CurrentUser, Context.User, amount).Build());

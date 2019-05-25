@@ -185,5 +185,13 @@ namespace Namiko
                 return db.SpecialChannels.Where(x => x.GuildId == guildId).ToList();
             }
         }
+        public static async Task DeleteByGuild(ulong guildId)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                db.SpecialChannels.RemoveRange(db.SpecialChannels.Where(x => x.GuildId == guildId));
+                await db.SaveChangesAsync();
+            }
+        }
     }
 }
