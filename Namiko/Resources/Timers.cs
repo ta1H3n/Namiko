@@ -428,10 +428,14 @@ namespace Namiko
             {
                 try
                 {
+                    var type = LootBoxType.Vote;
+                    if (PremiumDb.IsPremium(x, PremiumType.Toastie))
+                        type = LootBoxType.Premium;
+
                     Console.WriteLine($"Giving a box to {x}");
-                    await LootBoxDb.AddLootbox(x, LootBoxType.Vote, 1);
+                    await LootBoxDb.AddLootbox(x, type, 1);
                     var ch = await Program.GetClient().GetUser(x).GetOrCreateDMChannelAsync();
-                    await ch.SendMessageAsync("Thanks for voting for me on DiscordBots! I have given you a lootbox! You can open it in a server of your choice by typing `!open`\nDon't forget to vote every day!");
+                    await ch.SendMessageAsync($"Thanks for voting for me! I gave you a **{type.ToString()} Lootbox**!\n You can open it in a server of your choice by typing `!open`");
                     Console.WriteLine($"Success.");
                 }
                 catch { }
@@ -574,6 +578,8 @@ namespace Namiko
             return channels;
         }
     }
+
+
     public class RedditChannel
     {
         public string Subreddit { get; set; }

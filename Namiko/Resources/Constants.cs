@@ -35,6 +35,8 @@ namespace Namiko {
 
         // Vote
         public const int voteWaifuChance = 10;
+        public const int premiumWaifuChance = 8;
         public static int voteToastieAmount { get { return 200 + (rnd.Next(9) * 100); } }
+        public static int premiumToastieAmount { get { return 500 + (rnd.Next(16) * 100); } }
     }
 }

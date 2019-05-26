@@ -285,7 +285,6 @@ namespace Namiko
             var eb = new EmbedBuilder();
             eb.WithAuthor(user.ToString(), user.GetAvatarUrl(), BasicUtil._patreon);
             DateTime now = DateTime.Now;
-            date = date.AddDays(7);
             string wait = $"{(date - now).Days} Days {(date - now).Hours} Hours {(date - now).Minutes} Minutes";
             eb.WithDescription($"You already claimed your weekly reward.\nYou must wait `{wait}`");
             eb.WithColor(BasicUtil.RandomColor());
@@ -367,23 +366,68 @@ namespace Namiko
         {
             var rnd = new Random();
 
-            if (type == LootBoxType.Vote)
-                return rnd.Next(Constants.voteWaifuChance) == 0;
+            switch (type)
+            {
+                case LootBoxType.Vote:
+                    return rnd.Next(Constants.voteWaifuChance) == 0;
 
-            return false;
+                case LootBoxType.Premium:
+                    return rnd.Next(Constants.premiumWaifuChance) == 0;
+
+                default:
+                    return false;
+            }
         }
-        public static Waifu BoxWaifu(LootBoxType type)
+        public static Waifu BoxWaifu(LootBoxType type, IEnumerable<PremiumType> premiums = null, ulong userId = 0, ulong guildId = 0)
         {
-            return WaifuDb.RandomWaifus(3, 1)[0];
+            var rnd = new Random();
+            List<Waifu> waifus = new List<Waifu>();
+
+            int tier = 3;
+            switch (type)
+            {
+                case LootBoxType.Vote:
+                    waifus.AddRange(WaifuDb.RandomWaifus(3, 15));
+                    break;
+
+                case LootBoxType.Premium:
+                    int r = rnd.Next(100);
+
+                    if (r < 5)
+                        tier = 1;
+                    else if (r < 30)
+                        tier = 2;
+                    else
+                        tier = 3;
+
+                    waifus.AddRange(WaifuDb.RandomWaifus(tier, 15));
+                    break;
+
+                default:
+                    waifus.AddRange(WaifuDb.RandomWaifus(3, 15));
+                    break;
+            }
+
+            if(premiums != null && premiums.Contains(PremiumType.Waifu))
+            {
+                waifus.AddRange(WaifuWishlistDb.GetWishlist(userId, guildId).Where(x => x.Tier == tier));
+            }
+
+            return waifus[rnd.Next(waifus.Count)];
         }
         public static int BoxToasties(LootBoxType type)
         {
-            var rnd = new Random();
+            switch (type)
+            {
+                case LootBoxType.Vote:
+                    return Constants.voteToastieAmount;
 
-            if (type == LootBoxType.Vote)
-                return Constants.voteToastieAmount;
+                case LootBoxType.Premium:
+                    return Constants.premiumToastieAmount;
 
-            return 0;
+                default:
+                    return Constants.voteToastieAmount;
+            }
         }
         public static EmbedBuilder NoBoxEmbed(IUser author)
         {
@@ -400,6 +444,21 @@ namespace Namiko
             eb.WithColor(BasicUtil.RandomColor());
             eb.WithTitle("Opening your lootbox!");
             eb.WithImageUrl("https://data.whicdn.com/images/109950962/original.gif");
+            return eb;
+        }
+        public static EmbedBuilder BoxListEmbed(List<LootBox> boxes, IUser author)
+        {
+            var eb = new EmbedBuilderPrepared(author);
+
+            string field = "";
+            for(int i = 0; i < boxes.Count; i++)
+            {
+                string location = boxes[i].GuildId == 0 ? "Global" : "This Server";
+                field += $"`#{i}` **x{boxes[i].Amount}** {boxes[i].Type.ToString()} - *{location}*\n";
+            }
+
+            eb.WithDescription("Enter the number of the Lootbox you wish to open.");
+            eb.AddField("Lootboxes :star:", field);
             return eb;
         }
     }

@@ -108,7 +108,10 @@ namespace Namiko
             {
                 var inv = new UserInventory{ UserId = userId, Waifu = waifu, GuildId = guildId, DateBought = DateTime.Now };
                 DbContext.Update(inv);
-                return await DbContext.SaveChangesAsync();
+                int res = await DbContext.SaveChangesAsync();
+
+                await WaifuWishlistDb.DeleteWaifuWish(userId, waifu, guildId);
+                return res;
             }
         }
         public static List<Waifu> GetWaifus(ulong userId, ulong guildId)
@@ -318,8 +321,12 @@ namespace Namiko
             {
                 var entry = new WaifuWish { UserId = userId, Waifu = waifu, GuildId = guildId };
 
+                int cap = 5;
+                if (PremiumDb.IsPremium(userId, PremiumType.Waifu))
+                    cap = 10;
+
                 db.WaifuWishlist.Update(entry);
-                if (db.WaifuWishlist.Where(x => x.UserId == userId && x.GuildId == guildId).Count() >= 5)
+                if (db.WaifuWishlist.Where(x => x.UserId == userId && x.GuildId == guildId).Count() >= cap)
                     db.WaifuWishlist.Remove(db.WaifuWishlist.Where(x => x.UserId == userId && x.GuildId == guildId).First());
 
                 await db.SaveChangesAsync();

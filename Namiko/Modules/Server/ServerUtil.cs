@@ -14,7 +14,14 @@ namespace Namiko
         public static EmbedBuilder ServerInfo(SocketGuild guild)
         {
             var eb = new EmbedBuilder();
-            eb.WithAuthor(guild.Name, guild.IconUrl);
+
+            string name = guild.Name;
+            if (PremiumDb.IsPremium(guild.Id, PremiumType.ServerT1))
+                name += " | T1 Guild 🌟";
+            else if (PremiumDb.IsPremium(guild.Id, PremiumType.ServerT2))
+                name += " | T2 Guild ⭐";
+            eb.WithAuthor(name, guild.IconUrl, BasicUtil._patreon);
+
             var toasties = ToastieDb.GetAllToasties(guild.Id).OrderByDescending(x => x.Amount);
             var waifus = UserInventoryDb.GetAllWaifuItems(guild.Id);
 

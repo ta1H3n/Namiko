@@ -7,7 +7,8 @@ namespace Namiko
     [Flags]
     public enum LootBoxType : int
     {
-        Vote = 1
+        Vote = 1,
+        Premium = 2
     }
 
     [Flags]

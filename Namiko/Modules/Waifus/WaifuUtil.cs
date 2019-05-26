@@ -271,7 +271,7 @@ namespace Namiko
         public static EmbedBuilder WaifuEmbedBuilder(Waifu waifu, bool guildDetails = false, SocketCommandContext context = null)
         {
             EmbedBuilder eb = new EmbedBuilder();
-            eb.WithAuthor(waifu.Name);
+            eb.WithAuthor(waifu.Name, null, BasicUtil._patreon);
 
             string desc = "";
             if (waifu.LongName != null)

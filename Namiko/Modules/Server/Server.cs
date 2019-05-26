@@ -127,5 +127,72 @@ namespace Namiko
             list += "```";
             await Context.Channel.SendMessageAsync(list);
         }
+
+        [Command("ActivateServerPremium"), Alias("asp"), Summary("Activates server premium in the current server.\n**Usage**: `!asp [tier]`")]
+        public async Task ActivateServerPremium(string tier = "", [Remainder] string str = "")
+        {
+            var ntr = Context.Client.GetGuild((ulong)PremiumType.GuildId_NOTAPREMIUMTYPE);
+            SocketGuildUser user = ntr.GetUser(Context.User.Id);
+
+            if (user == null)
+            {
+                await Context.Channel.SendMessageAsync("You are not in my server! https://discord.gg/W6Ru5sM");
+                return;
+            }
+
+            tier = tier.ToLower();
+            if (tier != "t1" && tier != "t2")
+            {
+                string prefix = Program.GetPrefix(Context);
+                await Context.Channel.SendMessageAsync($"Please specify the Server Premium Tier: `{prefix}asp T1` or `{prefix}asp T2`");
+                return;
+            }
+
+            var current = PremiumDb.GetGuildPremium(Context.Guild.Id);
+            var roles = user.Roles;
+
+            string text = "";
+            foreach (var role in roles)
+            {
+                if (role.Id == (ulong)PremiumType.ServerT1 && tier == "t1")
+                {
+                    if (current.Any(x => x.Type == PremiumType.ServerT1))
+                        text += "**T1 Premium** is already activated in this server!\n";
+                    else
+                    {
+                        if (PremiumDb.IsPremium(user.Id, PremiumType.ServerT1))
+                            text += "You used your T1 Server premium upgrade in another server...\n";
+
+                        else
+                        {
+                            await PremiumDb.AddPremium(user.Id, PremiumType.ServerT1, Context.Guild.Id);
+                            text += "**T1 Premium** activated!\n";
+                        }
+                    }
+                }
+                if (role.Id == (ulong)PremiumType.ServerT2 && tier == "t2")
+                {
+                    if (current.Any(x => x.Type == PremiumType.ServerT1))
+                        text += "**T1 Premium** is already activated in this server!\n";
+                    else if (current.Any(x => x.Type == PremiumType.ServerT2))
+                        text += "**T2 Premium** is already activated in this server!\n";
+                    else
+                    {
+                        if (PremiumDb.IsPremium(user.Id, PremiumType.ServerT2))
+                            text += "You used your T2 Server premium upgrade in another server...\n";
+
+                        else
+                        {
+                            await PremiumDb.AddPremium(user.Id, PremiumType.ServerT2, Context.Guild.Id);
+                            text += "**T2 Premium** activated!\n";
+                        }
+                    }
+                }
+            }
+            if (text == "")
+                text += $"You have no server premium... Try `{Program.GetPrefix(Context)}donate`";
+
+            await Context.Channel.SendMessageAsync(text);
+        }
     }
 }

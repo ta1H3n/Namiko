@@ -206,7 +206,7 @@ namespace Namiko
         {
             using (var db = new SqliteDbContext())
             {
-                var box = db.LootBoxes.Where(x => x.UserId == UserId && (x.GuildId == GuildId || x.GuildId == 0)).ToList();
+                var box = db.LootBoxes.Where(x => x.UserId == UserId && (x.GuildId == GuildId || x.GuildId == 0) && x.Amount > 0).ToList();
                 
                 return box;
             }

@@ -63,7 +63,17 @@ namespace Namiko {
         //Embed Method: profile
         public static EmbedBuilder ProfileEmbed(SocketGuildUser user) {
             var eb = new EmbedBuilder();
-            eb.WithAuthor(user);
+
+            string name = user.Username;
+            bool toastiePremium = PremiumDb.IsPremium(user.Id, PremiumType.Toastie);
+            bool waifuPremium = PremiumDb.IsPremium(user.Id, PremiumType.Waifu);
+            if (toastiePremium && waifuPremium)
+                name += " | Toastie and Waifu 🌟";
+            else if (waifuPremium)
+                name += " | Waifu ⭐";
+            else if (toastiePremium)
+                name += " | Toastie ⭐";
+            eb.WithAuthor(name, user.GetAvatarUrl(), BasicUtil._patreon);
 
             var waifus = UserInventoryDb.GetWaifus(user.Id, user.Guild.Id);
             int waifucount = waifus.Count();

@@ -109,7 +109,6 @@ namespace Namiko
             }
 
             await UserInventoryDb.AddWaifu(Context.User.Id, waifu, Context.Guild.Id);
-            await WaifuWishlistDb.DeleteWaifuWish(Context.User.Id, waifu, Context.Guild.Id);
             await Context.Channel.SendMessageAsync($"Congratulations! You bought **{waifu.Name}**!", false, WaifuUtil.WaifuEmbedBuilder(waifu).Build());
             await ToastieDb.AddToasties(Context.Client.CurrentUser.Id, price / 13, Context.Guild.Id);
         }
@@ -187,7 +186,6 @@ namespace Namiko
             }
 
             await UserInventoryDb.AddWaifu(recipient.Id, waifu, Context.Guild.Id);
-            await WaifuWishlistDb.DeleteWaifuWish(recipient.Id, waifu, Context.Guild.Id);
             await UserInventoryDb.DeleteWaifu(Context.User.Id, waifu, Context.Guild.Id);
             await Context.Channel.SendMessageAsync($"{recipient.Mention} You received **{waifu.Name}** from {Context.User.Mention}!", false, WaifuUtil.WaifuEmbedBuilder(waifu).Build());
         }

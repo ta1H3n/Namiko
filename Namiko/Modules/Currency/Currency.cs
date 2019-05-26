@@ -77,8 +77,11 @@ namespace Namiko
             }
 
             long timeNow = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+            int ms = 72000000;
+            if (PremiumDb.IsPremium(Context.Guild.Id, PremiumType.ServerT1) || PremiumDb.IsPremium(Context.Guild.Id, PremiumType.ServerT2))
+                ms = ms / 2;
 
-            if ((daily.Date + 72000000) < timeNow)
+            if ((daily.Date + ms) < timeNow)
             {
                 if ((daily.Date + 172800000) < timeNow)
                 {
@@ -101,7 +104,7 @@ namespace Namiko
             }
             else
             {
-                long wait = ((daily.Date + 72000000) - timeNow) / 1000;
+                long wait = ((daily.Date + ms) - timeNow) / 1000;
                 int hours = (int)wait / 3600;
                 int minutes = (int)wait % 3600 / 60;
                 int seconds = (int)wait % 60;
@@ -123,7 +126,11 @@ namespace Namiko
                 };
             }
 
-            if (weekly.Date == null ? true : weekly.Date.AddDays(7).CompareTo(DateTime.Now) < 0)
+            int hours = 168;
+            if (PremiumDb.IsPremium(Context.User.Id, PremiumType.Toastie))
+                hours = hours / 2;
+
+            if (weekly.Date == null ? true : weekly.Date.AddHours(hours).CompareTo(DateTime.Now) < 0)
             {
                 int streak = DailyDb.GetHighest(Context.Guild.Id) + 15;
                 int amount = ToastieUtil.DailyAmount(streak);
@@ -132,15 +139,30 @@ namespace Namiko
                 int cap = Constants.weeklycap;
                 amount = amount > cap ? cap : amount;
 
+                string text = "";
+                if (PremiumDb.IsPremium(Context.User.Id, PremiumType.Waifu))
+                {
+                    if (PremiumDb.IsPremium(Context.User.Id, PremiumType.Toastie))
+                    {
+                        await LootBoxDb.AddLootbox(Context.User.Id, LootBoxType.Premium, 1, Context.Guild.Id);
+                        text = "You receive a lootbox! :star2:";
+                    }
+                    else
+                    {
+                        await LootBoxDb.AddLootbox(Context.User.Id, LootBoxType.Vote, 1, Context.Guild.Id);
+                        text = "You receive a lootbox! :star:";
+                    }
+                }
+
                 await ToastieDb.AddToasties(Context.User.Id, amount, Context.Guild.Id);
                 await ToastieDb.AddToasties(Context.Client.CurrentUser.Id, tax / 2, Context.Guild.Id);
                 weekly.Date = DateTime.Now;
                 await WeeklyDb.SetWeekly(weekly);
-                await Context.Channel.SendMessageAsync("", false, ToastieUtil.WeeklyGetEmbed(amount, ToastieDb.GetToasties(Context.User.Id, Context.Guild.Id), Context.User).Build());
+                await Context.Channel.SendMessageAsync(text, false, ToastieUtil.WeeklyGetEmbed(amount, ToastieDb.GetToasties(Context.User.Id, Context.Guild.Id), Context.User).Build());
                 return;
             }
 
-            await Context.Channel.SendMessageAsync("", false, ToastieUtil.WeeklyWaitEmbed(weekly.Date, Context.User).Build());
+            await Context.Channel.SendMessageAsync("", false, ToastieUtil.WeeklyWaitEmbed(weekly.Date.AddHours(hours), Context.User).Build());
         }
 
         [Command("Flip"), Alias("f", "fwip"), Summary("Flip a coin for toasties, defaults to tails.\n**Usage**: `!flip [amount] [heads_or_tails]`")]
@@ -366,16 +388,44 @@ namespace Namiko
         [Command("Open"), Alias("OpenLootbox", "Lootbox", "Lootbowox"), Summary("Open a lootbox if you have one.\n**Usage**: `!open`"), RequireContext(ContextType.Guild)]
         public async Task Open([Remainder] string str = "")
         {
-            //TO-DO Add selection what type of lootbox to open when more are made
-            var type = LootBoxType.Vote;
-
-            var amount = LootBoxDb.GetAmount(Context.User.Id, type);
-
-            if(amount <= 0)
+            var boxes = LootBoxDb.GetAll(Context.User.Id, Context.Guild.Id);
+            if(boxes.Count == 0)
             {
                 await Context.Channel.SendMessageAsync("", false, ToastieUtil.NoBoxEmbed(Context.User).Build());
                 return;
             }
+
+            LootBox box = null;
+            if (boxes.Count == 1)
+                box = boxes[0];
+
+            else
+            {
+                var listMsg = await Context.Channel.SendMessageAsync(embed: ToastieUtil.BoxListEmbed(boxes, Context.User).WithFooter("Times out in 23 seconds").Build());
+                var response = await NextMessageAsync(
+                    new Criteria<IMessage>()
+                    .AddCriterion(new EnsureSourceUserCriterion())
+                    .AddCriterion(new EnsureSourceChannelCriterion())
+                    .AddCriterion(new EnsureRangeCriterion(boxes.Count)),
+                    new TimeSpan(0, 0, 23));
+
+                _ = listMsg.DeleteAsync();
+                int i = 0;
+                try
+                {
+                    i = int.Parse(response.Content);
+                }
+                catch
+                {
+                    _ = Context.Message.DeleteAsync();
+                    return;
+                }
+                _ = response.DeleteAsync();
+
+                box = boxes[i - 1];
+            }
+
+            var type = box.Type;
 
             var msg = await Context.Channel.SendMessageAsync("", false, ToastieUtil.BoxOpeningEmbed(Context.User).Build());
             await LootBoxDb.AddLootbox(Context.User.Id, type, -1);
@@ -383,9 +433,10 @@ namespace Namiko
 
             if (ToastieUtil.IsWaifu(type))
             {
-                var waifu = ToastieUtil.BoxWaifu(type);
+                var premiums = PremiumDb.GetUserPremium(Context.User.Id).Select(x => x.Type);
+                var waifu = ToastieUtil.BoxWaifu(type, premiums, Context.User.Id, Context.Guild.Id);
                 while(UserInventoryDb.OwnsWaifu(Context.User.Id, waifu, Context.Guild.Id))
-                    waifu = ToastieUtil.BoxWaifu(type);
+                    waifu = ToastieUtil.BoxWaifu(type, premiums, Context.User.Id, Context.Guild.Id);
 
                 await UserInventoryDb.AddWaifu(Context.User.Id, waifu, Context.Guild.Id);
                 await msg.ModifyAsync(x => {
@@ -400,7 +451,7 @@ namespace Namiko
             var bal = ToastieDb.GetToasties(Context.User.Id, Context.Guild.Id);
             await msg.ModifyAsync(x => {
                 x.Embed = new EmbedBuilder()
-                .WithAuthor($"{Context.User} | Lootbox", Context.User.GetAvatarUrl())
+                .WithAuthor($"{Context.User} | {box.Type.ToString()} Lootbox", Context.User.GetAvatarUrl(), BasicUtil._patreon)
                 .WithColor(BasicUtil.RandomColor())
                 .WithThumbnailUrl("https://i.imgur.com/4JQmxa6.png")
                 .WithDescription($"Congratulations! You found **{amountWon.ToString("n0")}** {ToastieUtil.RandomEmote()}!\nNow you have **{bal.ToString("n0")}** {ToastieUtil.RandomEmote()}!")
