@@ -358,7 +358,10 @@ namespace Namiko
             await WaifuWishlistDb.DeleteWaifuWish(user.Id, waifu, Context.Guild.Id);
             await Context.Channel.SendMessageAsync("You don't want her anymore, huh...");
         }
+    }
 
+    public class WaifuEditing : InteractiveBase<ShardedCommandContext>
+    {
         [Command("NewWaifu"), Alias("nw"), Summary("Adds a waifu to the database.\n**Usage**: `!nw [name] [tier(1-3)] [image_url]`"), HomePrecondition]
         public async Task NewWaifu(string name, int tier, string url = null)
         {
@@ -485,11 +488,64 @@ namespace Namiko
                 await Context.Channel.SendMessageAsync($":x: Failed to update {name}");
         }
 
+        [Command("RenameWaifu"), Alias("rw"), Summary("Change a waifu's primary name.\n**Usage**: `!rw [oldName] [newName]`"), HomePrecondition]
+        public async Task RenameWaifu(string oldName, string newName)
+        {
+            var waifu = WaifuDb.GetWaifu(oldName);
+            if(waifu == null)
+            {
+                await Context.Channel.SendMessageAsync($"**{oldName}** doesn't exist. *BAAAAAAAAAAAAAAAAAAKA*");
+                return;
+            }
+
+            waifu = WaifuDb.GetWaifu(newName);
+            if (waifu != null)
+            {
+                await Context.Channel.SendMessageAsync($"**{newName}** already exists! *BAAAAAAAAAAAAAAAAAAKA*");
+                return;
+            }
+
+            int res = await WaifuDb.RenameWaifu(oldName, newName);
+            await Context.Channel.SendMessageAsync($"Replaced **{res}** **{oldName}** with their **{newName}** clones and burned the originals. *That was wild...*");
+        }
+
+        [Command("AutocompleteWaifu"), Alias("acw"), Summary("Auto completes a waifu using MAL.\n**Usage**: `!acw [name] [MAL_ID]`"), HomePrecondition]
+        public async Task AutocompleteWaifu(string name, long malId)
+        {
+            var waifu = WaifuDb.GetWaifu(name);
+            if (waifu == null)
+            {
+                await Context.Channel.SendMessageAsync($"**{name}** doesn't exist. *BAAAAAAAAAAAAAAAAAAKA*");
+                return;
+            }
+
+            var mal = await WebUtil.GetWaifu(malId);
+            waifu.LongName = $"{mal.Name} ({mal.NameKanji})";
+            var about = mal.About;
+            var lines = about.Split('\n');
+            string desc = "";
+            foreach (var line in lines)
+            {
+                if (line.Split(' ')[0].EndsWith(':'))
+                    continue;
+                if (line.StartsWith('('))
+                    continue;
+
+                desc += line + '\n' + '\n';
+            }
+            //desc.Replace(@"\r", @"\n\n");
+            waifu.Description = desc;
+            waifu.Source = mal.Animeography.FirstOrDefault() == null ? "" : mal.Animeography.FirstOrDefault().Name;
+
+            await WaifuDb.UpdateWaifu(waifu);
+            await Context.Channel.SendMessageAsync($"Autocompleted **{waifu.Name}**. Has **{mal.MemberFavorites}** favorites.", false, WaifuUtil.WaifuEmbedBuilder(waifu, true, Context).Build());
+        }
+
         [Command("ResetWaifuShop"), Alias("rws"), Summary("Resets the waifu shop contents."), HomePrecondition]
         public async Task ResetWaifuShop()
         {
             await WaifuShopDb.NewList(WaifuUtil.GenerateWaifuList(Context.Guild.Id));
-            await WaifuShop();
+            await Context.Channel.SendMessageAsync("Done.");
         }
     }
 }

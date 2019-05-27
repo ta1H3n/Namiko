@@ -131,7 +131,7 @@ namespace Namiko
 
             foreach(var x in commandService.Modules)
             {
-                if ((x.Name != "Special" && x.Name != "Basic" && x.Name != "SpecialModes") || all)
+                if ((x.Name != "Special" && x.Name != "Basic" && x.Name != "SpecialModes" && x.Name != "WaifuEditing") || all)
                 {
                     var fb = new EmbedFieldBuilder{
                         Name = x.Name

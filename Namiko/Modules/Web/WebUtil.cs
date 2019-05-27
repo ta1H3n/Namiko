@@ -151,8 +151,9 @@ namespace Namiko
             //return Uri.IsWellFormedUriString("https://www.google.com", UriKind.Absolute);
         }
 
-        // ANIME SEARCH
+        // MAL
 
+        // Anime
         public static async Task<AnimeSearchResult> AnimeSearch(string Query)
         {
             //animeSearch becomes a "list" of the results of query
@@ -198,8 +199,7 @@ namespace Namiko
             return eb;
         }
 
-        // MANGA SEARCH
-
+        // Manga
         public static async  Task<MangaSearchResult> MangaSearch(string Query)
         {
             //mangaSearch becomes a "list" of the results of query
@@ -246,6 +246,16 @@ namespace Namiko
                 manga.Synopsis);
             eb.ThumbnailUrl = manga.ImageURL;
             return eb;
+        }
+
+        //Character
+        public static async Task<Character> GetWaifu(long malId)
+        {
+            return await Jikan.GetCharacter(malId);
+        }
+        public static async Task<CharacterSearchResult> GetWaifus(string name)
+        {
+            return await Jikan.SearchCharacter(name);
         }
         
         // DISCORD BOTS ORG

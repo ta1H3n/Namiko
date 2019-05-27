@@ -92,6 +92,7 @@ namespace Namiko
             await Commands.AddModuleAsync(typeof(SpecialModes), Services);
             await Commands.AddModuleAsync(typeof(User), Services);
             await Commands.AddModuleAsync(typeof(Waifus), Services);
+            await Commands.AddModuleAsync(typeof(WaifuEditing), Services);
             await Commands.AddModuleAsync(typeof(Web), Services);
 
             try

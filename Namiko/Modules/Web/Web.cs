@@ -181,6 +181,23 @@ namespace Namiko
 
             await ResponseQuery.DeleteAsync();
         }
+        
+        [Command("MALWaifu"), Alias("malw"), Summary("Searches MAL for characters.\n**Usage**: `!malw [query]`"), HomePrecondition]
+        public async Task AutocompleteWaifu([Remainder] string name)
+        {
+            await Context.Channel.TriggerTypingAsync();
+            var eb = new EmbedBuilderPrepared(Context.User);
+
+            var waifus = await WebUtil.GetWaifus(name);
+            string list = "";
+            foreach (var w in waifus.Results.Take(10))
+            {
+                list += $"`{w.MalId}` [{w.Name}]({w.URL}) - *{(w.Animeography.FirstOrDefault() == null ? w.Mangaography.FirstOrDefault().Name : w.Animeography.FirstOrDefault().Name)}*\n";
+            }
+            eb.WithDescription(list);
+
+            await Context.Channel.SendMessageAsync(embed: eb.Build());
+        }
         /*
         [Command("Subreddit"), Alias("sub"), Summary("Set a subreddit for Namiko to post hot posts from.\n**Usage**: `!sub [subreddit_name] [min_upvotes]`"), CustomUserPermission(GuildPermission.ManageChannels), RequireContext(ContextType.Guild)]
         public async Task Subreddit(string name, int upvotes)

@@ -34,9 +34,6 @@ namespace Namiko
             var date = System.DateTime.Now.Date;
             if (DateTime.Now.Hour >= 12)
                 date = date.AddHours(12);
-            var waifus = new List<ShopWaifu>();
-            var rnd = new Random();
-            int r = 0;
 
             int limitedamount = Constants.shoplimitedamount;
             int t1amount = Constants.shopt1amount;
@@ -76,51 +73,57 @@ namespace Namiko
             tier3.AddRange(wishlists.Where(x => x.Waifu.Tier == 3).Select(x => x.Waifu));
 
             ShopWaifu item = null;
-            
-            // LIMITED WAIFU
-            for (int i = 0; i < limitedamount; i++)
-            {
-                r = rnd.Next(0, tier1.Count);
-                item = new ShopWaifu { Waifu = tier1.ElementAt(r), GeneratedDate = date, Discount = GenerateDiscount(), Limited = 1, BoughtBy = 0, GuildId = guildId };
-                waifus.Add(item);
-            }
+            List<ShopWaifu> waifus = new List<ShopWaifu>();
+            var rnd = new Random();
+            int r = 0;
 
-            // TIER 0 AND 1 WAIFUS
-            for (int i = 0; i < t1amount; i++)
+            for (int k = 0; k < pages; k++)
             {
-                r = rnd.Next(0, tier1.Count + tier0.Count);
-
-                if (r < tier1.Count)
+                // LIMITED WAIFU
+                for (int i = 0; i < limitedamount; i++)
                 {
-                    item = new ShopWaifu { Waifu = tier1.ElementAt(r), GeneratedDate = date, Limited = -1, BoughtBy = 0, GuildId = guildId };
-                    tier1.RemoveAll(x => x.Name.Equals(tier1[r].Name));
-                }
-                else
-                {
-                    r = r - tier1.Count;
-                    item = new ShopWaifu { Waifu = tier0[r], GeneratedDate = date, Limited = -1, BoughtBy = 0, GuildId = guildId };
-                    tier0.RemoveAll(x => x.Name.Equals(tier0[r].Name));
+                    r = rnd.Next(0, tier1.Count);
+                    item = new ShopWaifu { Waifu = tier1.ElementAt(r), GeneratedDate = date, Discount = GenerateDiscount(), Limited = 1, BoughtBy = 0, GuildId = guildId };
+                    waifus.Add(item);
                 }
 
-                waifus.Add(item);
-            }
+                // TIER 0 AND 1 WAIFUS
+                for (int i = 0; i < t1amount; i++)
+                {
+                    r = rnd.Next(0, tier1.Count + tier0.Count);
 
-            // TIER 2 WAIFUS
-            for (int i = 0; i < t2amount; i++)
-            {
-                r = rnd.Next(0, tier2.Count);
-                item = new ShopWaifu { Waifu = tier2.ElementAt(r), GeneratedDate = date, Limited = -1, BoughtBy = 0, GuildId = guildId };
-                waifus.Add(item);
-                tier2.RemoveAll(x => x.Name.Equals(tier2[r].Name));
-            }
+                    if (r < tier1.Count)
+                    {
+                        item = new ShopWaifu { Waifu = tier1.ElementAt(r), GeneratedDate = date, Limited = -1, BoughtBy = 0, GuildId = guildId };
+                        tier1.RemoveAll(x => x.Name.Equals(tier1[r].Name));
+                    }
+                    else
+                    {
+                        r = r - tier1.Count;
+                        item = new ShopWaifu { Waifu = tier0[r], GeneratedDate = date, Limited = -1, BoughtBy = 0, GuildId = guildId };
+                        tier0.RemoveAll(x => x.Name.Equals(tier0[r].Name));
+                    }
 
-            // TIER 3 WAIFUS
-            for (int i = 0; i < t3amount; i++)
-            {
-                r = rnd.Next(0, tier3.Count);
-                item = new ShopWaifu { Waifu = tier3.ElementAt(r), GeneratedDate = date, Limited = -1, BoughtBy = 0, GuildId = guildId };
-                waifus.Add(item);
-                tier3.RemoveAll(x => x.Name.Equals(tier3[r].Name));
+                    waifus.Add(item);
+                }
+
+                // TIER 2 WAIFUS
+                for (int i = 0; i < t2amount; i++)
+                {
+                    r = rnd.Next(0, tier2.Count);
+                    item = new ShopWaifu { Waifu = tier2.ElementAt(r), GeneratedDate = date, Limited = -1, BoughtBy = 0, GuildId = guildId };
+                    waifus.Add(item);
+                    tier2.RemoveAll(x => x.Name.Equals(tier2[r].Name));
+                }
+
+                // TIER 3 WAIFUS
+                for (int i = 0; i < t3amount; i++)
+                {
+                    r = rnd.Next(0, tier3.Count);
+                    item = new ShopWaifu { Waifu = tier3.ElementAt(r), GeneratedDate = date, Limited = -1, BoughtBy = 0, GuildId = guildId };
+                    waifus.Add(item);
+                    tier3.RemoveAll(x => x.Name.Equals(tier3[r].Name));
+                }
             }
 
             NotifyWishlist(waifus.Select(x => x.Waifu), guildId);

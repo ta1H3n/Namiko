@@ -11,6 +11,13 @@ namespace Namiko
 {
     public class WaifuDb
     {
+        public static Waifu GetWaifu(string name)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                return db.Waifus.FirstOrDefault(x => x.Name == name);
+            }
+        }
         public static async Task<int> AddWaifu(Waifu waifu)
         {
             using (var DbContext = new SqliteDbContext())
@@ -61,7 +68,7 @@ namespace Namiko
             }
 
         }
-        public static List<Waifu> GetWaifus()
+        public static List<Waifu> AllWaifus()
         {
             using (var DbContext = new SqliteDbContext())
             {
@@ -95,6 +102,53 @@ namespace Namiko
             using (var db = new SqliteDbContext())
             {
                 return db.Waifus.Where(x => x.Tier == tier).OrderBy(r => Guid.NewGuid()).Take(amount).ToList();
+            }
+        }
+        public static async Task<int> RenameWaifu(string oldName, string newName)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                var inv = db.UserInventories.Where(x => x.Waifu.Name == oldName);
+                var wish = db.WaifuWishlist.Where(x => x.Waifu.Name == oldName);
+                var store = db.WaifuStores.Where(x => x.Waifu.Name == oldName);
+                var feat = db.FeaturedWaifus.Where(x => x.Waifu.Name == oldName);
+                var actual = db.Waifus.Where(x => x.Name == oldName);
+                
+                var invL = inv.ToList();
+                var wishL = wish.ToList();
+                var storeL = store.ToList();
+                var featL = feat.ToList();
+                var actualL = actual.ToList();
+
+                db.UserInventories.RemoveRange(inv);
+                db.WaifuWishlist.RemoveRange(wish);
+                db.WaifuStores.RemoveRange(store);
+                db.FeaturedWaifus.RemoveRange(feat);
+                db.Waifus.RemoveRange(actual);
+                
+                await db.SaveChangesAsync();
+
+                foreach (var x in invL)
+                    x.Waifu.Name = newName;
+                foreach (var x in wishL)
+                    x.Waifu.Name = newName;
+                foreach (var x in storeL)
+                    x.Waifu.Name = newName;
+                foreach (var x in featL)
+                    x.Waifu.Name = newName;
+                foreach(var x in actualL)
+                    x.Name = newName;
+
+                db.Waifus.AddRange(actualL);
+
+                int res = await db.SaveChangesAsync();
+
+                db.UserInventories.AddRange(invL);
+                db.WaifuWishlist.AddRange(wishL);
+                db.WaifuStores.AddRange(storeL);
+                db.FeaturedWaifus.AddRange(featL);
+
+                return res + await db.SaveChangesAsync();
             }
         }
     }
