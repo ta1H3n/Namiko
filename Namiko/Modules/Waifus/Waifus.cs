@@ -21,9 +21,17 @@ namespace Namiko
         public async Task WaifuShop([Remainder] string str = "")
         {
             List<ShopWaifu> waifus = await WaifuUtil.GetShopWaifus(Context.Guild.Id);
-            var eb = WaifuUtil.NewShopEmbed(waifus, Program.GetPrefix(Context));
+            int count = Constants.shoplimitedamount + Constants.shopt1amount + Constants.shopt2amount + Constants.shopt3amount;
+            string prefix = Program.GetPrefix(Context);
 
-            await Context.Channel.SendMessageAsync("", false, eb.Build());
+            if (waifus.Count <= count)
+            {
+                var eb = WaifuUtil.NewShopEmbed(waifus, prefix);
+                await Context.Channel.SendMessageAsync("", false, eb.Build());
+                return;
+            }
+
+            await PagedReplyAsync(WaifuUtil.PaginatedShopMessage(waifus, count, prefix));
         }
 
         [Command("WaifuShopSlides"), Alias("wss"), Summary("Opens the waifu shop slides.")]

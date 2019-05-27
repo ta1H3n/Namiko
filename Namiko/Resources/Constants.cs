@@ -5,12 +5,6 @@ namespace Namiko {
         private static Random rnd = new Random();
 
         
-        //waifu costs - set in tiers
-        public const int tier3 = 5000;
-        public const int tier2 = 10000;
-        public const int tier1 = 20000;
-        public const int tier0 = 100000;
-        
         //Begging
         public const int begChance = 4;
         public static bool beg { get { return rnd.Next(Constants.begChance) == 0; } }
@@ -31,12 +25,26 @@ namespace Namiko {
         public const int MarriageLimit = 1;
 
 
-        // --------------LOOTBOXES----------------- //
-
-        // Vote
+        //      LOOTBOXES
+        
         public const int voteWaifuChance = 10;
         public const int premiumWaifuChance = 8;
+
         public static int voteToastieAmount { get { return 200 + (rnd.Next(9) * 100); } }
         public static int premiumToastieAmount { get { return 500 + (rnd.Next(16) * 100); } }
+
+        //      WAIFUS
+        
+        //waifu costs - set in tiers
+        public const int tier3 = 5000;
+        public const int tier2 = 10000;
+        public const int tier1 = 20000;
+        public const int tier0 = 100000;
+
+        //waifushop
+        public const int shoplimitedamount = 1;
+        public const int shopt1amount = 2;
+        public const int shopt2amount = 7;
+        public const int shopt3amount = 6;
     }
 }

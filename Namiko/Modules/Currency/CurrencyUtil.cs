@@ -382,12 +382,13 @@ namespace Namiko
         {
             var rnd = new Random();
             List<Waifu> waifus = new List<Waifu>();
+            int randomizerAmount = 10;
 
             int tier = 3;
             switch (type)
             {
                 case LootBoxType.Vote:
-                    waifus.AddRange(WaifuDb.RandomWaifus(3, 15));
+                    waifus.AddRange(WaifuDb.RandomWaifus(3, randomizerAmount));
                     break;
 
                 case LootBoxType.Premium:
@@ -400,11 +401,11 @@ namespace Namiko
                     else
                         tier = 3;
 
-                    waifus.AddRange(WaifuDb.RandomWaifus(tier, 15));
+                    waifus.AddRange(WaifuDb.RandomWaifus(tier, randomizerAmount));
                     break;
 
                 default:
-                    waifus.AddRange(WaifuDb.RandomWaifus(3, 15));
+                    waifus.AddRange(WaifuDb.RandomWaifus(3, randomizerAmount));
                     break;
             }
 

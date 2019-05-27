@@ -50,7 +50,7 @@ namespace Discord.Addons.Interactive
         public async Task DisplayAsync()
         {
             var embed = BuildEmbed();
-            var message = await Context.Channel.SendMessageAsync(_pager.Content, embed: embed).ConfigureAwait(false);
+            var message = await Context.Channel.SendMessageAsync(_pager.MessageText, embed: embed).ConfigureAwait(false);
             Message = message;
             Interactive.AddReactionCallback(message, this);
             // Reactions take a while to add, don't wait for them
@@ -132,7 +132,7 @@ namespace Discord.Addons.Interactive
             var eb = new EmbedBuilder()
                 .WithAuthor(_pager.Author)
                 .WithColor(_pager.Color)
-                .WithFooter(f => f.Text = string.Format(options.FooterFormat, page, pages))
+                .WithFooter(_pager.Footer + string.Format(options.FooterFormat, page, pages))
                 .WithTitle(_pager.Title)
                 .WithImageUrl(_pager.ImageUrl)
                 .WithThumbnailUrl(_pager.ThumbnailUrl);

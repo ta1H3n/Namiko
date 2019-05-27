@@ -376,5 +376,14 @@ namespace Namiko
                 }
             }
         }
+        public static List<WaifuWish> GetAllPremiumWishlists(ulong guildId, PremiumType premium)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                var users = db.Premiums.Where(x => x.Type == premium).Select(x => x.UserId);
+                var wishlists = db.WaifuWishlist.Where(x => x.GuildId == guildId && users.Contains(x.UserId)).Include(x => x.Waifu);
+                return wishlists.ToList();
+            }
+        }
     }
 }

@@ -7,7 +7,7 @@ namespace Discord.Addons.Interactive
     public class FieldPages
     {
         public string Title { get; set; }
-        public IEnumerable<string> Pages { get; set; }
-        public bool Inline { get; set; }
+        public IEnumerable<string> Pages { get; set; } = new List<string>();
+        public bool Inline { get; set; } = false;
     }
 }

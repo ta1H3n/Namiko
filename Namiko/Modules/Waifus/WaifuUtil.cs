@@ -35,53 +35,92 @@ namespace Namiko
             if (DateTime.Now.Hour >= 12)
                 date = date.AddHours(12);
             var waifus = new List<ShopWaifu>();
-            var rand = new Random();
+            var rnd = new Random();
             int r = 0;
 
-            var tier = WaifuDb.GetWaifusByTier(1);
+            int limitedamount = Constants.shoplimitedamount;
+            int t1amount = Constants.shopt1amount;
+            int t2amount = Constants.shopt2amount;
+            int t3amount = Constants.shopt3amount;
+            int pages = 1;
+            if (PremiumDb.IsPremium(guildId, PremiumType.ServerT2))
+                pages = 3;
+            if (PremiumDb.IsPremium(guildId, PremiumType.ServerT1))
+                pages = 5;
+            int randomizerMultiplier = 3 + ((5 - pages) / 2);
+
+            var tier0 = WaifuDb.GetWaifusByTier(0);
+            var tier1 = WaifuDb.RandomWaifus(1, (limitedamount + t1amount) * pages * randomizerMultiplier);
+            var tier2 = WaifuDb.RandomWaifus(2, t2amount * pages * randomizerMultiplier);
+            var tier3 = WaifuDb.RandomWaifus(3, t3amount * pages * randomizerMultiplier);
+
+            var wishlists = WaifuWishlistDb.GetAllPremiumWishlists(guildId, PremiumType.Toastie);
+            var ids = wishlists.Select(x => x.UserId).Distinct();
+            var guild = Program.GetClient().GetGuild(guildId);
+            foreach(var id in ids)
+            {
+                SocketGuildUser user = null;
+                try
+                {
+                    user = guild.GetUser(id);
+                } catch
+                {
+                    wishlists.RemoveAll(x => x.UserId == id);
+                }
+                if(user == null)
+                    wishlists.RemoveAll(x => x.UserId == id);
+            }
+
+            tier1.AddRange(wishlists.Where(x => x.Waifu.Tier == 1).Select(x => x.Waifu));
+            tier2.AddRange(wishlists.Where(x => x.Waifu.Tier == 2).Select(x => x.Waifu));
+            tier3.AddRange(wishlists.Where(x => x.Waifu.Tier == 3).Select(x => x.Waifu));
+
             ShopWaifu item = null;
             
             // LIMITED WAIFU
-            for (int i = 0; i < 1; i++)
+            for (int i = 0; i < limitedamount; i++)
             {
-                r = rand.Next(0, tier.Count);
-                var limitedGirl = tier.ElementAt(r);
-                if(limitedGirl.Tier == 0)
-                    item = new ShopWaifu { Waifu = limitedGirl, GeneratedDate = date, Limited = 1, BoughtBy = 0, GuildId = guildId };
-                else
-                    item = new ShopWaifu { Waifu = limitedGirl, GeneratedDate = date, Discount = GenerateDiscount(), Limited = 1, BoughtBy = 0, GuildId = guildId };
+                r = rnd.Next(0, tier1.Count);
+                item = new ShopWaifu { Waifu = tier1.ElementAt(r), GeneratedDate = date, Discount = GenerateDiscount(), Limited = 1, BoughtBy = 0, GuildId = guildId };
                 waifus.Add(item);
-                tier.RemoveAt(r);
             }
 
-            // TIER 1 WAIFUS
-            tier.AddRange(WaifuDb.GetWaifusByTier(0));
-            for (int i = 0; i < 2; i++)
+            // TIER 0 AND 1 WAIFUS
+            for (int i = 0; i < t1amount; i++)
             {
-                r = rand.Next(0, tier.Count);
-                item = new ShopWaifu { Waifu = tier.ElementAt(r), GeneratedDate = date, Limited = -1, BoughtBy = 0, GuildId = guildId };
+                r = rnd.Next(0, tier1.Count + tier0.Count);
+
+                if (r < tier1.Count)
+                {
+                    item = new ShopWaifu { Waifu = tier1.ElementAt(r), GeneratedDate = date, Limited = -1, BoughtBy = 0, GuildId = guildId };
+                    tier1.RemoveAll(x => x.Name.Equals(tier1[r].Name));
+                }
+                else
+                {
+                    r = r - tier1.Count;
+                    item = new ShopWaifu { Waifu = tier0[r], GeneratedDate = date, Limited = -1, BoughtBy = 0, GuildId = guildId };
+                    tier0.RemoveAll(x => x.Name.Equals(tier0[r].Name));
+                }
+
                 waifus.Add(item);
-                tier.RemoveAt(r);
             }
 
             // TIER 2 WAIFUS
-            tier = WaifuDb.GetWaifusByTier(2);
-            for (int i = 0; i < 7; i++)
+            for (int i = 0; i < t2amount; i++)
             {
-                r = rand.Next(0, tier.Count);
-                item = new ShopWaifu { Waifu = tier.ElementAt(r), GeneratedDate = date, Limited = -1, BoughtBy = 0, GuildId = guildId };
+                r = rnd.Next(0, tier2.Count);
+                item = new ShopWaifu { Waifu = tier2.ElementAt(r), GeneratedDate = date, Limited = -1, BoughtBy = 0, GuildId = guildId };
                 waifus.Add(item);
-                tier.RemoveAt(r);
+                tier2.RemoveAll(x => x.Name.Equals(tier2[r].Name));
             }
 
             // TIER 3 WAIFUS
-            tier = WaifuDb.GetWaifusByTier(3);
-            for (int i = 0; i < 6; i++)
+            for (int i = 0; i < t3amount; i++)
             {
-                r = rand.Next(0, tier.Count);
-                item = new ShopWaifu { Waifu = tier.ElementAt(r), GeneratedDate = date, Limited = -1, BoughtBy = 0, GuildId = guildId };
+                r = rnd.Next(0, tier3.Count);
+                item = new ShopWaifu { Waifu = tier3.ElementAt(r), GeneratedDate = date, Limited = -1, BoughtBy = 0, GuildId = guildId };
                 waifus.Add(item);
-                tier.RemoveAt(r);
+                tier3.RemoveAll(x => x.Name.Equals(tier3[r].Name));
             }
 
             NotifyWishlist(waifus.Select(x => x.Waifu), guildId);
@@ -178,6 +217,51 @@ namespace Namiko
             var eb = new EmbedBuilder();
             eb.WithAuthor("Waifu Store", client.CurrentUser.GetAvatarUrl(), BasicUtil._patreon);
 
+            string list = WaifuShopWaifuList(waifus);
+
+            eb.AddField(":books: Commands", $"`{prefix}buywaifu [name]` | `{prefix}waifu [search]` | `{prefix}wss`", true);
+            eb.AddField(":revolving_hearts: Waifus", list, true);
+            //eb.WithThumbnailUrl(waifus[0].Waifu.ImageUrl);
+            eb.WithFooter($"Resets in {11 - DateTime.Now.Hour%12} Hours {60 - DateTime.Now.Minute} Minutes");
+            eb.Color = BasicUtil.RandomColor();
+            return eb;
+        }
+        public static CustomPaginatedMessage PaginatedShopMessage(IEnumerable<ShopWaifu> waifus, int pageSize, string prefix)
+        {
+            CustomPaginatedMessage paginatedMessage = new CustomPaginatedMessage();
+            var splitWaifus = CustomPaginatedMessage.Split(waifus, pageSize);
+            int pages = splitWaifus.Count();
+
+            var fieldInfo = new FieldPages();
+            fieldInfo.Title = ":books: Commands";
+            for (int i = 0; i < pages; i++)
+            {
+                fieldInfo.Pages.Append($"`{prefix}buywaifu [name]` | `{prefix}waifu [search]` | `{prefix}wss`");
+            }
+            fieldInfo.Inline = true;
+            paginatedMessage.Fields.Append(fieldInfo);
+
+            var fieldWaifus = new FieldPages();
+            fieldWaifus.Title = ":revolving_hearts: Waifus";
+            foreach (var w in splitWaifus)
+            {
+                fieldWaifus.Pages.Append(WaifuUtil.WaifuShopWaifuList(w));
+            }
+            paginatedMessage.Fields.Append(fieldWaifus);
+
+            paginatedMessage.Footer = $"Resets in {11 - DateTime.Now.Hour % 12} Hours {60 - DateTime.Now.Minute} Minutes";
+            paginatedMessage.Color = BasicUtil.RandomColor();
+            paginatedMessage.Author = new EmbedAuthorBuilder()
+            {
+                Name = "Waifu Store",
+                IconUrl = Program.GetClient().CurrentUser.GetAvatarUrl(),
+                Url = BasicUtil._patreon
+            };
+
+            return paginatedMessage;
+        }
+        public static string WaifuShopWaifuList(IEnumerable<ShopWaifu> waifus)
+        {
             string list = "";
             foreach (var x in waifus)
             {
@@ -194,8 +278,9 @@ namespace Namiko
                     {
                         try
                         {
-                            listing += $" OUT OF STOCK! Bought by: {client.GetUser(x.BoughtBy).Mention}\n";
-                        } catch
+                            listing += $" OUT OF STOCK! Bought by: {Program.GetClient().GetUser(x.BoughtBy).Mention}\n";
+                        }
+                        catch
                         {
                             listing += $" OUT OF STOCK!\n";
                         }
@@ -207,12 +292,7 @@ namespace Namiko
             }
             list += "";
 
-            eb.AddField(":books: Commands", $"`{prefix}buywaifu [name]` | `{prefix}waifu [search]` | `{prefix}wss`", true);
-            eb.AddField(":revolving_hearts: Waifus", list, true);
-            //eb.WithThumbnailUrl(waifus[0].Waifu.ImageUrl);
-            eb.WithFooter($"Resets in {11 - DateTime.Now.Hour%12} Hours {60 - DateTime.Now.Minute} Minutes");
-            eb.Color = BasicUtil.RandomColor();
-            return eb;
+            return list;
         }
         public static EmbedBuilder WaifuShopSlideEmbed(Waifu waifu)
         {

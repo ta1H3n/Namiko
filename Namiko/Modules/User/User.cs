@@ -47,7 +47,7 @@ namespace Namiko {
             await PagedReplyAsync(msg);
         }
 
-        [Command("Marry"), Alias("m"), Summary("Allows 2 users to marry each other, no more than 1 partner per person is allowed.\n**Usage**:  `!m [user]`")]
+        [Command("Propose"), Alias("Marry"), Summary("Propose to a user.\n**Usage**:  `!m [user]`")]
         public async Task Marriage(IUser wife = null, [Remainder] string str = "") {
 
             //commonly used variables + embed basics
@@ -72,7 +72,7 @@ namespace Namiko {
 
                 embed.WithAuthor(wife);
                 embed.WithDescription($"**{ user.Mention }** has proposed to you.");
-                embed.WithFooter("`!accept [user]` or `!decline [user]`");
+                embed.WithFooter("`accept [user]` or `decline [user]`");
                 await Context.Channel.SendMessageAsync($"{ wife.Mention }", false, embed.Build());
                 return;
             }
@@ -83,16 +83,15 @@ namespace Namiko {
                 await Context.Channel.SendMessageAsync("", false, embed.Build());
                 return;
             }
-
+            
             //checking marriage cap
             if (MarriageDb.GetMarriages(Context.User.Id, Context.Guild.Id).Count >= Constants.MarriageLimit || MarriageDb.GetMarriages(wife.Id, Context.Guild.Id).Count >= Constants.MarriageLimit) {
-                embed.WithDescription($"One of you has already reached the maximum number of marriages");
+                embed.WithDescription($"One of you have reached the maximum number of marriages");
                 embed.WithFooter($"Current max: { Constants.MarriageLimit }");
                 await Context.Channel.SendMessageAsync("", false, embed.Build());
                 return;
             }
-
-
+            
             // Marry em'
             //if the user has already proposed to you
             marriage.IsMarried = true;
@@ -101,7 +100,7 @@ namespace Namiko {
             await Context.Channel.SendMessageAsync($"{ wife.Mention }", false, embed.Build());
         }
 
-        [Command("Accept"), Alias("AcceptMarriage", "AcceptMarraige", "am"), Summary("Allows you to accept proposal.\n**Usage**: `!am`")]
+        [Command("Accept"), Alias("AcceptMarriage", "AcceptMarraige", "am"), Summary("Accept marriage proposal.\n**Usage**: `!am`")]
         public async Task AcceptMarriage(IUser wife, [Remainder] string str = "") {
 
             //variable thangs + embed basics
@@ -112,15 +111,15 @@ namespace Namiko {
 
             //check wifes existence
             if ( wife == null ) {
-                embed.WithDescription("You need to accept someone specific.");
-                embed.WithFooter("try: `!accept [user]`");
+                embed.WithDescription("Accept what?");
+                embed.WithFooter("try: `accept [user]`");
                 await Context.Channel.SendMessageAsync("", false, embed.Build());
                 return;
             }
 
             //checking marriage status
             if ( marriage == null ) {
-                embed.WithDescription($"No proposal has been sent too you from **{ wife }**");
+                embed.WithDescription($"There is no proposal between you and **{ wife }**");
                 await Context.Channel.SendMessageAsync("", false, embed.Build());
                 return;
             }
@@ -150,17 +149,80 @@ namespace Namiko {
             return;
         }
 
-        [Command("ShowProposals"), Alias("Proposals"),Summary("Display sent & received proposals.\n**Usage**: `!proposals`")]
-        public async Task Proposals(IUser user = null, [Remainder] string str = "") {
-            await Context.Channel.SendMessageAsync("", false, UserUtil.ProposalsEmbed(user ?? Context.User, Context.Guild).Build());
+        [Command("Decline"), Alias("DeclineMarriage", "dm"), Summary("Decline marriage proposal.\n**Usage**: `!dm`")]
+        public async Task Decline(IUser wife = null, [Remainder] string str = "")
+        {
+
+            //common variables
+            IUser user = Context.User;
+            EmbedBuilder embed = new EmbedBuilder();
+            embed.WithAuthor(user);
+            embed.WithColor(UserDb.GetHex(out string colour, user.Id) ? (Discord.Color)UserUtil.HexToColor(colour) : BasicUtil.RandomColor());
+
+
+            // checks
+            //proposal check
+            if (wife == null)
+            {
+                embed.WithDescription("Decline what?");
+                embed.WithFooter("try: `decline [user]`");
+                await Context.Channel.SendMessageAsync("", false, embed.Build());
+                return;
+            }
+
+            //checking if a user has proposed - only makes sure at least one has proposed
+            Marriage marriage = MarriageDb.GetMarriageOrProposal(wife.Id, user.Id, Context.Guild.Id);
+            if (marriage == null)
+            {
+                embed.WithDescription($"There is no proposal between you and **{ wife }**");
+                await Context.Channel.SendMessageAsync("", false, embed.Build());
+                return;
+            }
+
+            //if ur already married to that person
+            if (marriage.IsMarried == true)
+            {
+                embed.WithDescription("Should've tried that before accepting the marriage.");
+                embed.WithFooter("try: `divorce [user]`");
+                await Context.Channel.SendMessageAsync("", false, embed.Build());
+                return;
+            }
+
+
+            // Swagness
+            //creating decline action
+            var decline = new DialogueBoxOption
+            {
+                Action = async (IUserMessage message) => {
+                    await MarriageDb.DeleteMarriageOrProposal(marriage);
+
+                    //embed
+                    embed.WithAuthor(wife);
+                    embed.WithDescription($"You declined the proposal.\nBetter luck next time **{ wife }**");
+                    await Context.Channel.SendMessageAsync($"{ wife.Mention }", false, embed.Build());
+
+                    //execution condition
+                },
+                After = OnExecute.RemoveReactions
+            };
+
+            //creating cancel 
+            var cancel = new DialogueBoxOption { After = OnExecute.Delete };
+
+            //making dialog embed
+            var dia = new DialogueBox();
+            dia.Options.Add(Emote.Parse("<:TickYes:577838859107303424>"), decline);
+            dia.Options.Add(Emote.Parse("<:TickNo:577838859077943306>"), cancel);
+            dia.Timeout = new TimeSpan(0, 1, 0);
+            dia.Embed = new EmbedBuilder()
+                .WithAuthor(user)
+                .WithDescription($"Are you sure you wish Decline **{ wife }**?").Build();
+
+            //
+            await DialogueReplyAsync(dia);
         }
 
-        [Command("ShowMarriages"), Alias("Marriages", "Marraiges", "sm"), Summary("Displays current marriages.\n**Usage**: `!sm`")]
-        public async Task Marriages(IUser user = null, [Remainder] string str = "") {
-            await Context.Channel.SendMessageAsync("", false, UserUtil.MarriagesEmbed(user ?? Context.User, Context.Guild).Build());
-        }
-
-        [Command("Divorce"), Alias("Devorce", "d"), Summary("Allows you to divorce your partner.\n**Usage**: `!d`")]
+        [Command("Divorce"), Alias("d"), Summary("Divorce a user.\n**Usage**: `!d`")]
         public async Task Divorce(IUser wife = null, [Remainder] string str = "") {
 
             //common variables
@@ -174,8 +236,8 @@ namespace Namiko {
              // checks
             //making sue u have someone selected
             if (wife == null) {
-                embed.WithDescription("You need to divorce someone specific.");
-                embed.WithFooter("try: `!divorce [user]`");
+                embed.WithDescription("Divorce who?");
+                embed.WithFooter("try: `divorce [user]`");
                 await Context.Channel.SendMessageAsync("", false, embed.Build());
                 return;
             }
@@ -183,14 +245,14 @@ namespace Namiko {
             //checking marriage status
             Marriage marriage = MarriageDb.GetMarriageOrProposal(user.Id, wife.Id, Context.Guild.Id);
             if ( marriage == null ) {
-                embed.WithDescription($"no proposal has been sent to or from **{ wife }**");
+                embed.WithDescription($"There is no proposal between you and **{ wife }**");
                 await Context.Channel.SendMessageAsync("", false, embed.Build());
                 return;
             }
 
             //making sure ur married
             if( marriage.IsMarried == false) {
-                embed.WithDescription($"You're not married to **{ wife }** yet.");
+                embed.WithDescription($"You're not married to **{ wife }**.");
                 await Context.Channel.SendMessageAsync("", false, embed.Build());
                 return;
             }
@@ -225,74 +287,19 @@ namespace Namiko {
             await DialogueReplyAsync(dia);
         }
         
-        [Command("Decline"), Alias("DeclineMarriage", "DeclineMarraige", "dm"), Summary("Allows you to divorce your partner.\n**Usage**: `!dm`")]
-        public async Task Decline(IUser wife = null, [Remainder] string str = "") {
-
-            //common variables
-            IUser user = Context.User;
-            EmbedBuilder embed = new EmbedBuilder();
-            embed.WithAuthor(user);
-            embed.WithColor(UserDb.GetHex(out string colour, user.Id) ? (Discord.Color)UserUtil.HexToColor(colour) : BasicUtil.RandomColor());
-
-
-             // checks
-            //proposal check
-            if ( wife == null ) {
-                embed.WithDescription("Need to decline someone specific.");
-                embed.WithFooter("try: `!decline [user]`");
-                await Context.Channel.SendMessageAsync("", false, embed.Build());
-                return;
-            }
-
-            //checking if a user has proposed - only makes sure at least one has proposed
-            Marriage marriage = MarriageDb.GetMarriageOrProposal(wife.Id, user.Id, Context.Guild.Id);
-            if( marriage == null ) {
-                embed.WithDescription($"no proposal has been sent too or from **{ wife }**");
-                await Context.Channel.SendMessageAsync("", false, embed.Build());
-                return;
-            }
-
-            //if ur already married to that person
-            if ( marriage.IsMarried == true ) {
-                embed.WithDescription("Usually, if you're married you don't decline your partner");
-                embed.WithFooter("try: `divorce [user]`");
-                await Context.Channel.SendMessageAsync("", false, embed.Build());
-                return;
-            }
-            
-
-             // Swagness
-            //creating decline action
-            var decline = new DialogueBoxOption {
-                Action = async (IUserMessage message) => {
-                    await MarriageDb.DeleteMarriageOrProposal(marriage);
-
-                    //embed
-                    embed.WithAuthor(wife);
-                    embed.WithDescription($"You have been declined; Better luck next time **{ wife }**");
-                    await Context.Channel.SendMessageAsync($"{ wife.Mention }", false, embed.Build());
-
-                //execution condition
-                }, After = OnExecute.RemoveReactions
-            };
-
-            //creating cancel 
-            var cancel = new DialogueBoxOption { After = OnExecute.Delete };
-
-            //making dialog embed
-            var dia = new DialogueBox();
-            dia.Options.Add(Emote.Parse("<:TickYes:577838859107303424>"), decline);
-            dia.Options.Add(Emote.Parse("<:TickNo:577838859077943306>"), cancel);
-            dia.Timeout = new TimeSpan(0, 1, 0);
-            dia.Embed = new EmbedBuilder()
-                .WithAuthor(user)
-                .WithDescription($"Are you sure you wish Decline **{ wife }**?").Build();
-
-            //
-            await DialogueReplyAsync(dia);
+        [Command("ShowProposals"), Alias("Proposals"), Summary("Displays sent & received proposals.\n**Usage**: `!proposals`")]
+        public async Task Proposals(IUser user = null, [Remainder] string str = "")
+        {
+            await Context.Channel.SendMessageAsync("", false, UserUtil.ProposalsEmbed(user ?? Context.User, Context.Guild).Build());
         }
 
-        [Command("SetColour"), Alias("SetColor", "sc"), Summary("Allows user to set profile colour.\n**Usage**: `!sc [colour_name or hex_value]`")]
+        [Command("ShowMarriages"), Alias("Marriages", "Marraiges", "sm"), Summary("Displays current marriages.\n**Usage**: `!sm`")]
+        public async Task Marriages(IUser user = null, [Remainder] string str = "")
+        {
+            await Context.Channel.SendMessageAsync("", false, UserUtil.MarriagesEmbed(user ?? Context.User, Context.Guild).Build());
+        }
+
+        [Command("SetColour"), Alias("SetColor", "sc"), Summary("Set your profile colour.\n**Usage**: `!sc [colour_name or hex_value]`")]
         public async Task SetPersonalColour(string shade = "", string colour = "",[Remainder] string str = "") {
 
              //
