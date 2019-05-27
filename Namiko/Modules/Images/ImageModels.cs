@@ -11,6 +11,7 @@ namespace Namiko
         public int Id { set; get; }
         public string Name { set; get; }
         public string Url { get; set; }
+        public ulong GuildId { get; set; }
     }
 
     public class ImgurAlbumLink

@@ -198,14 +198,20 @@ namespace Namiko
 
             await Context.Channel.SendMessageAsync(embed: eb.Build());
         }
-        /*
+        
         [Command("Subreddit"), Alias("sub"), Summary("Set a subreddit for Namiko to post hot posts from.\n**Usage**: `!sub [subreddit_name] [min_upvotes]`"), CustomUserPermission(GuildPermission.ManageChannels), RequireContext(ContextType.Guild)]
         public async Task Subreddit(string name, int upvotes)
         {
             var subs = SpecialChannelDb.GetChannelsByGuild(Context.Guild.Id, ChannelType.Reddit);
-            if(subs.Count() >= 1)
+            int limit = 1;
+            if (PremiumDb.IsPremium(Context.Guild.Id, PremiumType.ServerT2))
+                limit = 5;
+            if (PremiumDb.IsPremium(Context.Guild.Id, PremiumType.ServerT1))
+                limit = 10;
+
+            if (subs.Count() >= limit)
             {
-                await Context.Channel.SendMessageAsync("Limit 1 subscription per guild.");
+                await Context.Channel.SendMessageAsync($"Limit {limit} subscription per guild. Donate to increase the limit!");
                 return;
             }
 
@@ -278,6 +284,5 @@ namespace Namiko
         {
             await Context.Channel.SendMessageAsync(embed: WebUtil.SubListEmbed(Context.Guild.Id).Build());
         }
-        */
     }
 }

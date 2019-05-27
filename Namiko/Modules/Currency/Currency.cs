@@ -137,6 +137,8 @@ namespace Namiko
                 int tax = ToastieUtil.DailyTax(amount, ToastieDb.GetToasties(Context.User.Id, Context.Guild.Id), ToastieDb.GetToasties(Context.Client.CurrentUser.Id, Context.Guild.Id), ToastieDb.TotalToasties(Context.Guild.Id));
                 amount -= tax / 2;
                 int cap = Constants.weeklycap;
+                if (PremiumDb.IsPremium(Context.Guild.Id, PremiumType.ServerT1))
+                    cap += 1000;
                 amount = amount > cap ? cap : amount;
 
                 string text = "";

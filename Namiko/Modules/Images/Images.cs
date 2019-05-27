@@ -35,32 +35,6 @@ namespace Namiko
             return true;
         }
 
-        [Command("All"), Summary("All reaction images from a single command.\n**Usage**: `!all [name]`")]
-        public async Task All(string name = null, [Remainder] string str = "")
-        {
-            if (name == null)
-            {
-                await Context.Channel.SendMessageAsync("https://namikolove.imgur.com/");
-                return;
-            }
-
-            var album = ImageDb.GetAlbum(name);
-            await Context.Channel.SendMessageAsync(ImgurAPI.ParseAlbumLink(album.AlbumId));
-        }
-
-        [Command("Image"), Alias("i"), Summary("Sends a reaction image by id.\n**Usage**: `!i [id]`")]
-        public async Task Image(int id, [Remainder] string str = "")
-        {
-            var image = ImageDb.GetImage(id);
-            if (image == null || ImageUtil.IsAMFWT(Context.Guild.Id, image.Name))
-            {
-                await Context.Channel.SendMessageAsync($"There is no image with id: {id}");
-                return;
-            }
-            var user = Context.Guild.GetUser(Context.User.Id);
-            await Context.Channel.SendMessageAsync("", false, ImageUtil.ToEmbed(image).Build());
-        }
-
         [Command("List"), Alias("ListAll"), Summary("List of all image commands and how many images there are.\n**Usage**: `listall`")]
         public async Task List([Remainder] string str = "")
         {
@@ -89,18 +63,33 @@ namespace Namiko
             }
 
             names = names.OrderBy(x => x.Name).ToList();
-
-            //  string stringList = "```cs\n";
-            //  foreach(ImageCount x in names)
-            //  {
-            //      if(x.Count > 9)
-            //         stringList += String.Format("{0,-10} - {1}\n", x.Name, x.Count);
-            //      else
-            //         stringList += $"{x.Name} ";
-            //  }
-            //  stringList += "```";
-
             await Context.Channel.SendMessageAsync(ImageUtil.ListAllBlock(names));
+        }
+
+        [Command("Album"), Alias("All"), Summary("All reaction images from a single command.\n**Usage**: `!all [name]`")]
+        public async Task All(string name = null, [Remainder] string str = "")
+        {
+            if (name == null)
+            {
+                await Context.Channel.SendMessageAsync("https://namikolove.imgur.com/");
+                return;
+            }
+
+            var album = ImageDb.GetAlbum(name);
+            await Context.Channel.SendMessageAsync(ImgurAPI.ParseAlbumLink(album.AlbumId));
+        }
+
+        [Command("Image"), Alias("i"), Summary("Sends a reaction image by id.\n**Usage**: `!i [id]`")]
+        public async Task Image(int id, [Remainder] string str = "")
+        {
+            var image = ImageDb.GetImage(id);
+            if (image == null || ImageUtil.IsAMFWT(Context.Guild.Id, image.Name))
+            {
+                await Context.Channel.SendMessageAsync($"There is no image with id: {id}");
+                return;
+            }
+            var user = Context.Guild.GetUser(Context.User.Id);
+            await Context.Channel.SendMessageAsync("", false, ImageUtil.ToEmbed(image).Build());
         }
 
         [Command("NewImage"), Alias("ni"), Summary("Adds a new image to the database.\n**Usage**: `!ni [name] [url]`"), HomePrecondition]
@@ -120,7 +109,7 @@ namespace Namiko
             url = url.EndsWith(".mp4") ? url.Replace(".mp4", ".gif") : url;
 
             string albumId = null;
-            if (!ImageDb.Exists(name))
+            if (!ImageDb.AlbumExists(name))
             {
                 albumId = (await ImgurAPI.CreateAlbumAsync(name)).Id;
                 await ImageDb.CreateAlbum(name, albumId);

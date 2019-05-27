@@ -365,13 +365,25 @@ namespace Namiko
         [Command("NewWaifu"), Alias("nw"), Summary("Adds a waifu to the database.\n**Usage**: `!nw [name] [tier(1-3)] [image_url]`"), HomePrecondition]
         public async Task NewWaifu(string name, int tier, string url = null)
         {
+            await Context.Channel.TriggerTypingAsync();
+
+            url = url ?? Context.Message.Attachments.FirstOrDefault()?.Url;
+
             if (url != null)
             {
-                if (!((url.EndsWith(".jpg") || url.EndsWith(".jpeg") || url.EndsWith(".png") || url.EndsWith(".gif") || url.EndsWith(".gifv") || url.EndsWith(".mp4")) && (Uri.TryCreate(url, UriKind.Absolute, out var outUri) && (outUri.Scheme == Uri.UriSchemeHttp || outUri.Scheme == Uri.UriSchemeHttps))))
+                url = url.EndsWith(".gifv") ? url.Replace(".gifv", ".gif") : url;
+                url = url.EndsWith(".mp4") ? url.Replace(".mp4", ".gif") : url;
+
+                string albumId = null;
+                if (!ImageDb.AlbumExists("Waifus"))
                 {
-                    await Context.Channel.SendMessageAsync("URL is invalid. Note: URL has to end with .jpg .jpeg .png .gif .gifv or .mp4");
-                    return;
+                    albumId = (await ImgurAPI.CreateAlbumAsync("Waifus")).Id;
+                    await ImageDb.CreateAlbum("Waifus", albumId);
                 }
+                else albumId = ImageDb.GetAlbum("Waifus").AlbumId;
+
+                var iImage = await ImgurAPI.UploadImageAsync(url, albumId, null, name);
+                url = iImage.Link;
             }
 
             var waifu = new Waifu { Name = name, Tier = tier, ImageUrl = url, Description = null, LongName = null, TimesBought = 0 };
@@ -447,7 +459,6 @@ namespace Namiko
         [Command("WaifuTier"), Alias("wt"), Summary("Changes the tier of a waifu.\n**Usage**: `!wt [name] [tier(1-3)]`"), HomePrecondition]
         public async Task WaifuTier(string name, int tier)
         {
-
             var waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(name, true), this);
             if (waifu == null)
             {
@@ -465,22 +476,35 @@ namespace Namiko
         [Command("WaifuImage"), Alias("wi"), Summary("Changes the image of a waifu.\n**Usage**: `!wi [name] [image_url]`"), HomePrecondition]
         public async Task WaifuImage(string name, string url = null)
         {
-
             var waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(name, true), this);
             if (waifu == null)
             {
                 return;
             }
 
-            if (url != null)
+            await Context.Channel.TriggerTypingAsync();
+
+            url = url ?? Context.Message.Attachments.FirstOrDefault()?.Url;
+
+            if (url == null)
             {
-                if (!((url.EndsWith(".jpg") || url.EndsWith(".jpeg") || url.EndsWith(".png") || url.EndsWith(".gif") || url.EndsWith(".gifv")) && (Uri.TryCreate(url, UriKind.Absolute, out var outUri) && (outUri.Scheme == Uri.UriSchemeHttp || outUri.Scheme == Uri.UriSchemeHttps))))
-                {
-                    await Context.Channel.SendMessageAsync("URL is invalid. Note: URL has to end with .jpg .jpeg .png .gif or .gifv");
-                    return;
-                }
+                await Context.Channel.SendMessageAsync("Can't get your attachment, there probably isn't one. *Heh, dummy...*");
+                return;
             }
-            waifu.ImageUrl = url;
+
+            url = url.EndsWith(".gifv") ? url.Replace(".gifv", ".gif") : url;
+            url = url.EndsWith(".mp4") ? url.Replace(".mp4", ".gif") : url;
+
+            string albumId = null;
+            if (!ImageDb.AlbumExists("Waifus"))
+            {
+                albumId = (await ImgurAPI.CreateAlbumAsync("Waifus")).Id;
+                await ImageDb.CreateAlbum("Waifus", albumId);
+            }
+            else albumId = ImageDb.GetAlbum("Waifus").AlbumId;
+
+            var iImage = await ImgurAPI.UploadImageAsync(url, albumId, null, name);
+            waifu.ImageUrl = iImage.Link;
 
             if (await WaifuDb.UpdateWaifu(waifu) > 0)
                 await Context.Channel.SendMessageAsync($":white_check_mark: {waifu.Name} updated.");

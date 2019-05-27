@@ -11,25 +11,25 @@ namespace Namiko
 {
     public static class ImageDb
     {
-        public static async Task AddImage(string name, string url, int id = -1)
+        public static async Task AddImage(string name, string url, ulong guildId = 0, int id = -1)
         {
             using (var DbContext = new SqliteDbContext())
             {
                 if(id == -1)
-                    DbContext.Add(new ReactionImage { Name = name.ToLowerInvariant(), Url = url });
+                    DbContext.Add(new ReactionImage { Name = name.ToLowerInvariant(), Url = url, GuildId = guildId });
                 else
-                    DbContext.Add(new ReactionImage { Id = id, Name = name.ToLowerInvariant(), Url = url });
+                    DbContext.Add(new ReactionImage { Id = id, Name = name.ToLowerInvariant(), Url = url, GuildId = guildId });
                 await DbContext.SaveChangesAsync();
             }
         }
 
-        public static List<ReactionImage> GetImages(string name = null)
+        public static List<ReactionImage> GetImages(string name = null, ulong guildId = 0)
         {
             using (var DbContext = new SqliteDbContext())
             {
                 if(name == null)
-                    return DbContext.Images.ToList();
-                return DbContext.Images.Where(x => x.Name == name).ToList();
+                    return DbContext.Images.Where(x => x.GuildId == guildId).ToList();
+                return DbContext.Images.Where(x => x.Name == name && x.GuildId == guildId).ToList();
             }
 
         }
@@ -53,11 +53,11 @@ namespace Namiko
             }
         }
 
-        public static ReactionImage GetRandomImage(string name)
+        public static ReactionImage GetRandomImage(string name, ulong guildId = 0)
         {
             using (var DbContext = new SqliteDbContext())
             {
-                int count = DbContext.Images.Where(x => x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase)).Count();
+                int count = DbContext.Images.Where(x => x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase) && x.GuildId == guildId).Count();
                 if (count < 1)
                 {
                     return null;
@@ -66,7 +66,7 @@ namespace Namiko
                 {
                     Random rand = new Random();
                     int random = rand.Next(count);
-                    return DbContext.Images.Where(x => x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase)).ToArray<ReactionImage>().ElementAt(random);
+                    return DbContext.Images.Where(x => x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase) && x.GuildId == guildId).ToArray<ReactionImage>().ElementAt(random);
                 }
             }
         }
@@ -94,7 +94,7 @@ namespace Namiko
             }
         }
 
-        public static bool Exists(string name)
+        public static bool AlbumExists(string name)
         {
             using (var db = new SqliteDbContext())
             {

@@ -336,6 +336,7 @@ namespace Namiko
                     Console.WriteLine($"{DateTime.Now} - Left {res} Guilds.");
                     _ = ch.SendMessageAsync($"`{DateTime.Now} - Left {res} Guilds.`");
                 }
+                Launch = false;
             }
             
             res = await CheckJoinedGuilds(arg);
