@@ -81,8 +81,25 @@ namespace Namiko {
 
             var daily = DailyDb.GetDaily(user.Id, user.Guild.Id);
             long timeNow = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-            eb.AddField("Toasties", $"Amount: {ToastieDb.GetToasties(user.Id, user.Guild.Id).ToString("n0")} <:toastie3:454441133876183060>\nDaily: {(daily == null ? "0" : ((daily.Date + 172800000) < timeNow ? "0" : daily.Streak.ToString()))} :calendar_spiral:", true);
-            eb.AddField("Waifus", $"Amount: {waifucount} :two_hearts:\nValue: {waifuprice.ToString("n0")} <:toastie3:454441133876183060>", true);
+
+            string text = "";
+            text += $"Amount: {ToastieDb.GetToasties(user.Id, user.Guild.Id).ToString("n0")} <:toastie3:454441133876183060>\n" +
+                $"Daily: {(daily == null ? "0" : ((daily.Date + 172800000) < timeNow ? "0" : daily.Streak.ToString()))} :calendar_spiral:\n" +
+                $"Boxes Opened: {UserDb.GetLootboxOpenedAmount(user.Id)} <:KaeriThumbsUp:582902255884173315>\n";
+            eb.AddField("Toasties", text, true);
+
+            text = $"Amount: {waifucount} :two_hearts:\n" +
+                $"Value: {waifuprice.ToString("n0")} <:toastie3:454441133876183060>\n";
+            foreach(var x in MarriageDb.GetMarriages(user.Id, user.Guild.Id))
+            {
+                try
+                {
+                    if (!text.Contains("Married: "))
+                        text += "Married: ";
+                    text += $"{BasicUtil.IdToMention(GetWifeId(x, user.Id))}\n";
+                } catch { }
+            }
+            eb.AddField("Waifus", text, true);
 
             var waifu = FeaturedWaifuDb.GetFeaturedWaifu(user.Id, user.Guild.Id);
             if (waifu != null)
@@ -246,6 +263,10 @@ namespace Namiko {
             embed.WithDescription($"{ user.Username } changed primary colour!");
             embed.WithColor(UserDb.GetHex(out string colour, user.Id) ? (Discord.Color)HexToColor(colour) : BasicUtil.RandomColor());
             return embed;
+        }
+        public static ulong GetWifeId(Marriage marriage, ulong userId)
+        {
+            return marriage.UserId == userId ? marriage.WifeId : marriage.UserId;
         }
     }
 }

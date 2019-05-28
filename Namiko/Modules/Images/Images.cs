@@ -29,7 +29,9 @@ namespace Namiko
             var image = ImageDb.GetRandomImage(text);
             if (image == null || ImageUtil.IsAMFWT(Context.Guild.Id, image.Name))
             {
-                return false;
+                image = ImageDb.GetRandomImage(text, Context.Guild.Id);
+                if(image == null)
+                    return false;
             }
             await Context.Channel.SendMessageAsync("", false, ImageUtil.ToEmbed(image).Build());
             return true;
@@ -63,20 +65,22 @@ namespace Namiko
             }
 
             names = names.OrderBy(x => x.Name).ToList();
-            await Context.Channel.SendMessageAsync(ImageUtil.ListAllBlock(names));
+            var eb = ImageUtil.ListAllEmbed(names, Program.GetPrefix(Context), Context.User);
+            eb = ImageUtil.AddGuildImagesToEmbed(eb, ImageDb.GetImages(null, Context.Guild.Id).Select(x => x.Name).Distinct().OrderBy(x => x));
+            await Context.Channel.SendMessageAsync(embed: eb.Build());
         }
 
-        [Command("Album"), Alias("All"), Summary("All reaction images from a single command.\n**Usage**: `!all [name]`")]
-        public async Task All(string name = null, [Remainder] string str = "")
+        [Command("Album"), Alias("All"), Summary("All reaction images from a single command.\n**Usage**: `!all [image_name]`")]
+        public async Task All(string name, [Remainder] string str = "")
         {
-            if (name == null)
-            {
-                await Context.Channel.SendMessageAsync("https://namikolove.imgur.com/");
-                return;
-            }
-
             var album = ImageDb.GetAlbum(name);
-            await Context.Channel.SendMessageAsync(ImgurAPI.ParseAlbumLink(album.AlbumId));
+            if(album == null)
+                album = ImageDb.GetAlbum(name + Context.Guild.Id);
+
+            if(album == null)
+                await Context.Channel.SendMessageAsync($"Album **{name}** doesn't exist.");
+
+            await Context.Channel.SendMessageAsync($"<{ImgurAPI.ParseAlbumLink(album.AlbumId)}>");
         }
 
         [Command("Image"), Alias("i"), Summary("Sends a reaction image by id.\n**Usage**: `!i [id]`")]
@@ -92,12 +96,19 @@ namespace Namiko
             await Context.Channel.SendMessageAsync("", false, ImageUtil.ToEmbed(image).Build());
         }
 
-        [Command("NewImage"), Alias("ni"), Summary("Adds a new image to the database.\n**Usage**: `!ni [name] [url]`"), HomePrecondition]
+        [Command("NewImage"), Alias("ni"), Summary("Adds a new image to the database.\n**Usage**: `!ni [name] [url_or_attachment]`"), HomeOrT1GuildPrecondition, CustomUserPermission(GuildPermission.ManageMessages)]
         public async Task NewImage(string name, string url = null, [Remainder] string str = "")
         {
             await Context.Channel.TriggerTypingAsync();
+            bool insider = Context.Guild.Id == 418900885079588884;
 
             url = url ?? Context.Message.Attachments.FirstOrDefault()?.Url;
+
+            if (!insider && ImageDb.AlbumExists(name))
+            {
+                await Context.Channel.SendMessageAsync("There is already a default image called **{name}**");
+                return;
+            }
 
             if (url == null)
             {
@@ -109,12 +120,13 @@ namespace Namiko
             url = url.EndsWith(".mp4") ? url.Replace(".mp4", ".gif") : url;
 
             string albumId = null;
-            if (!ImageDb.AlbumExists(name))
+            string albumName = insider ? name : name + Context.Guild.Id;
+            if (!ImageDb.AlbumExists(albumName))
             {
-                albumId = (await ImgurAPI.CreateAlbumAsync(name)).Id;
-                await ImageDb.CreateAlbum(name, albumId);
+                albumId = (await ImgurAPI.CreateAlbumAsync(albumName)).Id;
+                await ImageDb.CreateAlbum(albumName, albumId);
             }
-            else albumId = ImageDb.GetAlbum(name).AlbumId;
+            else albumId = ImageDb.GetAlbum(albumName).AlbumId;
 
             var iImage = await ImgurAPI.UploadImageAsync(url, albumId);
             await ImageDb.AddImage(name.ToLower(), iImage.Link);
@@ -125,19 +137,25 @@ namespace Namiko
             await Context.Channel.SendMessageAsync("", false, ImageUtil.ToEmbed(image).Build());
         }
 
-        [Command("DeleteImage"), Alias("di"), Summary("Deletes image from the database using the id.\n**Usage**: `di [id]`"), HomePrecondition]
+        [Command("DeleteImage"), Alias("di"), Summary("Deletes image from the database using the id.\n**Usage**: `di [id]`"), HomeOrT1GuildPrecondition, CustomUserPermission(GuildPermission.ManageMessages)]
         public async Task DeleteImage(int id, [Remainder] string str = "")
         {
+            bool insider = Context.Guild.Id == 418900885079588884;
 
             var image = ImageDb.GetImage(id);
             if (image == null)
             {
-                await Context.Channel.SendMessageAsync($"There is no image with id: {id}");
+                await Context.Channel.SendMessageAsync($"There is no image with id: **{id}**");
+                return;
+            }
+            if(!insider && image.GuildId != Context.Guild.Id)
+            {
+                await Context.Channel.SendMessageAsync($"There is no image with id **{id}** in your guild.");
                 return;
             }
 
             await ImageDb.DeleteImage(id);
-            await Context.Channel.SendMessageAsync($"Image {id} is gone forever. Why have you done this?");
+            await Context.Channel.SendMessageAsync($"Image **{id}** is gone forever. Why have you done this?");
             await ImgurAPI.EditImageAsync(ImgurAPI.ParseId(image.Url), null, image.Id.ToString() + " [DELETED]");
         }
 
@@ -148,7 +166,7 @@ namespace Namiko
 
             public override string ToString()
             {
-                return $"{Name}";
+                return Name;
             }
         }
     }

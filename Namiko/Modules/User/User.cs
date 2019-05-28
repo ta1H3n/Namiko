@@ -47,7 +47,7 @@ namespace Namiko {
             await PagedReplyAsync(msg);
         }
 
-        [Command("Propose"), Alias("Marry"), Summary("Propose to a user.\n**Usage**:  `!m [user]`")]
+        [Command("Marry"), Alias("Propose"), Summary("Propose to a user.\n**Usage**:  `!m [user]`")]
         public async Task Marriage(IUser wife = null, [Remainder] string str = "") {
 
             //commonly used variables + embed basics
@@ -72,7 +72,7 @@ namespace Namiko {
 
                 embed.WithAuthor(wife);
                 embed.WithDescription($"**{ user.Mention }** has proposed to you.");
-                embed.WithFooter("`accept [user]` or `decline [user]`");
+                embed.WithFooter("`marry [user]` or `decline [user]`");
                 await Context.Channel.SendMessageAsync($"{ wife.Mention }", false, embed.Build());
                 return;
             }
@@ -99,7 +99,7 @@ namespace Namiko {
             embed.WithDescription($"**Congratulations**! you and **{ wife }** are now married");
             await Context.Channel.SendMessageAsync($"{ wife.Mention }", false, embed.Build());
         }
-
+        /*
         [Command("Accept"), Alias("AcceptMarriage", "AcceptMarraige", "am"), Summary("Accept marriage proposal.\n**Usage**: `!am`")]
         public async Task AcceptMarriage(IUser wife, [Remainder] string str = "") {
 
@@ -148,7 +148,7 @@ namespace Namiko {
             await Context.Channel.SendMessageAsync($"{ wife.Mention }", false, embed.Build());
             return;
         }
-
+        */
         [Command("Decline"), Alias("DeclineMarriage", "dm"), Summary("Decline marriage proposal.\n**Usage**: `!dm`")]
         public async Task Decline(IUser wife = null, [Remainder] string str = "")
         {

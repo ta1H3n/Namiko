@@ -21,53 +21,71 @@ namespace Namiko
             return embed;
         }
 
-        public static string ListAllBlock(List<ImageCount> images)
+        public static EmbedBuilder ListAllEmbed(List<ImageCount> images, string prefix = "!", IUser author = null)
         {
-            string block = "";
-            if (images.Count > 0)
-                block += "```cs\n";
-
+            var eb = new EmbedBuilderPrepared(author);
+            eb.WithDescription($"<:Awooo:582888496793124866> `{prefix}pat` - use reaction images!\n" +
+                $"<:NadeYay:564880253382819860> `{prefix}album pat` - link to an imgur album with all the images!\n" +
+                $"<:KannaHype:571690048001671238> `{prefix}i 20` - use a specific reaction image by id!");
+            
             if (images.Any(x => x.Count >= 20))
             {
-                block += "20+ images:\n";
+                string list = "";
                 foreach (var x in images.Where(x => x.Count >= 20))
                 {
-                    block += x.ToString() + " ";
+                    list += "`" + x.ToString() + "` ";
                 }
-                block += "\n\n";
+                eb.AddField("20+ images", list);
             }
 
             if (images.Any(x => x.Count >= 10 && x.Count < 20))
             {
-                block += "10+ images:\n";
+                string list = "";
                 foreach (var x in images.Where(x => x.Count >= 10 && x.Count < 20))
                 {
-                    block += x.ToString() + " ";
+                    list += "`" + x.ToString() + "` ";
                 }
-                block += "\n\n";
+                eb.AddField("10+ images", list);
             }
 
             if (images.Any(x => x.Count >= 5 && x.Count < 10))
             {
-                block += "5+ images:\n";
+                string list = "";
                 foreach (var x in images.Where(x => x.Count >= 5 && x.Count < 10))
                 {
-                    block += x.ToString() + " ";
+                    list += "`" + x.ToString() + "` ";
                 }
-                block += "\n\n";
+                eb.AddField("5+ images", list);
             }
 
-            if (images.Any(x => x.Count >= 1 && x.Count < 5))
+            if (images.Any(x => x.Count > 0 && x.Count < 5))
             {
-                block += "<5 images:\n";
+                string list = "";
                 foreach (var x in images.Where(x => x.Count >= 1 && x.Count < 5))
                 {
-                    block += x.ToString() + " ";
+                    list += "`" + x.ToString() + "` ";
                 }
-                block += "\n\n";
+                eb.AddField("<5 images", list);
             }
 
-            return block + "```";
+            return eb;
+        }
+        public static EmbedBuilder AddGuildImagesToEmbed(EmbedBuilder eb, IEnumerable<string> imageNames)
+        {
+            string list = "";
+            if (imageNames.Count() > 0)
+            {
+                foreach (var x in imageNames)
+                {
+                    list += "`" + x + "` ";
+                }
+            }
+            else
+                list += "~ Add Server exclusive reaction images using the `ni` command. Requires Server premium. ~";
+
+            eb.AddField("Server images", list);
+            
+            return eb;
         }
         public static bool IsAMFWT(ulong guildId, string imageName)
         {

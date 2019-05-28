@@ -232,28 +232,35 @@ namespace Namiko
         public static CustomPaginatedMessage PaginatedShopMessage(IEnumerable<ShopWaifu> waifus, int pageSize, string prefix)
         {
             CustomPaginatedMessage paginatedMessage = new CustomPaginatedMessage();
+            var fieldList = new List<FieldPages>();
             var splitWaifus = CustomPaginatedMessage.Split(waifus, pageSize);
             int pages = splitWaifus.Count();
 
             var fieldInfo = new FieldPages();
+            var pagelist = new List<string>();
             fieldInfo.Title = ":books: Commands";
             for (int i = 0; i < pages; i++)
             {
-                fieldInfo.Pages.Append($"`{prefix}buywaifu [name]` | `{prefix}waifu [search]` | `{prefix}wss`");
+                pagelist.Add($"`{prefix}buywaifu [name]` | `{prefix}waifu [search]` | `{prefix}wss`");
             }
             fieldInfo.Inline = true;
-            paginatedMessage.Fields.Append(fieldInfo);
+            fieldInfo.Pages = pagelist;
+            fieldList.Add(fieldInfo);
 
             var fieldWaifus = new FieldPages();
+            var pagelist2 = new List<string>();
             fieldWaifus.Title = ":revolving_hearts: Waifus";
             foreach (var w in splitWaifus)
             {
-                fieldWaifus.Pages.Append(WaifuUtil.WaifuShopWaifuList(w));
+                pagelist2.Add(WaifuUtil.WaifuShopWaifuList(w));
             }
-            paginatedMessage.Fields.Append(fieldWaifus);
+            fieldWaifus.Pages = pagelist2;
+            fieldList.Add(fieldWaifus);
 
-            paginatedMessage.Footer = $"Resets in {11 - DateTime.Now.Hour % 12} Hours {60 - DateTime.Now.Minute} Minutes";
+            paginatedMessage.Fields = fieldList;
+            paginatedMessage.Footer = $"Resets in {11 - DateTime.Now.Hour % 12} Hours {60 - DateTime.Now.Minute} Minutes | ";
             paginatedMessage.Color = BasicUtil.RandomColor();
+            paginatedMessage.PageCount = pages;
             paginatedMessage.Author = new EmbedAuthorBuilder()
             {
                 Name = "Waifu Store",

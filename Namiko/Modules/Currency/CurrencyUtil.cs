@@ -262,7 +262,7 @@ namespace Namiko
             var eb = new EmbedBuilder();
             eb.WithAuthor(user.ToString(), user.GetAvatarUrl(), BasicUtil._patreon);
             eb.WithDescription($"You're on a **{streak.ToString("n0")}** day streak. You receive **{amount.ToString("n0")}** {ToastieUtil.RandomEmote()}\n" +
-                $"Now you have **{balance}** {ToastieUtil.RandomEmote()}\n\n" +
+                $"Now you have **{balance.ToString("n0")}** {ToastieUtil.RandomEmote()}\n\n" +
                 $"Vote for me on [Discord Bots](https://discordbots.org/bot/418823684459855882/vote) every day to receive a lootbox!");
             eb.WithColor(BasicUtil.RandomColor());
             return eb;
@@ -294,7 +294,7 @@ namespace Namiko
         {
             var eb = new EmbedBuilder();
             eb.WithAuthor(user.ToString(), user.GetAvatarUrl(), BasicUtil._patreon);
-            eb.WithDescription($"You received **{amount}** {RandomEmote()}\nNow you have **{current}** {RandomEmote()}");
+            eb.WithDescription($"You received **{amount.ToString("n0")}** {RandomEmote()}\nNow you have **{current.ToString("n0")}** {RandomEmote()}");
             eb.WithColor(BasicUtil.RandomColor());
             return eb;
         }
@@ -382,7 +382,7 @@ namespace Namiko
         {
             var rnd = new Random();
             List<Waifu> waifus = new List<Waifu>();
-            int randomizerAmount = 10;
+            int randomizerAmount = 7;
 
             int tier = 3;
             switch (type)
@@ -455,7 +455,7 @@ namespace Namiko
             for(int i = 0; i < boxes.Count; i++)
             {
                 string location = boxes[i].GuildId == 0 ? "Global" : "This Server";
-                field += $"`#{i}` **x{boxes[i].Amount}** {boxes[i].Type.ToString()} - *{location}*\n";
+                field += $"`#{i+1}` **x{boxes[i].Amount}** {boxes[i].Type.ToString()} - *{location}*\n";
             }
 
             eb.WithDescription("Enter the number of the Lootbox you wish to open.");

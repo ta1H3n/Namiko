@@ -252,7 +252,8 @@ namespace Namiko
             foreach (var x in AllWaifus)
             {
                 if (!waifus.ContainsKey(x.Waifu))
-                    waifus.Add(x.Waifu, AllWaifus.Count(y => y.Waifu.Equals(x.Waifu)));
+                    waifus[x.Waifu] = 0;
+                waifus[x.Waifu]++;
             }
 
             var ordWaifus = waifus.OrderByDescending(x => x.Value);

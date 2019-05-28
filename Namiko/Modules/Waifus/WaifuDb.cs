@@ -377,7 +377,7 @@ namespace Namiko
 
                 int cap = 5;
                 if (PremiumDb.IsPremium(userId, PremiumType.Waifu))
-                    cap = 10;
+                    cap = 12;
 
                 db.WaifuWishlist.Update(entry);
                 if (db.WaifuWishlist.Where(x => x.UserId == userId && x.GuildId == guildId).Count() >= cap)

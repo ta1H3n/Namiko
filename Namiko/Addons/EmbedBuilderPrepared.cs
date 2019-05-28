@@ -11,7 +11,7 @@ namespace Namiko
         {
             WithColor(BasicUtil.RandomColor());
             if (author != null)
-                WithAuthor(author.Username, author.GetAvatarUrl(), BasicUtil._patreon);
+                WithAuthor(author.Username + "#" + author.Discriminator, author.GetAvatarUrl(), BasicUtil._patreon);
 
             var eb = new EmbedBuilder();
         }

@@ -98,7 +98,7 @@ namespace Namiko
         {
             using (var db = new SqliteDbContext())
             {
-                bool res = db.ImgurAlbums.Any(x => x.Name == name);
+                bool res = db.ImgurAlbums.Any(x => x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
                 return res;
             }
         }

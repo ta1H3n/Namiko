@@ -76,7 +76,7 @@ namespace Namiko
                 leaderList += $"\n`{x.Username}`";
             }
 
-            eb.AddField($":shield: Members - {teamRole.Members.Count()}", memberList == "" ? "-" : memberList, true);
+            eb.AddField($":shield: Members - {teamRole.Members.Count() - leaderRole.Members.Count()}", memberList == "" ? "-" : memberList, true);
             eb.AddField($":crown: Leaders - {leaderRole.Members.Count()}", leaderList == "" ? "-" : leaderList, true);
             eb.WithColor(BasicUtil.RandomColor());
             eb.WithTitle(teamRole.Name);

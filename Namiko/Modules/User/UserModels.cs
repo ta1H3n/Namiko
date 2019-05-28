@@ -13,6 +13,7 @@ namespace Namiko
         public string PriorColorHexStack { get; set; }
         public string Quote { get; set; }
         public string Image { get; set; }
+        public int LootboxesOpened { get; set; }
     }
 
     public class Marriage

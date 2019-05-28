@@ -146,6 +146,35 @@ namespace Namiko {
                 await DbContext.SaveChangesAsync();
             }
         }
+
+        //Lootboxes
+        public static int GetLootboxOpenedAmount(ulong userId)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                var user = db.Profiles.FirstOrDefault(x => x.UserId == userId);
+                if (user == null)
+                    return 0;
+
+                return user.LootboxesOpened;
+            }
+        }
+        public static async Task IncrementLootboxOpened(ulong userId, int amount = 1)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                var user = db.Profiles.FirstOrDefault(x => x.UserId == userId);
+                if (user == null)
+                {
+                    db.Profiles.Add(new Profile { UserId = userId, LootboxesOpened = amount });
+                    return;
+                }
+
+                user.LootboxesOpened += amount;
+                db.Profiles.Update(user);
+                await db.SaveChangesAsync();
+            }
+        }
     }
 
     public static class MarriageDb {

@@ -164,7 +164,7 @@ namespace Namiko
                 await InviteDb.DeleteInvite(role.Id, user.Id);
                 await Context.Channel.SendMessageAsync($"Congratulations! You joined **{role.Name}**!");
                 ISocketMessageChannel ch = (ISocketMessageChannel)Context.Client.GetChannel(ServerDb.GetServer(Context.Guild.Id).TeamLogChannelId);
-                await ch.SendMessageAsync($"`{Context.User}` joined **{teamName}**.");
+                await ch.SendMessageAsync($"`{Context.User}` joined **{role.Name}**.");
                 return;
             }
             await Context.Channel.SendMessageAsync($"You're not invited to **{teamName}**! You sure they exist?");

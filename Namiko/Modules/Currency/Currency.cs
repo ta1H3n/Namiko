@@ -52,7 +52,9 @@ namespace Namiko
 
             if (ToastieDb.GetToasties(Context.Client.CurrentUser.Id, Context.Guild.Id) < amount)
             {
-                await Context.Channel.SendMessageAsync("I don't have enough toasties to gamble with... You can give me some using the `!give` command, and view who has the most toasties with `!tlb`.");
+                string prefix = Program.GetPrefix(Context);
+                await Context.Channel.SendMessageAsync("Tch, I don't have enough toasties... I will recover eventually by stealing toasties from all of you. :cat" +
+                    $"But if you want to speed up the process you can give me some using the `{prefix}give` or `{prefix}at` commands.");
                 await ToastieDb.AddToasties(user.Id, amount, Context.Guild.Id);
                 return;
             }
@@ -204,7 +206,9 @@ namespace Namiko
 
             if (ToastieDb.GetToasties(Context.Client.CurrentUser.Id, Context.Guild.Id) < amount)
             {
-                await Context.Channel.SendMessageAsync("I don't have enough toasties to gamble with... You can give me some using the `!give` command, and view who has the most toasties with `!tlb`.");
+                string prefix = Program.GetPrefix(Context);
+                await Context.Channel.SendMessageAsync("Tch, I don't have enough toasties... I will recover eventually by stealing toasties from all of you." +
+                    $"But if you want to speed up the process you can give me some using the `{prefix}give` or `{prefix}at` commands.");
                 await ToastieDb.AddToasties(user.Id, amount, Context.Guild.Id);
                 return;
             }
@@ -267,7 +271,7 @@ namespace Namiko
 
             await Context.Channel.SendMessageAsync("", false, ToastieUtil.GiveEmbed(Context.User, recipient, amount).Build());
         }
-
+        
         [Command("Give"), Summary("Give a user some of your toasties.\n**Usage**: `!give [user] [amount]`")]
         public async Task Give(string sAmount, IUser recipient, [Remainder] string str = "")
         {
@@ -430,8 +434,9 @@ namespace Namiko
             var type = box.Type;
 
             var msg = await Context.Channel.SendMessageAsync("", false, ToastieUtil.BoxOpeningEmbed(Context.User).Build());
-            await LootBoxDb.AddLootbox(Context.User.Id, type, -1);
-            await Task.Delay(4300);
+            await LootBoxDb.AddLootbox(Context.User.Id, type, -1, box.GuildId);
+            await UserDb.IncrementLootboxOpened(Context.User.Id);
+            int waitms = 4200;
 
             if (ToastieUtil.IsWaifu(type))
             {
@@ -441,6 +446,7 @@ namespace Namiko
                     waifu = ToastieUtil.BoxWaifu(type, premiums, Context.User.Id, Context.Guild.Id);
 
                 await UserInventoryDb.AddWaifu(Context.User.Id, waifu, Context.Guild.Id);
+                await Task.Delay(waitms);
                 await msg.ModifyAsync(x => {
                     x.Embed = WaifuUtil.WaifuEmbedBuilder(waifu).Build();
                     x.Content = $"{Context.User.Mention} Congratulations! You found **{waifu.Name}**!";
@@ -451,6 +457,7 @@ namespace Namiko
             var amountWon = ToastieUtil.BoxToasties(type);
             await ToastieDb.AddToasties(Context.User.Id, amountWon, Context.Guild.Id);
             var bal = ToastieDb.GetToasties(Context.User.Id, Context.Guild.Id);
+            await Task.Delay(waitms);
             await msg.ModifyAsync(x => {
                 x.Embed = new EmbedBuilder()
                 .WithAuthor($"{Context.User} | {box.Type.ToString()} Lootbox", Context.User.GetAvatarUrl(), BasicUtil._patreon)

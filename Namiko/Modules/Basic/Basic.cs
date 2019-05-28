@@ -144,7 +144,8 @@ namespace Namiko
                         bool prec = y.Preconditions.Any(z => (z.GetType() == typeof(HomePrecondition)) || (z.GetType() == typeof(OwnerPrecondition)));
                         if (!prec || all)
                         {
-                            commandList += $"`{y.Name}` ";
+                            if (!commandList.Contains(y.Name))
+                                commandList += $"`{y.Name}` ";
                         }
                     }
 
