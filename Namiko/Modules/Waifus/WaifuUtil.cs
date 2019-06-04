@@ -633,8 +633,9 @@ namespace Namiko
                 }
 
                 _ = interactive.Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared()
-                    .WithTitle("Waifus Found")
-                    .WithDescription(":x: No results.")
+                    .WithAuthor("Waifus Found", null, BasicUtil._patreon)
+                    .WithDescription("*~No results~*")
+                    .WithColor(201, 0, 16)
                     .Build());
             }
             

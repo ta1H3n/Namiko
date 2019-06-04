@@ -60,7 +60,7 @@ namespace Namiko
             Client.ReactionAdded += Client_ReactionAdded;
             Client.JoinedGuild += Client_JoinedGuild;
             Client.LeftGuild += Client_LeftGuild;
-            Client.MessageReceived += Client_MessageReceived;
+            Client.MessageReceived += Client_ReadCommand;
             Client.MessageReceived += Client_MessageReceivedSpecialModes;
             Client.MessageReceived += Client_MessageReceivedHeart;
 
@@ -156,11 +156,8 @@ namespace Namiko
             if(arg.Severity == LogSeverity.Critical)
             await (await Client.GetUser(StaticSettings.owner).GetOrCreateDMChannelAsync()).SendMessageAsync($"`{message}`");
         }
-        private async Task Client_MessageReceived(SocketMessage MessageParam)
+        private async Task Client_ReadCommand(SocketMessage MessageParam)
         {
-            if (MessageParam.Channel.Id == 420319722723082275)
-                return;
-
             var Message = MessageParam as SocketUserMessage;
             var Context = new ShardedCommandContext(Client, Message);
 
