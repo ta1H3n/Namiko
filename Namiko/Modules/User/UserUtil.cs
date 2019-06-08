@@ -58,6 +58,15 @@ namespace Namiko {
 
         }
 
+        public static int GetMarriageLimit(ulong userId)
+        {
+            int limit = Constants.MarriageLimit;
+            if (PremiumDb.IsPremium(userId, PremiumType.Waifu))
+                limit = Constants.PremiumMarriageLimit;
+
+            return limit;
+        }
+
 
         // Embeds
         //Embed Method: profile

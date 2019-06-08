@@ -231,10 +231,9 @@ namespace Namiko
 
         public static int DailyAmount(double streak)
         {
-            double amount = 0;
-            double multiplier = 1.0 + streak / 5;
-            int random = new Random().Next(10) + 5;
-            amount = random * multiplier * 10;
+            double amount = 100 + 3000 * Math.Log10(streak / 30 + 1);
+            double multiplier = (double)(90 + new Random().Next(20)) / 100;
+            amount = amount * multiplier;
 
             return (int)amount;
         }

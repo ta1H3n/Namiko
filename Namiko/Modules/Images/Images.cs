@@ -106,7 +106,7 @@ namespace Namiko
 
             if (!insider && ImageDb.AlbumExists(name))
             {
-                await Context.Channel.SendMessageAsync("There is already a default image called **{name}**");
+                await Context.Channel.SendMessageAsync("There is already a default image command called **{name}**");
                 return;
             }
 

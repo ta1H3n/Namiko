@@ -569,7 +569,7 @@ namespace Namiko
         [Command("ResetWaifuShop"), Alias("rws"), Summary("Resets the waifu shop contents."), HomePrecondition]
         public async Task ResetWaifuShop()
         {
-            await WaifuShopDb.NewList(WaifuUtil.GenerateWaifuList(Context.Guild.Id));
+            await WaifuShopDb.NewList(await WaifuUtil.GenerateWaifuList(Context.Guild.Id));
             await Context.Channel.SendMessageAsync("Done.");
         }
     }

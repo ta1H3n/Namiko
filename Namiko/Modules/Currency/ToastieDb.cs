@@ -111,7 +111,7 @@ namespace Namiko
             {
                 try
                 {
-                    return db.Dailies.Where(x => x.GuildId == GuildId).Max(x => x.Streak);
+                    return db.Dailies.Where(x => x.GuildId == GuildId && ((x.Date + 48 * 60 * 60 * 1000) > DateTimeOffset.Now.ToUnixTimeMilliseconds())).Max(x => x.Streak);
                 }
                 catch { return 1; }
             }

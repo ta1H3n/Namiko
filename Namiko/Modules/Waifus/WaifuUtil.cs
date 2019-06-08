@@ -10,6 +10,7 @@ using Discord.WebSocket;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Discord.Addons.Interactive;
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 
 namespace Namiko
 {
@@ -21,7 +22,7 @@ namespace Namiko
 
             if (contents == null || contents[0].GeneratedDate.AddHours(12) < System.DateTime.Now)
             {
-                var list = GenerateWaifuList(guildId);
+                var list = await GenerateWaifuList(guildId);
                 await WaifuShopDb.NewList(list);
                 return list;
             }
@@ -29,7 +30,7 @@ namespace Namiko
             return contents;
 
         }
-        public static List<ShopWaifu> GenerateWaifuList(ulong guildId)
+        public static async Task<List<ShopWaifu>> GenerateWaifuList(ulong guildId)
         {
             var date = System.DateTime.Now.Date;
             if (DateTime.Now.Hour >= 12)
@@ -126,10 +127,10 @@ namespace Namiko
                 }
             }
 
-            NotifyWishlist(waifus.Select(x => x.Waifu), guildId);
+            _ = Task.Run(() => NotifyWishlist(waifus.Select(x => x.Waifu), guildId));
             return waifus;
         }
-        public static async void NotifyWishlist(IEnumerable<Waifu> waifus, ulong guildId)
+        public static async Task NotifyWishlist(IEnumerable<Waifu> waifus, ulong guildId)
         {
             var wishes = WaifuWishlistDb.GetWishlist(guildId);
             foreach(var wish in wishes)
@@ -613,7 +614,7 @@ namespace Namiko
                         new Criteria<IMessage>()
                         .AddCriterion(new EnsureSourceUserCriterion())
                         .AddCriterion(new EnsureSourceChannelCriterion())
-                        .AddCriterion(new EnsureRangeCriterion(waifus.Count, Program.GetPrefix(interactive.Context) + "w")),
+                        .AddCriterion(new EnsureRangeCriterion(waifus.Count, Program.GetPrefix(interactive.Context))),
                         new TimeSpan(0, 0, 23));
 
                     _ = msg.DeleteAsync();

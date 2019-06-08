@@ -166,6 +166,10 @@ namespace Namiko
                         else
                         {
                             await PremiumDb.AddPremium(user.Id, PremiumType.ServerT1, Context.Guild.Id);
+                            try
+                            {
+                                await PremiumDb.DeletePremium(PremiumDb.GetGuildPremium(Context.Guild.Id).FirstOrDefault(x => x.Type == PremiumType.ServerT2));
+                            } catch { }
                             text += "**T1 Premium** activated!\n";
                         }
                     }

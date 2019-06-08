@@ -23,6 +23,7 @@ namespace Namiko {
 
         //maximum number of partners 
         public const int MarriageLimit = 1;
+        public const int PremiumMarriageLimit = 3;
 
 
         //      LOOTBOXES

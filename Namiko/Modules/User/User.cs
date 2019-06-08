@@ -85,9 +85,10 @@ namespace Namiko {
             }
             
             //checking marriage cap
-            if (MarriageDb.GetMarriages(Context.User.Id, Context.Guild.Id).Count >= Constants.MarriageLimit || MarriageDb.GetMarriages(wife.Id, Context.Guild.Id).Count >= Constants.MarriageLimit) {
-                embed.WithDescription($"One of you have reached the maximum number of marriages");
-                embed.WithFooter($"Current max: { Constants.MarriageLimit }");
+            if (MarriageDb.GetMarriages(Context.User.Id, Context.Guild.Id).Count >= UserUtil.GetMarriageLimit(Context.User.Id) 
+                || MarriageDb.GetMarriages(wife.Id, Context.Guild.Id).Count >= UserUtil.GetMarriageLimit(wife.Id)) {
+                embed.WithDescription($"One of you have reached the maximum number of marriages.");
+                embed.WithFooter($"Limit can be increased to {Constants.PremiumMarriageLimit} with Waifu Premium.");
                 await Context.Channel.SendMessageAsync("", false, embed.Build());
                 return;
             }

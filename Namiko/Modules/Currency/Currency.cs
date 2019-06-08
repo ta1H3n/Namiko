@@ -95,8 +95,8 @@ namespace Namiko
                 int amount = ToastieUtil.DailyAmount(daily.Streak);
                 int tax = ToastieUtil.DailyTax(amount, ToastieDb.GetToasties(Context.User.Id, Context.Guild.Id), ToastieDb.GetToasties(Context.Client.CurrentUser.Id, Context.Guild.Id), ToastieDb.TotalToasties(Context.Guild.Id));
                 amount -= tax / 2;
-                int cap = Constants.dailycap;
-                amount = amount > cap ? cap : amount;
+                //int cap = Constants.dailycap;
+                //amount = amount > cap ? cap : amount;
 
                 await DailyDb.SetDaily(daily);
                 await ToastieDb.AddToasties(Context.User.Id, amount, Context.Guild.Id);
@@ -138,10 +138,12 @@ namespace Namiko
                 int amount = ToastieUtil.DailyAmount(streak);
                 int tax = ToastieUtil.DailyTax(amount, ToastieDb.GetToasties(Context.User.Id, Context.Guild.Id), ToastieDb.GetToasties(Context.Client.CurrentUser.Id, Context.Guild.Id), ToastieDb.TotalToasties(Context.Guild.Id));
                 amount -= tax / 2;
-                int cap = Constants.weeklycap;
+                //int cap = Constants.weeklycap;
+                //if (PremiumDb.IsPremium(Context.Guild.Id, PremiumType.ServerT1))
+                //    cap += 1000;
+                //amount = amount > cap ? cap : amount;
                 if (PremiumDb.IsPremium(Context.Guild.Id, PremiumType.ServerT1))
-                    cap += 1000;
-                amount = amount > cap ? cap : amount;
+                    amount += 1000;
 
                 string text = "";
                 if (PremiumDb.IsPremium(Context.User.Id, PremiumType.Waifu))
@@ -391,7 +393,7 @@ namespace Namiko
             await Context.Channel.SendMessageAsync("Fine. Just leave me alone.", false, ToastieUtil.GiveEmbed(Context.Client.CurrentUser, Context.User, amount).Build());
         }
 
-        [Command("Open"), Alias("OpenLootbox", "Lootbox", "Lootbowox"), Summary("Open a lootbox if you have one.\n**Usage**: `!open`"), RequireContext(ContextType.Guild)]
+        [Command("Open"), Alias("OpenLootbox", "Lootbox", "Lootwox"), Summary("Open a lootbox if you have one.\n**Usage**: `!open`"), RequireContext(ContextType.Guild)]
         public async Task Open([Remainder] string str = "")
         {
             var boxes = LootBoxDb.GetAll(Context.User.Id, Context.Guild.Id);
@@ -412,7 +414,7 @@ namespace Namiko
                     new Criteria<IMessage>()
                     .AddCriterion(new EnsureSourceUserCriterion())
                     .AddCriterion(new EnsureSourceChannelCriterion())
-                    .AddCriterion(new EnsureRangeCriterion(boxes.Count)),
+                    .AddCriterion(new EnsureRangeCriterion(boxes.Count, Program.GetPrefix(Context))),
                     new TimeSpan(0, 0, 23));
 
                 _ = listMsg.DeleteAsync();
@@ -467,6 +469,19 @@ namespace Namiko
                 //.AddField($"<:toastie3:454441133876183060> {Context.User} | Lootbox", $"Congratulations! You found **{amountWon.ToString("n0")}** {ToastieUtil.RandomEmote()}!\nNow you have **{bal.ToString("n0")}** {ToastieUtil.RandomEmote()}!")
                 .Build();
             });
+        }
+
+        [Command("Lootboxes"), Summary("Lists your lootboxes.\n**Usage**: `!Lootboxes`")]
+        public async Task Lootboxes([Remainder] string str = "")
+        {
+            var boxes = LootBoxDb.GetAll(Context.User.Id, Context.Guild.Id);
+            if (boxes.Count == 0)
+            {
+                await Context.Channel.SendMessageAsync("", false, ToastieUtil.NoBoxEmbed(Context.User).Build());
+                return;
+            }
+
+            await Context.Channel.SendMessageAsync(embed: ToastieUtil.BoxListEmbed(boxes, Context.User).WithDescription("").Build());
         }
     }
 }
