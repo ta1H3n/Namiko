@@ -131,7 +131,7 @@ namespace Namiko
         [Command("ActivateServerPremium"), Alias("asp"), Summary("Activates server premium in the current server.\n**Usage**: `!asp [tier]`")]
         public async Task ActivateServerPremium(string tier = "", [Remainder] string str = "")
         {
-            var ntr = Context.Client.GetGuild((ulong)PremiumType.GuildId_NOTAPREMIUMTYPE);
+            var ntr = Context.Client.GetGuild((ulong)PremiumType.HomeGuildId_NOTAPREMIUMTYPE);
             SocketGuildUser user = ntr.GetUser(Context.User.Id);
 
             if (user == null)

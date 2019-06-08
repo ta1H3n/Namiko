@@ -211,7 +211,7 @@ namespace Namiko
 
             if (subs.Count() >= limit)
             {
-                await Context.Channel.SendMessageAsync($"Limit {limit} subscription per guild. Donate to increase the limit!");
+                await Context.Channel.SendMessageAsync($"Limit {limit} subscription per guild. Upgrade server to increase the limit! `{Program.GetPrefix(Context)}Premium`", embed: WebUtil.SubListEmbed(Context.Guild.Id).Build());
                 return;
             }
 
@@ -231,9 +231,10 @@ namespace Namiko
                 await Context.Channel.SendMessageAsync($"Subreddit **{name}** not found.");
                 return;
             }
-            if (sub.Subscribers < 25000)
+            if (sub.Subscribers < 20000)
             {
-                await Context.Channel.SendMessageAsync("Subreddit must have at least 25,000 subscribers.");
+                await Context.Channel.SendMessageAsync("The Subreddit must have at least **20,000** subscribers.\n" +
+                    $"**{sub.Name}** has **{sub.Subscribers?.ToString("n0")}**.");
                 return;
             }
             try

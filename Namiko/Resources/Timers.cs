@@ -66,7 +66,7 @@ namespace Namiko
 
             foreach(var premium in expired)
             {
-                var ntr = client.GetGuild((ulong)PremiumType.GuildId_NOTAPREMIUMTYPE);
+                var ntr = client.GetGuild((ulong)PremiumType.HomeGuildId_NOTAPREMIUMTYPE);
                 SocketGuildUser user = null;
                 try
                 {

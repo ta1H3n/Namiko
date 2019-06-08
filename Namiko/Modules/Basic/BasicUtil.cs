@@ -87,8 +87,8 @@ namespace Namiko
             eb.WithDescription(desc);
 
             string field = "";
+            field += ":star: [Patreon](https://www.patreon.com/taiHen) - includes rewards.\n";
             field += ":dollar: [Paypal](https://www.paypal.me/NamikoBot)\n";
-            field += ":star: [Patreon](https://www.patreon.com/taiHen)\n";
             eb.AddField("Donation Links", field);
 
             eb.WithAuthor(client.CurrentUser);

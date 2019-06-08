@@ -42,10 +42,10 @@ namespace Namiko
             int t3amount = Constants.shopt3amount;
             int pages = 1;
             if (PremiumDb.IsPremium(guildId, PremiumType.ServerT2))
-                pages = 3;
+                pages = 2;
             if (PremiumDb.IsPremium(guildId, PremiumType.ServerT1))
-                pages = 5;
-            int randomizerMultiplier = 3 + ((5 - pages) / 2);
+                pages = 3;
+            int randomizerMultiplier = 6 - pages;
 
             var tier0 = WaifuDb.GetWaifusByTier(0);
             var tier1 = WaifuDb.RandomWaifus(1, (limitedamount + t1amount) * pages * randomizerMultiplier);

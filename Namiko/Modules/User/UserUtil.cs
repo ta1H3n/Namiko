@@ -4,6 +4,9 @@ using System.Linq;
 using Discord.WebSocket;
 using System.Globalization;
 using System.Collections.Generic;
+using Discord.Addons.Interactive;
+using Discord.Commands;
+using System.Threading.Tasks;
 
 namespace Namiko {
     class UserUtil {
@@ -42,7 +45,6 @@ namespace Namiko {
                 default: return false;
             } return true;
         }
-        
         //Methods: Hex Code Operations - *only* utility classes have access to HexToColor
         public static bool GetHexColour(ref System.Drawing.Color color, string colour) {
             if (colour.StartsWith('#')) colour = colour.Remove(0, 1);
@@ -57,7 +59,6 @@ namespace Namiko {
                                 int.Parse(colour.Substring(4, 2), NumberStyles.AllowHexSpecifier));
 
         }
-
         public static int GetMarriageLimit(ulong userId)
         {
             int limit = Constants.MarriageLimit;
@@ -94,7 +95,7 @@ namespace Namiko {
             string text = "";
             text += $"Amount: {ToastieDb.GetToasties(user.Id, user.Guild.Id).ToString("n0")} <:toastie3:454441133876183060>\n" +
                 $"Daily: {(daily == null ? "0" : ((daily.Date + 172800000) < timeNow ? "0" : daily.Streak.ToString()))} :calendar_spiral:\n" +
-                $"Boxes Opened: {UserDb.GetLootboxOpenedAmount(user.Id)} <:KaeriThumbsUp:582902255884173315>\n";
+                $"Boxes Opened: {UserDb.GetLootboxOpenedAmount(user.Id)} <:OwOPresent:523995763559235594>\n";
             eb.AddField("Toasties", text, true);
 
             text = $"Amount: {waifucount} :two_hearts:\n" +
@@ -105,7 +106,7 @@ namespace Namiko {
                 {
                     if (!text.Contains("Married: "))
                         text += "Married: ";
-                    text += $"{BasicUtil.IdToMention(GetWifeId(x, user.Id))}\n";
+                    text += $"{BasicUtil.IdToMention(GetWifeId(x, user.Id))} :revolving_hearts:\n";
                 } catch { }
             }
             eb.AddField("Waifus", text, true);
@@ -153,35 +154,52 @@ namespace Namiko {
                 field1 += $"#{users++} {guild.GetUser(proposals.WifeId) }\n";
 
             //
-            users = 1;
             foreach (Marriage proposals in received)
                 field2 += $"#{users++} {guild.GetUser(proposals.UserId) }\n";
 
             //if this dude is #ForeverAlone
             if( String.IsNullOrEmpty(field1) && String.IsNullOrEmpty(field2)) 
-                embed.WithDescription("You have not sent or Received any Proposals");
+                embed.WithDescription("You have not sent or received any Proposals.");
             
             //do columns, sent on the left received on the right (or some shit)
-            if( !String.IsNullOrEmpty(field1) ) embed.AddField("Sent", field1, true);
-            if( !String.IsNullOrEmpty(field2) ) embed.AddField("Received", field2, true);
+            if( !String.IsNullOrEmpty(field1) ) embed.AddField("Proposals Sent :sparkling_heart:", field1, true);
+            if( !String.IsNullOrEmpty(field2) ) embed.AddField("Proposals Received :sparkling_heart:", field2, true);
             return embed;
         }
         public static EmbedBuilder MarriagesEmbed(IUser user, SocketGuild guild) {
 
             //embed basics
-            int numUsers = 1;
             string partners = "";
             List<Marriage> marriages = MarriageDb.GetMarriages(user.Id, guild.Id);
             foreach (Marriage marriage in marriages)
-                partners += $"#{numUsers++} {guild.GetUser(marriage.WifeId) }\n";
+                partners += $"{BasicUtil.IdToMention(GetWifeId(marriage, user.Id))} :revolving_hearts: {marriage.Date.ToString("yyyy/MM/dd")}\n";
             
             //embed
             EmbedBuilder embed = new EmbedBuilder();
             embed.WithColor(UserDb.GetHex(out string colour, user.Id) ? (Discord.Color)UserUtil.HexToColor(colour) : BasicUtil.RandomColor());
-            if (!String.IsNullOrEmpty(partners)) embed.AddField("Current Marriages", partners, true);
-            else embed.WithDescription("You are currently Unmarried.");
+            if (!String.IsNullOrEmpty(partners))
+            {
+                embed.AddField("Married To", partners, true);
+                try
+                {
+                    embed.WithImageUrl(Program.GetClient().GetUser(GetWifeId(marriages[0], user.Id)).GetAvatarUrl());
+                } catch { }
+            }
+            else embed.WithDescription("You are not Married.");
             embed.WithAuthor(user);
             return embed;
+        }
+        public static EmbedBuilder ListMarriageEmbed(List<Marriage> marriages, IUser author)
+        {
+            var eb = new EmbedBuilderPrepared(author);
+            string list = "";
+            int i = 1;
+            foreach(var x in marriages)
+            {
+                list += $"`#{i++}` {BasicUtil.IdToMention(GetWifeId(x, author.Id))}\n";
+            }
+            eb.AddField("User List <:MiaHug:536580304018735135>", list);
+            return eb;
         }
         public static EmbedBuilder WaifusEmbed(SocketGuildUser user)
         {
@@ -218,7 +236,7 @@ namespace Namiko {
             eb.WithColor(UserDb.GetHex(out string colour, user.Id) ? (Discord.Color)HexToColor(colour) : BasicUtil.RandomColor());
             return eb;
         }
-        public static EmbedBuilder PostEmbed(IUser User) {
+        public static EmbedBuilder QuoteEmbed(IUser User) {
 
             //necessary string variables 
             string quote = UserDb.GetQuote(User.Id);
@@ -273,9 +291,46 @@ namespace Namiko {
             embed.WithColor(UserDb.GetHex(out string colour, user.Id) ? (Discord.Color)HexToColor(colour) : BasicUtil.RandomColor());
             return embed;
         }
+
+
         public static ulong GetWifeId(Marriage marriage, ulong userId)
         {
             return marriage.UserId == userId ? marriage.WifeId : marriage.UserId;
+        }
+        public async static Task<Marriage> SelectMarriage(List<Marriage> marriages, InteractiveBase<ShardedCommandContext> interactive)
+        {
+            if (interactive != null)
+            {
+                if (marriages.Count > 0)
+                {
+                    var msg = await interactive.Context.Channel.SendMessageAsync(embed: ListMarriageEmbed(marriages, interactive.Context.User)
+                        .WithDescription("Enter the number of the user you wish to select.")
+                        .WithFooter("Times out in 23 seconds.")
+                        .Build());
+                    var response = await interactive.NextMessageAsync(
+                        new Criteria<IMessage>()
+                        .AddCriterion(new EnsureSourceUserCriterion())
+                        .AddCriterion(new EnsureSourceChannelCriterion())
+                        .AddCriterion(new EnsureRangeCriterion(marriages.Count, Program.GetPrefix(interactive.Context))),
+                        new TimeSpan(0, 0, 23));
+
+                    _ = msg.DeleteAsync();
+                    int i = 0;
+                    try
+                    {
+                        i = int.Parse(response.Content);
+                    }
+                    catch
+                    {
+                        _ = interactive.Context.Message.DeleteAsync();
+                        return null;
+                    }
+                    _ = response.DeleteAsync();
+
+                    return marriages[i - 1];
+                }
+            }
+            return null;
         }
     }
 }

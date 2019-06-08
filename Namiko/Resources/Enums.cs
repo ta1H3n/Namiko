@@ -20,7 +20,7 @@ namespace Namiko
     [Flags]
     public enum PremiumType : ulong
     {
-        GuildId_NOTAPREMIUMTYPE = 418900885079588884,
+        HomeGuildId_NOTAPREMIUMTYPE = 418900885079588884,
         ServerT1 = 581848782396981250,
         ServerT2 = 581849178381221900,
         Toastie = 581849224661172244,

@@ -104,10 +104,19 @@ namespace Namiko
 
             url = url ?? Context.Message.Attachments.FirstOrDefault()?.Url;
 
-            if (!insider && ImageDb.AlbumExists(name))
+            if (!insider)
             {
-                await Context.Channel.SendMessageAsync("There is already a default image command called **{name}**");
-                return;
+                if(!PremiumDb.IsPremium(Context.Guild.Id, PremiumType.ServerT1))
+                {
+                    await Context.Channel.SendMessageAsync($"This server does not have T1 Premium. `{Program.GetPrefix(Context)}Premium`");
+                    return;
+                }
+
+                if (ImageDb.AlbumExists(name))
+                {
+                    await Context.Channel.SendMessageAsync($"There is already a default image command called **{name}**.");
+                    return;
+                }
             }
 
             if (url == null)

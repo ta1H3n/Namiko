@@ -301,16 +301,17 @@ namespace Namiko
             var subs = SpecialChannelDb.GetChannelsByGuild(guildId, ChannelType.Reddit);
 
             string desc = "";
+            int i = 1;
             foreach(var sub in subs)
             {
                 string[] args = sub.Args.Split(",");
-                desc += $"1. *{args[0]}* - **{args[1]}** upvotes\n";
+                desc += $"{i++}. *{args[0]}* - **{args[1]}** upvotes\n";
             }
 
             eb.WithDescription(desc == "" ? "-" : desc);
             eb.WithAuthor("Subreddits subscribed in this server");
             eb.WithColor(BasicUtil.RandomColor());
-            eb.WithFooter($"Type `!unsub [name]` to unsubscribe.");
+            eb.WithFooter($"Type `{Program.GetPrefix(guildId)}unsub [name]` to unsubscribe.");
             return eb;
         }
     }

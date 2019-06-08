@@ -35,7 +35,7 @@ namespace Namiko
             await Context.Channel.SendMessageAsync("", false, BasicUtil.InfoEmbed().Build());
         }
 
-        [Command("Donate"), Alias("Premium"), Summary("Donation Links.")]
+        [Command("Donate"), Alias("Premium", "Support", "Patreon", "Paypal"), Summary("Donation Links.")]
         public async Task Donate([Remainder] string str = "")
         {
             await Context.Channel.SendMessageAsync("", false, BasicUtil.DonateEmbed().Build());

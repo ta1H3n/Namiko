@@ -161,7 +161,7 @@ namespace Namiko
         {
             using (var db = new SqliteDbContext())
             {
-                if (db.SpecialChannels.Any(x => x.ChannelId == channelId && x.Type == type))
+                if (db.SpecialChannels.Any(x => x.ChannelId == channelId && x.Type == type && x.Args == args))
                     return -1;
 
                 db.SpecialChannels.Add(new SpecialChannel()
