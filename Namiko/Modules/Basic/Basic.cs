@@ -156,7 +156,8 @@ namespace Namiko
             
             eb.WithFooter(@"""What are you? Twelve?"" -Namiko");
             eb.WithColor(BasicUtil.RandomColor());
-            eb.WithDescription($"Find Namiko's user guide [here](https://github.com/ta1H3n/Namiko/wiki)");
+            eb.WithDescription($"Check out Namiko's usage guide [here](https://github.com/ta1H3n/Namiko/wiki) :star:");
+            eb.WithTitle("Commands");
             return eb;
         }
         private EmbedBuilder ModuleHelpEmbed(ModuleInfo moduleInfo)

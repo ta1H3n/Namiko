@@ -89,7 +89,8 @@ namespace Namiko
         }
         public static bool IsAMFWT(ulong guildId, string imageName)
         {
-            return IsLocalImage(imageName) && !(guildId == 417064769309245471 || guildId == 418900885079588884);
+            //return IsLocalImage(imageName) && !(guildId == 417064769309245471 || guildId == 418900885079588884);
+            return false;
         }
         public static bool IsLocalImage(string name)
         {
