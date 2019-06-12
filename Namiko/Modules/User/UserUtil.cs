@@ -106,7 +106,7 @@ namespace Namiko {
                 {
                     if (!text.Contains("Married: "))
                         text += "Married: ";
-                    text += $"{BasicUtil.IdToMention(GetWifeId(x, user.Id))} :revolving_hearts:\n";
+                    text += $"{BasicUtil.IdToMention(GetWifeId(x, user.Id))}\n";
                 } catch { }
             }
             eb.AddField("Waifus", text, true);

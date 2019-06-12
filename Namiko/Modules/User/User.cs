@@ -97,7 +97,7 @@ namespace Namiko {
             //checking marriage cap
             if (MarriageDb.GetMarriages(Context.User.Id, Context.Guild.Id).Count >= UserUtil.GetMarriageLimit(Context.User.Id) 
                 || MarriageDb.GetMarriages(wife.Id, Context.Guild.Id).Count >= UserUtil.GetMarriageLimit(wife.Id)) {
-                eb.WithDescription($"One of you have reached the maximum number of marriages.");
+                eb.WithDescription($"One of you has reached the maximum number of marriages.");
                 eb.WithFooter($"Limit can be increased to {Constants.PremiumMarriageLimit} with Waifu Premium.");
                 await Context.Channel.SendMessageAsync("", false, eb.Build());
                 return;

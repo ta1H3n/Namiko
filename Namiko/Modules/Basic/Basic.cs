@@ -41,6 +41,14 @@ namespace Namiko
             await Context.Channel.SendMessageAsync("", false, BasicUtil.DonateEmbed().Build());
         }
 
+        [Command("Vote")]
+        public async Task Vote([Remainder] string str = "")
+        {
+            await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared(Context.User)
+                .WithDescription("Vote for Namiko on [Discord Bots](https://discordbots.org/bot/418823684459855882/vote) and receive a lootbox!")
+                .Build());
+        }
+
         [Command("JoinMessageTest"), OwnerPrecondition]
         public async Task JoinMessageTest([Remainder] string str = "")
         {
