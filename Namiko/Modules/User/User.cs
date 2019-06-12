@@ -377,7 +377,7 @@ namespace Namiko {
             await Context.Channel.SendMessageAsync(((isMe) ? $"You have { waifu.Name } as your" : $"{ user.Username } has { waifu.Name } as his") + " Featured waifu!", false, WaifuUtil.WaifuEmbedBuilder(waifu, true, Context).Build());
         }
 
-        [Command("UndoColor"), Alias("uc"), Summary("Switch back to a previous color.\n**Usage**: `!scp`")]
+        [Command("UndoColour"), Alias("uc", "UndoColor"), Summary("Switch back to a previous color.\n**Usage**: `!scp`")]
         public async Task SetColourPrior([Remainder] string str = "")
         {
 
@@ -402,7 +402,7 @@ namespace Namiko {
             await Context.Channel.SendMessageAsync("", false, embed.Build());
         }
 
-        [Command("ColorHistory"), Alias("clrh"), Summary("List of your previous colors.\n**Usage**: `!scpl`")]
+        [Command("ColourHistory"), Alias("clrh", "ColorHistory"), Summary("List of your previous colors.\n**Usage**: `!scpl`")]
         public async Task ColourPriorList([Remainder] string str = "")
         {
 
@@ -422,7 +422,7 @@ namespace Namiko {
             //getting embed
             EmbedBuilder embed = UserUtil.SetColourEmbed(Context.User);
             embed.WithDescription(message);
-            embed.WithAuthor("Previous Colours");
+            embed.WithAuthor("Colour History");
             await Context.Channel.SendMessageAsync("", false, embed.Build());
         }
 

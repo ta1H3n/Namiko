@@ -302,7 +302,7 @@ namespace Namiko
             await PagedReplyAsync(msg);
         }
 
-        [Command("WishWaifu"), Alias("ww"), Summary("Add a waifu to your wishlist to be notified when it appears in shop.\nLimited to 5.\n**Usage**: `!ww [waifu]`")]
+        [Command("AddWaifuWish"), Alias("ww", "aww", "WishWaifu"), Summary("Add a waifu to your wishlist to be notified when it appears in shop.\nLimited to 5.\n**Usage**: `!ww [waifu]`")]
         public async Task WishWaifu([Remainder] string str = "")
         {
             var user = Context.User;
@@ -313,6 +313,21 @@ namespace Namiko
             }
 
             var waifus = WaifuWishlistDb.GetWishlist(user.Id, Context.Guild.Id);
+            int cap = 5;
+            if (PremiumDb.IsPremium(Context.User.Id, PremiumType.Waifu))
+                cap = 12;
+
+            string prefix = this.Prefix();
+            if (waifus.Count >= cap)
+            {
+                await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared(Context.User)
+                    .WithDescription($"You have reached your wishlist limit of **{cap}**.\n" +
+                        $"Try `{prefix}rww` to remove a waifu.")
+                    .WithFooter($"Increase the limit: `{prefix}Premium`")
+                    .Build());
+                return;
+            }
+
             if (waifus.Any(x => x.Name == waifu.Name))
             {
                 await Context.Channel.SendMessageAsync($"**{waifu.Name}** is already in your wishlist. Baka.");

@@ -73,6 +73,15 @@ namespace Namiko
             Timers.Timer_DailyStats(null, null);
         }
 
+        [Command("MarkdownCommands"), OwnerPrecondition]
+        public async Task MarkdownCommands()
+        {
+            using (var stream = Timers.GenerateStreamFromString(MarkdownCommandList(Program.GetCommands(), "!")))
+            {
+                await Context.Channel.SendFileAsync(stream, "CommandsMarkdown.txt");
+            }
+        }
+
       //  [Command("Test"), OwnerPrecondition]
       //  public async Task Test()
       //  {
@@ -228,6 +237,27 @@ namespace Namiko
             }
 
             return desc;
+        }
+
+        public string MarkdownCommandList(CommandService commandService, string prefix)
+        {
+            string text = "";
+            
+            foreach (var x in commandService.Modules)
+            {
+                text += $"##{x.Name}\n";
+                string commandList = "";
+                foreach (var y in x.Commands)
+                {
+                    bool insider = y.Preconditions.Any(z => (z.GetType() == typeof(HomePrecondition)) || (z.GetType() == typeof(OwnerPrecondition)));
+                    if (!commandList.Contains(y.Name))
+                        commandList += $"* **{y.Name}** - {y.Summary}.{(insider?" **Insider only.**":"")}\n";
+                }
+
+                text += commandList + "\n";
+            }
+
+            return text;
         }
     }
 

@@ -256,7 +256,7 @@ namespace Namiko
 
             return (int)tax;
         }
-        public static EmbedBuilder DailyGetEmbed(IUser user, int streak, int amount, int balance)
+        public static EmbedBuilder DailyGetEmbed(IUser user, int streak, int amount, int balance, string prefix)
         {
             var eb = new EmbedBuilder();
             eb.WithAuthor(user.ToString(), user.GetAvatarUrl(), BasicUtil._patreon);
@@ -264,9 +264,12 @@ namespace Namiko
                 $"Now you have **{balance.ToString("n0")}** {ToastieUtil.RandomEmote()}\n\n" +
                 $"Vote for me on [Discord Bots](https://discordbots.org/bot/418823684459855882/vote) every day to receive a lootbox!");
             eb.WithColor(BasicUtil.RandomColor());
+
+            if (!(PremiumDb.IsPremium(user.Id, PremiumType.Waifu) || PremiumDb.IsPremium(user.Id, PremiumType.Toastie)))
+                eb.WithFooter($"Namiko now has Premium! `{prefix}Premium`");
             return eb;
         }
-        public static EmbedBuilder DailyWaitEmbed(IUser user, int hours, int minutes, int seconds)
+        public static EmbedBuilder DailyWaitEmbed(IUser user, int hours, int minutes, int seconds, string prefix)
         {
             var eb = new EmbedBuilder();
             eb.WithAuthor(user.ToString(), user.GetAvatarUrl(), BasicUtil._patreon);
@@ -274,12 +277,15 @@ namespace Namiko
             if (new Random().Next(20) == 1)
                 eb.WithImageUrl("https://i.imgur.com/LcqpKmo.png");
             eb.WithColor(BasicUtil.RandomColor());
+
+            if (!(PremiumDb.IsPremium(user.Id, PremiumType.Waifu) || PremiumDb.IsPremium(user.Id, PremiumType.Toastie)))
+                eb.WithFooter($"Namiko now has Premium! `{prefix}Premium`");
             return eb;
         }
 
         // WEEKLIES
 
-        public static EmbedBuilder WeeklyWaitEmbed(DateTime date, IUser user)
+        public static EmbedBuilder WeeklyWaitEmbed(DateTime date, IUser user, string prefix)
         {
             var eb = new EmbedBuilder();
             eb.WithAuthor(user.ToString(), user.GetAvatarUrl(), BasicUtil._patreon);
@@ -287,14 +293,20 @@ namespace Namiko
             string wait = $"{(date - now).Days} Days {(date - now).Hours} Hours {(date - now).Minutes} Minutes";
             eb.WithDescription($"You already claimed your weekly reward.\nYou must wait `{wait}`");
             eb.WithColor(BasicUtil.RandomColor());
+
+            if (!(PremiumDb.IsPremium(user.Id, PremiumType.Waifu) || PremiumDb.IsPremium(user.Id, PremiumType.Toastie)))
+                eb.WithFooter($"Namiko now has Premium! `{prefix}Premium`");
             return eb;
         }
-        public static EmbedBuilder WeeklyGetEmbed(int amount, int current, IUser user)
+        public static EmbedBuilder WeeklyGetEmbed(int amount, int current, IUser user, string prefix)
         {
             var eb = new EmbedBuilder();
             eb.WithAuthor(user.ToString(), user.GetAvatarUrl(), BasicUtil._patreon);
             eb.WithDescription($"You received **{amount.ToString("n0")}** {RandomEmote()}\nNow you have **{current.ToString("n0")}** {RandomEmote()}");
             eb.WithColor(BasicUtil.RandomColor());
+
+            if (!(PremiumDb.IsPremium(user.Id, PremiumType.Waifu) || PremiumDb.IsPremium(user.Id, PremiumType.Toastie)))
+                eb.WithFooter($"Namiko now has Premium! `{prefix}Premium`");
             return eb;
         }
         

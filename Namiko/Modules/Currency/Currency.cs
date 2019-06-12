@@ -102,7 +102,7 @@ namespace Namiko
                 await ToastieDb.AddToasties(Context.User.Id, amount, Context.Guild.Id);
                 await ToastieDb.AddToasties(Context.Client.CurrentUser.Id, tax, Context.Guild.Id);
 
-                await Context.Channel.SendMessageAsync("", false, ToastieUtil.DailyGetEmbed(Context.User, daily.Streak, amount, ToastieDb.GetToasties(Context.User.Id, Context.Guild.Id)).Build());
+                await Context.Channel.SendMessageAsync("", false, ToastieUtil.DailyGetEmbed(Context.User, daily.Streak, amount, ToastieDb.GetToasties(Context.User.Id, Context.Guild.Id), this.Prefix()).Build());
             }
             else
             {
@@ -110,7 +110,7 @@ namespace Namiko
                 int hours = (int)wait / 3600;
                 int minutes = (int)wait % 3600 / 60;
                 int seconds = (int)wait % 60;
-                await Context.Channel.SendMessageAsync("", false, ToastieUtil.DailyWaitEmbed(Context.User, hours, minutes, seconds).Build());
+                await Context.Channel.SendMessageAsync("", false, ToastieUtil.DailyWaitEmbed(Context.User, hours, minutes, seconds, this.Prefix()).Build());
             }
         }
 
@@ -164,11 +164,11 @@ namespace Namiko
                 await ToastieDb.AddToasties(Context.Client.CurrentUser.Id, tax / 2, Context.Guild.Id);
                 weekly.Date = DateTime.Now;
                 await WeeklyDb.SetWeekly(weekly);
-                await Context.Channel.SendMessageAsync(text, false, ToastieUtil.WeeklyGetEmbed(amount, ToastieDb.GetToasties(Context.User.Id, Context.Guild.Id), Context.User).Build());
+                await Context.Channel.SendMessageAsync(text, false, ToastieUtil.WeeklyGetEmbed(amount, ToastieDb.GetToasties(Context.User.Id, Context.Guild.Id), Context.User, this.Prefix()).Build());
                 return;
             }
 
-            await Context.Channel.SendMessageAsync("", false, ToastieUtil.WeeklyWaitEmbed(weekly.Date.AddHours(hours), Context.User).Build());
+            await Context.Channel.SendMessageAsync("", false, ToastieUtil.WeeklyWaitEmbed(weekly.Date.AddHours(hours), Context.User, this.Prefix()).Build());
         }
 
         [Command("Flip"), Alias("f", "fwip"), Summary("Flip a coin for toasties, defaults to tails.\n**Usage**: `!flip [amount] [heads_or_tails]`")]
