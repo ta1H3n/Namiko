@@ -56,8 +56,13 @@ namespace Namiko
             Hour.Elapsed += Timer_CleanData;
             Hour.Elapsed += Timer_UpdateDBLGuildCount;
             Hour.Elapsed += Timer_ExpirePremium;
+            Hour.Elapsed += Timer_PlayingStatus;
         }
 
+        private static async void Timer_PlayingStatus(object sender, ElapsedEventArgs e)
+        {
+            await Program.GetClient().SetActivityAsync(new Game("Chinese Cartoons. Try @Namiko help", ActivityType.Watching));
+        }
         private static async void Timer_ExpirePremium(object sender, ElapsedEventArgs e)
         {
             var now = System.DateTime.Now;

@@ -327,6 +327,7 @@ namespace Namiko
             if (Launch)
             {
                 Ready();
+                _ = Client.SetActivityAsync(new Game("Chinese Cartoons. Try @Namiko help", ActivityType.Watching));
                 res = await CheckLeftGuilds();
                 if (res > 0)
                 {

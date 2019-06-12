@@ -197,9 +197,7 @@ namespace Namiko
             eb.WithColor(BasicUtil.RandomColor());
             return eb;
         }
-
-
-
+        
         // FLIPS
 
         public static Boolean FiftyFifty()
