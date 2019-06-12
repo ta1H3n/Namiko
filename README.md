@@ -9,6 +9,7 @@ You can find all the features and commands of Namiko here, and how to use them. 
 <a href="https://giant.gfycat.com/PlushPrestigiousAsiaticmouflon.webm">
   <img src="https://thumbs.gfycat.com/PlushPrestigiousAsiaticmouflon-size_restricted.gif"><br>
 </a>
+
 *Click on the gif to view it in higher quality!*
 
 # Getting Started
