@@ -2,8 +2,15 @@
 <a href="https://discordbots.org/bot/418823684459855882" >
   <img src="https://discordbots.org/api/widget/status/418823684459855882.svg" alt="Namiko" />
 </a>
+
 # Namiko
 You can find all the features and commands of Namiko here, and how to use them. This page **does not** contain instructions on how to set-up and host Namiko on your own.
+
+<a href="https://giant.gfycat.com/PlushPrestigiousAsiaticmouflon.webm">
+  <img src="https://thumbs.gfycat.com/PlushPrestigiousAsiaticmouflon-size_restricted.gif"><br>
+</a>
+
+*Click on the gif to view it in higher quality!*
 
 # Getting Started
 [Invite Namiko to your server](https://discordapp.com/oauth2/authorize?client_id=418823684459855882&scope=bot&permissions=268707844)  
@@ -12,7 +19,9 @@ Namiko's prefix can be changed by using the `!sp [new_prefix]` command and repla
 
 Type `!help` or `!help [command]` in a server with Namiko for a list of commands and command usage instructions.
 
-The following is a list of the main Namiko's features and details on how to use them.  
+### Premium
+Namiko now has premium upgrades! Both for users and for servers! You can find them [on Patreon](https://www.patreon.com/taiHen).  
+
 ## Contents
 1. [Waifus](#waifus)
 1. [Banroulette](#banroulette)
@@ -31,7 +40,7 @@ Useful commands:
 * **!waifushop** - Shows a list of waifus currently for sale, resets every 12 hours.
 * **!givewaifu** - You can trade waifus with other users.
 * **!waifus** - shows a list of the waifus you have.
-* **!ww** - add a waifu to your wishlist. Namiko will dm you if the waifu goes for sale, and you will be listed on the waifu card. Limited to 5.
+* **!aww** - add a waifu to your wishlist. Namiko will dm you if the waifu goes for sale, and you will be listed on the waifu card. Limited to 5. Increase the limit to 12 with Waifu Premium.
 * **!wwl** - shows yours or another users waifu wishlist.
 
 Your last bought waifu will also appear on your profile. To see your profile use the **!profile** command. To change the waifu previewed on your profile you can use the **!sfw** command.
@@ -65,6 +74,7 @@ Useful Commands:
 * **!sc** - set color. e.g. `!sc dark blue` or `!sc #121212` - hex value.
 * **!sfw** - set your featured waifu on your profile.
 * **!waifus** - view yours or someone's waifus.
+* **!marry** - marry another user.
 
 ## Currency and Gambling
 The currency is Toasties, and is server exclusive. Toasties can be used to buy waifus, or trade with other users. Toasties can be gambled, and Namiko's balance acts as the casino balance - meaning that if you gamble, you win or lose toasties from Namiko's balance. Namiko starts off with a balance of 1 million. This stops absurd of amounts of toasties being won - preventing ruining of the game experience. Namiko gains a small amount of your dailies and weeklies, based on how much you have, how much she has, and the whole net amount in the server.  
@@ -87,6 +97,7 @@ Useful Commands:
 * **!listall** - lists all the image commands Namiko currently has.
 * **!all [image_name]** - gives a link to an imgur album with all the images in the command, and their IDs.
 * **!image** - sends a specific image by it's ID.
+* **!newimage** - add a server exclusive reaction image. (Requires T1 Server Premium)
 
 ## Teams
 Role based teams can be made, where a *leader* can invite users to their team, and if they accept they will be given the teams role. Invites expire in 24 hours. The leader roles must be assigned manually.  
@@ -119,6 +130,194 @@ Useful Commands:
 * **!iqdb** - tries to find the source of an image using IQDB.
 * **!anime** - looks up an anime on MAL.
 * **!manga** - looks up a manga on MAL.
+* **!subreddit** - subscribe to hop posts from a subreddit that reach a certain upvote limit.
 
 # Full Command List
--to be added-
+All of Namiko's commands, excluding some technical, host only commands.
+
+## Banroulettes
+* **NewBanroulette** - Starts a new game of ban roulette, where one participant is randomly banned from the server. Winners split toasties from the reward pool.
+**Usage**: `!nbr [ban_length_in_hours] [required_role_name-optional]`.
+* **JoinBanroulette** - Join the current Ban Roulette. Must be in the same channel.
+**Usage**: `!jbr`.
+* **CancelBanroulette** - Cancels the current Ban Roulette.
+**Usage**: `!cbr`.
+* **EndBanroulette** - Ends the current Ban Roulette, banning a random participant and splitting the reward pool between the others.
+**Usage**: `!ebr`.
+* **BRRewardPool** - Add toasties to the Ban Roulette reward pool from your account.
+**Usage**: `!brrp [amount]`.
+* **SetBRRewardPool** - Set the reward pool.
+**Usage**: `!sbrrp [amount]`.
+* **SetBRMinParticipants** - Set minimum participants.
+**Usage**: `!sbrmin [amount]`.
+* **SetBRMaxParticipants** - Set maximum participants.
+**Usage**: `!sbrmax [amount]`.
+
+## Currency
+* **Blackjack** - Starts a game of blackjack.
+**Usage**: `!bj [amount]`.
+* **Daily** - Gives daily toasties..
+* **Weekly** - Gives weekly toasties..
+* **Flip** - Flip a coin for toasties, defaults to tails.
+**Usage**: `!flip [amount] [heads_or_tails]`.
+* **Balance** - Shows amount of toasties.
+**Usage**: `!bal [user_optional]`.
+* **SetToasties** - Sets the amount of toasties.
+**Usage**: `!st [user] [amount]`.
+* **AddToasites** - Adds toasties to a user.
+**Usage**: `!at [user] [amount]`.
+* **ToastieLeaderboard** - Toastie Leaderboard.
+**Usage**: `!tlb [page_number]`.
+* **DailyLeaderboard** - Daily Leaderboard.
+**Usage**: `!dlb [page_number]`.
+* **Beg** - Beg Namiko for toasties.
+**Usage**: `!beg`.
+* **Open** - Open a lootbox if you have one.
+**Usage**: `!open`.
+* **Lootboxes** - Lists your lootboxes.
+**Usage**: `!Lootboxes`.
+
+## Images
+* **List** - List of all image commands and how many images there are.
+**Usage**: `listall`.
+* **Album** - All reaction images from a single command.
+**Usage**: `!all [image_name]`.
+* **Image** - Sends a reaction image by id.
+**Usage**: `!i [id]`.
+* **NewImage** - Adds a new image to the database.
+**Usage**: `!ni [name] [url_or_attachment]`.
+* **DeleteImage** - Deletes image from the database using the id.
+**Usage**: `di [id]`.
+
+## Roles
+* **Role** - Adds or removes a public role from the user.
+**Usage**: `!r [name]`.
+* **SetPublicRole** - Sets or unsets a role as a public role.
+**Usage**: `!spr [name]`.
+* **ClearRole** - Removes all users from a role.
+**Usage**: `cr [name]`.
+* **Invite** - Invites a user to your team.
+**Usage**: `!inv [user]`.
+* **Join** - Accept an invite to a team.
+**Usage**: `!join [team_name]`.
+* **LeaveTeam** - Leave your team.
+**Usage**: `!lt`.
+* **TeamKick** - Kicks a user from your team.
+**Usage**: `!tk [user]`.
+* **NewTeam** - Creates a new team.
+**Usage**: `!nt [LeaderRoleName] [MemberRoleName]`.
+* **DeleteTeam** - Deletes a team.
+**Usage**: `!dt [Leader or Team RoleName]`.
+* **TeamList** - Lists all teams.
+**Usage**: `!tl`.
+* **PublicRoleList** - Lists all public roles.
+**Usage**: `!prl`.
+
+## Server
+* **Server** - Stats about the server.
+**Usage**: `!server`.
+* **SetPrefix** - Sets a prefix for the bot in the server.
+**Usage**: `!sp [prefix]`.
+* **SetJoinLogChannel** - Sets a channel to log users joining/leaving the guild.
+**Usage**: `!jlch`.
+* **SetTeamLogChannel** - Sets a channel to log users joining/leaving teams.
+**Usage**: `!tlch`.
+* **SetWelcomeChannel** - Sets a channel to welcome members.
+**Usage**: `!wch`.
+* **BlacklistChannel** - Disables or enables bot commands in a channel.
+**Usage**: `!blch [optional_channel_id]`.
+* **ListWelcomes** - Lists all welcomes and their IDs..
+* **ActivateServerPremium** - Activates server premium in the current server.
+**Usage**: `!asp [tier]`.
+
+## User
+* **Profile** - Showsa a users profile.
+**Usage**: `!profile [user_optional]`.
+* **Waifus** - Shows a users waifu list.
+**Usage**: `!waifus [user_optional]`.
+* **Marry** - Propose to a user.
+**Usage**:  `!m [user]`.
+* **Decline** - Decline marriage proposal.
+**Usage**: `!decline`.
+* **Divorce** - Divorce a user.
+**Usage**: `!divorce`.
+* **Proposals** - Displays sent & received proposals.
+**Usage**: `!proposals`.
+* **Marriages** - Displays marriages.
+**Usage**: `!sm`.
+* **SetColour** - Set your profile colour.
+**Usage**: `!sc [colour_name or hex_value]`.
+* **SetQuote** - Sets your quote on profile.
+**Usage**: `!sq [quote]`.
+* **SetImage** - Sets thumbnail Image on profile. 
+**Usage**: `!si [image_url_or_attachment]`.
+* **SetFeaturedWaifu** - Sets your waifu image on your profile.
+**Usage**: `!sfw [waifu_name]`.
+* **UndoColour** - Switch back to a previous color.
+**Usage**: `!scp`.
+* **ColourHistory** - List of your previous colors.
+**Usage**: `!scpl`.
+* **ActivatePremium** - Activates premium subscriptions associated with this account.
+**Usage**: `!ap`.
+
+## Waifus
+* **WaifuShop** - Opens the waifu shop..
+* **WaifuShopSlides** - Opens the waifu shop slides..
+* **BuyWaifu** - Buys a waifu, must be in a shop.
+**Usage**: `!bw [name]`.
+* **SellWaifu** - Sells a waifu you already own for a discounted price.
+**Usage**: `!sw [name]`.
+* **GiveWaifu** - Transfers waifu to another user.
+**Usage**: `!gw [user] [waifu_name]`.
+* **TopWaifus** - Shows most popular waifus.
+**Usage**: `!tw`.
+* **ServerTopWaifus** - Shows most popular waifus in the server.
+**Usage**: `!stw`.
+* **WaifuLeaderboard** - Shows waifu worth of each person.
+**Usage**: `!wlb`.
+* **AddWaifuWish** - Add a waifu to your wishlist to be notified when it appears in shop.
+Limited to 5.
+**Usage**: `!ww [waifu]`.
+* **WaifuWishlist** - Shows yours or someone's waifu wishlist.
+**Usage**: `!wwl [user_optional]`.
+* **RemoveWaifuWish** - Removes a waifu from your wishlist.
+**Usage**: `!rww [waifu]`.
+
+## WaifuEditing
+* **NewWaifu** - Adds a waifu to the database.
+**Usage**: `!nw [name] [tier(1-3)] [image_url]`. **Insider only.**
+* **DeleteWaifu** - Removes a waifu from the database.
+**Usage**: `!dw [name]`. **Insider only.**
+* **WaifuFullName** - Changes the full name of a waifu.
+**Usage**: `!wfn [name] [fullname]`. **Insider only.**
+* **WaifuDescription** - Changes the description of a waifu.
+**Usage**: `!wd [name] [description]`. **Insider only.**
+* **WaifuSource** - Changes the source of a waifu.
+**Usage**: `!ws [name] [source]`. **Insider only.**
+* **WaifuTier** - Changes the tier of a waifu.
+**Usage**: `!wt [name] [tier(1-3)]`. **Insider only.**
+* **WaifuImage** - Changes the image of a waifu.
+**Usage**: `!wi [name] [image_url]`. **Insider only.**
+* **RenameWaifu** - Change a waifu's primary name.
+**Usage**: `!rw [oldName] [newName]`. **Insider only.**
+* **AutocompleteWaifu** - Auto completes a waifu using MAL.
+**Usage**: `!acw [name] [MAL_ID]`. **Insider only.**
+* **ResetWaifuShop** - Resets the waifu shop contents.. **Insider only.**
+
+## Web
+* **IQDB** - Finds the source of an image in iqdb.
+**Usage**: `!iqdb [image_url]` or `!iqdb` with attached image..
+* **Source** - Finds the source of an image with SauceNao.
+**Usage**: `!source [image_url]` or `!source` with attached image..
+* **Anime** - Searchs MAL for an anime and the following details.
+**Usage**: `!Anime [anime_title]`.
+* **Manga** - Searchs MAL for an manga and the following details.
+**Usage**: `!Manga [manga_title]`.
+* **MALWaifu** - Searches MAL for characters.
+**Usage**: `!malw [query]`. **Insider only.**
+* **Subreddit** - Set a subreddit for Namiko to post hot posts from.
+**Usage**: `!sub [subreddit_name] [min_upvotes]`.
+* **Unsubscribe** - Unsubscribe from a subreddit.
+**Usage**: `!unsub [subreddit_name]`.
+* **SubList** - Subreddits you are subscribed to.
+**Usage**: `!sublist`.
