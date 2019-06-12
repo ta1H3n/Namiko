@@ -93,13 +93,13 @@ namespace Namiko {
             long timeNow = DateTimeOffset.Now.ToUnixTimeMilliseconds();
 
             string text = "";
-            text += $"Amount: {ToastieDb.GetToasties(user.Id, user.Guild.Id).ToString("n0")} <:toastie3:454441133876183060>\n" +
-                $"Daily: {(daily == null ? "0" : ((daily.Date + 172800000) < timeNow ? "0" : daily.Streak.ToString()))} :calendar_spiral:\n" +
-                $"Boxes Opened: {UserDb.GetLootboxOpenedAmount(user.Id)} <:OwOPresent:523995763559235594>\n";
-            eb.AddField("Toasties", text, true);
+            text += $"Amount: {ToastieDb.GetToasties(user.Id, user.Guild.Id).ToString("n0")}\n" +
+                $"Daily: {(daily == null ? "0" : ((daily.Date + 172800000) < timeNow ? "0" : daily.Streak.ToString()))}\n" +
+                $"Boxes Opened: {UserDb.GetLootboxOpenedAmount(user.Id)}\n";
+            eb.AddField("Toasties <:toastie3:454441133876183060>", text, true);
 
-            text = $"Amount: {waifucount} :two_hearts:\n" +
-                $"Value: {waifuprice.ToString("n0")} <:toastie3:454441133876183060>\n";
+            text = $"Amount: {waifucount}\n" +
+                $"Value: {waifuprice.ToString("n0")}\n";
             foreach(var x in MarriageDb.GetMarriages(user.Id, user.Guild.Id))
             {
                 try
@@ -109,7 +109,7 @@ namespace Namiko {
                     text += $"{BasicUtil.IdToMention(GetWifeId(x, user.Id))}\n";
                 } catch { }
             }
-            eb.AddField("Waifus", text, true);
+            eb.AddField("Waifus :two_hearts:", text, true);
 
             var waifu = FeaturedWaifuDb.GetFeaturedWaifu(user.Id, user.Guild.Id);
             if (waifu != null)
