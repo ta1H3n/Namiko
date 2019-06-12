@@ -2,8 +2,14 @@
 <a href="https://discordbots.org/bot/418823684459855882" >
   <img src="https://discordbots.org/api/widget/status/418823684459855882.svg" alt="Namiko" />
 </a>
+
 # Namiko
 You can find all the features and commands of Namiko here, and how to use them. This page **does not** contain instructions on how to set-up and host Namiko on your own.
+
+<a href="https://giant.gfycat.com/PlushPrestigiousAsiaticmouflon.webm">
+  <img src="https://thumbs.gfycat.com/PlushPrestigiousAsiaticmouflon-size_restricted.gif"><br>
+</a>
+*Click on the gif to view it in higher quality!*
 
 # Getting Started
 [Invite Namiko to your server](https://discordapp.com/oauth2/authorize?client_id=418823684459855882&scope=bot&permissions=268707844)  
