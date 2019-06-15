@@ -365,6 +365,14 @@ namespace Namiko
                 await db.SaveChangesAsync();
             }
         }
+        public static async Task Delete(ulong userId, ulong guildId)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                db.FeaturedWaifus.RemoveRange(db.FeaturedWaifus.Where(x => x.UserId == userId && x.GuildId == guildId));
+                await db.SaveChangesAsync();
+            }
+        }
     }
 
     public class WaifuWishlistDb

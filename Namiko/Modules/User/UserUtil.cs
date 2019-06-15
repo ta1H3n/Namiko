@@ -75,6 +75,18 @@ namespace Namiko {
             var eb = new EmbedBuilder();
 
             string name = user.Username;
+
+            var role = RoleUtil.GetMemberRole(user.Guild, user) ?? RoleUtil.GetLeaderRole(user.Guild, user);
+            var team = TeamDb.TeamByMember(role.Id) ?? TeamDb.TeamByLeader(role.Id);
+            if (team != null)
+            {
+                role = user.Roles.FirstOrDefault(x => x.Id == team.LeaderRoleId);
+                if (role == null)
+                    role = user.Roles.FirstOrDefault(x => x.Id == team.MemberRoleId);
+
+                name += $" | {role.Name}";
+            }
+
             bool toastiePremium = PremiumDb.IsPremium(user.Id, PremiumType.Toastie);
             bool waifuPremium = PremiumDb.IsPremium(user.Id, PremiumType.Waifu);
             if (toastiePremium && waifuPremium)
@@ -125,12 +137,27 @@ namespace Namiko {
             eb.WithFooter(footer);
 
             //quote 
-            string quote = UserDb.GetQuote(user.Id);
-            if ( !String.IsNullOrEmpty(quote) & !WebUtil.IsValidUrl(quote)) eb.WithDescription(quote);
+            string quote = "";
+            //var role = RoleUtil.GetMemberRole(user.Guild, user) ?? RoleUtil.GetLeaderRole(user.Guild, user);
+            //var team = TeamDb.TeamByMember(role.Id) ?? TeamDb.TeamByLeader(role.Id);
+            //if(team != null)
+            //{
+            //    role = user.Guild.Roles.FirstOrDefault(x => x.Id == team.MemberRoleId);
+            //    if (user.Roles.Any(x => x.Id == team.LeaderRoleId))
+            //        quote += $"*~ Leader of {role.Mention} ~*\n\n";
+            //    else
+            //        quote += $"~ *Member of* {role.Mention} ~\n\n";
+            //}
+
+            quote += UserDb.GetQuote(user.Id);
+
+            if ( !String.IsNullOrEmpty(quote) & !WebUtil.IsValidUrl(quote))
+                eb.WithDescription(quote);
 
             //image
             string image = UserDb.GetImage(user.Id); 
-            if ( WebUtil.IsValidUrl(image) ) eb.WithThumbnailUrl(image);
+            if ( WebUtil.IsValidUrl(image) )
+                eb.WithThumbnailUrl(image);
 
 
             eb.Color = UserDb.GetHex(out string colour, user.Id)? (Discord.Color) HexToColor(colour) : BasicUtil.RandomColor();

@@ -10,6 +10,7 @@ using Discord.WebSocket;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Discord.Addons.Interactive;
+using Discord.Rest;
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 
 namespace Namiko
@@ -86,6 +87,7 @@ namespace Namiko
                     r = rnd.Next(0, tier1.Count);
                     item = new ShopWaifu { Waifu = tier1.ElementAt(r), GeneratedDate = date, Discount = GenerateDiscount(), Limited = 1, BoughtBy = 0, GuildId = guildId };
                     waifus.Add(item);
+                    tier1.RemoveAll(x => x.Name.Equals(tier1[r].Name));
                 }
 
                 // TIER 0 AND 1 WAIFUS
@@ -485,7 +487,7 @@ namespace Namiko
             text += "```";
             return text;
         }
-        public static EmbedBuilder FoundWaifusEmbedBuilder(IEnumerable<IGrouping<string, Waifu>> waifus)
+        public static EmbedBuilder FoundWaifusEmbedBuilder(IEnumerable<IGrouping<string, Waifu>> waifus, string avatarUrl = null)
         {
             var eb = new EmbedBuilderPrepared();
 
@@ -516,7 +518,7 @@ namespace Namiko
                 }
             }
 
-            eb.WithTitle("Waifus Found :sparkling_heart:");
+            eb.WithAuthor("Waifus Found", avatarUrl, BasicUtil._patreon);
             eb.WithDescription("Enter the number of the waifu you wish to select.");
             eb.WithFooter("Times out in 23 seconds.");
             return eb;
@@ -609,7 +611,19 @@ namespace Namiko
                 {
                     var ordered = waifus.OrderBy(x => x.Source).ThenBy(x => x.Name).ToList();
                     var grouped = ordered.GroupBy(x => x.Source);
-                    var msg = await interactive.Context.Channel.SendMessageAsync(embed: FoundWaifusEmbedBuilder(grouped).Build());
+                    RestUserMessage msg = null;
+                    try
+                    {
+                        msg = await interactive.Context.Channel.SendMessageAsync(embed: FoundWaifusEmbedBuilder(grouped, interactive?.Context.User.GetAvatarUrl()).Build());
+                    } catch
+                    {
+                        _ = interactive.Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared()
+                            .WithAuthor("Waifus Found", interactive?.Context.User.GetAvatarUrl(), BasicUtil._patreon)
+                            .WithDescription("*~ Too many results ~*")
+                            .WithColor(255, 255, 255)
+                            .Build());
+                        return null;
+                    }
                     var response = await interactive.NextMessageAsync(
                         new Criteria<IMessage>()
                         .AddCriterion(new EnsureSourceUserCriterion())
@@ -634,8 +648,8 @@ namespace Namiko
                 }
 
                 _ = interactive.Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared()
-                    .WithAuthor("Waifus Found", null, BasicUtil._patreon)
-                    .WithDescription("*~No results~*")
+                    .WithAuthor("Waifus Found", interactive?.Context.User.GetAvatarUrl(), BasicUtil._patreon)
+                    .WithDescription("*~ No results ~*")
                     .WithColor(201, 0, 16)
                     .Build());
             }

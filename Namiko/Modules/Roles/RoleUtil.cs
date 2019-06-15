@@ -37,9 +37,13 @@ namespace Namiko
                     count++;
                 }
             }
-
-            eb.AddField("Teams :shield:", teamstr, true);
-            eb.AddField("Leaders :crown:", leaderstr, true);
+            try {
+                eb.AddField("Teams :shield:", teamstr, true);
+                eb.AddField("Leaders :crown:", leaderstr, true);
+            } catch
+            {
+                eb.WithDescription("*~ There are no teams ~*");
+            }
             eb.WithColor(BasicUtil.RandomColor());
             return eb;
         }
@@ -63,27 +67,47 @@ namespace Namiko
         {
             var eb = new EmbedBuilder();
 
+            List<SocketGuildUser> leaderUsers = new List<SocketGuildUser>(leaderRole.Members);
+            List<SocketGuildUser> teamUsers = new List<SocketGuildUser>(teamRole.Members);
+            teamUsers.RemoveAll(x => leaderUsers.Any(y => y.Equals(x)));
+
+            int totalToasties = 0;
+            int totalWaifus = 0;
+            int totalWaifuValue = 0;
+
             string memberList = "";
-            foreach(var x in teamRole.Members)
+            foreach(var x in teamUsers)
             {
-                if(!x.Roles.Any(y => y.Id == leaderRole.Id))
-                    memberList += $"\n`{x.Username}`";
+                memberList += $"\n`{x.Username}`";
+
+                totalToasties += ToastieDb.GetToasties(x.Id, x.Guild.Id);
+                var waifus = UserInventoryDb.GetWaifus(x.Id, x.Guild.Id);
+                totalWaifus += waifus.Count();
+                totalWaifuValue += WaifuUtil.WaifuValue(waifus);
             }
 
             string leaderList = "";
-            foreach(var x in leaderRole.Members)
+            foreach(var x in leaderUsers)
             {
                 leaderList += $"\n`{x.Username}`";
+
+                totalToasties += ToastieDb.GetToasties(x.Id, x.Guild.Id);
+                var waifus = UserInventoryDb.GetWaifus(x.Id, x.Guild.Id);
+                totalWaifus += waifus.Count();
+                totalWaifuValue += WaifuUtil.WaifuValue(waifus);
             }
 
-            eb.AddField($":shield: Members - {teamRole.Members.Count() - leaderRole.Members.Count()}", memberList == "" ? "-" : memberList, true);
-            eb.AddField($":crown: Leaders - {leaderRole.Members.Count()}", leaderList == "" ? "-" : leaderList, true);
+            eb.WithDescription($"Total Toasties: {totalToasties.ToString("n0")} <:toastie3:454441133876183060>\n" +
+                $"Total Waifus: {totalWaifus.ToString("n0")} :two_hearts:\n" +
+                $"Waifu Value: {totalWaifuValue.ToString("n0")} <:toastie3:454441133876183060>");
+            eb.AddField($":shield: Members - {teamUsers.Count}", memberList == "" ? "-" : memberList, true);
+            eb.AddField($":crown: Leaders - {leaderUsers.Count}", leaderList == "" ? "-" : leaderList, true);
             eb.WithColor(BasicUtil.RandomColor());
             eb.WithTitle(teamRole.Name);
             return eb;
         }
 
-        public static SocketRole GetLeader(SocketGuild guild, IUser user)
+        public static SocketRole GetLeaderRole(SocketGuild guild, IUser user)
         {
             var teams = TeamDb.Teams(guild.Id);
 
@@ -96,7 +120,7 @@ namespace Namiko
 
             return null;
         }
-        public static SocketRole GetMember(SocketGuild guild, IUser user)
+        public static SocketRole GetMemberRole(SocketGuild guild, IUser user)
         {
             var teams = TeamDb.Teams(guild.Id);
 
@@ -122,9 +146,9 @@ namespace Namiko
         }
         public static bool IsTeamed(SocketGuild guild, IUser user)
         {
-            if (GetMember(guild, user) != null)
+            if (GetMemberRole(guild, user) != null)
                 return true;
-            if (GetLeader(guild, user) != null)
+            if (GetLeaderRole(guild, user) != null)
                 return true;
             return false;
         }

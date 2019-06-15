@@ -183,8 +183,20 @@ namespace Namiko
         }
 
         [Command("BRRewardPool"), Alias("brrp"), Summary("Add toasties to the Ban Roulette reward pool from your account.\n**Usage**: `!brrp [amount]`")]
-        public async Task BRRewardPool(int amount)
+        public async Task BRRewardPool(string amountStr)
         {
+            int amount = ToastieUtil.ParseAmount(amountStr, (SocketGuildUser)Context.User);
+            if (amount < 0)
+            {
+                await Context.Channel.SendMessageAsync("Pick an amount! number, all, half, or x/y.");
+                return;
+            }
+            if (amount == 0)
+            {
+                await Context.Channel.SendMessageAsync("You have no toasties...");
+                return;
+            }
+
             var banroulette = BanrouletteDb.GetBanroulette(Context.Channel.Id);
             if (banroulette == null)
             {

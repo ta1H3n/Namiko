@@ -167,11 +167,13 @@ namespace Namiko {
                 if (user == null)
                 {
                     db.Profiles.Add(new Profile { UserId = userId, LootboxesOpened = amount });
-                    return;
+                }
+                else
+                {
+                    user.LootboxesOpened += amount;
+                    db.Profiles.Update(user);
                 }
 
-                user.LootboxesOpened += amount;
-                db.Profiles.Update(user);
                 await db.SaveChangesAsync();
             }
         }

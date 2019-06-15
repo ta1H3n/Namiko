@@ -90,6 +90,23 @@ namespace Namiko
             }
         }
 
+        [Command("ShipWaifu"), OwnerPrecondition]
+        public async Task ShipWaifu(string name, ulong userId, ulong guildId)
+        {
+            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(name), this);
+            if (waifu == null)
+                return;
+
+            if (UserInventoryDb.OwnsWaifu(userId, waifu, guildId))
+            {
+                await Context.Channel.SendMessageAsync($"They already own **{waifu.Name}**");
+                return;
+            }
+
+            await UserInventoryDb.AddWaifu(userId, waifu, guildId);
+            await Context.Channel.SendMessageAsync($"**{waifu.Name}** shipped!");
+        }
+
       //  [Command("Test"), OwnerPrecondition]
       //  public async Task Test()
       //  {

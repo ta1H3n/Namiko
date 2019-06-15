@@ -87,7 +87,7 @@ namespace Namiko {
 
                 eb.WithAuthor(wife);
                 eb.WithDescription($"**{ user.Mention }** has proposed to you.");
-                eb.WithFooter("`marry [user]` or `decline [user]`");
+                eb.WithFooter($"`{this.Prefix()}marry [user]` or `{this.Prefix()}decline [user]`");
                 await Context.Channel.SendMessageAsync($"", false, eb.Build());
                 return;
             }
@@ -344,6 +344,13 @@ namespace Namiko {
         [Command("SetFeaturedWaifu"), Alias("sfw"), Summary("Sets your waifu image on your profile.\n**Usage**: `!sfw [waifu_name]`")]
         public async Task SetFeaturedWaifu([Remainder] string str = "")
         {
+            if(str == "")
+            {
+                await FeaturedWaifuDb.Delete(Context.User.Id, Context.Guild.Id);
+                await Context.Channel.SendMessageAsync("Removed your featured waifu. Now your last bought will appear! The betrayal...");
+                return;
+            }
+
             var waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(str, false, UserInventoryDb.GetWaifus(Context.User.Id, Context.Guild.Id)), this);
             if (waifu == null)
             {

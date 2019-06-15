@@ -109,7 +109,7 @@ namespace Namiko
         public async Task Invite(IUser user = null, [Remainder] string str = "")
         {
             var channel = Context.Channel;
-            var leaderRole = RoleUtil.GetLeader(Context.Guild, Context.User);
+            var leaderRole = RoleUtil.GetLeaderRole(Context.Guild, Context.User);
 
             if (leaderRole == null)
             {
@@ -173,7 +173,7 @@ namespace Namiko
         [Command("LeaveTeam"), Alias("lt"), Summary("Leave your team.\n**Usage**: `!lt`"), CustomBotPermission(GuildPermission.ManageRoles)]
         public async Task Leave([Remainder] string str = "")
         {
-            var role = RoleUtil.GetMember(Context.Guild, Context.User);
+            var role = RoleUtil.GetMemberRole(Context.Guild, Context.User);
             if (role == null)
             {
                 await Context.Channel.SendMessageAsync("Buuut... You're not in a team.");
@@ -199,7 +199,7 @@ namespace Namiko
         [Command("TeamKick"), Alias("tk"), Summary("Kicks a user from your team.\n**Usage**: `!tk [user]`"), CustomBotPermission(GuildPermission.ManageRoles)]
         public async Task TeamKick(IUser user, [Remainder] string str = "")
         {
-            var leader = RoleUtil.GetLeader(Context.Guild, Context.User);
+            var leader = RoleUtil.GetLeaderRole(Context.Guild, Context.User);
             if (leader == null)
             {
                 await Context.Channel.SendMessageAsync("You're not a leader! Getting ahead of yourself eh?~");
@@ -207,7 +207,7 @@ namespace Namiko
             }
 
             var team = TeamDb.TeamByLeader(leader.Id);
-            var userteam = RoleUtil.GetMember(Context.Guild, user);
+            var userteam = RoleUtil.GetMemberRole(Context.Guild, user);
             var leaderteam = Context.Guild.GetRole(team.MemberRoleId);
             if (!userteam.Equals(leaderteam))
             {
@@ -222,7 +222,7 @@ namespace Namiko
             await ch.SendMessageAsync($"`{Context.User}` kicked `{user}` from **{userteam.Name}**.");
         }
 
-        [Command("NewTeam"), Alias("nt"), Summary("Creates a new team.\n**Usage**: `!nt [LeaderRoleName] [MemberRoleName]`"), CustomUserPermission(GuildPermission.ManageRoles)]
+        [Command("NewTeam"), Alias("nt"), Summary("Creates a new team.\n**Usage**: `!nt [LeaderRoleName] [MemberRoleName]`\n Note: if a role has a space in it's name it has to be put in quotes. \n For example: `!nt \"Role One\" \"Role Two\"`"), CustomUserPermission(GuildPermission.ManageRoles)]
         public async Task NewTeam(string leader, string member)
         {
             var leaderR = RoleUtil.GetRoleByName(Context.Guild, leader);
