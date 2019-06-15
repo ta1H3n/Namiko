@@ -12,5 +12,6 @@ namespace Namiko
         public static string version;
         public static string prefix;
         public const string _banner = "https://i.imgur.com/Iw3SsqS.png";
+        public const ulong _premiumLogChannel = 588417103523217408;
     }
 }

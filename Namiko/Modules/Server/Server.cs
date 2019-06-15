@@ -151,6 +151,7 @@ namespace Namiko
             var current = PremiumDb.GetGuildPremium(Context.Guild.Id);
             var roles = user.Roles;
 
+            bool log = false;
             string text = "";
             foreach (var role in roles)
             {
@@ -171,6 +172,7 @@ namespace Namiko
                                 await PremiumDb.DeletePremium(PremiumDb.GetGuildPremium(Context.Guild.Id).FirstOrDefault(x => x.Type == PremiumType.ServerT2));
                             } catch { }
                             text += "**T1 Premium** activated!\n";
+                            log = true;
                         }
                     }
                 }
@@ -189,6 +191,7 @@ namespace Namiko
                         {
                             await PremiumDb.AddPremium(user.Id, PremiumType.ServerT2, Context.Guild.Id);
                             text += "**T2 Premium** activated!\n";
+                            log = true;
                         }
                     }
                 }
@@ -197,6 +200,13 @@ namespace Namiko
                 text += $"You have no server premium... Try `{Program.GetPrefix(Context)}donate`";
 
             await Context.Channel.SendMessageAsync(text);
+            if (log)
+            {
+                await ((SocketTextChannel)Program.GetClient().GetChannel(StaticSettings._premiumLogChannel)).SendMessageAsync(embed: new EmbedBuilderPrepared(Context.User)
+                    .WithDescription($"{Context.User.Mention} `{Context.User.Id}`\n{Context.Guild.Name} `{Context.Guild.Id}`\n{text}")
+                    .WithFooter(System.DateTime.Now.ToLongDateString())
+                    .Build());
+            }
         }
     }
 }

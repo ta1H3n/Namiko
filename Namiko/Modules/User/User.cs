@@ -448,6 +448,7 @@ namespace Namiko {
             var current = PremiumDb.GetUserPremium(user.Id);
             var roles = user.Roles;
 
+            bool log = false;
             string text = "";
             foreach(var role in roles)
             {
@@ -459,6 +460,7 @@ namespace Namiko {
                     {
                         await PremiumDb.AddPremium(user.Id, PremiumType.Toastie);
                         text += "**Toastie Premium** activated!\n";
+                        log = true;
                     }
                 }
                 if (role.Id == (ulong)PremiumType.Waifu)
@@ -469,6 +471,7 @@ namespace Namiko {
                     {
                         await PremiumDb.AddPremium(user.Id, PremiumType.Waifu);
                         text += "**Waifu Premium** activated!\n";
+                        log = true;
                     }
                 }
             }
@@ -476,6 +479,13 @@ namespace Namiko {
                 text += $"You have no user premium... Try `{Program.GetPrefix(Context)}donate`";
 
             await Context.Channel.SendMessageAsync(text);
+            if(log)
+            {
+                await ((SocketTextChannel)Program.GetClient().GetChannel(StaticSettings._premiumLogChannel)).SendMessageAsync(embed: new EmbedBuilderPrepared(Context.User)
+                    .WithDescription($"{Context.User.Mention} `{Context.User.Id}`\n{text}")
+                    .WithFooter(System.DateTime.Now.ToLongDateString())
+                    .Build());
+            }
         }
     }
 }
