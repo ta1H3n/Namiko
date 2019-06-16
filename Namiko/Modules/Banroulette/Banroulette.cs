@@ -16,7 +16,6 @@ namespace Namiko
             "**Usage**: `!nbr [ban_length_in_hours] [required_role_name-optional]`\n"), CustomBotPermission(GuildPermission.BanMembers), CustomUserPermission(GuildPermission.BanMembers), RequireContext(ContextType.Guild)]
         public async Task NewBanroulette(int hours, [Remainder] string roleName = "")
         {
-            int reward = 0;
             if (hours < 0)
                 throw new IndexOutOfRangeException();
 
@@ -38,14 +37,17 @@ namespace Namiko
                 }
             }
 
-            if (!Context.User.Id.Equals(StaticSettings.owner) && reward != 0)
+            banroulette = new Banroulette
             {
-                reward = 0;
-                await Context.Channel.SendMessageAsync("Resetting toastie rewards to 0, because you are not my owner.");
-            }
-
-            banroulette = new Namiko.Banroulette { Active = true, BanLengthHours = hours, ChannelId = Context.Channel.Id, MaxParticipants = 0, MinParticipants = 0,
-            RewardPool = reward, ServerId = Context.Guild.Id, RoleReqId = (role == null ? 0 : role.Id) };
+                Active = true,
+                BanLengthHours = hours,
+                ChannelId = Context.Channel.Id,
+                MaxParticipants = 0,
+                MinParticipants = 0,
+                RewardPool = 0,
+                ServerId = Context.Guild.Id,
+                RoleReqId = role == null ? 0 : role.Id
+            };
 
             string prefix = Program.GetPrefix(Context);
             await BanrouletteDb.NewBanroulette(banroulette);

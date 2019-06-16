@@ -76,16 +76,19 @@ namespace Namiko {
 
             string name = user.Username;
 
-            var role = RoleUtil.GetMemberRole(user.Guild, user) ?? RoleUtil.GetLeaderRole(user.Guild, user);
-            var team = TeamDb.TeamByMember(role.Id) ?? TeamDb.TeamByLeader(role.Id);
-            if (team != null)
+            try
             {
-                role = user.Roles.FirstOrDefault(x => x.Id == team.LeaderRoleId);
-                if (role == null)
-                    role = user.Roles.FirstOrDefault(x => x.Id == team.MemberRoleId);
+                var role = RoleUtil.GetMemberRole(user.Guild, user) ?? RoleUtil.GetLeaderRole(user.Guild, user);
+                var team = TeamDb.TeamByMember(role.Id) ?? TeamDb.TeamByLeader(role.Id);
+                if (team != null)
+                {
+                    role = user.Roles.FirstOrDefault(x => x.Id == team.LeaderRoleId);
+                    if (role == null)
+                        role = user.Roles.FirstOrDefault(x => x.Id == team.MemberRoleId);
 
-                name += $" | {role.Name}";
-            }
+                    name += $" | {role.Name}";
+                }
+            } catch { }
 
             bool toastiePremium = PremiumDb.IsPremium(user.Id, PremiumType.Toastie);
             bool waifuPremium = PremiumDb.IsPremium(user.Id, PremiumType.Waifu);
