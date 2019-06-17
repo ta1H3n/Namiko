@@ -302,7 +302,7 @@ namespace Namiko
             await PagedReplyAsync(msg);
         }
 
-        [Command("AddWaifuWish"), Alias("ww", "aww", "WishWaifu"), Summary("Add a waifu to your wishlist to be notified when it appears in shop.\nLimited to 5.\n**Usage**: `!ww [waifu]`")]
+        [Command("Wish"), Alias("ww", "aww", "WishWaifu", "AddWaifuWish"), Summary("Add a waifu to your wishlist to be notified when it appears in shop.\nLimited to 5.\n**Usage**: `!ww [waifu]`")]
         public async Task WishWaifu([Remainder] string str = "")
         {
             var user = Context.User;
