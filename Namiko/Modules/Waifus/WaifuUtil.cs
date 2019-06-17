@@ -19,9 +19,13 @@ namespace Namiko
     {
         public static async Task<List<ShopWaifu>> GetShopWaifus(ulong guildId)
         {
-            var contents = WaifuShopDb.GetWaifuStores(guildId);
+            List<ShopWaifu> contents = null;
+            try
+            {
+                contents = WaifuShopDb.GetWaifuStores(guildId);
+            } catch { }
 
-            if (contents == null || contents[0].GeneratedDate.AddHours(12) < System.DateTime.Now)
+            if (contents == null || contents.DefaultIfEmpty() == null || contents[0].GeneratedDate.AddHours(12) < System.DateTime.Now)
             {
                 var list = await GenerateWaifuList(guildId);
                 await WaifuShopDb.NewList(list);
@@ -54,7 +58,7 @@ namespace Namiko
             var tier3 = WaifuDb.RandomWaifus(3, t3amount * pages * randomizerMultiplier);
 
             var wishlists = WaifuWishlistDb.GetAllPremiumWishlists(guildId, PremiumType.Toastie);
-            var ids = wishlists.Select(x => x.UserId).Distinct();
+            var ids = wishlists.Select(x => x.UserId).Distinct().ToArray();
             var guild = Program.GetClient().GetGuild(guildId);
             foreach(var id in ids)
             {
