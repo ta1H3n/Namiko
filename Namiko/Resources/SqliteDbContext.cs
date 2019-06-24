@@ -2,6 +2,12 @@
 using System.Threading.Tasks;
 
 using Microsoft.EntityFrameworkCore;
+using System.Reflection.Emit;
+using System;
+using System.Dynamic;
+using System.Collections.Generic;
+using System.Data.Common;
+using System.Data;
 
 namespace Namiko
 {
@@ -33,6 +39,7 @@ namespace Namiko
         public DbSet<SpecialChannel> SpecialChannels { get; set; }
         public DbSet<RedditPost> RedditPosts { get; set; }
         public DbSet<Premium> Premiums { get; set; }
+        public DbSet<Param> Params { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder Options)
         {
@@ -45,6 +52,39 @@ namespace Namiko
             using (var db = new SqliteDbContext())
             {
                 return await db.Database.ExecuteSqlCommandAsync(query);
+            }
+        }
+    }
+
+    public static class SqliteHelper
+    {
+        public static IEnumerable<dynamic> DynamicListFromSql(this DbContext db, string Sql, Dictionary<string, object> Params)
+        {
+            using (var cmd = db.Database.GetDbConnection().CreateCommand())
+            {
+                cmd.CommandText = Sql;
+                if (cmd.Connection.State != ConnectionState.Open) { cmd.Connection.Open(); }
+
+                foreach (KeyValuePair<string, object> p in Params)
+                {
+                    DbParameter dbParameter = cmd.CreateParameter();
+                    dbParameter.ParameterName = p.Key;
+                    dbParameter.Value = p.Value;
+                    cmd.Parameters.Add(dbParameter);
+                }
+
+                using (var dataReader = cmd.ExecuteReader())
+                {
+                    while (dataReader.Read())
+                    {
+                        var row = new ExpandoObject() as IDictionary<string, object>;
+                        for (var fieldCount = 0; fieldCount < dataReader.FieldCount; fieldCount++)
+                        {
+                            row.Add(dataReader.GetName(fieldCount), dataReader[fieldCount]);
+                        }
+                        yield return row;
+                    }
+                }
             }
         }
     }

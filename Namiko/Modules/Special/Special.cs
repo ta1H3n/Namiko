@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using System.Linq;
 
@@ -10,9 +9,9 @@ using Discord.Commands;
 
 
 using Discord.WebSocket;
-using Discord.Rest;
 
 using Discord.Addons.Interactive;
+using Newtonsoft.Json;
 
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 
@@ -72,6 +71,22 @@ namespace Namiko
         {
             int res = await SqliteDbContext.ExecuteSQL(str);
             await Context.Channel.SendMessageAsync($"{res} rows affected.");
+        }
+
+        [Command("SQLGET"), Summary("Executes an SQL GET query. DANGEROUS"), OwnerPrecondition]
+        public async Task SqlGet([Remainder] string str = "")
+        {
+            using (var db = new SqliteDbContext())
+            {
+                var list = db.DynamicListFromSql(str, new Dictionary<string, object>());
+
+                string text = $"Results: {list.Count()}\n";
+                text += $"```json\n{JsonConvert.SerializeObject(list, Formatting.Indented)}```";
+
+                if (text.Length > 2000)
+                    text = text.Substring(0, 1990) + "\n...```";
+                await Context.Channel.SendMessageAsync(text);
+            }
         }
 
         [Command("Die"), Summary("Kills Namiko"), HomePrecondition]

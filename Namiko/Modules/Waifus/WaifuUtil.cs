@@ -50,7 +50,7 @@ namespace Namiko
                 pages = 2;
             if (PremiumDb.IsPremium(guildId, PremiumType.ServerT1))
                 pages = 3;
-            int randomizerMultiplier = 6 - pages;
+            int randomizerMultiplier = 7 - pages;
 
             var tier0 = WaifuDb.GetWaifusByTier(0);
             var tier1 = WaifuDb.RandomWaifus(1, (limitedamount + t1amount) * pages * randomizerMultiplier);

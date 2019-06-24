@@ -26,10 +26,10 @@ namespace Namiko
             text = text.Split(' ')[0];
             text = text.ToLower();
 
-            var image = ImageDb.GetRandomImage(text);
+            var image = ImageDb.GetRandomImage(text, Context.Guild.Id);
             if (image == null || ImageUtil.IsAMFWT(Context.Guild.Id, image.Name))
             {
-                image = ImageDb.GetRandomImage(text, Context.Guild.Id);
+                image = ImageDb.GetRandomImage(text);
                 if(image == null)
                     return false;
             }
@@ -112,10 +112,9 @@ namespace Namiko
                     return;
                 }
 
-                if (ImageDb.AlbumExists(name))
+                if (ImageDb.GetImages(name, 0).Any())
                 {
-                    await Context.Channel.SendMessageAsync($"There is already a default image command called **{name}**.");
-                    return;
+                    await Context.Channel.SendMessageAsync($"There is already a default image command called **{name}**. It will be replaced with your custom one.");
                 }
             }
 

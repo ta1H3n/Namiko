@@ -49,6 +49,12 @@ namespace Namiko
                 .Build());
         }
 
+        [Command("Burn")]
+        public async Task Burn([Remainder] string str = "")
+        {
+            await Context.Channel.SendMessageAsync(ToastieUtil.GetFalseBegMessage());
+        }
+
         [Command("JoinMessageTest"), OwnerPrecondition]
         public async Task JoinMessageTest([Remainder] string str = "")
         {

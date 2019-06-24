@@ -51,6 +51,7 @@ namespace Namiko
             Minute5.Elapsed += Timer_Unban;
             Minute5.Elapsed += Timer_DailyStats;
             Minute5.Elapsed += Timer_RedditPost;
+            Minute5.Elapsed += Timer_RemindVote;
 
             Hour.Elapsed += Timer_BackupData;
             Hour.Elapsed += Timer_CleanData;
@@ -357,6 +358,7 @@ namespace Namiko
 
         // DISCORBBOTLIST
         private static bool VoteLock = false;
+        private static bool ReminderLock = false;
         public static void Timer_UpdateDBLGuildCount(object sender, ElapsedEventArgs e)
         {
             int amount = 0;
@@ -436,14 +438,56 @@ namespace Namiko
                     var type = LootBoxType.Vote;
                     if (PremiumDb.IsPremium(x, PremiumType.Toastie))
                         type = LootBoxType.Premium;
-
-                    Console.WriteLine($"Giving a box to {x}");
+                    
+                    var user = Program.GetClient().GetUser(x);
+                    var ch = await user.GetOrCreateDMChannelAsync();
                     await LootBoxDb.AddLootbox(x, type, 1);
-                    var ch = await Program.GetClient().GetUser(x).GetOrCreateDMChannelAsync();
-                    await ch.SendMessageAsync($"Thanks for voting for me! I gave you a **{type.ToString()} Lootbox**!\n You can open it in a server of your choice by typing `!open`");
-                    Console.WriteLine($"Success.");
+                    await ch.SendMessageAsync(embed: new EmbedBuilderPrepared(user)
+                         .WithDescription($"Thank you for voting for me! I have given you a **{type.ToString()} Lootbox**! :star:\n" +
+                         $"You can open it in a server of your choice by typing `!open`")
+                         .Build());
                 }
                 catch { }
+            }
+        }
+        public static async Task SendReminders(List<ulong> voters)
+        {
+            foreach (var x in voters)
+            {
+                try
+                {
+                    var user = Program.GetClient().GetUser(x);
+                    var ch = await user.GetOrCreateDMChannelAsync();
+                    await ch.SendMessageAsync(embed: new EmbedBuilderPrepared(user)
+                        .WithDescription("You can now vote for me again and receive another lootbox! [Discord Bots](https://discordbots.org/bot/418823684459855882/vote)")
+                        .Build());
+                }
+                catch { }
+            }
+        }
+        public static async void Timer_RemindVote(object sender, ElapsedEventArgs e) 
+        {
+            if (ReminderLock)
+                return;
+
+            try
+            {
+                ReminderLock = true;
+                var paramL = ParamDb.GetParam(0, "VoteReminder");
+                var param = paramL?.FirstOrDefault() ?? new Param { Name = "VoteReminder", Date = System.DateTime.Now };
+
+                var dateTo = System.DateTime.Now;
+                dateTo = dateTo.AddHours(-12);
+                var votes = VoteDb.GetVoters(param.Date, dateTo);
+
+                param.Date = dateTo;
+                await ParamDb.UpdateParam(param);
+                await SendReminders(votes.Select(x => x.UserId).ToList());
+            }
+            catch { }
+            finally
+            {
+                ReminderLock = false;
             }
         }
 

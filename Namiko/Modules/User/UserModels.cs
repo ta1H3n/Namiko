@@ -32,6 +32,7 @@ namespace Namiko
         [Key]
         public int Id { get; set; }
         public ulong UserId { get; set; }
+        public DateTime Date { get; set; }
     }
 
     public class Premium

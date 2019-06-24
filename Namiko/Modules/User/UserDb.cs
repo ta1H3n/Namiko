@@ -288,9 +288,10 @@ namespace Namiko {
 
         public static async Task AddVoters(IEnumerable<ulong> voters)
         {
+            var date = System.DateTime.Now;
             foreach(var x in voters)
             {
-                await AddVoter(new Voter { UserId = x });
+                await AddVoter(new Voter { UserId = x, Date = date });
             }
         }
 
@@ -321,6 +322,13 @@ namespace Namiko {
             using (var db = new SqliteDbContext())
             {
                 return db.Voters.Skip(db.Voters.Count() - amount).Take(amount).ToList();
+            }
+        }
+        public static List<Voter> GetVoters(DateTime dateFrom, DateTime dateTo)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                return db.Voters.Where(x => x.Date > dateFrom && x.Date < dateTo).ToList();
             }
         }
     }
