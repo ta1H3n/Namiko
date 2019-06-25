@@ -491,7 +491,7 @@ namespace Namiko
             text += "```";
             return text;
         }
-        public static EmbedBuilder FoundWaifusEmbedBuilder(IEnumerable<IGrouping<string, Waifu>> waifus, string avatarUrl = null)
+        public static EmbedBuilder FoundWaifusEmbedBuilder(IEnumerable<IGrouping<string, Waifu>> waifus, SocketGuildUser user = null)
         {
             var eb = new EmbedBuilderPrepared();
 
@@ -516,13 +516,19 @@ namespace Namiko
                     string list = "";
                     foreach (var waifu in x)
                     {
-                        list += $"`#{i++}` **{waifu.Name}** - *{BasicUtil.ShortenString(waifu.LongName, 28, 27, "-")}*\n";
+                        list += $"`#{i++}` ";
+                        try
+                        {
+                            if (user != null && UserInventoryDb.OwnsWaifu(user.Id, waifu, user.Guild.Id))
+                                list += "✓ ";
+                        } catch { }
+                        list += $"**{waifu.Name}** - *{BasicUtil.ShortenString(waifu.LongName, 28, 27, "-")}*\n";
                     }
                     eb.AddField(x.Key, list);
                 }
             }
 
-            eb.WithAuthor("Waifus Found", avatarUrl, BasicUtil._patreon);
+            eb.WithAuthor("Waifus Found", user?.GetAvatarUrl(), BasicUtil._patreon);
             eb.WithDescription("Enter the number of the waifu you wish to select.");
             eb.WithFooter("Times out in 23 seconds.");
             return eb;
@@ -618,7 +624,7 @@ namespace Namiko
                     RestUserMessage msg = null;
                     try
                     {
-                        msg = await interactive.Context.Channel.SendMessageAsync(embed: FoundWaifusEmbedBuilder(grouped, interactive?.Context.User.GetAvatarUrl()).Build());
+                        msg = await interactive.Context.Channel.SendMessageAsync(embed: FoundWaifusEmbedBuilder(grouped, (SocketGuildUser)interactive?.Context.User).Build());
                     } catch
                     {
                         _ = interactive.Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared()

@@ -35,20 +35,20 @@ namespace Namiko
             eb.AddField("Toasties <:toastie3:454441133876183060>", field);
 
             field = "";
-            field += $"Total waifus: **{waifus.Count}**\n";
+            field += $"Total waifus: **{waifus.Count.ToString("n0")}**\n";
             field += $"Total waifu value: **{waifus.Sum(x => Convert.ToInt64(WaifuUtil.GetPrice(x.Waifu.Tier, 0))).ToString("n0")}**\n";
             var groupedwaifus = waifus.GroupBy(x => x.UserId).OrderByDescending(x => x.Count());
             var most = groupedwaifus.FirstOrDefault();
             user = guild.GetUser(most.Key);
             if (most != null && user != null)
             {
-                field += $"Most waifus: {user.Mention} - **{most.Count()}**\n";
+                field += $"Most waifus: {user.Mention} - **{most.Count().ToString("n0")}**\n";
             }
             most = groupedwaifus.OrderByDescending(x => x.Sum(y => WaifuUtil.GetPrice(y.Waifu.Tier, 0))).FirstOrDefault();
             user = guild.GetUser(most.Key);
             if (most != null && user != null)
             {
-                field += $"Highest value: {user.Mention} - **{most.Sum(y => WaifuUtil.GetPrice(y.Waifu.Tier, 0))}**\n";
+                field += $"Highest value: {user.Mention} - **{most.Sum(y => WaifuUtil.GetPrice(y.Waifu.Tier, 0)).ToString("n0")}**\n";
             }
             eb.AddField("Waifus :two_hearts:", field);
 

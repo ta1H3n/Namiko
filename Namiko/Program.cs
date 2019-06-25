@@ -326,6 +326,7 @@ namespace Namiko
             int res = 0;
             if (Launch)
             {
+                Launch = false;
                 Ready();
                 _ = Client.SetActivityAsync(new Game("Chinese Cartoons. Try @Namiko help", ActivityType.Watching));
                 res = await CheckLeftGuilds();
@@ -334,7 +335,6 @@ namespace Namiko
                     Console.WriteLine($"{DateTime.Now} - Left {res} Guilds.");
                     _ = ch.SendMessageAsync($"`{DateTime.Now} - Left {res} Guilds.`");
                 }
-                Launch = false;
             }
             
             res = await CheckJoinedGuilds(arg);
@@ -429,6 +429,7 @@ namespace Namiko
         }
         private static async Task<int> CheckLeftGuilds()
         {
+            await Task.Delay(10000);
             var guilds = Client.Guilds;
             HashSet<ulong> existingIds = new HashSet<ulong>(guilds.Select(x => x.Id));
 

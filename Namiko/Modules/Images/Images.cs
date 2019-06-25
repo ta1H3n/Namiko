@@ -137,7 +137,7 @@ namespace Namiko
             else albumId = ImageDb.GetAlbum(albumName).AlbumId;
 
             var iImage = await ImgurAPI.UploadImageAsync(url, albumId);
-            await ImageDb.AddImage(name.ToLower(), iImage.Link);
+            await ImageDb.AddImage(name.ToLower(), iImage.Link, insider ? 0 : Context.Guild.Id);
 
             //Test
             var image = ImageDb.GetLastImage();
