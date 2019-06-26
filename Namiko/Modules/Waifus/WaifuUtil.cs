@@ -364,6 +364,15 @@ namespace Namiko
             //if (num < 10) return worth + worth / (num * 4);
             return worth;
         }
+        public static int FavoritesToTier(int fav)
+        {
+            int tier = 404;
+            tier = fav > 7000 ? 1 :
+                fav > 800 ? 2 :
+                3;
+
+            return tier;
+        }
 
         public static EmbedBuilder WaifuEmbedBuilder(Waifu waifu, bool guildDetails = false, SocketCommandContext context = null)
         {
@@ -579,7 +588,6 @@ namespace Namiko
                          .GroupBy(i => i.Group, g => g.Item)
                          .ToList();
         }
-
         public static EmbedBuilder WishlistEmbed(IEnumerable<Waifu> waifus, SocketGuildUser user)
         {
             var eb = new EmbedBuilder();
@@ -609,6 +617,7 @@ namespace Namiko
             eb.WithColor(UserDb.GetHex(out string colour, user.Id) ? (Discord.Color)UserUtil.HexToColor(colour) : BasicUtil.RandomColor());
             return eb;
         }
+
 
         public static async Task<Waifu> ProcessWaifuListAndRespond(List<Waifu> waifus, InteractiveBase<ShardedCommandContext> interactive = null)
         {

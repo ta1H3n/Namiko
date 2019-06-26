@@ -581,6 +581,61 @@ namespace Namiko
             await Context.Channel.SendMessageAsync($"Autocompleted **{waifu.Name}**. Has **{mal.MemberFavorites}** favorites.", false, WaifuUtil.WaifuEmbedBuilder(waifu, true, Context).Build());
         }
 
+        [Command("NewWaifuAutocomplete"), Alias("nwac"), Summary("Creates a new waifu and auto completes using MAL.\n**Usage**: `!acw [name] [MAL_ID] [image_url_optional]`"), HomePrecondition]
+        public async Task NewWaifuAutocomplete(string name, long malId, string url = null)
+        {
+            await Context.Channel.TriggerTypingAsync();
+
+            url = url ?? Context.Message.Attachments.FirstOrDefault()?.Url;
+
+            if (url != null)
+            {
+                url = url.EndsWith(".gifv") ? url.Replace(".gifv", ".gif") : url;
+                url = url.EndsWith(".mp4") ? url.Replace(".mp4", ".gif") : url;
+
+                string albumId = null;
+                if (!ImageDb.AlbumExists("Waifus"))
+                {
+                    albumId = (await ImgurAPI.CreateAlbumAsync("Waifus")).Id;
+                    await ImageDb.CreateAlbum("Waifus", albumId);
+                }
+                else albumId = ImageDb.GetAlbum("Waifus").AlbumId;
+
+                var iImage = await ImgurAPI.UploadImageAsync(url, albumId, null, name);
+                url = iImage.Link;
+            }
+
+            var waifu = new Waifu { Name = name, Tier = 404, ImageUrl = url, Description = null, LongName = null, TimesBought = 0 };
+
+            var mal = await WebUtil.GetWaifu(malId);
+            waifu.LongName = $"{mal.Name} ({mal.NameKanji})";
+            var about = mal.About;
+            var lines = about.Split('\n');
+            string desc = "";
+            foreach (var line in lines)
+            {
+                if (line.Split(' ')[0].EndsWith(':'))
+                    continue;
+                if (line.StartsWith('('))
+                    continue;
+
+                desc += line + '\n' + '\n';
+            }
+            waifu.Description = desc;
+            waifu.Source = mal.Animeography.FirstOrDefault() == null ? "" : mal.Animeography.FirstOrDefault().Name;
+            try
+            {
+                waifu.Tier = WaifuUtil.FavoritesToTier(mal.MemberFavorites.Value);
+            } catch { }
+
+            if (await WaifuDb.AddWaifu(waifu) > 0)
+            {
+                await Context.Channel.SendMessageAsync($"Autocompleted **{waifu.Name}**. Has **{mal.MemberFavorites}** favorites.",
+                    false,
+                    WaifuUtil.WaifuEmbedBuilder(waifu, true, Context).Build());
+            }
+        }
+
         [Command("ResetWaifuShop"), Alias("rws"), Summary("Resets the waifu shop contents."), HomePrecondition]
         public async Task ResetWaifuShop()
         {
