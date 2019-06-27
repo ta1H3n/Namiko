@@ -515,7 +515,14 @@ namespace Namiko
                         string list = "";
                         foreach (var waifu in y)
                         {
-                            list += $"`#{i++}` **{waifu.Name}** - *{BasicUtil.ShortenString(waifu.LongName, 28, 27, "-")}*\n";
+                            list += $"`#{i++}` ";
+                            try
+                            {
+                                if (user != null && UserInventoryDb.OwnsWaifu(user.Id, waifu, user.Guild.Id))
+                                    list += "✓ ";
+                            }
+                            catch { }
+                            list += $"**{waifu.Name}** - *{BasicUtil.ShortenString(waifu.LongName, 28, 27, "-")}*\n";
                         }
                         eb.AddField(x.Key + "#" + (y.Key+1), list);
                     }
