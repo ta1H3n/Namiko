@@ -35,7 +35,7 @@ namespace Namiko
         private static CancellationToken ct = cts.Token;
         private static bool Launch = true;
         public static bool Debug = false;
-        public const int _shardAmount = 3;
+        private static int ShardCount;
 
         static void Main(string[] args)
         => new Program().MainAsync().GetAwaiter().GetResult();
@@ -45,8 +45,7 @@ namespace Namiko
             //SetUpRelease();
 
             Client = new DiscordShardedClient(new DiscordSocketConfig {
-                LogLevel = LogSeverity.Info,
-                TotalShards = _shardAmount
+                LogLevel = LogSeverity.Info
             });
             
             Commands = new CommandService(new CommandServiceConfig
@@ -77,6 +76,8 @@ namespace Namiko
             
             await Client.LoginAsync(TokenType.Bot, ParseSettingsJson());
             await Client.StartAsync();
+
+            ShardCount = Client.Shards.Count;
 
             Services = new ServiceCollection()
                 .AddSingleton(Client)
@@ -328,7 +329,7 @@ namespace Namiko
             Console.WriteLine($"{DateTime.Now} - Shard {arg.ShardId} Ready");
             _ = ch.SendMessageAsync($"`{DateTime.Now} - Shard {arg.ShardId} Ready`");
             int res = 0;
-            if (Launch && ReadyCount >= _shardAmount)
+            if (Launch && ReadyCount >= ShardCount)
             {
                 Launch = false;
                 Ready();
