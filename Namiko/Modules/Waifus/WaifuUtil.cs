@@ -393,7 +393,11 @@ namespace Namiko
                 desc += waifu.Description;
             }
             if (desc != "")
+            {
+                if (desc.Length > 2000)
+                    desc = desc.Substring(0, 1995) + "...";
                 eb.WithDescription(desc);
+            }
 
             if (waifu.ImageUrl != null)
                 eb.WithImageUrl(waifu.ImageUrl);
