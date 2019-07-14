@@ -439,9 +439,9 @@ namespace Namiko
                     if (PremiumDb.IsPremium(x, PremiumType.Toastie))
                         type = LootBoxType.Premium;
                     
+                    await LootBoxDb.AddLootbox(x, type, 1);
                     var user = Program.GetClient().GetUser(x);
                     var ch = await user.GetOrCreateDMChannelAsync();
-                    await LootBoxDb.AddLootbox(x, type, 1);
                     await ch.SendMessageAsync(embed: new EmbedBuilderPrepared(user)
                          .WithDescription($"Thank you for voting for me! I have given you a **{type.ToString()} Lootbox**! :star:\n" +
                          $"You can open it in a server of your choice by typing `!open`")

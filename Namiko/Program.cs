@@ -38,7 +38,17 @@ namespace Namiko
         private static int ShardCount;
 
         static void Main(string[] args)
-        => new Program().MainAsync().GetAwaiter().GetResult();
+        {
+            using (Mutex mutex = new Mutex(true, "NamikoBot", out bool createdNew))
+            {
+                if (!createdNew)
+                {
+                    Console.WriteLine("Instance Already Running!");
+                    return;
+                }
+                new Program().MainAsync().GetAwaiter().GetResult();
+            }
+        }
         private async Task MainAsync()
         {
             SetUpDebug();
