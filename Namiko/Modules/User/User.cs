@@ -433,6 +433,21 @@ namespace Namiko {
             await Context.Channel.SendMessageAsync("", false, embed.Build());
         }
 
+        [Command("Avatar"), Alias("pfp"), Summary("View a users profile picture.\n**Usage**: `!pfp [user]`")]
+        public async Task Avatar(IUser user = null)
+        {
+            if (user == null)
+            {
+                user = Context.User;
+            }
+
+            await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared(Context.User)
+                .WithImageUrl(user.GetAvatarUrl())
+                .WithTitle($"{user.Username}'s Profile Picture")
+                .WithDescription($"[Direct Link]({user.GetAvatarUrl()})")
+                .Build());
+        }
+
         [Command("ActivatePremium"), Alias("ap"), Summary("Activates premium subscriptions associated with this account.\n**Usage**: `!ap`")]
         public async Task ActivatePremium([Remainder] string GuildId = "0")
         {

@@ -410,7 +410,7 @@ namespace Namiko
                 await Context.Channel.SendMessageAsync($"Failed to add {name}");
         }
 
-        [Command("DeleteWaifu"), Alias("dw"), Summary("Removes a waifu from the database.\n**Usage**: `!dw [name]`"), HomePrecondition]
+        [Command("DeleteWaifu"), Alias("dw"), Summary("Removes a waifu from the database.\n**Usage**: `!dw [name]`"), OwnerPrecondition]
         public async Task DeleteWaifu(string name)
         {
             if (await WaifuDb.DeleteWaifu(name) > 0)

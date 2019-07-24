@@ -39,7 +39,7 @@ namespace Namiko
 
         static void Main(string[] args)
         {
-            using (Mutex mutex = new Mutex(true, "NamikoBot", out bool createdNew))
+            using (Mutex mutex = new Mutex(true, "Global-NamikoBot", out bool createdNew))
             {
                 if (!createdNew)
                 {
