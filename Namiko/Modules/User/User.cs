@@ -440,11 +440,10 @@ namespace Namiko {
             {
                 user = Context.User;
             }
-
-            await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared(Context.User)
-                .WithImageUrl(user.GetAvatarUrl())
-                .WithTitle($"{user.Username}'s Profile Picture")
-                .WithDescription($"[Direct Link]({user.GetAvatarUrl()})")
+            string avatar = user.GetAvatarUrl(ImageFormat.Auto, 2048);
+            await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared(user)
+                .WithAuthor(user.Username + "'s Profile Picture", avatar, avatar)
+                .WithImageUrl(avatar)
                 .Build());
         }
 
