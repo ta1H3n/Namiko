@@ -47,5 +47,12 @@ namespace Namiko {
         public const int shopt1amount = 2;
         public const int shopt2amount = 7;
         public const int shopt3amount = 6;
+
+        //gachashop
+        public const int gachatotal = 4;
+        public const int gachalimitedamount = 0;
+        public const int gachat1amount = 1;
+        public const int gachat2amount = 2;
+        public const int gachat3amount = 3;
     }
 }

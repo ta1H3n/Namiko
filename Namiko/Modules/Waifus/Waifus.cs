@@ -20,9 +20,10 @@ namespace Namiko
         [Command("WaifuShop"), Alias("ws"), Summary("Opens the waifu shop.")]
         public async Task WaifuShop([Remainder] string str = "")
         {
-            List<ShopWaifu> waifus = await WaifuUtil.GetShopWaifus(Context.Guild.Id);
+            WaifuShop shop = await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Waifu);
             int count = Constants.shoplimitedamount + Constants.shopt1amount + Constants.shopt2amount + Constants.shopt3amount;
             string prefix = Program.GetPrefix(Context);
+            var waifus = shop.ShopWaifus;
 
             if (waifus.Count <= count)
             {
@@ -34,10 +35,21 @@ namespace Namiko
             await PagedReplyAsync(WaifuUtil.PaginatedShopMessage(waifus, count, prefix));
         }
 
+        [Command("GachaShop"), Alias("gs"), Summary("Opens the gacha shop.")]
+        public async Task GachaShop([Remainder] string str = "")
+        {
+            WaifuShop shop = await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Gacha);
+            string prefix = Program.GetPrefix(Context);
+            var waifus = shop.ShopWaifus;
+
+            var eb = WaifuUtil.NewShopEmbed(waifus, prefix, ShopType.Gacha);
+            await Context.Channel.SendMessageAsync("", false, eb.Build());
+        }
+
         [Command("WaifuShopSlides"), Alias("wss"), Summary("Opens the waifu shop slides.")]
         public async Task WaifuShopSlides([Remainder] string str = "")
         {
-            List<ShopWaifu> waifus = await WaifuUtil.GetShopWaifus(Context.Guild.Id);
+            List<ShopWaifu> waifus = (await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Waifu)).ShopWaifus;
             waifus.RemoveAt(0);
 
             var lockObj = new Object();
@@ -70,7 +82,10 @@ namespace Namiko
         [Command("BuyWaifu"), Alias("bw"), Summary("Buys a waifu, must be in a shop.\n**Usage**: `!bw [name]`")]
         public async Task BuyWaifu([Remainder] string str = "")
         {
-            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(str, false, WaifuShopDb.GetWaifuStores(Context.Guild.Id).Select(x => x.Waifu)), this);
+            var shopwaifus = (await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Waifu)).ShopWaifus;
+            shopwaifus.AddRange((await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Gacha)).ShopWaifus);
+
+            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(str, false, shopwaifus.Select(x => x.Waifu)), this);
 
             if (waifu == null)
             {
@@ -82,7 +97,6 @@ namespace Namiko
                 await Context.Channel.SendMessageAsync("You already have **" + waifu.Name + "**.");
                 return;
             }
-            var shopwaifus = WaifuShopDb.GetWaifuStores(Context.Guild.Id);
             ShopWaifu shopWaifu = null;
             foreach (var x in shopwaifus)
             {
@@ -113,7 +127,7 @@ namespace Namiko
             {
                 shopWaifu.BoughtBy = Context.User.Id;
                 shopWaifu.Limited -= 1;
-                await WaifuShopDb.UpdateWaifu(shopWaifu);
+                await WaifuShopDb.UpdateShopWaifu(shopWaifu);
             }
 
             await UserInventoryDb.AddWaifu(Context.User.Id, waifu, Context.Guild.Id);
@@ -402,7 +416,7 @@ namespace Namiko
                 url = iImage.Link;
             }
 
-            var waifu = new Waifu { Name = name, Tier = tier, ImageUrl = url, Description = null, LongName = null, TimesBought = 0 };
+            var waifu = new Waifu { Name = name, Tier = tier, ImageUrl = url, Description = null, LongName = null};
 
             if (await WaifuDb.AddWaifu(waifu) > 0)
                 await Context.Channel.SendMessageAsync($"{name} added.");
@@ -605,7 +619,7 @@ namespace Namiko
                 url = iImage.Link;
             }
 
-            var waifu = new Waifu { Name = name, Tier = 404, ImageUrl = url, Description = null, LongName = null, TimesBought = 0 };
+            var waifu = new Waifu { Name = name, Tier = 404, ImageUrl = url, Description = null, LongName = null};
 
             var mal = await WebUtil.GetWaifu(malId);
             waifu.LongName = $"{mal.Name} ({mal.NameKanji})";
@@ -639,8 +653,9 @@ namespace Namiko
         [Command("ResetWaifuShop"), Alias("rws"), Summary("Resets the waifu shop contents."), HomePrecondition]
         public async Task ResetWaifuShop()
         {
-            await WaifuShopDb.NewList(await WaifuUtil.GenerateWaifuList(Context.Guild.Id));
-            await Context.Channel.SendMessageAsync("Done.");
+            await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Waifu, true);
+            await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Gacha, true);
+            await Context.Channel.SendMessageAsync("Waifu Shop and Gacha Shop reset.");
         }
     }
 }

@@ -35,6 +35,8 @@
     <Compile Remove="Migrations\20190314005823_voters.cs" />
     <Compile Remove="Migrations\20190506180532_reddit.cs" />
     <Compile Remove="Migrations\20190509135536_reddit.cs" />
+    <Compile Remove="Migrations\20190814144614_gachashop.cs" />
+    <Compile Remove="Migrations\20190814144614_gachashop.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -42,17 +44,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Booru.Net" Version="1.0.0.3" />
-    <PackageReference Include="Discord.Net" Version="2.0.1" />
+    <PackageReference Include="Booru.Net" Version="1.0.0.4" />
+    <PackageReference Include="Discord.Net" Version="2.1.1" />
     <PackageReference Include="DiscordBotsList.Api.Adapter.Discord.Net" Version="1.1.0" />
     <PackageReference Include="Imgur.API" Version="4.0.1" />
     <PackageReference Include="IqdbApi" Version="1.4.0" />
     <PackageReference Include="JikanDotNet" Version="1.2.5" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.2.4" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.2.4" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="2.2.4" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.2.4" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.2.4">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.2.6" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.2.6" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="2.2.6" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.2.6" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.2.6">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>

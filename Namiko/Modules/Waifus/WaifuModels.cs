@@ -13,9 +13,7 @@ namespace Namiko
         public string Description { get; set; }
         public string Source { get; set; }
         public int Tier { get; set; }
-        public int TimesBought { get; set; }
         public string ImageUrl { get; set; }
-        public ulong AddedByUserId { get; set; }
     }
 
     public class UserInventory
@@ -28,12 +26,21 @@ namespace Namiko
         public DateTime DateBought { get; set; }
     }
 
-    public class ShopWaifu
+    public class WaifuShop
     {
         [Key]
         public int Id { get; set; }
         public ulong GuildId { get; set; }
         public DateTime GeneratedDate { get; set; }
+        public ShopType Type { get; set; }
+        public List<ShopWaifu> ShopWaifus { get; set; }
+    }
+
+    public class ShopWaifu
+    {
+        [Key]
+        public int Id { get; set; }
+        public WaifuShop WaifuShop { get; set; }
         public Waifu Waifu { get; set; }
         public int Discount { get; set; }
         public int Limited { get; set; }

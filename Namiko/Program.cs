@@ -3,20 +3,13 @@ using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Linq;
-
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-
-
-using Newtonsoft.Json;
-
-using Namiko.Data;
-using System.Timers;
-
-
-using Microsoft.Extensions.DependencyInjection;
 using Discord.Addons.Interactive;
+using Newtonsoft.Json;
+using Namiko.Data;
+using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
 using System.Threading;
 

@@ -22,7 +22,6 @@ namespace Namiko
         public DbSet<Invite> Invites { get; set; }
         public DbSet<Waifu> Waifus { get; set; }
         public DbSet<UserInventory> UserInventories { get; set; }
-        public DbSet<ShopWaifu> WaifuStores { get; set; }
         public DbSet<FeaturedWaifu> FeaturedWaifus { get; set; }
         public DbSet<Banroulette> Banroulettes { get; set; }
         public DbSet<BanrouletteParticipant> BanrouletteParticipants { get; set; }
@@ -40,6 +39,8 @@ namespace Namiko
         public DbSet<RedditPost> RedditPosts { get; set; }
         public DbSet<Premium> Premiums { get; set; }
         public DbSet<Param> Params { get; set; }
+        public DbSet<ShopWaifu> ShopWaifus { get; set; }
+        public DbSet<WaifuShop> WaifuShops { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder Options)
         {

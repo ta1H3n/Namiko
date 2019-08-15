@@ -97,11 +97,15 @@ namespace Namiko
                 return DbContext.Waifus.Where(x => x.Tier == tier).ToList();
             }
         }
-        public static List<Waifu> RandomWaifus(int tier, int amount)
+        public static List<Waifu> RandomWaifus(int tier, int amount, List<string> includeSource = null, List<string> excludeSource = null)
         {
             using (var db = new SqliteDbContext())
             {
-                return db.Waifus.Where(x => x.Tier == tier).OrderBy(r => Guid.NewGuid()).Take(amount).ToList();
+                return db.Waifus.Where(x => x.Tier == tier && 
+                (includeSource == null || includeSource.Contains(x.Source)) && 
+                (excludeSource == null || !excludeSource.Contains(x.Source)))
+                    .OrderBy(r => Guid.NewGuid())
+                    .Take(amount).ToList();
             }
         }
         public static async Task<int> RenameWaifu(string oldName, string newName)
@@ -110,7 +114,7 @@ namespace Namiko
             {
                 var inv = db.UserInventories.Where(x => x.Waifu.Name == oldName);
                 var wish = db.WaifuWishlist.Where(x => x.Waifu.Name == oldName);
-                var store = db.WaifuStores.Where(x => x.Waifu.Name == oldName);
+                var store = db.ShopWaifus.Where(x => x.Waifu.Name == oldName);
                 var feat = db.FeaturedWaifus.Where(x => x.Waifu.Name == oldName);
                 var actual = db.Waifus.Where(x => x.Name == oldName);
                 
@@ -122,7 +126,7 @@ namespace Namiko
 
                 db.UserInventories.RemoveRange(inv);
                 db.WaifuWishlist.RemoveRange(wish);
-                db.WaifuStores.RemoveRange(store);
+                db.ShopWaifus.RemoveRange(store);
                 db.FeaturedWaifus.RemoveRange(feat);
                 db.Waifus.RemoveRange(actual);
                 
@@ -145,7 +149,7 @@ namespace Namiko
 
                 db.UserInventories.AddRange(invL);
                 db.WaifuWishlist.AddRange(wishL);
-                db.WaifuStores.AddRange(storeL);
+                db.ShopWaifus.AddRange(storeL);
                 db.FeaturedWaifus.AddRange(featL);
 
                 return res + await db.SaveChangesAsync();
@@ -241,13 +245,6 @@ namespace Namiko
                 return items;
             }
         }
-        public static long TotalToasties(ulong guildId)
-        {
-            using (var db = new SqliteDbContext())
-            {
-                return db.WaifuStores.Where(x => x.GuildId == guildId).Sum(x => Convert.ToInt64(Namiko.WaifuUtil.GetPrice(x.Waifu.Tier, 0)));
-            }
-        }
         public static bool OwnsWaifu(ulong userId, Waifu waifu, ulong guildId)
         {
             using (var db = new SqliteDbContext())
@@ -260,54 +257,53 @@ namespace Namiko
     
     public class WaifuShopDb
     {
-        public static async Task AddWaifu(ShopWaifu shopWaifu)
+        public static async Task AddItem(ShopWaifu waifu)
         {
-            using(var dbContext = new SqliteDbContext())
+            using (var db = new SqliteDbContext())
             {
-                dbContext.Update(shopWaifu);
-                await dbContext.SaveChangesAsync();
+                db.ShopWaifus.Add(waifu);
+                await db.SaveChangesAsync();
             }
         }
-        public static async Task NewList(IEnumerable<ShopWaifu> waifuStores)
+        public static async Task AddShop(WaifuShop shop)
         {
-            using (var dbContext = new SqliteDbContext())
+            using (var db = new SqliteDbContext())
             {
-                if(waifuStores.Any())
+                var old = db.WaifuShops.Where(x => x.GuildId == shop.GuildId && x.Type == shop.Type).Include(x => x.ShopWaifus).ToList();
+                db.WaifuShops.RemoveRange(old);
+                foreach(var oldshop in old)
                 {
-                    var oldShop = dbContext.WaifuStores.Where(x => x.GuildId == waifuStores.First().GuildId);
-                    dbContext.WaifuStores.RemoveRange(oldShop);
-                    await dbContext.SaveChangesAsync();
-                    foreach(var x in waifuStores)
-                    {
-                        await AddWaifu(x);
-                    }
+                    db.ShopWaifus.RemoveRange(oldshop.ShopWaifus);
+                }
+
+                var items = shop.ShopWaifus;
+
+                shop.ShopWaifus = null;
+                var smh = db.WaifuShops.Add(shop);
+
+
+                await db.SaveChangesAsync();
+
+                foreach (var item in items)
+                {
+                    item.WaifuShop = shop;
+                    await UpdateShopWaifu(item);
                 }
             }
         }
-        public static ShopWaifu GetLastWaifuStore(ulong guildId)
+        public static WaifuShop GetWaifuShop(ulong guildId, ShopType type)
         {
-            using (var dbContext = new SqliteDbContext())
+            using (var db = new SqliteDbContext())
             {
-                return dbContext.WaifuStores.Include(x => x.Waifu).LastOrDefault(x => x.GuildId == guildId);
+                var shop = db.WaifuShops.Include(x => x.ShopWaifus).ThenInclude(x => x.Waifu).LastOrDefault(x => x.GuildId == guildId && x.Type == type);
+                return shop;
             }
         }
-        public static List<ShopWaifu> GetWaifuStores(ulong guildId)
+        public static async Task UpdateShopWaifu(ShopWaifu shopWaifu)
         {
             using (var dbContext = new SqliteDbContext())
             {
-                var waifu = dbContext.WaifuStores.LastOrDefault(x => x.GuildId == guildId);
-                if (waifu == null)
-                    return null;
-
-                var stores = dbContext.WaifuStores.Include(x => x.Waifu).Where(x => x.GeneratedDate.Equals(waifu.GeneratedDate) && x.GuildId == guildId).OrderBy(x => x.Id).ToList();
-                return stores;
-            }
-        }
-        public static async Task UpdateWaifu(ShopWaifu shopWaifu)
-        {
-            using (var dbContext = new SqliteDbContext())
-            {
-                dbContext.WaifuStores.Update(shopWaifu);
+                dbContext.ShopWaifus.Update(shopWaifu);
                 await dbContext.SaveChangesAsync();
             }
         }
@@ -315,11 +311,11 @@ namespace Namiko
         {
             using (var DbContext = new SqliteDbContext())
             {
-                var userWaifu = DbContext.WaifuStores.Where(x => x.Waifu.Equals(waifu));
+                var userWaifu = DbContext.ShopWaifus.Where(x => x.Waifu.Equals(waifu));
                 if (userWaifu == null)
                     return;
 
-                DbContext.WaifuStores.RemoveRange(userWaifu);
+                DbContext.ShopWaifus.RemoveRange(userWaifu);
                 await DbContext.SaveChangesAsync();
             }
         }
@@ -327,7 +323,14 @@ namespace Namiko
         {
             using (var db = new SqliteDbContext())
             {
-                db.WaifuStores.RemoveRange(db.WaifuStores.Where(x => x.GuildId == guildId));
+                var shops = db.WaifuShops.Where(x => x.GuildId == guildId);
+
+                foreach (var shop in shops)
+                {
+                    db.ShopWaifus.RemoveRange(db.ShopWaifus.Where(x => x.WaifuShop.Id == shop.Id));
+                }
+                db.WaifuShops.RemoveRange(shops);
+
                 await db.SaveChangesAsync();
             }
         }

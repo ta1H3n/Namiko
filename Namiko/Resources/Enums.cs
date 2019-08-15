@@ -26,4 +26,11 @@ namespace Namiko
         Toastie = 581849224661172244,
         Waifu = 581849327274557451
     }
+
+    [Flags]
+    public enum ShopType
+    {
+        Waifu = 1,
+        Gacha = 2
+    }
 }
