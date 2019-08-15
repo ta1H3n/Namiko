@@ -8,7 +8,7 @@ namespace Namiko {
         //Begging
         public const int begChance = 4;
         public static bool beg { get { return rnd.Next(Constants.begChance) == 0; } }
-        public static int begAmount { get { return 5 + rnd.Next(6); } }
+        public static int begAmount { get { return 5 + rnd.Next(21); } }
         
         //daily and weekly caps
         public const int dailycap = 2500;
