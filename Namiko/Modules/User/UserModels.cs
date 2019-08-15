@@ -14,6 +14,8 @@ namespace Namiko
         public string Quote { get; set; }
         public string Image { get; set; }
         public int LootboxesOpened { get; set; }
+        public int Rep { get; set; }
+        public DateTime RepDate { get; set; }
     }
 
     public class Marriage

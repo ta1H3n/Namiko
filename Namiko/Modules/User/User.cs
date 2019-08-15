@@ -447,6 +447,47 @@ namespace Namiko {
                 .Build());
         }
 
+        [Command("Rep"), Summary("Gives rep to a user.\n**Usage**: `!rep [user]`")]
+        public async Task Rep(IUser user)
+        {
+            if(user == Context.User)
+            {
+                await Context.Channel.SendMessageAsync("Nice try, Mr. Perfect.");
+                return;
+            }
+
+            var author = await UserDb.GetProfile(Context.User.Id);
+
+            var cooldown = author.RepDate.AddHours(20);
+            var now = System.DateTime.Now;
+            if (cooldown > now)
+            {
+                var span = cooldown.Subtract(now);
+                await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared(Context.User)
+                    .WithDescription("You already repped someone today. If everyone is cool then no one is cool.\n" +
+                    $"You must wait `{span.Hours} hours {span.Minutes} minutes {span.Seconds} seconds`")
+                    .WithColor(Color.DarkRed)
+                    .Build());
+                return;
+            }
+
+            author.RepDate = now;
+            int rep = await UserDb.IncrementRep(user.Id);
+            await UserDb.UpdateProfile(author);
+
+            await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared(Context.User)
+                .WithDescription($"You repped {user.Mention}\nNow they have **{rep}** rep!")
+                .WithThumbnailUrl("https://i.imgur.com/xxobSIH.png")
+                .Build());
+
+            var bot = Program.GetClient().CurrentUser;
+            if (user.Id == bot.Id)
+            {
+                await ToastieDb.AddToasties(Context.User.Id, 50, Context.Guild.Id);
+                await Context.Channel.SendMessageAsync($"Thank you {Context.User.Mention}! <a:loveme:536705504798441483>", embed: ToastieUtil.GiveEmbed(bot, Context.User, 50).Build());
+            }
+        }
+
         [Command("ActivatePremium"), Alias("ap"), Summary("Activates premium subscriptions associated with this account.\n**Usage**: `!ap`")]
         public async Task ActivatePremium([Remainder] string GuildId = "0")
         {

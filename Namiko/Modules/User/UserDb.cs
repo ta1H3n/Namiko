@@ -177,6 +177,63 @@ namespace Namiko {
                 await db.SaveChangesAsync();
             }
         }
+
+        //Reputation
+        public static int GetRepAmount(ulong userId)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                var user = db.Profiles.FirstOrDefault(x => x.UserId == userId);
+                if (user == null)
+                    return 0;
+
+                return user.Rep;
+            }
+        }
+        public static async Task<int> IncrementRep(ulong userId, int amount = 1)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                var user = db.Profiles.FirstOrDefault(x => x.UserId == userId);
+                if (user == null)
+                {
+                    db.Profiles.Add(new Profile { UserId = userId, Rep = amount });
+                }
+                else
+                {
+                    user.Rep += amount;
+                    db.Profiles.Update(user);
+                }
+
+                await db.SaveChangesAsync();
+                return user?.Rep ?? 0;
+            }
+        }
+
+        //Profile
+        public static async Task<Profile> GetProfile(ulong userId)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                var profile = db.Profiles.FirstOrDefault(x => x.UserId == userId);
+                if(profile == null)
+                {
+                    profile = new Profile { UserId = userId };
+                    db.Profiles.Add(profile);
+                    await db.SaveChangesAsync();
+                }
+
+                return profile;
+            }
+        }
+        public static async Task UpdateProfile(Profile profile)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                db.Profiles.Update(profile);
+                await db.SaveChangesAsync();
+            }
+        }
     }
 
     public static class MarriageDb {
@@ -269,13 +326,6 @@ namespace Namiko {
 
     public static class VoteDb
     {
-        public static List<Voter> GetVoters()
-        {
-            using (var db = new SqliteDbContext())
-            {
-                return db.Voters.ToList();
-            }
-        }
 
         public static async Task AddVoters(IEnumerable<Voter> voters)
         {
@@ -285,7 +335,6 @@ namespace Namiko {
                 await db.SaveChangesAsync();
             }
         }
-
         public static async Task AddVoters(IEnumerable<ulong> voters)
         {
             var date = System.DateTime.Now;
@@ -294,7 +343,6 @@ namespace Namiko {
                 await AddVoter(new Voter { UserId = x, Date = date });
             }
         }
-
         public static async Task AddVoter(Voter voter)
         {
             using (var db = new SqliteDbContext())
@@ -315,6 +363,13 @@ namespace Namiko {
 
                 db.Voters.Remove(delete);
                 await db.SaveChangesAsync();
+            }
+        }
+        public static List<Voter> GetVoters()
+        {
+            using (var db = new SqliteDbContext())
+            {
+                return db.Voters.ToList();
             }
         }
         public static List<Voter> GetVoters(int amount)

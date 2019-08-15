@@ -257,7 +257,7 @@ namespace Namiko
         private async Task Client_MessageReceivedHeart(SocketMessage arg)
         {
             var Message = arg as SocketUserMessage;
-            if (Message.Author.IsBot)
+            if (Message.Author.IsBot || Message.Content.Contains("rep", StringComparison.OrdinalIgnoreCase))
                 return;
             string msg = Message.Content.Replace("!", "");
             string mention = Client.CurrentUser.Mention.Replace("!", "");

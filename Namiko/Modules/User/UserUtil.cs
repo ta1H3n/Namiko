@@ -130,10 +130,11 @@ namespace Namiko {
             if (waifu != null)
             {
                 eb.WithImageUrl(waifu.ImageUrl);
-                eb.AddField("Featured Waifu", $"**{waifu.Name}** - *{waifu.Source}* <:MiaHug:536580304018735135>");
+                eb.AddField("Featured Waifu <:MiaHug:536580304018735135>", $"**{waifu.Name}** - *{waifu.Source}*");
             }
 
-            string footer = "";
+            var rep = UserDb.GetRepAmount(user.Id);
+            string footer = $"Rep: {rep} • ";
             footer += $"Status: '{user.Status.ToString()}'";
             if (user.Activity != null)
                 footer += $", Playing: '{user.Activity.Name}'";
