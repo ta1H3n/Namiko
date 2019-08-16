@@ -226,5 +226,17 @@ namespace Namiko
             //$"Namiko -> Discord: `{sentms.TotalMilliseconds}ms`" +
             "");
         }
+
+        [Command("ImgurAuth"), OwnerPrecondition]
+        public async Task ImgurAuth([Remainder] string msg = "")
+        {
+            await Context.Channel.SendMessageAsync(ImgurAPI.GetAuthorizationUrl());
+        }
+        [Command("SetImgurRefreshToken"), Alias("sirt"), OwnerPrecondition]
+        public async Task SetImgurRefreshToken(string refreshToken, [Remainder] string msg = "")
+        {
+            ImgurAPI.SetRefreshToken(refreshToken);
+            await Context.Channel.SendMessageAsync("Done.");
+        }
     }
 }

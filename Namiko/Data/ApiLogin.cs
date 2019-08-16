@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Namiko.Data
 {
-    class ApiLogin
+    public class ApiLogin
     {
         public string ClientId { get; set; }
         public string ClientSecret { get; set; }

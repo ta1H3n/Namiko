@@ -10,6 +10,7 @@ using Imgur.API.Endpoints.Impl;
 using Imgur.API.Models;
 using Namiko.Data;
 using Newtonsoft.Json;
+using Discord.WebSocket;
 
 namespace Namiko
 {
@@ -24,15 +25,7 @@ namespace Namiko
 
         public async static Task ImgurSetup()
         {
-            string JSON = "";
-            string JSONLocation = Locations.ImgurJSON;
-            using (var Stream = new FileStream(JSONLocation, FileMode.Open, FileAccess.Read))
-            using (var ReadSettings = new StreamReader(Stream))
-            {
-                JSON = ReadSettings.ReadToEnd();
-            }
-
-            ApiLogin settings = JsonConvert.DeserializeObject<ApiLogin>(JSON);
+            ApiLogin settings = GetApiLogin();
 
             Client = new ImgurClient(settings.ClientId, settings.ClientSecret);
             var endpoint = new OAuth2Endpoint(Client);
@@ -99,6 +92,42 @@ namespace Namiko
         public static string ParseId(string imgurUrl)
         {
             return imgurUrl.Split('/').Last().Split('.').First();
+        }
+
+        public static string GetAuthorizationUrl()
+        {
+            ApiLogin settings = GetApiLogin();
+            Client = new ImgurClient(settings.ClientId, settings.ClientSecret);
+            var endpoint = new OAuth2Endpoint(Client);
+
+            return endpoint.GetAuthorizationUrl(Imgur.API.Enums.OAuth2ResponseType.Token);
+        }
+
+        public static void SetRefreshToken(string refreshToken)
+        {
+            ApiLogin settings = GetApiLogin();
+            settings.RefreshToken = refreshToken;
+
+            var json = JsonConvert.SerializeObject(settings, Formatting.Indented);
+
+            string JSONLocation = Locations.ImgurJSON;
+            using (var Stream = new FileStream(JSONLocation, FileMode.OpenOrCreate, FileAccess.Write))
+            {
+                Stream.Write(Encoding.ASCII.GetBytes(json));
+            }
+        }
+
+        public static ApiLogin GetApiLogin()
+        {
+            string JSON = "";
+            string JSONLocation = Locations.ImgurJSON;
+            using (var Stream = new FileStream(JSONLocation, FileMode.Open, FileAccess.Read))
+            using (var ReadSettings = new StreamReader(Stream))
+            {
+                JSON = ReadSettings.ReadToEnd();
+            }
+
+            return JsonConvert.DeserializeObject<ApiLogin>(JSON);
         }
 
         public static void Poke()
