@@ -7,7 +7,6 @@ using Discord.Commands;
 using Discord.WebSocket;
 
 
-
 using System.Collections.Generic;
 using Discord.Addons.Interactive;
 
@@ -245,20 +244,8 @@ namespace Namiko
         [Command("TopWaifus"), Alias("tw"), Summary("Shows most popular waifus.\n**Usage**: `!tw`")]
         public async Task TopWaifus([Remainder] string str = "")
         {
-            await Context.Channel.SendMessageAsync("Command disabled temporarily.");
-            return;
 
-            var AllWaifus = UserInventoryDb.GetAllWaifuItems();
-            var waifus = new Dictionary<Waifu, int>();
-
-            foreach (var x in AllWaifus)
-            {
-                if (!waifus.ContainsKey(x.Waifu))
-                    waifus[x.Waifu] = 0;
-                waifus[x.Waifu]++;
-            }
-
-            var ordWaifus = waifus.OrderByDescending(x => x.Value);
+            var waifus = UserInventoryDb.CountWaifus();
             var msg = new CustomPaginatedMessage();
 
             msg.Title = ":two_hearts: Waifu Leaderboards";
@@ -266,10 +253,10 @@ namespace Namiko
             fields.Add(new FieldPages
             {
                 Title = "Globaly Bought",
-                Pages = CustomPaginatedMessage.PagesArray(ordWaifus, 10, (x) => $"**{x.Key.Name}** - {x.Value}\n")
+                Pages = CustomPaginatedMessage.PagesArray(waifus, 10, (x) => $"**{x.Key}** - {x.Value}\n")
             });
             msg.Fields = fields;
-            msg.ThumbnailUrl = ordWaifus.First().Key.ImageUrl;
+            msg.ThumbnailUrl = WaifuDb.GetWaifu(waifus.First().Key).ImageUrl;
 
             await PagedReplyAsync(msg);
         }

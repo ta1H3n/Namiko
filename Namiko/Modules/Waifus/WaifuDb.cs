@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 
 using System.Threading.Tasks;
+using System.Data;
 
 namespace Namiko
 {
@@ -250,6 +251,27 @@ namespace Namiko
             using (var db = new SqliteDbContext())
             {
                 return db.UserInventories.Any(x => x.Waifu == waifu && x.UserId == userId && x.GuildId == guildId);
+            }
+        }
+        public static Dictionary<string, int> CountWaifus()
+        {
+            using (var cmd = new SqliteDbContext().Database.GetDbConnection().CreateCommand())
+            {
+                cmd.CommandText = "select WaifuName, count(*) from UserInventories Group By WaifuName order by count(*) desc";
+                if (cmd.Connection.State != ConnectionState.Open) { cmd.Connection.Open(); }
+
+                var res = new Dictionary<string, int>();
+                using (var reader = cmd.ExecuteReader())
+                {
+                    if (reader.HasRows)
+                    {
+                        while (reader.Read())
+                        {
+                            res.Add(reader.GetString(0), reader.GetInt32(1));
+                        }
+                    }
+                }
+                return res;
             }
         }
     }
