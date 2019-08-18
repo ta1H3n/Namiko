@@ -17,6 +17,7 @@ namespace Namiko
 {
     public static class WaifuUtil
     {
+        // Waifus Read/Write
         public static async Task<WaifuShop> GetShop(ulong guildId, ShopType type, bool overrideNew = false)
         {
             WaifuShop shop = null;
@@ -24,6 +25,9 @@ namespace Namiko
             {
                 shop = WaifuShopDb.GetWaifuShop(guildId, type);
             } catch { }
+
+            if (type == ShopType.Mod)
+                return shop;
 
             if (overrideNew || shop == null || shop.GeneratedDate.AddHours(12) < System.DateTime.Now)
             {
@@ -266,7 +270,7 @@ namespace Namiko
             }
         }
 
-
+        // Shop Message generators
         /*public static EmbedBuilder GetShopEmbed(List<ShopWaifu> waifus, string prefix)
         {
             var client = Program.GetClient();
@@ -340,6 +344,12 @@ namespace Namiko
             var eb = new EmbedBuilder();
             if (type == ShopType.Gacha)
                 eb.WithAuthor("Gacha Shop", client.CurrentUser.GetAvatarUrl(), BasicUtil._patreon);
+            else if(type == ShopType.Mod)
+            {
+
+                eb.WithAuthor("Mod Shop", client.CurrentUser.GetAvatarUrl(), BasicUtil._patreon);
+                eb.WithDescription($"A waifu shop controlled by server moderators.\n`{prefix}MsAddWaifu` | `{prefix}MsRemoveWaifu` - requires T1 Server Premium.");
+            }
             else
             {
                 eb.WithAuthor("Waifu Shop", client.CurrentUser.GetAvatarUrl(), BasicUtil._patreon);
@@ -348,10 +358,13 @@ namespace Namiko
 
             string list = WaifuShopWaifuList(waifus);
 
-            eb.AddField(":books: Commands", $"`{prefix}buywaifu [name]` | `{prefix}waifu [search]` | `{prefix}wss`", true);
-            eb.AddField(":revolving_hearts: Waifus", list, true);
+            eb.AddField("\n:books: Commands", $"`{prefix}BuyWaifu [name]` | `{prefix}Waifu [search]` | `{prefix}Ws` | `{prefix}Gs` | `{prefix}Ms`", true);
+
+            list = list.Any() ? list : "~ Shop Empty ~";
+            eb.AddField("<:MiaHug:536580304018735135> Waifus", list, true);
             //eb.WithThumbnailUrl(waifus[0].Waifu.ImageUrl);
-            eb.WithFooter($"Resets in {11 - DateTime.Now.Hour%12} Hours {60 - DateTime.Now.Minute} Minutes");
+            if(type != ShopType.Mod)
+                eb.WithFooter($"Resets in {11 - DateTime.Now.Hour%12} Hours {60 - DateTime.Now.Minute} Minutes");
             eb.Color = BasicUtil.RandomColor();
             return eb;
         }
@@ -367,7 +380,7 @@ namespace Namiko
             fieldInfo.Title = ":books: Commands";
             for (int i = 0; i < pages; i++)
             {
-                pagelist.Add($"`{prefix}buywaifu [name]` | `{prefix}waifu [search]` | `{prefix}wss`");
+                pagelist.Add($"`{prefix}BuyWaifu [name]` | `{prefix}Waifu [search]` | `{prefix}Ws` | `{prefix}Gs` | `{prefix}Ms`");
             }
             fieldInfo.Inline = true;
             fieldInfo.Pages = pagelist;
@@ -375,7 +388,7 @@ namespace Namiko
 
             var fieldWaifus = new FieldPages();
             var pagelist2 = new List<string>();
-            fieldWaifus.Title = ":revolving_hearts: Waifus";
+            fieldWaifus.Title = "<:MiaHug:536580304018735135> Waifus";
             foreach (var w in splitWaifus)
             {
                 pagelist2.Add(WaifuUtil.WaifuShopWaifuList(w));
@@ -387,6 +400,7 @@ namespace Namiko
             paginatedMessage.Footer = $"Resets in {11 - DateTime.Now.Hour % 12} Hours {60 - DateTime.Now.Minute} Minutes | ";
             paginatedMessage.Color = BasicUtil.RandomColor();
             paginatedMessage.PageCount = pages;
+            paginatedMessage.Pages = new List<string> { $"Titles with a lot of waifus were moved to the `{prefix}GachaShop`" };
             paginatedMessage.Author = new EmbedAuthorBuilder()
             {
                 Name = type == ShopType.Waifu ? "Waifu Shop" : "Gacha Shop",
@@ -439,7 +453,7 @@ namespace Namiko
             return eb;
         }
 
-
+        //Waifu Prices
         public static int GenerateDiscount()
         {
             var rand = new Random();
@@ -493,8 +507,17 @@ namespace Namiko
 
             return tier;
         }
+        public static int WaifuValue(IEnumerable<Waifu> waifus)
+        {
+            int total = 0;
+            foreach (var x in waifus)
+            {
+                total += GetPrice(x.Tier);
+            }
+            return total;
+        }
 
-
+        //Random embeds
         public static EmbedBuilder WaifuEmbedBuilder(Waifu waifu, bool guildDetails = false, SocketCommandContext context = null)
         {
             EmbedBuilder eb = new EmbedBuilder();
@@ -704,15 +727,6 @@ namespace Namiko
             eb.WithFooter($"Page: {page/10+1}");
             return eb;
         }
-        public static int WaifuValue(IEnumerable<Waifu> waifus)
-        {
-            int total = 0;
-            foreach(var x in waifus)
-            {
-                total += GetPrice(x.Tier);
-            }
-            return total;
-        }
         public static IEnumerable<IGrouping<int, TSource>> GroupBy<TSource>(this IEnumerable<TSource> source, int itemsPerGroup)
         {
             return source.Zip(Enumerable.Range(0, source.Count()),
@@ -750,7 +764,7 @@ namespace Namiko
             return eb;
         }
 
-
+        //Selector
         public static async Task<Waifu> ProcessWaifuListAndRespond(List<Waifu> waifus, InteractiveBase<ShardedCommandContext> interactive = null)
         {
             if (waifus.Count == 1)

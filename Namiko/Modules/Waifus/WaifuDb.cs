@@ -257,15 +257,15 @@ namespace Namiko
     
     public class WaifuShopDb
     {
-        public static async Task AddItem(ShopWaifu waifu)
+        public static async Task RemoveItem(ShopWaifu waifu)
         {
             using (var db = new SqliteDbContext())
             {
-                db.ShopWaifus.Add(waifu);
+                db.ShopWaifus.Remove(waifu);
                 await db.SaveChangesAsync();
             }
         }
-        public static async Task AddShop(WaifuShop shop)
+        public static async Task<WaifuShop> AddShop(WaifuShop shop)
         {
             using (var db = new SqliteDbContext())
             {
@@ -276,12 +276,10 @@ namespace Namiko
                     db.ShopWaifus.RemoveRange(oldshop.ShopWaifus);
                 }
 
-                var items = shop.ShopWaifus;
+                var items = shop.ShopWaifus ?? new List<ShopWaifu>();
 
                 shop.ShopWaifus = null;
-                var smh = db.WaifuShops.Add(shop);
-
-
+                db.WaifuShops.Add(shop);
                 await db.SaveChangesAsync();
 
                 foreach (var item in items)
@@ -289,6 +287,8 @@ namespace Namiko
                     item.WaifuShop = shop;
                     await UpdateShopWaifu(item);
                 }
+
+                return shop;
             }
         }
         public static WaifuShop GetWaifuShop(ulong guildId, ShopType type)

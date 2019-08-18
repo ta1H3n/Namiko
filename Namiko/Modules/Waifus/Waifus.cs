@@ -46,6 +46,20 @@ namespace Namiko
             await Context.Channel.SendMessageAsync("", false, eb.Build());
         }
 
+        [Command("ModShop"), Alias("ms"), Summary("Opens the mod shop. A waifu shop controlled by server moderators.")]
+        public async Task ModShop([Remainder] string str = "")
+        {
+            WaifuShop shop = await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Mod);
+            string prefix = Program.GetPrefix(Context);
+            List<ShopWaifu> waifus = new List<ShopWaifu>();
+            if (shop != null)
+                waifus = shop.ShopWaifus;
+
+            waifus = waifus.OrderBy(x => x.Waifu.Tier).ThenBy(x => x.Waifu.Source).ThenBy(x => x.Waifu.Name).ToList();
+            var eb = WaifuUtil.NewShopEmbed(waifus, prefix, ShopType.Mod);
+            await Context.Channel.SendMessageAsync("", false, eb.Build());
+        }
+
         [Command("WaifuShopSlides"), Alias("wss"), Summary("Opens the waifu shop slides.")]
         public async Task WaifuShopSlides([Remainder] string str = "")
         {
@@ -231,6 +245,9 @@ namespace Namiko
         [Command("TopWaifus"), Alias("tw"), Summary("Shows most popular waifus.\n**Usage**: `!tw`")]
         public async Task TopWaifus([Remainder] string str = "")
         {
+            await Context.Channel.SendMessageAsync("Command disabled temporarily.");
+            return;
+
             var AllWaifus = UserInventoryDb.GetAllWaifuItems();
             var waifus = new Dictionary<Waifu, int>();
 
@@ -369,7 +386,7 @@ namespace Namiko
             await Context.Channel.SendMessageAsync(null, false, WaifuUtil.WishlistEmbed(waifus, (SocketGuildUser)user).Build());
         }
 
-        [Command("RemoveWaifuWish"), Alias("rww"), Summary("Removes a waifu from your wishlist.\n**Usage**: `!rww [waifu]`")]
+        [Command("RemoveWish"), Alias("rww, RemoveWaifuWish"), Summary("Removes a waifu from your wishlist.\n**Usage**: `!rww [waifu]`")]
         public async Task RemoveWaifuWish([Remainder] string str = "")
         {
             var user = Context.User;
@@ -387,6 +404,90 @@ namespace Namiko
 
             await WaifuWishlistDb.DeleteWaifuWish(user.Id, waifu, Context.Guild.Id);
             await Context.Channel.SendMessageAsync("You don't want her anymore, huh...");
+        }
+
+        [Command("ModShopAddWaifu"), Alias("msaddwaifu", "msaw"), Summary("Adds a waifu to the mod shop. Available for everyone to purchase.\n**Usage**: `!msaw [waifu]`"), CustomUserPermission(GuildPermission.ManageGuild)]
+        public async Task ModShopAddWaifu([Remainder] string name)
+        {
+            var prefix = Program.GetPrefix(Context);
+
+            if (!PremiumDb.IsPremium(Context.Guild.Id, PremiumType.ServerT1))
+            {
+                await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared(Context.User)
+                    .WithDescription($"*~ This command requires T1 Server Premium ~*")
+                    .WithFooter($"`{prefix}premium`")
+                    .Build());
+                return;
+            }
+
+            var shop = await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Mod);
+            if(shop == null)
+            {
+                shop = new WaifuShop
+                {
+                    GeneratedDate = System.DateTime.Now,
+                    GuildId = Context.Guild.Id,
+                    Type = ShopType.Mod,
+                    ShopWaifus = new List<ShopWaifu>()
+                };
+                shop = await WaifuShopDb.AddShop(shop);
+            }
+            var waifus = shop.ShopWaifus.Select(x => x.Waifu);
+
+            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(name), this);
+            if (waifu == null)
+                return;
+
+            if (waifu.Tier < 1 || waifu.Tier > 3)
+            {
+                await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared(Context.User)
+                    .WithDescription($"*~ You can only add Tier 1-3 waifus ~*")
+                    .Build());
+                return;
+            }
+            if (shop.ShopWaifus.Count >= 15)
+            {
+                await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared(Context.User)
+                    .WithDescription($"*~ The Mod Shop is limited to 15 waifus. `{prefix}msrw` to remove ~*")
+                    .Build());
+                return;
+            }
+            if (waifus.Any(x => x.Name.Equals(waifu.Name)))
+            {
+                await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared(Context.User)
+                    .WithDescription($"*~ **{waifu.Name}** is already in the mod shop ~*")
+                    .Build());
+                return;
+            }
+
+            await WaifuShopDb.UpdateShopWaifu(new ShopWaifu
+            {
+                Discount = 0,
+                Limited = -1,
+                WaifuShop = shop,
+                Waifu = waifu
+            });
+
+            await Context.Channel.SendMessageAsync($"Added **{waifu.Name}** to the Mod Shop", embed: WaifuUtil.WaifuEmbedBuilder(waifu).Build());
+            return;
+        }
+
+        [Command("ModShopRemoveWaifu"), Alias("msremovewaifu", "msrw"), Summary("Removes a waifu from the mod shop.\n**Usage**: `!msrw [waifu]`"), CustomUserPermission(GuildPermission.ManageGuild)]
+        public async Task ModShopRemoveWaifu([Remainder] string name = "")
+        {
+            var shop = await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Mod);
+            var waifus = shop.ShopWaifus.Select(x => x.Waifu);
+
+            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(name, false, waifus), this);
+            if (waifu == null)
+                return;
+
+            await WaifuShopDb.RemoveItem(shop.ShopWaifus.FirstOrDefault(x => x.Waifu.Name.Equals(waifu.Name)));
+
+            await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared(Context.User)
+                    .WithDescription($"*~ **{waifu.Name}** removed from the Mod Shop ~*")
+                    .Build());
+            return;
         }
     }
 

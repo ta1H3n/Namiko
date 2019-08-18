@@ -31,6 +31,7 @@ namespace Namiko
     public enum ShopType
     {
         Waifu = 1,
-        Gacha = 2
+        Gacha = 2,
+        Mod = 3
     }
 }
