@@ -105,7 +105,7 @@ namespace Namiko
             await Context.Channel.SendMessageAsync($"There are now **{count}** less weebs in the `{role.Name}` role. Can I have them?");
         }
 
-        [Command("Invite"), Alias("inv"), Summary("Invites a user to your team.\n**Usage**: `!inv [user]`")]
+        [Command("Invite"), Summary("Invites a user to your team.\n**Usage**: `!inv [user]`")]
         public async Task Invite(IUser user = null, [Remainder] string str = "")
         {
             var channel = Context.Channel;

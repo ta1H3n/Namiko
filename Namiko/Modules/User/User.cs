@@ -17,7 +17,7 @@ namespace Namiko {
             await Context.Channel.SendMessageAsync("", false, UserUtil.ProfileEmbed((SocketGuildUser)user).Build());
         }
 
-        [Command("Waifus"), Summary("Shows a users waifu list.\n**Usage**: `!waifus [user_optional]`")]
+        [Command("Waifus"), Alias("inv"), Summary("Shows a users waifu list.\n**Usage**: `!waifus [user_optional]`")]
         public async Task Waifus(IUser user = null, [Remainder] string str = "")
         {
             user = user ?? Context.User;
@@ -167,8 +167,8 @@ namespace Namiko {
         }
 
         [Command("Divorce"), Summary("Divorce a user.\n**Usage**: `!divorce`")]
-        public async Task Divorce([Remainder] string str = "") {
-
+        public async Task Divorce([Remainder] string str = "")
+        {
             //common variables
             IUser user = Context.User;
             EmbedBuilder eb = new EmbedBuilder();

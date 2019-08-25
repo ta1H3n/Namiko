@@ -361,7 +361,7 @@ namespace Namiko
             eb.AddField("\n:books: Commands", $"`{prefix}BuyWaifu [name]` | `{prefix}Waifu [search]` | `{prefix}Ws` | `{prefix}Gs` | `{prefix}Ms`", true);
 
             list = list.Any() ? list : "~ Shop Empty ~";
-            eb.AddField("<:MiaHug:536580304018735135> Waifus", list, true);
+            eb.AddField("<:MiaHug:536580304018735135> Waifus", list, false);
             //eb.WithThumbnailUrl(waifus[0].Waifu.ImageUrl);
             if(type != ShopType.Mod)
                 eb.WithFooter($"Resets in {11 - DateTime.Now.Hour%12} Hours {60 - DateTime.Now.Minute} Minutes");

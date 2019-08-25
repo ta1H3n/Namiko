@@ -65,8 +65,6 @@ namespace Namiko
             Client.JoinedGuild += Client_JoinedGuild;
             Client.LeftGuild += Client_LeftGuild;
             Client.MessageReceived += Client_ReadCommand;
-            Client.MessageReceived += Client_MessageReceivedSpecialModes;
-            Client.MessageReceived += Client_MessageReceivedHeart;
 
             // Join/leave logging.
             Client.UserJoined += Client_UserJoinedWelcome;
@@ -108,65 +106,14 @@ namespace Namiko
             catch { }
             cts.Dispose();
         }
-        
+
 
         // EVENTS
 
-        private async Task Client_ReactionAdded(Cacheable<IUserMessage, ulong> arg1, ISocketMessageChannel arg2, SocketReaction arg3)
-        {
-            if(arg3.MessageId != 511188952640913408)
-            {
-                return;
-            }
-
-            SocketTextChannel sch = arg2 as SocketTextChannel;
-            var user = sch.Guild.GetUser(arg3.UserId);
-            var role = sch.Guild.GetRole(417112174926888961);
-
-            if (RoleUtil.HasRole(user, role))
-            {
-                return;
-            }
-
-            await user.AddRoleAsync(role);
-            
-            var chid = ServerDb.GetServer(sch.Guild.Id).WelcomeChannelId;
-            var ch = sch.Guild.GetTextChannel(chid);
-            await ch.SendMessageAsync(GetWelcomeMessageString(user));
-        }
-        private async Task Client_UserVoiceStateUpdated(SocketUser arg1, SocketVoiceState arg2, SocketVoiceState arg3)
-        {
-            var ch = await arg1.GetOrCreateDMChannelAsync();
-            await ch.SendMessageAsync(WelcomeDm());
-        }
-        private async Task Client_UserJoinedWelcome(SocketGuildUser arg)
-        {
-            if (arg.Guild.Id == 417064769309245471)
-                return;
-
-            var chid = ServerDb.GetServer(arg.Guild.Id).WelcomeChannelId;
-            var ch = arg.Guild.GetTextChannel(chid);
-            await ch.SendMessageAsync(GetWelcomeMessageString(arg));
-        }
-        private async Task Client_UserLeftToasties(SocketGuildUser arg)
-        {
-            var amount = ToastieDb.GetToasties(arg.Id, arg.Guild.Id) / 4;
-            await ToastieDb.AddToasties(arg.Id, -amount, arg.Guild.Id);
-            await ToastieDb.AddToasties(Client.CurrentUser.Id, amount, arg.Guild.Id);
-        }
-        private async Task Client_Log(LogMessage arg)
-        {
-            string message = $"{DateTime.Now} at {arg.Source}] {arg.Message}";
-            Console.WriteLine(message);
-
-            if(arg.Severity == LogSeverity.Critical)
-            await (await Client.GetUser(StaticSettings.owner).GetOrCreateDMChannelAsync()).SendMessageAsync($"`{message}`");
-        }
         private async Task Client_ReadCommand(SocketMessage MessageParam)
         {
             var Message = MessageParam as SocketUserMessage;
             var Context = new ShardedCommandContext(Client, Message);
-
             string prefix = GetPrefix(Context);
 
             if (Context.Message == null || Context.Message.Content == "")
@@ -176,11 +123,8 @@ namespace Namiko
             if (BlacklistedChannelDb.IsBlacklisted(Context.Channel.Id))
                 return;
 
-            if(Message.Content.StartsWith("Hi Namiko", StringComparison.InvariantCultureIgnoreCase))
-            {
-                await Message.Channel.SendMessageAsync($"Hi {Context.User.Mention} :fox:");
-                return;
-            }
+            await SpecialModeResponse(Context);
+            await SpecialResponse(Message);
 
             int ArgPos = 0;
             bool isPrefixed = Message.HasStringPrefix(prefix, ref ArgPos) || Message.HasMentionPrefix(Client.CurrentUser, ref ArgPos);
@@ -201,11 +145,11 @@ namespace Namiko
                     return;
                 }
             }
-            
+
             var Result = await Commands.ExecuteAsync(Context, ArgPos, Services);
             string text = null;
 
-            if(!Result.IsSuccess)
+            if (!Result.IsSuccess)
             {
                 if (await new Basic().Help(Context, Commands))
                     text = "Help";
@@ -233,38 +177,52 @@ namespace Namiko
         {
             if (!arg3.IsSuccess)
                 return;
-            
+
             Stats.IncrementServer(arg2.Guild.Id);
             Stats.IncrementCommand(arg1.Value.Name);
             Stats.IncrementCalls();
         }
-        private async Task Client_MessageReceivedSpecialModes(SocketMessage MessageParam)
+
+        private async Task Client_ReactionAdded(Cacheable<IUserMessage, ulong> arg1, ISocketMessageChannel arg2, SocketReaction arg3)
         {
-            if (!SpecialModes.ChristmasModeEnable && !SpecialModes.SpookModeEnable && !MessageParam.Author.IsBot)
+            if(arg3.MessageId != 511188952640913408)
                 return;
 
-            var Message = MessageParam as SocketUserMessage;
-            var Context = new ShardedCommandContext(Client, Message);
+            SocketTextChannel sch = arg2 as SocketTextChannel;
+            var user = sch.Guild.GetUser(arg3.UserId);
+            var role = sch.Guild.GetRole(417112174926888961);
 
-            if (Context.Message == null || Context.Message.Content == "")
-                return;
-            if (Context.User.IsBot)
+            if (RoleUtil.HasRole(user, role))
                 return;
 
-            await new SpecialModes().Spook(Context);
-            await new SpecialModes().Christmas(Context);
+            await user.AddRoleAsync(role);
+            
+            var chid = ServerDb.GetServer(sch.Guild.Id).WelcomeChannelId;
+            var ch = sch.Guild.GetTextChannel(chid);
+            await ch.SendMessageAsync(GetWelcomeMessageString(user));
         }
-        private async Task Client_MessageReceivedHeart(SocketMessage arg)
+        private async Task Client_UserJoinedWelcome(SocketGuildUser arg)
         {
-            var Message = arg as SocketUserMessage;
-            if (Message.Author.IsBot || Message.Content.Contains("rep", StringComparison.OrdinalIgnoreCase))
+            if (arg.Guild.Id == 417064769309245471)
                 return;
-            string msg = Message.Content.Replace("!", "");
-            string mention = Client.CurrentUser.Mention.Replace("!", "");
-            if (msg.Contains(mention) && (!msg.StartsWith(mention) || msg.Equals(mention)))
-            {
-                await Message.Channel.SendMessageAsync($"{Message.Author.Mention} <a:loveme:536705504798441483>");
-            }
+
+            var chid = ServerDb.GetServer(arg.Guild.Id).WelcomeChannelId;
+            var ch = arg.Guild.GetTextChannel(chid);
+            await ch.SendMessageAsync(GetWelcomeMessageString(arg));
+        }
+        private async Task Client_UserLeftToasties(SocketGuildUser arg)
+        {
+            var amount = ToastieDb.GetToasties(arg.Id, arg.Guild.Id) / 4;
+            await ToastieDb.AddToasties(arg.Id, -amount, arg.Guild.Id);
+            await ToastieDb.AddToasties(Client.CurrentUser.Id, amount, arg.Guild.Id);
+        }
+        private async Task Client_Log(LogMessage arg)
+        {
+            string message = $"{DateTime.Now} at {arg.Source}] {arg.Message}";
+            Console.WriteLine(message);
+
+            if(arg.Severity == LogSeverity.Critical)
+            await (await Client.GetUser(StaticSettings.owner).GetOrCreateDMChannelAsync()).SendMessageAsync($"`{message}`");
         }
         private async Task Client_JoinedGuild(SocketGuild arg)
         {
@@ -394,6 +352,7 @@ namespace Namiko
             Debug = true;
             Locations.SetUpDebug();
             Timers.SetUp();
+            LootboxStats.Reload();
             SetUpPrefixes();
         }
         private static void SetUpRelease()
@@ -401,6 +360,7 @@ namespace Namiko
             Console.WriteLine("Entry: " + Assembly.GetEntryAssembly().Location);
             Locations.SetUpRelease();
             Timers.SetUpRelease();
+            LootboxStats.Reload();
             SetUpPrefixes();
         }
         private static async Task<int> CheckJoinedGuilds(DiscordSocketClient shard = null)
@@ -618,6 +578,43 @@ namespace Namiko
         public static CancellationTokenSource GetCts()
         {
             return cts;
+        }
+
+        private async Task SpecialModeResponse(ShardedCommandContext context)
+        {
+            if (SpecialModes.ChristmasModeEnable)
+                await new SpecialModes().Christmas(context);
+
+            if (SpecialModes.SpookModeEnable)
+                await new SpecialModes().Spook(context);
+        }
+        private async Task SpecialResponse(SocketUserMessage message)
+        {
+            if (message.Content.Contains("rep", StringComparison.OrdinalIgnoreCase))
+                return;
+
+            if (message.Content.StartsWith("Hi Namiko", StringComparison.OrdinalIgnoreCase))
+            {
+                await message.Channel.SendMessageAsync($"Hi {message.Author.Mention} :fox:");
+                return;
+            }
+            if (message.Content.StartsWith("Namiko-sama", StringComparison.OrdinalIgnoreCase))
+            {
+                var msgs = new List<string>
+                {
+                    $"Rise, {message.Author.Mention}",
+                    $"Yes, {message.Author.Mention}?"
+                };
+                await message.Channel.SendMessageAsync(msgs[new Random().Next(msgs.Count)]);
+                return;
+            }
+
+            string msg = message.Content.Replace("!", "");
+            string mention = Client.CurrentUser.Mention.Replace("!", "");
+            if (msg.Contains(mention) && (!msg.StartsWith(mention) || msg.Equals(mention)))
+            {
+                await message.Channel.SendMessageAsync($"{message.Author.Mention} <a:loveme:536705504798441483>");
+            }
         }
     }
 }

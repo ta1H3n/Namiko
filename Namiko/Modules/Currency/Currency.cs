@@ -294,6 +294,66 @@ namespace Namiko
             await Context.Channel.SendMessageAsync("", false, ToastieUtil.ToastieEmbed(user, ToastieDb.GetToasties(user.Id, Context.Guild.Id)).Build());
         }
 
+        [Command("LootboxShop"), Alias("ls"), Summary("Lootbox shop.\n**Usage**: `!ls`")]
+        public async Task LootboxShop([Remainder] string str = "")
+        {
+            await Context.Channel.SendMessageAsync(embed: ToastieUtil.BoxShopEmbed(Context.User).Build());
+        }
+
+        [Command("BuyLootbox"), Alias("bl"), Summary("Buy a lootbox.\n**Usage**: `!bl [name]`")]
+        public async Task BuyLootbox([Remainder] string str = "")
+        {
+            LootboxStat box = null;
+            var boxes = LootboxStats.Lootboxes.Where(x => x.Value.Price >= 0).Select(x => x.Value).ToList();
+            if (str != "")
+            {
+                var matches = boxes.Where(x => x.Name.Contains(str, StringComparison.OrdinalIgnoreCase));
+                if (matches.Count() == 1)
+                    box = matches.First();
+            }
+            if (box == null)
+            {
+                var listMsg = await Context.Channel.SendMessageAsync(embed: ToastieUtil.BoxShopEmbed(Context.User)
+                    .WithFooter("Times out in 23 seconds")
+                    .WithDescription("Enter the number of the lootbox you wish to purchase.")
+                    .Build());
+                var response = await NextMessageAsync(
+                    new Criteria<IMessage>()
+                    .AddCriterion(new EnsureSourceUserCriterion())
+                    .AddCriterion(new EnsureSourceChannelCriterion())
+                    .AddCriterion(new EnsureRangeCriterion(boxes.Count(), Program.GetPrefix(Context))),
+                    new TimeSpan(0, 0, 23));
+
+                _ = listMsg.DeleteAsync();
+                int i = 0;
+                try
+                {
+                    i = int.Parse(response.Content);
+                }
+                catch
+                {
+                    _ = Context.Message.DeleteAsync();
+                    return;
+                }
+                _ = response.DeleteAsync();
+
+                box = boxes[i - 1];
+            }
+
+            try
+            {
+                await ToastieDb.AddToasties(Context.User.Id, -box.Price, Context.Guild.Id);
+            } catch (Exception ex)
+            {
+                await Context.Channel.SendMessageAsync(ex.Message);
+            }
+
+            await LootBoxDb.AddLootbox(Context.User.Id, (LootBoxType)box.TypeId, 1, Context.Guild.Id);
+            await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared(Context.User)
+                .WithDescription($"You bought a **{box.Name}**!\nType `{Program.GetPrefix(Context)}open` to open it!")
+                .Build());
+        }
+
         //VERY UGLY COMMAND DONT LOOK AT IT
         //FIX IT
         [Command("ToastieLeaderboard"), Alias("tlb"), Summary("Toastie Leaderboard.\n**Usage**: `!tlb [page_number]`")]
@@ -433,19 +493,19 @@ namespace Namiko
                 box = boxes[i - 1];
             }
 
-            var type = box.Type;
+            var type = LootboxStats.Lootboxes[box.Type];
 
             var msg = await Context.Channel.SendMessageAsync("", false, ToastieUtil.BoxOpeningEmbed(Context.User).Build());
-            await LootBoxDb.AddLootbox(Context.User.Id, type, -1, box.GuildId);
+            await LootBoxDb.AddLootbox(Context.User.Id, box.Type, -1, box.GuildId);
             await UserDb.IncrementLootboxOpened(Context.User.Id);
             int waitms = 4200;
 
-            if (ToastieUtil.IsWaifu(type))
+            if (type.IsWaifu())
             {
-                var premiums = PremiumDb.GetUserPremium(Context.User.Id).Select(x => x.Type);
-                var waifu = ToastieUtil.BoxWaifu(type, premiums, Context.User.Id, Context.Guild.Id);
+                bool isPremium = PremiumDb.IsPremium(Context.User.Id, PremiumType.Waifu);
+                var waifu = ToastieUtil.UnboxWaifu(type, isPremium, Context.User.Id, Context.Guild.Id);
                 while(UserInventoryDb.OwnsWaifu(Context.User.Id, waifu, Context.Guild.Id))
-                    waifu = ToastieUtil.BoxWaifu(type, premiums, Context.User.Id, Context.Guild.Id);
+                    waifu = ToastieUtil.UnboxWaifu(type, isPremium, Context.User.Id, Context.Guild.Id);
 
                 await UserInventoryDb.AddWaifu(Context.User.Id, waifu, Context.Guild.Id);
                 await Task.Delay(waitms);
@@ -456,7 +516,7 @@ namespace Namiko
                 return;
             }
 
-            var amountWon = ToastieUtil.BoxToasties(type);
+            var amountWon = type.GetRandomToasties();
             await ToastieDb.AddToasties(Context.User.Id, amountWon, Context.Guild.Id);
             var bal = ToastieDb.GetToasties(Context.User.Id, Context.Guild.Id);
             await Task.Delay(waitms);

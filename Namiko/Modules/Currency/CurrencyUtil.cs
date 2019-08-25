@@ -371,73 +371,21 @@ namespace Namiko
 
         // LOOTBOX
 
-        public static bool IsWaifu(LootBoxType type)
-        {
-            var rnd = new Random();
-
-            switch (type)
-            {
-                case LootBoxType.Vote:
-                    return rnd.Next(Constants.voteWaifuChance) == 0;
-
-                case LootBoxType.Premium:
-                    return rnd.Next(Constants.premiumWaifuChance) == 0;
-
-                default:
-                    return false;
-            }
-        }
-        public static Waifu BoxWaifu(LootBoxType type, IEnumerable<PremiumType> premiums = null, ulong userId = 0, ulong guildId = 0)
+        public static Waifu UnboxWaifu(LootboxStat box, bool isPremium = false, ulong userId = 0, ulong guildId = 0)
         {
             var rnd = new Random();
             List<Waifu> waifus = new List<Waifu>();
             int randomizerAmount = 7;
 
-            int tier = 3;
-            switch (type)
-            {
-                case LootBoxType.Vote:
-                    waifus.AddRange(WaifuDb.RandomWaifus(3, randomizerAmount));
-                    break;
+            int tier = box.GetRandomTier();
+            waifus.AddRange(WaifuDb.RandomWaifus(tier, randomizerAmount));
 
-                case LootBoxType.Premium:
-                    int r = rnd.Next(100);
-
-                    if (r < 5)
-                        tier = 1;
-                    else if (r < 30)
-                        tier = 2;
-                    else
-                        tier = 3;
-
-                    waifus.AddRange(WaifuDb.RandomWaifus(tier, randomizerAmount));
-                    break;
-
-                default:
-                    waifus.AddRange(WaifuDb.RandomWaifus(3, randomizerAmount));
-                    break;
-            }
-
-            if(premiums != null && premiums.Contains(PremiumType.Waifu))
+            if(isPremium)
             {
                 waifus.AddRange(WaifuWishlistDb.GetWishlist(userId, guildId).Where(x => x.Tier == tier));
             }
 
             return waifus[rnd.Next(waifus.Count)];
-        }
-        public static int BoxToasties(LootBoxType type)
-        {
-            switch (type)
-            {
-                case LootBoxType.Vote:
-                    return Constants.voteToastieAmount;
-
-                case LootBoxType.Premium:
-                    return Constants.premiumToastieAmount;
-
-                default:
-                    return Constants.voteToastieAmount;
-            }
         }
         public static EmbedBuilder NoBoxEmbed(IUser author)
         {
@@ -460,15 +408,44 @@ namespace Namiko
         {
             var eb = new EmbedBuilderPrepared(author);
 
-            string field = "";
+            string gstr = "";
+            string lstr = "";
             for(int i = 0; i < boxes.Count; i++)
             {
-                string location = boxes[i].GuildId == 0 ? "Global" : "This Server";
-                field += $"`#{i+1}` **x{boxes[i].Amount}** {boxes[i].Type.ToString()} - *{location}*\n";
+                var box = LootboxStats.Lootboxes[boxes[i].Type];
+                string field = $"`#{i+1}` {box.Emote} {box.Name} - **x{boxes[i].Amount}**\n";
+
+                if (boxes[i].GuildId == 0)
+                    gstr += field;
+                else
+                    lstr += field;
             }
 
             eb.WithDescription("Enter the number of the Lootbox you wish to open.");
-            eb.AddField("Lootboxes :star:", field);
+            if(gstr != "")
+                eb.AddField("Global", gstr);
+            if(lstr != "")
+                eb.AddField("Local", lstr);
+            return eb;
+        }
+        public static EmbedBuilder BoxShopEmbed(IUser author)
+        {
+            var eb = new EmbedBuilderPrepared(author);
+
+            string str = "";
+            int count = 0;
+            foreach (var item in LootboxStats.Lootboxes)
+            {
+                var box = item.Value;
+                if (box.Price >= 0)
+                {
+                    string emote = box.Emote == null ? "" : box.Emote == "" ? "" : box.Emote + " ";
+                    str += $"{++count}. {emote}{box.Name} - **{box.Price}** {RandomEmote()}\n";
+                }
+            }
+
+            eb.WithAuthor("Lootbox Shop", author.GetAvatarUrl(), BasicUtil._patreon);
+            eb.AddField("Lootboxes", str);
             return eb;
         }
     }
