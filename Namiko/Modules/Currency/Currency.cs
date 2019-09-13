@@ -532,16 +532,18 @@ namespace Namiko
         }
 
         [Command("Lootboxes"), Summary("Lists your lootboxes.\n**Usage**: `!Lootboxes`")]
-        public async Task Lootboxes([Remainder] string str = "")
+        public async Task Lootboxes(IUser user = null, [Remainder] string str = "")
         {
-            var boxes = LootBoxDb.GetAll(Context.User.Id, Context.Guild.Id);
+            user = user ?? Context.User;
+
+            var boxes = LootBoxDb.GetAll(user.Id, Context.Guild.Id);
             if (boxes.Count == 0)
             {
-                await Context.Channel.SendMessageAsync("", false, ToastieUtil.NoBoxEmbed(Context.User).Build());
+                await Context.Channel.SendMessageAsync("", false, ToastieUtil.NoBoxEmbed(user).Build());
                 return;
             }
 
-            await Context.Channel.SendMessageAsync(embed: ToastieUtil.BoxListEmbed(boxes, Context.User).WithDescription("").Build());
+            await Context.Channel.SendMessageAsync(embed: ToastieUtil.BoxListEmbed(boxes, user).WithDescription("").Build());
         }
     }
 }

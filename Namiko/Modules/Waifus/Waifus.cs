@@ -1,13 +1,11 @@
 ﻿using System.Threading.Tasks;
-
 using System.Linq;
-using Discord;
 using System;
+using System.Collections.Generic;
+
+using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-
-
-using System.Collections.Generic;
 using Discord.Addons.Interactive;
 
 namespace Namiko
@@ -244,7 +242,6 @@ namespace Namiko
         [Command("TopWaifus"), Alias("tw"), Summary("Shows most popular waifus.\n**Usage**: `!tw`")]
         public async Task TopWaifus([Remainder] string str = "")
         {
-
             var waifus = UserInventoryDb.CountWaifus();
             var msg = new CustomPaginatedMessage();
 

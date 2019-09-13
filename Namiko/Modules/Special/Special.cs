@@ -59,7 +59,7 @@ namespace Namiko
             await Context.Client.SetGameAsync(str);
         }
 
-        [Command("Pause"), Summary("Pauses or Unpauses the bot"), OwnerPrecondition]
+        [Command("Freeze"), Summary("Pauses or Unpauses the bot"), OwnerPrecondition]
         public async Task Pause([Remainder] string str = "")
         {
             var pause = Program.SetPause();

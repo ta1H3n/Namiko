@@ -63,6 +63,10 @@
     <PackageReference Include="SauceNET" Version="1.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Addons\Victoria\" />
+  </ItemGroup>
+
 </Project>
 
 

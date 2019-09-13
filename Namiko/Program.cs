@@ -12,6 +12,8 @@ using Namiko.Data;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
 using System.Threading;
+using Victoria;
+using System.Net;
 
 #pragma warning disable CS1998
 
@@ -83,6 +85,8 @@ namespace Namiko
             Services = new ServiceCollection()
                 .AddSingleton(Client)
                 .AddSingleton<InteractiveService>()
+                .AddSingleton<LavaShardClient>()
+                .AddSingleton<LavaRestClient>()
                 .BuildServiceProvider();
 
             //await Commands.AddModulesAsync(Assembly.GetEntryAssembly(), Services);
@@ -98,6 +102,7 @@ namespace Namiko
             await Commands.AddModuleAsync(typeof(Waifus), Services);
             await Commands.AddModuleAsync(typeof(WaifuEditing), Services);
             await Commands.AddModuleAsync(typeof(Web), Services);
+            await Commands.AddModuleAsync(typeof(Music), Services);
 
             try
             {
@@ -310,8 +315,9 @@ namespace Namiko
                 _ = ch.SendMessageAsync($"`{DateTime.Now} - Joined {res} Guilds.`");
             }
         }
-        private void Ready()
+        private async void Ready()
         {
+            _ = Music.Initialize(Client);
             if (!Debug)
             {
                 RedditAPI.Poke();
@@ -352,7 +358,7 @@ namespace Namiko
             Debug = true;
             Locations.SetUpDebug();
             Timers.SetUp();
-            LootboxStats.Reload();
+            _ = LootboxStats.Reload();
             SetUpPrefixes();
         }
         private static void SetUpRelease()
@@ -360,7 +366,7 @@ namespace Namiko
             Console.WriteLine("Entry: " + Assembly.GetEntryAssembly().Location);
             Locations.SetUpRelease();
             Timers.SetUpRelease();
-            LootboxStats.Reload();
+            _ = LootboxStats.Reload();
             SetUpPrefixes();
         }
         private static async Task<int> CheckJoinedGuilds(DiscordSocketClient shard = null)
