@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Linq;
 using Discord;
@@ -14,6 +15,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Victoria;
 using System.Net;
+using Microsoft.EntityFrameworkCore;
 
 #pragma warning disable CS1998
 
@@ -30,6 +32,7 @@ namespace Namiko
         private static CancellationToken ct = cts.Token;
         private static bool Launch = true;
         public static bool Debug = false;
+        private static bool Diag = false;
         private static int ShardCount;
 
         static void Main(string[] args)
@@ -56,7 +59,7 @@ namespace Namiko
             Commands = new CommandService(new CommandServiceConfig
             {
                 CaseSensitiveCommands = false,
-                DefaultRunMode = RunMode.Async,
+                DefaultRunMode = Diag ? RunMode.Sync : RunMode.Async,
                 LogLevel = LogSeverity.Critical
             });
             
@@ -151,20 +154,32 @@ namespace Namiko
                 }
             }
 
-            var Result = await Commands.ExecuteAsync(Context, ArgPos, Services);
-            string text = null;
+            if (Diag)
+            {
+                var watch = new Stopwatch();
+                watch.Start();
+                var task = Commands.ExecuteAsync(Context, ArgPos, Services).ContinueWith(x =>
+                {
+                    watch.Stop();
+                    Context.Channel.SendMessageAsync($"Execution time: `{watch.ElapsedMilliseconds}ms`");
+                });
+                return;
+            }
 
-            if (!Result.IsSuccess)
+            var res = await Commands.ExecuteAsync(Context, ArgPos, Services);
+
+            string text = null;
+            if (!res.IsSuccess)
             {
                 if (await new Basic().Help(Context, Commands))
                     text = "Help";
                 else if (await new Images().SendRandomImage(Context))
                     text = "ReactionImage";
 
-                else if (!(Result.Error == CommandError.UnknownCommand))
+                else if (!(res.Error == CommandError.UnknownCommand))
                 {
-                    string reason = Result.ErrorReason + "\n";
-                    if (!(Result.Error == CommandError.UnmetPrecondition))
+                    string reason = res.ErrorReason + "\n";
+                    if (!(res.Error == CommandError.UnmetPrecondition))
                         reason += CommandHelpString(MessageParam.Content.Split(null)[0].Replace(prefix, ""), prefix);
                     await Context.Channel.SendMessageAsync(reason);
                     return;
@@ -294,7 +309,15 @@ namespace Namiko
             var ch = Client.GetChannel(StaticSettings.log_channel) as ISocketMessageChannel;
             Console.WriteLine($"{DateTime.Now} - Shard {arg.ShardId} Ready");
             _ = ch.SendMessageAsync($"`{DateTime.Now} - Shard {arg.ShardId} Ready`");
-            int res = 0;
+            
+            int res;
+            res = await CheckJoinedGuilds(arg);
+            if (res > 0)
+            {
+                Console.WriteLine($"{DateTime.Now} - Joined {res} Guilds.");
+                _ = ch.SendMessageAsync($"`{DateTime.Now} - Joined {res} Guilds.`");
+            }
+
             if (Launch && ReadyCount >= ShardCount)
             {
                 Launch = false;
@@ -306,13 +329,6 @@ namespace Namiko
                     Console.WriteLine($"{DateTime.Now} - Left {res} Guilds.");
                     _ = ch.SendMessageAsync($"`{DateTime.Now} - Left {res} Guilds.`");
                 }
-            }
-            
-            res = await CheckJoinedGuilds(arg);
-            if (res > 0)
-            {
-                Console.WriteLine($"{DateTime.Now} - Joined {res} Guilds.");
-                _ = ch.SendMessageAsync($"`{DateTime.Now} - Joined {res} Guilds.`");
             }
         }
         private async void Ready()
@@ -355,6 +371,7 @@ namespace Namiko
         }
         private static void SetUpDebug()
         {
+            Diag = false;
             Debug = true;
             Locations.SetUpDebug();
             Timers.SetUp();
@@ -377,47 +394,68 @@ namespace Namiko
             else
                 guilds = shard.Guilds;
 
-            var servers = ServerDb.GetNotLeft();
-            HashSet<ulong> existingIds = new HashSet<ulong>(servers.Select(x => x.GuildId));
             var zerotime = new DateTime(0);
-
             int added = 0;
-            foreach(var guild in guilds)
+
+            var servers = new List<Server>();
+            var toasties = new List<Balance>();
+            using (var db = new SqliteDbContext())
             {
-                if(!existingIds.Contains(guild.Id))
+                var ids = db.Servers.Where(x => x.LeaveDate == zerotime && shard == null ? true : (int)(x.GuildId >> 22) % ShardCount == shard.ShardId).Select(x => x.GuildId).ToHashSet();
+                foreach (var guild in guilds)
                 {
-                    var server = new Server
+                    if (!ids.Contains(guild.Id))
                     {
-                        GuildId = guild.Id,
-                        JoinDate = System.DateTime.Now,
-                        LeaveDate = zerotime,
-                        Prefix = StaticSettings.prefix
-                    };
-                    await ServerDb.UpdateServer(server);
-                    await ToastieDb.SetToasties(Client.CurrentUser.Id, 1000000, guild.Id);
-                    added++;
+                        servers.Add(new Server
+                        {
+                            GuildId = guild.Id,
+                            JoinDate = System.DateTime.Now,
+                            LeaveDate = zerotime,
+                            Prefix = StaticSettings.prefix
+                        });
+
+                        var bal = await db.Toasties.FirstOrDefaultAsync(x => x.UserId == Client.CurrentUser.Id && x.GuildId == guild.Id);
+                        toasties.Add(bal ?? new Balance { UserId = Client.CurrentUser.Id, Amount = 1000000, GuildId = guild.Id });
+
+                        added++;
+                    }
                 }
+                db.AddRange(servers);
+                db.AddRange(toasties);
+                await db.SaveChangesAsync();
             }
 
             return added;
         }
         private static async Task<int> CheckLeftGuilds()
         {
-            await Task.Delay(10000);
             var guilds = Client.Guilds;
             HashSet<ulong> existingIds = new HashSet<ulong>(guilds.Select(x => x.Id));
-
-            var servers = ServerDb.GetNotLeft();
-
             int left = 0;
-            foreach (var srv in servers)
+
+            //var servers = ServerDb.GetNotLeft();
+
+            //foreach (var srv in servers)
+            //{
+            //    if (!existingIds.Contains(srv.GuildId))
+            //    {
+            //        srv.LeaveDate = DateTime.Now;
+            //        await ServerDb.UpdateServer(srv);
+            //        left++;
+            //    }
+            //}
+
+            using (var db = new SqliteDbContext())
             {
-                if (!existingIds.Contains(srv.GuildId))
-                {
-                    srv.LeaveDate = DateTime.Now;
-                    await ServerDb.UpdateServer(srv);
-                    left++;
-                }
+                var zerotime = new DateTime(0);
+                var now = DateTime.Now;
+                var servers = db.Servers.Where(x => x.LeaveDate == zerotime && !existingIds.Contains(x.GuildId));
+
+                await servers.ForEachAsync(x => x.LeaveDate = now);
+
+                left = servers.Count();
+                db.UpdateRange(servers);
+                await db.SaveChangesAsync();
             }
 
             return left;

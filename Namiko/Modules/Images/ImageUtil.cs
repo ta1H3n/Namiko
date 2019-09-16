@@ -10,7 +10,6 @@ namespace Namiko
 {
     public static class ImageUtil
     {
-        public static readonly string[] localImages = { "post", "propaganda", "servermeme", "cabbage", "darkpink", "succ", "manko", "porpaganda" };
 
         public static EmbedBuilder ToEmbed(ReactionImage image)
         {
@@ -86,15 +85,6 @@ namespace Namiko
             eb.AddField("Server images", list);
             
             return eb;
-        }
-        public static bool IsAMFWT(ulong guildId, string imageName)
-        {
-            //return IsLocalImage(imageName) && !(guildId == 417064769309245471 || guildId == 418900885079588884);
-            return false;
-        }
-        public static bool IsLocalImage(string name)
-        {
-            return localImages.Any(x => name.Contains(x));
         }
     }
 }

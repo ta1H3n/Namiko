@@ -32,7 +32,7 @@ namespace Namiko
         public static List<ServerStat> ParseServerStats()
         {
             var list = new List<ServerStat>();
-            DateTime date = System.DateTime.Now.Date;
+            DateTime date = System.DateTime.Now;
             foreach(var pair in ServerCommandCalls)
             {
                 list.Add(new ServerStat { GuildId = pair.Key, Date = date, Count = pair.Value });
@@ -44,7 +44,7 @@ namespace Namiko
         public static List<CommandStat> ParseCommandStats()
         {
             var list = new List<CommandStat>();
-            DateTime date = System.DateTime.Now.Date;
+            DateTime date = System.DateTime.Now;
             foreach (var pair in CommandCalls)
             {
                 list.Add(new CommandStat { Name = pair.Key, Date = date, Count = pair.Value });

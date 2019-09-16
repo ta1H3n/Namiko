@@ -12,8 +12,8 @@ namespace Namiko
 {
     public class Music : InteractiveBase<ShardedCommandContext>
     {
-        private static LavaRestClient RestClient;
-        private static LavaShardClient LavaClient;
+        private static readonly LavaRestClient RestClient;
+        private static readonly LavaShardClient LavaClient;
         private static DiscordShardedClient Client;
 
         private LavaPlayer Player { get => LavaClient.GetPlayer(Context.Guild.Id); }
@@ -39,8 +39,6 @@ namespace Namiko
                 LogSeverity = LogSeverity.Info
             });
             return true;
-
-
         }
 
         [Command("Join")]

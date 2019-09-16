@@ -23,7 +23,7 @@ namespace Namiko
             WaifuShop shop = null;
             try
             {
-                shop = WaifuShopDb.GetWaifuShop(guildId, type);
+                shop = await WaifuShopDb.GetWaifuShop(guildId, type);
             } catch { }
 
             if (type == ShopType.Mod)
@@ -80,12 +80,12 @@ namespace Namiko
             int randomizerMultiplier = 7 - pages;
 
             var gachaSource = GetGachaSources();
-            var tier0 = WaifuDb.GetWaifusByTier(0);
-            var tier1 = WaifuDb.RandomWaifus(1, (limitedamount + t1amount) * pages * randomizerMultiplier, excludeSource: gachaSource);
-            var tier2 = WaifuDb.RandomWaifus(2, t2amount * pages * randomizerMultiplier, excludeSource: gachaSource);
-            var tier3 = WaifuDb.RandomWaifus(3, t3amount * pages * randomizerMultiplier, excludeSource: gachaSource);
+            var tier0 = await WaifuDb.GetWaifusByTier(0);
+            var tier1 = await WaifuDb.RandomWaifus(1, (limitedamount + t1amount) * pages * randomizerMultiplier, excludeSource: gachaSource);
+            var tier2 = await WaifuDb.RandomWaifus(2, t2amount * pages * randomizerMultiplier, excludeSource: gachaSource);
+            var tier3 = await WaifuDb.RandomWaifus(3, t3amount * pages * randomizerMultiplier, excludeSource: gachaSource);
 
-            var wishlists = WaifuWishlistDb.GetAllPremiumWishlists(guildId, PremiumType.Toastie);
+            var wishlists = await WaifuWishlistDb.GetAllPremiumWishlists(guildId, PremiumType.Toastie);
             wishlists.RemoveAll(x => gachaSource.Contains(x.Waifu.Source));
             var ids = wishlists.Select(x => x.UserId).Distinct().ToArray();
             var guild = Program.GetClient().GetGuild(guildId);
@@ -179,11 +179,11 @@ namespace Namiko
             var waifus = new List<Waifu>();
 
             var gachaSource = GetGachaSources();
-            waifus.AddRange(WaifuDb.RandomWaifus(1, t1amount * pages * randomizerMultiplier, includeSource: gachaSource));
-            waifus.AddRange(WaifuDb.RandomWaifus(2, t2amount * pages * randomizerMultiplier, includeSource: gachaSource));
-            waifus.AddRange(WaifuDb.RandomWaifus(3, t3amount * pages * randomizerMultiplier, includeSource: gachaSource));
+            waifus.AddRange(await WaifuDb.RandomWaifus(1, t1amount * pages * randomizerMultiplier, includeSource: gachaSource));
+            waifus.AddRange(await WaifuDb.RandomWaifus(2, t2amount * pages * randomizerMultiplier, includeSource: gachaSource));
+            waifus.AddRange(await WaifuDb.RandomWaifus(3, t3amount * pages * randomizerMultiplier, includeSource: gachaSource));
 
-            var wishlists = WaifuWishlistDb.GetAllPremiumWishlists(guildId, PremiumType.Toastie);
+            var wishlists = await WaifuWishlistDb.GetAllPremiumWishlists(guildId, PremiumType.Toastie);
             wishlists.RemoveAll(x => !gachaSource.Contains(x.Waifu.Source));
             var ids = wishlists.Select(x => x.UserId).Distinct().ToArray();
             var guild = Program.GetClient().GetGuild(guildId);
@@ -254,7 +254,7 @@ namespace Namiko
 
         public static async Task NotifyWishlist(IEnumerable<Waifu> waifus, ulong guildId)
         {
-            var wishes = WaifuWishlistDb.GetWishlist(guildId);
+            var wishes = await WaifuWishlistDb.GetWishlist(guildId);
             foreach(var wish in wishes)
             {
                 if(waifus.Any(x => x.Name == wish.Waifu.Name))
@@ -342,11 +342,12 @@ namespace Namiko
         {
             var client = Program.GetClient();
             var eb = new EmbedBuilder();
+
             if (type == ShopType.Gacha)
                 eb.WithAuthor("Gacha Shop", client.CurrentUser.GetAvatarUrl(), BasicUtil._patreon);
-            else if(type == ShopType.Mod)
+            else 
+            if(type == ShopType.Mod)
             {
-
                 eb.WithAuthor("Mod Shop", client.CurrentUser.GetAvatarUrl(), BasicUtil._patreon);
                 eb.WithDescription($"A waifu shop controlled by server moderators.\n`{prefix}MsAddWaifu` | `{prefix}MsRemoveWaifu` - requires T1 Server Premium.");
             }
@@ -503,18 +504,14 @@ namespace Namiko
             int tier = 404;
             tier = fav > 7000 ? 1 :
                 fav > 800 ? 2 :
+                fav < 100 ? 0 :
                 3;
 
             return tier;
         }
         public static int WaifuValue(IEnumerable<Waifu> waifus)
         {
-            int total = 0;
-            foreach (var x in waifus)
-            {
-                total += GetPrice(x.Tier);
-            }
-            return total;
+            return waifus.Sum(x => GetPrice(x.Tier));
         }
 
         //Random embeds
@@ -597,7 +594,7 @@ namespace Namiko
             }
             return str;
         }
-        public static EmbedBuilder WaifuListEmbedBuilder(int tier = 0)
+        public static async Task<EmbedBuilder> WaifuListEmbedBuilder(int tier = 0)
         {
             var eb = new EmbedBuilder();
 
@@ -606,7 +603,7 @@ namespace Namiko
                 for (int i = 1; i < 4; i++)
                 {
                     string field = "";
-                    var waifus = WaifuDb.GetWaifusByTier(i);
+                    var waifus = await WaifuDb.GetWaifusByTier(i);
                     waifus = waifus.OrderBy(x => x.Name).ToList();
                     foreach (Waifu x in waifus)
                         field += "`" + x.Name + "` ";
@@ -618,7 +615,7 @@ namespace Namiko
             else
             {
                 string field = "";
-                var waifus = WaifuDb.GetWaifusByTier(tier);
+                var waifus = await WaifuDb.GetWaifusByTier(tier);
                 waifus = waifus.OrderBy(x => x.Name).ToList();
                 foreach (Waifu x in waifus)
                     field += "`" + x.Name + "` ";

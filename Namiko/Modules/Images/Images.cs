@@ -27,7 +27,7 @@ namespace Namiko
             text = text.ToLower();
 
             var image = ImageDb.GetRandomImage(text, Context.Guild.Id);
-            if (image == null || ImageUtil.IsAMFWT(Context.Guild.Id, image.Name))
+            if (image == null)
             {
                 image = ImageDb.GetRandomImage(text);
                 if(image == null)
@@ -45,22 +45,19 @@ namespace Namiko
 
             foreach (ReactionImage x in images)
             {
-                if (!ImageUtil.IsAMFWT(Context.Guild.Id, x.Name))
+                Boolean flag = true;
+                foreach (ImageCount a in names)
                 {
-                    Boolean flag = true;
-                    foreach (ImageCount a in names)
+                    if (a.Name.Equals(x.Name))
                     {
-                        if (a.Name.Equals(x.Name))
-                        {
-                            a.Count++;
-                            flag = false;
-                            break;
-                        }
+                        a.Count++;
+                        flag = false;
+                        break;
                     }
-                    if (flag)
-                    {
-                        names.Add(new ImageCount { Name = x.Name, Count = 1 });
-                    }
+                }
+                if (flag)
+                {
+                    names.Add(new ImageCount { Name = x.Name, Count = 1 });
                 }
             }
 
@@ -87,12 +84,11 @@ namespace Namiko
         public async Task Image(int id, [Remainder] string str = "")
         {
             var image = ImageDb.GetImage(id);
-            if (image == null || ImageUtil.IsAMFWT(Context.Guild.Id, image.Name))
+            if (image == null)
             {
                 await Context.Channel.SendMessageAsync($"There is no image with id: {id}");
                 return;
             }
-            var user = Context.Guild.GetUser(Context.User.Id);
             await Context.Channel.SendMessageAsync("", false, ImageUtil.ToEmbed(image).Build());
         }
 
@@ -127,7 +123,7 @@ namespace Namiko
             url = url.EndsWith(".gifv") ? url.Replace(".gifv", ".gif") : url;
             url = url.EndsWith(".mp4") ? url.Replace(".mp4", ".gif") : url;
 
-            string albumId = null;
+            string albumId;
             string albumName = insider ? name : name + Context.Guild.Id;
             if (!ImageDb.AlbumExists(albumName))
             {

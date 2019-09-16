@@ -13,6 +13,65 @@ namespace Namiko
 {
     public static class ToastieUtil
     {
+        public static string[] BegMessages { get; set; }
+
+        static ToastieUtil()
+        {
+            BegMessages = new string[] {
+                "Go away.",
+                "Go away, you're annoying.",
+                "Ask someone else.",
+                "*Picks up a knife.*",
+                "Have you not had enough?",
+                "It's your own fault for losing it all.",
+                "Your ideal heart rate is 0.",
+                "You need a high-five... on the face... with a chair.",
+                "If you were orphaned when you were a child, I feel sorry for you, but not for your parents.",
+                "I bet your brain feels as good as new, seeing that you've never used it.",
+                "Don't let your mind wander, it's far too small to be out by itself.",
+                "People can't say that you have absolutely nothing! After all, you have inferiority!",
+                "If we were to kill everybody who hates you, it wouldn't be murder; it would be genocide!",
+                "I called your boyfriend gay and he hit me with his purse!",
+                "I'd slap you, but that would be animal abuse.",
+                "The next time you shave, could you stand a little closer to the razor?",
+                "Everyone is entitled to be stupid, but you abuse the privilege.",
+                "Don't piss me off today, I'm running out of places to hide the bodies.",
+                "Until you called me I couldn't remember the last time I wanted to break somebody's fingers so badly.",
+                "Beauty is skin deep, but ugly is to the bone.",
+                "Sorry I can't think of an insult stupid enough for you.",
+                "Let's see... I've walked the dog, cleaned my room, gone shopping and gossiped with my friends... Nope, this list doesn't say that I'm required to talk to you.",
+                "Earth is full. Go home.",
+                "If I could be one person for a day, it sure as hell wouldn't be you.",
+                "Roses are red violets are blue, God made me pretty, what the hell happened to you?",
+                "I am not anti-social, I just don't like you.",
+                "There are some stupid people in this world. You just helped me realize it.",
+                "A-are you talking? Did I give you permission to talk...?",
+                "OK, and that's supposed to make me feel what?",
+                "Damn not you again.",
+                "I'm sorry I'm busy right now, can I ignore you some other time?",
+                "Oh please help me, I'm sooo hurt by your hurtful comments!",
+                "Before you came along we were hungry. Now we are fed up.",
+                "Cancel my subscriptions, I'm tired of your issues!",
+                "You have your whole life to be a jerk... So why don't you take a day off?",
+                "You don't know me, you just wish you did.",
+                "My Mom said never talk to strangers and well, since you're really strange... I guess that means I can't talk to you!",
+                "People like you are the reason I'm on medication.",
+                "If you're gonna act like a dick you should wear a condom on your head so you can at least look like one!",
+                "I don't discriminate, I hate everyone.",
+                "You know the drill... You leave a message and I ignore it!",
+                "Life may be temporary, but your stupidity is eternal.",
+                "If I agreed with you, then we'd both be wrong.",
+                "Could you stop talking?",
+                "Do you know what a tsundere is? That's me except I actually don't like you.",
+                "The ideal heart rate? For you... 0.",
+                "If humans are 70% water, how are you 100% bullshit?",
+                "Toasties? It's your life you should be begging for...",
+                "Jokes aside, you're pathetic.",
+                "STOP... SPAMMING... ME!",
+                "You should've been aborted by your mother."
+            };
+        }
+
         public static string RandomEmote()
         {
             return "Toasties";
@@ -237,8 +296,8 @@ namespace Namiko
         }
         public static int DailyTax(double daily, double user, double bank, double all)
         {
-            double tax = 0;
-            double x = 0;
+            double tax;
+            double x;
 
             x = bank / all;
             double bankMultiplier = (1 / ( 20*x + 1.2 )) - 0.05;
@@ -312,77 +371,23 @@ namespace Namiko
 
         public static string GetFalseBegMessage()
         {
-            string[] msgs = {
-                "Go away.",
-                "Go away, you're annoying.",
-                "Ask someone else.",
-                "*Picks up a knife.*",
-                "Have you not had enough?",
-                "It's your own fault for losing it all.",
-                "Your ideal heart rate is 0.",
-                "You need a high-five... on the face... with a chair.",
-                "If you were orphaned when you were a child, I feel sorry for you, but not for your parents.",
-                "I bet your brain feels as good as new, seeing that you've never used it.",
-                "Don't let your mind wander, it's far too small to be out by itself.",
-                "People can't say that you have absolutely nothing! After all, you have inferiority!",
-                "If we were to kill everybody who hates you, it wouldn't be murder; it would be genocide!",
-                "I called your boyfriend gay and he hit me with his purse!",
-                "I'd slap you, but that would be animal abuse.",
-                "The next time you shave, could you stand a little closer to the razor?",
-                "Everyone is entitled to be stupid, but you abuse the privilege.",
-                "Don't piss me off today, I'm running out of places to hide the bodies.",
-                "Until you called me I couldn't remember the last time I wanted to break somebody's fingers so badly.",
-                "Beauty is skin deep, but ugly is to the bone.",
-                "Sorry I can't think of an insult stupid enough for you.",
-                "Let's see... I've walked the dog, cleaned my room, gone shopping and gossiped with my friends... Nope, this list doesn't say that I'm required to talk to you.",
-                "Earth is full. Go home.",
-                "If I could be one person for a day, it sure as hell wouldn't be you.",
-                "Roses are red violets are blue, God made me pretty, what the hell happened to you?",
-                "I am not anti-social, I just don't like you.",
-                "There are some stupid people in this world. You just helped me realize it.",
-                "A-are you talking? Did I give you permission to talk...?",
-                "OK, and that's supposed to make me feel what?",
-                "Damn not you again.",
-                "I'm sorry I'm busy right now, can I ignore you some other time?",
-                "Oh please help me, I'm sooo hurt by your hurtful comments!",
-                "Before you came along we were hungry. Now we are fed up.",
-                "Cancel my subscriptions, I'm tired of your issues!",
-                "You have your whole life to be a jerk... So why don't you take a day off?",
-                "You don't know me, you just wish you did.",
-                "My Mom said never talk to strangers and well, since you're really strange... I guess that means I can't talk to you!",
-                "People like you are the reason I'm on medication.",
-                "If you're gonna act like a dick you should wear a condom on your head so you can at least look like one!",
-                "I don't discriminate, I hate everyone.",
-                "You know the drill... You leave a message and I ignore it!",
-                "Life may be temporary, but your stupidity is eternal.",
-                "If I agreed with you, then we'd both be wrong.",
-                "Could you stop talking?",
-                "Do you know what a tsundere is? That's me except I actually don't like you.",
-                "The ideal heart rate? For you... 0.",
-                "If humans are 70% water, how are you 100% bullshit?",
-                "Toasties? It's your life you should be begging for...",
-                "Jokes aside, you're pathetic.",
-                "STOP... SPAMMING... ME!",
-                "You should've been aborted by your mother."
-            };
-
-            return msgs[new Random().Next(msgs.Length)];
+            return BegMessages[new Random().Next(BegMessages.Length)];
         }
 
         // LOOTBOX
 
-        public static Waifu UnboxWaifu(LootboxStat box, bool isPremium = false, ulong userId = 0, ulong guildId = 0)
+        public static async Task<Waifu> UnboxWaifu(LootboxStat box, bool isPremium = false, ulong userId = 0, ulong guildId = 0)
         {
             var rnd = new Random();
             List<Waifu> waifus = new List<Waifu>();
             int randomizerAmount = 7;
 
             int tier = box.GetRandomTier();
-            waifus.AddRange(WaifuDb.RandomWaifus(tier, randomizerAmount));
+            waifus.AddRange(await WaifuDb.RandomWaifus(tier, randomizerAmount));
 
             if(isPremium)
             {
-                waifus.AddRange(WaifuWishlistDb.GetWishlist(userId, guildId).Where(x => x.Tier == tier));
+                waifus.AddRange((await WaifuWishlistDb.GetWishlist(userId, guildId)).Where(x => x.Tier == tier));
             }
 
             return waifus[rnd.Next(waifus.Count)];
@@ -421,7 +426,6 @@ namespace Namiko
                     lstr += field;
             }
 
-            eb.WithDescription("Enter the number of the Lootbox you wish to open.");
             if(gstr != "")
                 eb.AddField("Global", gstr);
             if(lstr != "")

@@ -11,11 +11,4 @@ namespace Namiko
         public int Id { get; set; }
         public String Message { get; set; }
     }
-
-   // public class WelcomeChannel
-   // {
-   //     [Key]
-   //     public ulong GuildId { get; set; }
-   //     public ulong ChannelId { get; set; }
-   // }
 }

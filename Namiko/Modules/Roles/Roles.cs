@@ -17,11 +17,11 @@ namespace Namiko
 {
     public class Roles : InteractiveBase<ShardedCommandContext>
     {
-        [Command("Role"), Alias("r, iam"), Summary("Adds or removes a public role from the user.\n**Usage**: `!r [name]`"), CustomBotPermission(GuildPermission.ManageRoles)]
+        [Command("Role"), Alias("r", "iam"), Summary("Adds or removes a public role from the user.\n**Usage**: `!r [name]`"), CustomBotPermission(GuildPermission.ManageRoles)]
         public async Task Role([Remainder] string name)
         {
             var role = RoleUtil.GetRoleByName(Context.Guild, name);
-            var guildUser = Context.Guild.GetUser(Context.User.Id);
+            var guildUser = Context.User as SocketGuildUser;
             if (role == null)
             {
                 await Context.Channel.SendMessageAsync($"There's no role called `{name}` :bangbang:");
@@ -94,15 +94,16 @@ namespace Namiko
                 return;
             }
 
-            int count = 0;
             var users = Context.Guild.Users.Where(x => x.Roles.Contains(role)).ToList();
+            if (users.Count >= 3)
+                await Context.Channel.SendMessageAsync($"Clearing **{role.Name}**... This might take a while, Senpai.");
+
             foreach (var user in users)
             {
                 await user.RemoveRoleAsync(role);
-                count++;
             }
 
-            await Context.Channel.SendMessageAsync($"There are now **{count}** less weebs in the `{role.Name}` role. Can I have them?");
+            await Context.Channel.SendMessageAsync($"There are now **{users.Count}** less weebs in the `{role.Name}` role. Can I have them?");
         }
 
         [Command("Invite"), Summary("Invites a user to your team.\n**Usage**: `!inv [user]`")]

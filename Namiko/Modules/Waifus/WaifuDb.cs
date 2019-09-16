@@ -69,11 +69,11 @@ namespace Namiko
             }
 
         }
-        public static List<Waifu> AllWaifus()
+        public static async Task<List<Waifu>> AllWaifus()
         {
             using (var DbContext = new SqliteDbContext())
             {
-                return DbContext.Waifus.ToList();
+                return await DbContext.Waifus.ToListAsync();
             }
 
         }
@@ -91,22 +91,22 @@ namespace Namiko
                 return await DbContext.SaveChangesAsync();
             }
         }
-        public static List<Waifu> GetWaifusByTier(int tier)
+        public static async Task<List<Waifu>> GetWaifusByTier(int tier)
         {
             using (var DbContext = new SqliteDbContext())
             {
-                return DbContext.Waifus.Where(x => x.Tier == tier).ToList();
+                return await DbContext.Waifus.Where(x => x.Tier == tier).ToListAsync();
             }
         }
-        public static List<Waifu> RandomWaifus(int tier, int amount, List<string> includeSource = null, List<string> excludeSource = null)
+        public static async Task<List<Waifu>> RandomWaifus(int tier, int amount, List<string> includeSource = null, List<string> excludeSource = null)
         {
             using (var db = new SqliteDbContext())
             {
-                return db.Waifus.Where(x => x.Tier == tier && 
+                return await db.Waifus.Where(x => x.Tier == tier && 
                 (includeSource == null || includeSource.Contains(x.Source)) && 
                 (excludeSource == null || !excludeSource.Contains(x.Source)))
                     .OrderBy(r => Guid.NewGuid())
-                    .Take(amount).ToList();
+                    .Take(amount).ToListAsync();
             }
         }
         public static async Task<int> RenameWaifu(string oldName, string newName)
@@ -233,16 +233,11 @@ namespace Namiko
                 return items;
             }
         }
-        public static List<UserInventory> GetAllWaifuItems(ulong GuildId)
+        public static async Task<List<UserInventory>> GetAllWaifuItems(ulong GuildId)
         {
             using (var db = new SqliteDbContext())
             {
-                //  var items = db.UserInventories;
-                //  foreach (var x in items)
-                //      x.Waifu = x.Waifu;
-                //  return items.ToList();
-                
-                var items = db.UserInventories.Include(x => x.Waifu).Where(x => x.GuildId == GuildId).ToList();
+                var items = await db.UserInventories.Include(x => x.Waifu).Where(x => x.GuildId == GuildId).ToListAsync();
                 return items;
             }
         }
@@ -253,15 +248,18 @@ namespace Namiko
                 return db.UserInventories.Any(x => x.Waifu == waifu && x.UserId == userId && x.GuildId == guildId);
             }
         }
-        public static Dictionary<string, int> CountWaifus()
+        public static async Task<Dictionary<string, int>> CountWaifus(ulong guildId = 0)
         {
             using (var cmd = new SqliteDbContext().Database.GetDbConnection().CreateCommand())
             {
-                cmd.CommandText = "select WaifuName, count(*) from UserInventories Group By WaifuName order by count(*) desc";
+                string where = "";
+                if (guildId != 0)
+                    where = $" where GuildId = '{guildId}' ";
+                cmd.CommandText = $"select WaifuName, count(*) from UserInventories {where} Group By WaifuName order by count(*) desc";
                 if (cmd.Connection.State != ConnectionState.Open) { cmd.Connection.Open(); }
 
                 var res = new Dictionary<string, int>();
-                using (var reader = cmd.ExecuteReader())
+                using (var reader = await cmd.ExecuteReaderAsync())
                 {
                     if (reader.HasRows)
                     {
@@ -273,6 +271,16 @@ namespace Namiko
                 }
                 return res;
             }
+
+            //using (var db = new SqliteDbContext())
+            //{
+            //    return await db.UserInventories
+            //        .Where(x => guildId == 0 ? true : x.GuildId == guildId)
+            //        .GroupBy(x => new { x.Waifu, x.Waifu.Name })
+            //        .Select(x => new { Name = x.Key.Name, Count = x.Count() })
+            //        .OrderByDescending(x => x.Count)
+            //        .ToDictionaryAsync(x => x.Name, x => x.Count);
+            //}
         }
     }
 
@@ -313,11 +321,11 @@ namespace Namiko
                 return shop;
             }
         }
-        public static WaifuShop GetWaifuShop(ulong guildId, ShopType type)
+        public static async Task<WaifuShop> GetWaifuShop(ulong guildId, ShopType type)
         {
             using (var db = new SqliteDbContext())
             {
-                var shop = db.WaifuShops.Include(x => x.ShopWaifus).ThenInclude(x => x.Waifu).LastOrDefault(x => x.GuildId == guildId && x.Type == type);
+                var shop = await db.WaifuShops.Include(x => x.ShopWaifus).ThenInclude(x => x.Waifu).LastOrDefaultAsync(x => x.GuildId == guildId && x.Type == type);
                 return shop;
             }
         }
@@ -346,11 +354,7 @@ namespace Namiko
             using (var db = new SqliteDbContext())
             {
                 var shops = db.WaifuShops.Where(x => x.GuildId == guildId);
-
-                foreach (var shop in shops)
-                {
-                    db.ShopWaifus.RemoveRange(db.ShopWaifus.Where(x => x.WaifuShop.Id == shop.Id));
-                }
+                db.ShopWaifus.RemoveRange(db.ShopWaifus.Where(x => shops.Any(y => y.Id == x.WaifuShop.Id)));
                 db.WaifuShops.RemoveRange(shops);
 
                 await db.SaveChangesAsync();
@@ -419,19 +423,19 @@ namespace Namiko
                 await db.SaveChangesAsync();
             }
         }
-        public static List<Waifu> GetWishlist(ulong userId, ulong guildId)
+        public static async Task<List<Waifu>> GetWishlist(ulong userId, ulong guildId)
         {
             using (var db = new SqliteDbContext())
             {
-                var waifus = db.WaifuWishlist.Where(x => x.UserId == userId && x.GuildId == guildId).Select(x => x.Waifu).ToList();
+                var waifus = await db.WaifuWishlist.Where(x => x.UserId == userId && x.GuildId == guildId).Select(x => x.Waifu).ToListAsync();
                 return waifus;
             }
         }
-        public static List<WaifuWish> GetWishlist(ulong guildId)
+        public static async Task<List<WaifuWish>> GetWishlist(ulong guildId)
         {
             using (var db = new SqliteDbContext())
             {
-                var wishes = db.WaifuWishlist.Include(x => x.Waifu).Where(x => x.GuildId == guildId).ToList();
+                var wishes = await db.WaifuWishlist.Include(x => x.Waifu).Where(x => x.GuildId == guildId).ToListAsync();
                 return wishes;
             }
         }
@@ -463,13 +467,13 @@ namespace Namiko
                 }
             }
         }
-        public static List<WaifuWish> GetAllPremiumWishlists(ulong guildId, PremiumType premium)
+        public static async Task<List<WaifuWish>> GetAllPremiumWishlists(ulong guildId, PremiumType premium)
         {
             using (var db = new SqliteDbContext())
             {
                 var users = db.Premiums.Where(x => x.Type == premium).Select(x => x.UserId);
                 var wishlists = db.WaifuWishlist.Where(x => x.GuildId == guildId && users.Contains(x.UserId)).Include(x => x.Waifu);
-                return wishlists.ToList();
+                return await wishlists.ToListAsync();
             }
         }
     }

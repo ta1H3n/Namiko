@@ -59,7 +59,6 @@ namespace Namiko
         public static async Task Forfeit(SocketCommandContext Context, BlackjackGame game)
         {
             var user = Context.User;
-            var ch = Context.Channel;
 
             await ToastieDb.AddToasties(user.Id, game.Toasties / 2, Context.Guild.Id);
             await ToastieDb.AddToasties(Context.Client.CurrentUser.Id, game.Toasties / 2, Context.Guild.Id);
@@ -97,7 +96,6 @@ namespace Namiko
         {
             EmbedBuilder eb = new EmbedBuilder();
             var user = Context.User;
-            var ch = Context.Channel;
 
             if (game.SumHand(game.Hand) > 21)
             {
@@ -147,7 +145,6 @@ namespace Namiko
         {
             EmbedBuilder eb = new EmbedBuilder();
             var user = Context.User;
-            var ch = Context.Channel;
 
             eb.WithAuthor(user.Username + " | Blackjack", user.GetAvatarUrl());
             eb.WithDescription("You started a game of blackjack against Namiko! The one closest to 21 wins!\n" +

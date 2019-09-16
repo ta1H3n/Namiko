@@ -25,11 +25,11 @@ namespace Namiko
 
         public static List<ReactionImage> GetImages(string name = null, ulong guildId = 0)
         {
-            using (var DbContext = new SqliteDbContext())
+            using (var db = new SqliteDbContext())
             {
                 if(name == null)
-                    return DbContext.Images.Where(x => x.GuildId == guildId).ToList();
-                return DbContext.Images.Where(x => x.Name == name && x.GuildId == guildId).ToList();
+                    return db.Images.Where(x => x.GuildId == guildId).ToList();
+                return db.Images.Where(x => x.Name == name && x.GuildId == guildId).ToList();
             }
 
         }

@@ -137,6 +137,7 @@ namespace Discord.Addons.Interactive
                 .WithImageUrl(_pager.ImageUrl)
                 .WithThumbnailUrl(_pager.ThumbnailUrl);
 
+            if (!(page > _pager.PageCount))
             try
             {
                 eb.WithDescription(_pager.Pages.ElementAt(page - 1).ToString());

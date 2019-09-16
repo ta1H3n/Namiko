@@ -82,7 +82,7 @@ namespace Namiko
 
                 totalToasties += ToastieDb.GetToasties(x.Id, x.Guild.Id);
                 var waifus = UserInventoryDb.GetWaifus(x.Id, x.Guild.Id);
-                totalWaifus += waifus.Count();
+                totalWaifus += waifus.Count;
                 totalWaifuValue += WaifuUtil.WaifuValue(waifus);
             }
 
@@ -93,7 +93,7 @@ namespace Namiko
 
                 totalToasties += ToastieDb.GetToasties(x.Id, x.Guild.Id);
                 var waifus = UserInventoryDb.GetWaifus(x.Id, x.Guild.Id);
-                totalWaifus += waifus.Count();
+                totalWaifus += waifus.Count;
                 totalWaifuValue += WaifuUtil.WaifuValue(waifus);
             }
 

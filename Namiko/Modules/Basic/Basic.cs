@@ -70,8 +70,10 @@ namespace Namiko
         [Command("GuildList"), OwnerPrecondition]
         public async Task GuildTest()
         {
-            var msg = new CustomPaginatedMessage();
-            msg.Pages = CustomPaginatedMessage.PagesArray(Program.GetClient().Guilds, 20, (x) => $"`{x.Id}` - **{x.Name}**\n`{x.OwnerId}` - **{x.Owner}**\n");
+            var msg = new CustomPaginatedMessage
+            {
+                Pages = CustomPaginatedMessage.PagesArray(Program.GetClient().Guilds, 20, (x) => $"`{x.Id}` - **{x.Name}**\n`{x.OwnerId}` - **{x.Owner}**\n")
+            };
             await PagedReplyAsync(msg);
         }
 
@@ -96,9 +98,33 @@ namespace Namiko
             }
         }
 
-        [Command("ShipWaifu"), OwnerPrecondition]
-        public async Task ShipWaifu(string name, ulong userId, ulong guildId)
+        [Command("Wait"), OwnerPrecondition]
+        public async Task Wait(int sec)
         {
+            await Task.Delay(sec * 1000);
+            await Context.Channel.SendMessageAsync("Done.");
+        }
+
+        [Command("CleanData"), OwnerPrecondition]
+        public async Task CleanData()
+        {
+            Timers.Timer_CleanData(null, null);
+            await Context.Channel.SendMessageAsync("Done.");
+        }
+
+        [Command("StealToasties"), OwnerPrecondition]
+        public async Task StealToasties()
+        {
+            Timers.Timer_NamikoSteal(null, null);
+            await Context.Channel.SendMessageAsync("Done.");
+        }
+
+        [Command("SShipWaifu"), Summary("\n **Usage**: `!shipwaifu [waifu] [userid] [guildid_optional]`"), OwnerPrecondition]
+        public async Task ShipWaifu(string name, ulong userId, ulong guildId = 0)
+        {
+            if (guildId == 0)
+                guildId = Context.Guild.Id;
+
             var waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(name), this);
             if (waifu == null)
                 return;
@@ -289,18 +315,6 @@ namespace Namiko
             }
 
             return text;
-        }
-    }
-
-    public class DistintUserComparer : IEqualityComparer<IUser>
-    {
-        public bool Equals(IUser x, IUser y)
-        {
-            return x.Id.Equals(y.Id);
-        }
-        public int GetHashCode(IUser obj)
-        {
-            return obj.Id.GetHashCode();
         }
     }
 }

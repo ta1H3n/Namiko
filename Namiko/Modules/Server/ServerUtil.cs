@@ -6,12 +6,13 @@ using System.Globalization;
 using Discord.WebSocket;
 
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Namiko
 {
     public static class ServerUtil
     {
-        public static EmbedBuilder ServerInfo(SocketGuild guild)
+        public static async Task<EmbedBuilder> ServerInfo(SocketGuild guild)
         {
             var eb = new EmbedBuilder();
 
@@ -22,8 +23,8 @@ namespace Namiko
                 name += " | T2 Guild ⭐";
             eb.WithAuthor(name, guild.IconUrl, BasicUtil._patreon);
 
-            var toasties = ToastieDb.GetAllToasties(guild.Id).OrderByDescending(x => x.Amount);
-            var waifus = UserInventoryDb.GetAllWaifuItems(guild.Id);
+            var toasties = (await ToastieDb.GetAllToastiesRaw(guild.Id)).OrderByDescending(x => x.Amount);
+            var waifus = await UserInventoryDb.GetAllWaifuItems(guild.Id);
 
             string field = "";
             field += $"Total toasties: **{toasties.Sum(x => x.Amount).ToString("n0")}**\n";

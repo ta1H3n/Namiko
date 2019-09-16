@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 using System.Text;
 using System.Linq;
 
@@ -15,8 +16,6 @@ namespace Namiko
         {
             using (var DbContext = new SqliteDbContext())
             {
-                if (!DbContext.Toasties.Any(x => x.UserId == UserId && x.GuildId == GuildId))
-                    return 0;
                 return DbContext.Toasties.Where(x => x.UserId == UserId && x.GuildId == GuildId).Select(x => x.Amount).FirstOrDefault();
             }
         }
@@ -37,19 +36,52 @@ namespace Namiko
                 await DbContext.SaveChangesAsync();
             }
         }
-        public static async Task AddToasties(ulong UserId, int Amount, ulong GuildId)
-        {
-            var amount = GetToasties(UserId, GuildId) + Amount;
-            if (amount < 0)
-                throw new Exception("You don't have enough toasties... qq");
-            else
-                await SetToasties(UserId, amount, GuildId);
-        }
-        public static List<Balance> GetAllToasties(ulong guildId)
+        public static async Task<int> AddToasties(ulong userId, int amount, ulong guildId)
         {
             using (var db = new SqliteDbContext())
             {
-                return db.Toasties.Where(x => x.Amount > 0 && x.GuildId == guildId).ToList();
+                var bal = await db.Toasties.FirstOrDefaultAsync(x => x.UserId == userId && x.GuildId == guildId);
+
+                if (bal == null)
+                    bal = new Balance
+                    {
+                        Amount = 0,
+                        UserId = userId,
+                        GuildId = guildId
+                    };
+                bal.Amount += amount;
+
+                if (bal.Amount < 0)
+                    throw new Exception("You don't have enough toasties... qq");
+                else
+                {
+                    db.Toasties.Update(bal);
+                    await db.SaveChangesAsync();
+                }
+
+                return bal.Amount;
+            }
+        }
+        public static async Task<List<LeaderboardEntryId>> GetAllToasties(ulong guildId)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                return await db.Toasties
+                    .Where(x => x.Amount > 0 && x.GuildId == guildId)
+                    .Select(x => new LeaderboardEntryId
+                    {
+                        Id = x.UserId,
+                        Count = x.Amount
+                    })
+                    .OrderByDescending(x => x.Count)
+                    .ToListAsync();
+            }
+        }
+        public static async Task<List<Balance>> GetAllToastiesRaw(ulong guildId)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                return await db.Toasties.Where(x => x.GuildId == guildId).ToListAsync();
             }
         }
         public static async Task DeleteByGuild(ulong guildId)
@@ -60,11 +92,11 @@ namespace Namiko
                 await db.SaveChangesAsync();
             }
         }
-        public static long TotalToasties(ulong guildId)
+        public static async Task<long> TotalToasties(ulong guildId)
         {
             using (var db = new SqliteDbContext())
             {
-                return db.Toasties.Where(x => x.Amount > 0 && x.GuildId == guildId).Sum(x => Convert.ToInt64(x.Amount));
+                return await db.Toasties.Where(x => x.Amount > 0 && x.GuildId == guildId).SumAsync(x => Convert.ToInt64(x.Amount));
             }
         }
     }
@@ -75,8 +107,6 @@ namespace Namiko
         {
             using (var DbContext = new SqliteDbContext())
             {
-                if (!DbContext.Dailies.Any(x => x.UserId == UserId && x.GuildId == GuildId))
-                    return null;
                 return DbContext.Dailies.Where(x => x.UserId == UserId && x.GuildId == GuildId).FirstOrDefault();
             }
         }
@@ -84,34 +114,32 @@ namespace Namiko
         {
             using (var DbContext = new SqliteDbContext())
             {
-                var daily = DbContext.Dailies.FirstOrDefault(x => x.UserId == Daily.UserId && x.GuildId == Daily.GuildId);
-                if (daily == null)
-                {
-                    DbContext.Add(Daily);
-                }
-                else
-                {
-                    daily.Streak = Daily.Streak;
-                    daily.Date = Daily.Date;
-                    DbContext.Update(daily);
-                }
+                DbContext.Update(Daily);
                 await DbContext.SaveChangesAsync();
             }
         }
-        public static List<Daily> GetAll(ulong GuildId)
+        public static async Task<List<LeaderboardEntryId>> GetLeaderboard(ulong GuildId)
         {
             using (var db = new SqliteDbContext())
             {
-                return db.Dailies.Where(x => (x.GuildId == GuildId) && ((x.Date + 48*60*60*1000) > DateTimeOffset.Now.ToUnixTimeMilliseconds())).ToList();
+                return await db.Dailies
+                    .Where(x => (x.GuildId == GuildId) && ((x.Date + 48 * 60 * 60 * 1000) > DateTimeOffset.Now.ToUnixTimeMilliseconds()))
+                    .Select(x => new LeaderboardEntryId
+                    {
+                        Id = x.UserId,
+                        Count = x.Streak
+                    })
+                    .OrderByDescending(x => x.Count)
+                    .ToListAsync();
             }
         }
-        public static int GetHighest(ulong GuildId)
+        public static async Task<int> GetHighest(ulong GuildId)
         {
             using (var db = new SqliteDbContext())
             {
                 try
                 {
-                    return db.Dailies.Where(x => x.GuildId == GuildId && ((x.Date + 48 * 60 * 60 * 1000) > DateTimeOffset.Now.ToUnixTimeMilliseconds())).Max(x => x.Streak);
+                    return await db.Dailies.Where(x => x.GuildId == GuildId && ((x.Date + 48 * 60 * 60 * 1000) > DateTimeOffset.Now.ToUnixTimeMilliseconds())).MaxAsync(x => x.Streak);
                 }
                 catch { return 1; }
             }
@@ -136,20 +164,11 @@ namespace Namiko
                 return weekly;
             }
         }
-        public static async Task SetWeekly(Weekly Weekly)
+        public static async Task SetWeekly(Weekly weekly)
         {
             using (var db = new SqliteDbContext())
             {
-                var weekly = db.Weeklies.FirstOrDefault(x => x.UserId == Weekly.UserId && x.GuildId == Weekly.GuildId);
-                if (weekly == null)
-                {
-                    db.Add(Weekly);
-                }
-                else
-                {
-                    weekly.Date = Weekly.Date;
-                    db.Update(weekly);
-                }
+                db.Update(weekly);
                 await db.SaveChangesAsync();
             }
         }
@@ -169,12 +188,7 @@ namespace Namiko
         {
             using (var db = new SqliteDbContext())
             {
-                var box = db.LootBoxes.Where(x => x.UserId == UserId && x.Type == type && x.GuildId == GuildId).FirstOrDefault();
-
-                if (box == null)
-                    return 0;
-
-                return box.Amount;
+                return db.LootBoxes.Where(x => x.UserId == UserId && x.Type == type && x.GuildId == GuildId).Select(x => x.Amount).FirstOrDefault();
             }
         }
         public static async Task AddLootbox(ulong UserId, LootBoxType type, int amount, ulong GuildId = 0)
@@ -196,62 +210,23 @@ namespace Namiko
                 else
                 {
                     box.Amount += amount;
+                    if (box.Amount < 0)
+                        throw new Exception("Lootbox amount < 0");
                     db.LootBoxes.Update(box);
                 }
 
                 await db.SaveChangesAsync();
             }
         }
-        public static List<LootBox> GetAll(ulong UserId, ulong GuildId)
+        public static async Task<List<LootBox>> GetAll(ulong UserId, ulong GuildId)
         {
             using (var db = new SqliteDbContext())
             {
-                var box = db.LootBoxes.Where(x => x.UserId == UserId && (x.GuildId == GuildId || x.GuildId == 0) && x.Amount > 0).ToList();
+                var box = await db.LootBoxes.Where(x => x.UserId == UserId && (x.GuildId == GuildId || x.GuildId == 0) && x.Amount > 0).ToListAsync();
                 
                 return box;
             }
         }
     }
     
-
-    // public static class ShopItemDb
-    // {
-    //     public static List<ShopRole> GetByGuild(ulong GuildId)
-    //     {
-    //         using (var db = new SqliteDbContext())
-    //         {
-    //             return db.ShopRoles.Where(x => x.GuildId == GuildId).ToList();
-    //         }
-    //     }
-    //     public static List<ShopRole> GetAll()
-    //     {
-    //         using (var db = new SqliteDbContext())
-    //         {
-    //             return db.ShopRoles.ToList();
-    //         }
-    //     }
-    //     public static ShopRole GetByRoleId(ulong RoleId)
-    //     {
-    //         using (var db = new SqliteDbContext())
-    //         {
-    //             return db.ShopRoles.Where(x => x.RoleId == RoleId).FirstOrDefault();
-    //         }
-    //     }
-    //     public static async Task AddShopRole(ShopRole role)
-    //     {
-    //         using (var db = new SqliteDbContext())
-    //         {
-    //             db.ShopRoles.Add(role);
-    //             await db.SaveChangesAsync();
-    //         }
-    //     }
-    //     public static async Task DeleteShopRole(ShopRole role)
-    //     {
-    //         using (var db = new SqliteDbContext())
-    //         {
-    //             db.Remove(role);
-    //             await db.SaveChangesAsync();
-    //         }
-    //     }
-    // }
 }

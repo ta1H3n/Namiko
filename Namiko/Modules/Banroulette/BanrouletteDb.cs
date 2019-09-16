@@ -63,7 +63,7 @@ namespace Namiko
         {
             using (var db = new SqliteDbContext())
             {
-                return db.BanrouletteParticipants.Count(x => x.Banroulette.Id == banroulette.Id && userId == x.UserId) > 0 ? true : false;
+                return db.BanrouletteParticipants.Any(x => x.Banroulette.Id == banroulette.Id && userId == x.UserId);
             }
         }
         public static async Task UpdateBanroulette(Banroulette banroulette)
@@ -103,11 +103,11 @@ namespace Namiko
                 await db.SaveChangesAsync();
             }
         }
-        public static List<BannedUser> GetBans(bool active = true)
+        public static async Task<List<BannedUser>> ToUnban(bool active = true)
         {
             using (var db = new SqliteDbContext())
             {
-                return db.BannedUsers.Where(x => x.Active == active).ToList();
+                return await db.BannedUsers.Where(x => x.Active == active && x.DateBanEnd < System.DateTime.Now).ToListAsync();
             }
         }
     }

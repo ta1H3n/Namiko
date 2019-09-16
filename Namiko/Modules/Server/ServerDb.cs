@@ -59,12 +59,12 @@ namespace Namiko
                 return db.Servers.Where(x => x.LeaveDate > time).ToList();
             }
         }
-        public static List<Server> GetNotLeft()
+        public static HashSet<ulong> GetNotLeft(int shard = -1, int shardCount = -1)
         {
             using (var db = new SqliteDbContext())
             {
-                var time = new DateTime(0);
-                return db.Servers.Where(x => x.LeaveDate == time).ToList();
+                var zerotime = new DateTime(0);
+                return db.Servers.Where(x => x.LeaveDate == zerotime && shard == -1 ? true : (int)(x.GuildId >> 22) % shardCount == shard).Select(x => x.GuildId).ToHashSet();
             }
         }
         public static List<Server> GetOld()

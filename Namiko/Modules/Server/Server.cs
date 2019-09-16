@@ -18,7 +18,7 @@ namespace Namiko
         [Command("Server"), Alias("serverinfo", "guild", "stats"), Summary("Stats about the server.\n**Usage**: `!server`")] 
         public async Task ServerInfo([Remainder] string str = "")
         {
-            await Context.Channel.SendMessageAsync("", false, ServerUtil.ServerInfo(Context.Guild).Build());
+            await Context.Channel.SendMessageAsync("", false, (await ServerUtil.ServerInfo(Context.Guild)).Build());
         }
 
         [Command("SetPrefix"), Alias("sp", "sbp", "setbotprefix"), Summary("Sets a prefix for the bot in the server.\n**Usage**: `!sp [prefix]`"), CustomUserPermission(GuildPermission.Administrator)]
@@ -112,21 +112,21 @@ namespace Namiko
             await Context.Channel.SendMessageAsync($"Channel blacklisted. Use `{Program.GetPrefix(Context)}blch [channel_id]` in another channel to undo.\n The ID of this channel is `{Context.Channel.Id}`.");
         }
 
-        [Command("ListWelcomes"), Alias("lw"), Summary("Lists all welcomes and their IDs.")]
-        public async Task ListWelcome()
-        {
+        //[Command("ListWelcomes"), Alias("lw"), Summary("Lists all welcomes and their IDs.")]
+        //public async Task ListWelcome()
+        //{
 
-            List<WelcomeMessage> messages = WelcomeMessageDb.GetMessages();
-            string list = @"```";
-            foreach (WelcomeMessage x in messages)
-            {
-                list += x.Id + ". ";
-                list += x.Message;
-                list += '\n';
-            }
-            list += "```";
-            await Context.Channel.SendMessageAsync(list);
-        }
+        //    List<WelcomeMessage> messages = WelcomeMessageDb.GetMessages();
+        //    string list = @"```";
+        //    foreach (WelcomeMessage x in messages)
+        //    {
+        //        list += x.Id + ". ";
+        //        list += x.Message;
+        //        list += '\n';
+        //    }
+        //    list += "```";
+        //    await Context.Channel.SendMessageAsync(list);
+        //}
 
         [Command("ActivateServerPremium"), Alias("asp"), Summary("Activates server premium in the current server.\n**Usage**: `!asp [tier]`")]
         public async Task ActivateServerPremium(string tier = "", [Remainder] string str = "")

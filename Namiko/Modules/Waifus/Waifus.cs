@@ -242,7 +242,7 @@ namespace Namiko
         [Command("TopWaifus"), Alias("tw"), Summary("Shows most popular waifus.\n**Usage**: `!tw`")]
         public async Task TopWaifus([Remainder] string str = "")
         {
-            var waifus = UserInventoryDb.CountWaifus();
+            var waifus = await UserInventoryDb.CountWaifus();
             var msg = new CustomPaginatedMessage();
 
             msg.Title = ":two_hearts: Waifu Leaderboards";
@@ -261,17 +261,7 @@ namespace Namiko
         [Command("ServerTopWaifus"), Alias("stw"), Summary("Shows most popular waifus in the server.\n**Usage**: `!stw`")]
         public async Task ServerTopWaifus([Remainder] string str = "")
         {
-            var AllWaifus = UserInventoryDb.GetAllWaifuItems(Context.Guild.Id);
-            var waifus = new Dictionary<Waifu, int>();
-
-            foreach (var x in AllWaifus)
-            {
-                if (!waifus.ContainsKey(x.Waifu))
-                    waifus[x.Waifu] = 0;
-                waifus[x.Waifu]++;
-            }
-
-            var ordWaifus = waifus.OrderByDescending(x => x.Value);
+            var waifus = await UserInventoryDb.CountWaifus(Context.Guild.Id);
             var msg = new CustomPaginatedMessage();
 
             msg.Title = ":two_hearts: Waifu Leaderboards";
@@ -279,10 +269,10 @@ namespace Namiko
             fields.Add(new FieldPages
             {
                 Title = "Bought Here",
-                Pages = CustomPaginatedMessage.PagesArray(ordWaifus, 10, (x) => $"**{x.Key.Name}** - {x.Value}\n")
+                Pages = CustomPaginatedMessage.PagesArray(waifus, 10, (x) => $"**{x.Key}** - {x.Value}\n")
             });
             msg.Fields = fields;
-            msg.ThumbnailUrl = ordWaifus.First().Key.ImageUrl;
+            msg.ThumbnailUrl = WaifuDb.GetWaifu(waifus.First().Key).ImageUrl;
 
             await PagedReplyAsync(msg);
         }
@@ -290,7 +280,7 @@ namespace Namiko
         [Command("WaifuLeaderboard"), Alias("wlb"), Summary("Shows waifu worth of each person.\n**Usage**: `!wlb`")]
         public async Task WaifuLeaderboard([Remainder] string str = "")
         {
-            var AllWaifus = UserInventoryDb.GetAllWaifuItems(Context.Guild.Id);
+            var AllWaifus = await UserInventoryDb.GetAllWaifuItems(Context.Guild.Id);
             var users = new Dictionary<SocketUser, int>();
 
             foreach (var x in AllWaifus)
@@ -327,7 +317,7 @@ namespace Namiko
                 return;
             }
 
-            var waifus = WaifuWishlistDb.GetWishlist(user.Id, Context.Guild.Id);
+            var waifus = await WaifuWishlistDb.GetWishlist(user.Id, Context.Guild.Id);
             int cap = 5;
             if (PremiumDb.IsPremium(Context.User.Id, PremiumType.Waifu))
                 cap = 12;
@@ -357,7 +347,7 @@ namespace Namiko
 
             await WaifuWishlistDb.AddWaifuWish(Context.User.Id, waifu, Context.Guild.Id);
             
-            waifus = WaifuWishlistDb.GetWishlist(user.Id, Context.Guild.Id);
+            waifus = await WaifuWishlistDb.GetWishlist(user.Id, Context.Guild.Id);
             await Context.Channel.SendMessageAsync($"Added **{waifu.Name}** to your wishlist!", false, WaifuUtil.WishlistEmbed(waifus, (SocketGuildUser)user).Build());
         }
 
@@ -365,7 +355,7 @@ namespace Namiko
         public async Task WaifuWishlist(IUser user = null, [Remainder] string str = "")
         {
             user = user ?? Context.User;
-            var waifus = WaifuWishlistDb.GetWishlist(user.Id, Context.Guild.Id);
+            var waifus = await WaifuWishlistDb.GetWishlist(user.Id, Context.Guild.Id);
 
             await Context.Channel.SendMessageAsync(null, false, WaifuUtil.WishlistEmbed(waifus, (SocketGuildUser)user).Build());
         }
@@ -374,12 +364,12 @@ namespace Namiko
         public async Task RemoveWaifuWish([Remainder] string str = "")
         {
             var user = Context.User;
-            Waifu waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(str, false, WaifuWishlistDb.GetWishlist(Context.User.Id, Context.Guild.Id)), this);
+            Waifu waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(str, false, await WaifuWishlistDb.GetWishlist(Context.User.Id, Context.Guild.Id)), this);
             if (waifu == null)
             {
                 return;
             }
-            var waifus = WaifuWishlistDb.GetWishlist(user.Id, Context.Guild.Id);
+            var waifus = await WaifuWishlistDb.GetWishlist(user.Id, Context.Guild.Id);
             if(!waifus.Any(x => x.Name == waifu.Name))
             {
                 await Context.Channel.SendMessageAsync($"**{waifu.Name}** is not in your wishlist. Baka.");
@@ -472,6 +462,23 @@ namespace Namiko
                     .WithDescription($"*~ **{waifu.Name}** removed from the Mod Shop ~*")
                     .Build());
             return;
+        }
+
+        [Command("ShipWaifu"), Summary("Gives any waifu to a user.\n**Usage**: `!shipwaifu [user] [waifu_search]`"), HomeOrT1GuildPrecondition, CustomUserPermission(GuildPermission.Administrator)]
+        public async Task ShipWaifu(IUser user, [Remainder] string name)
+        {
+            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(name), this);
+            if (waifu == null)
+                return;
+
+            if (UserInventoryDb.OwnsWaifu(user.Id, waifu, Context.Guild.Id))
+            {
+                await Context.Channel.SendMessageAsync($"They already own **{waifu.Name}**");
+                return;
+            }
+
+            await UserInventoryDb.AddWaifu(user.Id, waifu, Context.Guild.Id);
+            await Context.Channel.SendMessageAsync($"**{waifu.Name}** shipped!", embed: WaifuUtil.WaifuEmbedBuilder(waifu).Build());
         }
     }
 
@@ -727,11 +734,19 @@ namespace Namiko
                 waifu.Tier = WaifuUtil.FavoritesToTier(mal.MemberFavorites.Value);
             } catch { }
 
+            if (waifu.Tier == 0)
+            {
+                waifu.Tier = 3;
+                await Context.Channel.SendMessageAsync($"Not enough favorites! Are you sure you wish to create this waifu? Remove - `!dw {waifu.Name}`");
+            }
+
             if (await WaifuDb.AddWaifu(waifu) > 0)
             {
-                await Context.Channel.SendMessageAsync($"Autocompleted **{waifu.Name}**. Has **{mal.MemberFavorites}** favorites.",
-                    false,
-                    WaifuUtil.WaifuEmbedBuilder(waifu, true, Context).Build());
+                await Context.Channel.SendMessageAsync
+                (
+                    $"Autocompleted **{waifu.Name}**. Has **{mal.MemberFavorites}** favorites.",
+                    embed: WaifuUtil.WaifuEmbedBuilder(waifu, true, Context).Build()
+                );
             }
         }
 

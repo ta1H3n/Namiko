@@ -6,8 +6,10 @@ using System.Linq;
 using System.Text;
 using System.Timers;
 using System.Reflection;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 
 using Discord;
 using Discord.Commands;
@@ -69,10 +71,10 @@ namespace Namiko
             var now = System.DateTime.Now;
             var expired = PremiumDb.GetAllPremiums(now.AddMonths(-1).AddDays(-1));
             var client = Program.GetClient();
+            var ntr = client.GetGuild((ulong)PremiumType.HomeGuildId_NOTAPREMIUMTYPE);
 
-            foreach(var premium in expired)
+            foreach (var premium in expired)
             {
-                var ntr = client.GetGuild((ulong)PremiumType.HomeGuildId_NOTAPREMIUMTYPE);
                 SocketGuildUser user = null;
                 try
                 {
@@ -101,56 +103,75 @@ namespace Namiko
             if (new Random().Next(5) != 1)
                 return;
 
+            var watch = new Stopwatch();
+            watch.Start();
+
+            int s = 0;
+            int r;
             using (var db = new SqliteDbContext())
             {
-                foreach(ulong id in db.Servers.Select(x => x.GuildId))
+                var client = Program.GetClient();
+                var nid = client.CurrentUser.Id;
+                var namikos = await db.Toasties.Where(x => x.UserId == nid && x.Amount < 200000).ToListAsync();
+
+                foreach (var nam in namikos)
                 {
-                    var nam = db.Toasties.Where(x => x.UserId == Program.GetClient().CurrentUser.Id && x.GuildId == id).FirstOrDefault();
+                    var bals = db.Toasties.Where(x => x.GuildId == nam.GuildId && x.Amount > 100 && x.UserId != nid);
 
-                    if (nam == null)
-                        continue;
-
-                    if (nam.Amount > 200000)
-                        continue;
-
-                    var sum = db.Toasties.Where(x => x.Amount > 0 && x.GuildId == id).Sum(x => Convert.ToInt64(x.Amount));
-                    if (sum / 10 > nam.Amount)
+                    int sum = 0;
+                    await bals.ForEachAsync(x =>
                     {
-                        int actualsum = 0;
-                        foreach (var user in db.Toasties.Where(x => x.GuildId == id && x.Amount > 100))
-                        {
-                            int take = user.Amount / 100;
-                            actualsum += take;
-                            user.Amount -= take;
-                            db.Toasties.Update(user);
-                        }
-                        nam.Amount += actualsum;
-                        db.Update(nam);
-                    }
+                        int t = x.Amount / 20;
+                        sum += t;
+                        x.Amount -= t;
+                    });
+
+                    nam.Amount += sum;
+                    db.Toasties.UpdateRange(bals);
                 }
-                await db.SaveChangesAsync();
+
+                db.Toasties.UpdateRange(namikos);
+                r = await db.SaveChangesAsync();
+                s = namikos.Count;
             }
+
+            watch.Stop();
+            Console.WriteLine($"[TIMER] Namiko robbed {s} servers. {r} rows affected. It took her {watch.ElapsedMilliseconds} ms.");
         }
-        private static async void Timer_CleanData(object sender, ElapsedEventArgs e)
+        public static async void Timer_CleanData(object sender, ElapsedEventArgs e)
         {
-            var servers = ServerDb.GetOld();
-            foreach(var x in servers)
+            var watch = new Stopwatch();
+            watch.Start();
+
+            int s = 0;
+            int r;
+            using (var db = new SqliteDbContext())
             {
-                await TeamDb.DeleteByGuild(x.GuildId);
-                await DailyDb.DeleteByGuild(x.GuildId);
-                await ServerDb.DeleteServer(x.GuildId);
-                await WeeklyDb.DeleteByGuild(x.GuildId);
-                await ToastieDb.DeleteByGuild(x.GuildId);
-                await MarriageDb.DeleteByGuild(x.GuildId);
-                await WaifuShopDb.DeleteByGuild(x.GuildId);
-                await PublicRoleDb.DeleteByGuild(x.GuildId);
-                await FeaturedWaifuDb.DeleteByGuild(x.GuildId);
-                await UserInventoryDb.DeleteByGuild(x.GuildId);
-                await WaifuWishlistDb.DeleteByGuild(x.GuildId);
-                await SpecialChannelDb.DeleteByGuild(x.GuildId);
-                Console.WriteLine($"Cleared server {x.GuildId}");
-                await Task.Delay(5000);
+                var date = new DateTime(0);
+                var ids = db.Servers.Where(x => x.LeaveDate != date && x.LeaveDate.AddDays(3) < DateTime.Now).Select(x => x.GuildId).ToHashSet();
+                s = ids.Count;
+
+                db.RemoveRange(db.Teams.Where(x => ids.Contains(x.GuildId)));
+                db.RemoveRange(db.Dailies.Where(x => ids.Contains(x.GuildId)));
+                db.RemoveRange(db.Servers.Where(x => ids.Contains(x.GuildId)));
+                db.RemoveRange(db.Weeklies.Where(x => ids.Contains(x.GuildId)));
+                db.RemoveRange(db.Toasties.Where(x => ids.Contains(x.GuildId)));
+                db.RemoveRange(db.Marriages.Where(x => ids.Contains(x.GuildId)));
+                db.RemoveRange(db.PublicRoles.Where(x => ids.Contains(x.GuildId)));
+                db.RemoveRange(db.WaifuWishlist.Where(x => ids.Contains(x.GuildId)));
+                db.RemoveRange(db.FeaturedWaifus.Where(x => ids.Contains(x.GuildId)));
+                db.RemoveRange(db.UserInventories.Where(x => ids.Contains(x.GuildId)));
+                db.RemoveRange(db.SpecialChannels.Where(x => ids.Contains(x.GuildId)));
+
+                var shops = db.WaifuShops.Where(x => ids.Contains(x.GuildId));
+                db.ShopWaifus.RemoveRange(db.ShopWaifus.Where(x => shops.Any(y => y.Id == x.WaifuShop.Id)));
+                db.WaifuShops.RemoveRange(shops);
+
+                r = await db.SaveChangesAsync();
             }
+
+            watch.Stop();
+            Console.WriteLine($"[TIMER] Namiko cleared {s} servers. {r} rows affected. It took her {watch.ElapsedMilliseconds} ms.");
         }
         private static async void Timer_ExpireTeamInvites(object sender, ElapsedEventArgs e)
         {
@@ -160,7 +181,7 @@ namespace Namiko
         {
             var games = Blackjack.games;
 
-            foreach (var x in games.Where(x => x.Value.Refresh.AddMinutes(1) < DateTime.Now).ToList())
+            foreach (var x in games.Where(x => x.Value.Refresh.AddMinutes(1) < DateTime.Now))
             {
                 await Blackjack.GameTimeout(x.Key, x.Value);
             }
@@ -173,26 +194,22 @@ namespace Namiko
                 string date = DateTime.Now.ToString("yyyy-MM-dd");
 
                 File.Copy(Locations.SqliteDb + "Database.sqlite", Locations.SqliteDb + "backups/Database" + date + ".sqlite");
-                File.Copy(Locations.SpookyLinesXml, Locations.SpookyLinesXml.Replace("SpookyLines.xml", "backups/SpookyLines") + date + ".xml");
                 Console.WriteLine("Backups made.");
             }
             catch { }
         }
         private static async void Timer_Unban(object sender, ElapsedEventArgs e)
         {
-            var bans = BanDb.GetBans();
+            var bans = await BanDb.ToUnban();
             foreach(var x in bans)
             {
-                if (x.DateBanEnd.CompareTo(System.DateTime.Now) == -1)
+                Console.WriteLine("Unbanning " + x.UserId);
+                await BanDb.EndBan(x.UserId, x.ServerId);
+                try
                 {
-                    Console.WriteLine("Unbanning " + x.UserId);
-                    await BanDb.EndBan(x.UserId, x.ServerId);
-                    try
-                    {
-                        await Program.GetClient().GetGuild(x.ServerId).RemoveBanAsync(x.UserId);
-                    }
-                    catch { }
+                    await Program.GetClient().GetGuild(x.ServerId).RemoveBanAsync(x.UserId);
                 }
+                catch { }
             }
         }
 
@@ -203,8 +220,7 @@ namespace Namiko
             if (Program.GetClient().CurrentUser.Id != 418823684459855882)
                 return;
 
-            var date = System.DateTime.Now.Date;
-            bool cool = false;
+            var date = System.DateTime.Now;
             List<ServerStat> servers = null;
             List<CommandStat> commands = null;
 
@@ -220,22 +236,17 @@ namespace Namiko
                     db.CommandStats.AddRange(commands);
 
                     await db.SaveChangesAsync();
-                    cool = true;
-                }
-            }
 
-            if (cool)
-            {
-                List<UsageStat> usage = new SqliteStatsDbContext().UsageStats.Where(x => x.Date > date.AddDays(-1) && x.Date < date).ToList();
-                await UsageReport(servers, commands, usage);
-                Stats.CommandCalls.Clear();
-                Stats.ServerCommandCalls.Clear();
+                    List<UsageStat> usage = db.UsageStats.Where(x => x.Date > date.AddDays(-1) && x.Date < date).ToList();
+                    await UsageReport(servers, commands, usage);
+                    Stats.CommandCalls.Clear();
+                    Stats.ServerCommandCalls.Clear();
+                }
             }
         }
         public static async void Timer_HourlyStats(object sender, ElapsedEventArgs e)
         {
             var date = System.DateTime.Now;
-            bool cool = false;
 
             using (SqliteStatsDbContext db = new SqliteStatsDbContext())
             {
@@ -245,13 +256,8 @@ namespace Namiko
                     db.UsageStats.Add(new UsageStat { Date = date.AddHours(-1).AddMinutes(-date.Minute).AddSeconds(-date.Second), Count = Stats.TotalCalls });
 
                     await db.SaveChangesAsync();
-                    cool = true;
+                    Stats.TotalCalls = 0;
                 }
-            }
-
-            if (cool)
-            {
-                Stats.TotalCalls = 0;
             }
         }
 
@@ -259,6 +265,7 @@ namespace Namiko
         {
             servers = servers.OrderByDescending(x => x.Count).ToList();
             commands = commands.OrderByDescending(x => x.Count).ToList();
+            usage = usage.OrderByDescending(x => x.Count).ToList();
             string small = SmallReport(servers, commands, usage);
             string big = BigReport(servers, commands, usage).Replace("*", "").Replace("`", "");
 
@@ -269,7 +276,6 @@ namespace Namiko
         private static string SmallReport(List<ServerStat> servers, List<CommandStat> commands, List<UsageStat> usage)
         {
             string text = System.DateTime.Now.Date.ToString() + "\n\n";
-            usage = usage.OrderByDescending(x => x.Count).ToList();
 
             text += "   Servers most used in:\n";
             for(int i = 0; i<3; i++)
@@ -598,28 +604,6 @@ namespace Namiko
                                 Subreddit = x.Args.Split(',')[0],
                                 Upvotes = Int32.Parse(x.Args.Split(',')[1])
                             });
-                    }
-                    catch { }
-                }
-            });
-            return channels;
-        }
-
-
-        // RANDOM
-        public static async Task<List<SocketTextChannel>> GetChannels(IEnumerable<ulong> ids)
-        {
-            var client = Program.GetClient();
-            var channels = new List<SocketTextChannel>();
-            await Task.Run(() =>
-            {
-                foreach (var id in ids)
-                {
-                    try
-                    {
-                        var ch = client.GetChannel(id);
-                        if (ch.GetType() == typeof(SocketTextChannel))
-                            channels.Add((SocketTextChannel)ch);
                     }
                     catch { }
                 }

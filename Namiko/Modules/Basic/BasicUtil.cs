@@ -13,18 +13,27 @@ namespace Namiko
 {
     static class BasicUtil
     {
+        public readonly static List<Color> colors;
+        public readonly static Random rnd;
         public const string _patreon = "https://www.patreon.com/taiHen";
+
+        static BasicUtil()
+        {
+            colors = new List<Color>
+            {
+                new Color(250, 202, 48),
+                new Color(255, 165, 229),
+                new Color(112, 255, 65),
+                new Color(90, 161, 255),
+                new Color(255, 69, 0),
+                new Color(123, 104, 238)
+            };
+            rnd = new Random();
+        }
 
         public static Color RandomColor()
         {
-            List<Color> colors = new List<Color>();
-            colors.Add(new Color(250, 202, 48));
-            colors.Add(new Color(255, 165, 229));
-            colors.Add(new Color(112, 255, 65));
-            colors.Add(new Color(90, 161, 255));
-            colors.Add(new Color(255, 69, 0));
-            colors.Add(new Color(123, 104, 238));
-            return colors.ElementAt(new Random().Next(colors.Count()));
+            return colors.ElementAt(rnd.Next(colors.Count));
         }
         public static Color GetColor(SocketGuildUser user)
         {
