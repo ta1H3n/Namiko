@@ -137,7 +137,7 @@ namespace Namiko
             await channel.SendMessageAsync($"{user.Mention} You're invited to join **{teamRole.Name}**! Type `{Program.GetPrefix(Context)}join {teamRole.Name}`");
 
             ISocketMessageChannel ch = (ISocketMessageChannel) Context.Client.GetChannel(ServerDb.GetServer(Context.Guild.Id).TeamLogChannelId);
-            await ch.SendMessageAsync($":KannaHype: `{Context.User}` invited `{user}` to **{teamRole.Name}**.");
+            await ch.SendMessageAsync($"<:KannaHype:571690048001671238> `{Context.User}` invited `{user}` to **{teamRole.Name}**.");
         }
 
         [Command("Join"), Summary("Accept an invite to a team.\n**Usage**: `!join [team_name]`"), CustomBotPermission(GuildPermission.ManageRoles)]
