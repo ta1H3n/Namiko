@@ -137,7 +137,7 @@ namespace Namiko
             await channel.SendMessageAsync($"{user.Mention} You're invited to join **{teamRole.Name}**! Type `{Program.GetPrefix(Context)}join {teamRole.Name}`");
 
             ISocketMessageChannel ch = (ISocketMessageChannel) Context.Client.GetChannel(ServerDb.GetServer(Context.Guild.Id).TeamLogChannelId);
-            await ch.SendMessageAsync($"`{Context.User}` invited `{user}` to **{teamRole.Name}**.");
+            await ch.SendMessageAsync($":KannaHype: `{Context.User}` invited `{user}` to **{teamRole.Name}**.");
         }
 
         [Command("Join"), Summary("Accept an invite to a team.\n**Usage**: `!join [team_name]`"), CustomBotPermission(GuildPermission.ManageRoles)]
@@ -165,7 +165,7 @@ namespace Namiko
                 await InviteDb.DeleteInvite(role.Id, user.Id);
                 await Context.Channel.SendMessageAsync($"Congratulations! You joined **{role.Name}**!");
                 ISocketMessageChannel ch = (ISocketMessageChannel)Context.Client.GetChannel(ServerDb.GetServer(Context.Guild.Id).TeamLogChannelId);
-                await ch.SendMessageAsync($"`{Context.User}` joined **{role.Name}**.");
+                await ch.SendMessageAsync($"<:TickYes:577838859107303424> `{Context.User}` joined **{role.Name}**.");
                 return;
             }
             await Context.Channel.SendMessageAsync($"You're not invited to **{teamName}**! You sure they exist?");
@@ -194,7 +194,7 @@ namespace Namiko
             await Context.Channel.SendMessageAsync($@"Ha! You left **{role.Name}**! Too bad for them ¯\_(ツ)_/¯");
 
             ISocketMessageChannel ch = (ISocketMessageChannel)Context.Client.GetChannel(ServerDb.GetServer(Context.Guild.Id).TeamLogChannelId);
-            await ch.SendMessageAsync($"`{Context.User}` left **{role.Name}**.");
+            await ch.SendMessageAsync($"<:TickNo:577838859077943306> `{Context.User}` left **{role.Name}**.");
         }
 
         [Command("TeamKick"), Alias("tk"), Summary("Kicks a user from your team.\n**Usage**: `!tk [user]`"), CustomBotPermission(GuildPermission.ManageRoles)]
@@ -220,7 +220,7 @@ namespace Namiko
             await Context.Channel.SendMessageAsync("Ha! One less to take care of!");
 
             ISocketMessageChannel ch = (ISocketMessageChannel)Context.Client.GetChannel(ServerDb.GetServer(Context.Guild.Id).TeamLogChannelId);
-            await ch.SendMessageAsync($"`{Context.User}` kicked `{user}` from **{userteam.Name}**.");
+            await ch.SendMessageAsync($":hammer: `{Context.User}` kicked `{user}` from **{userteam.Name}**.");
         }
 
         [Command("NewTeam"), Alias("nt"), Summary("Creates a new team.\n**Usage**: `!nt [LeaderRoleName] [MemberRoleName]`\n Note: if a role has a space in it's name it has to be put in quotes. \n For example: `!nt \"Role One\" \"Role Two\"`"), CustomUserPermission(GuildPermission.ManageRoles)]

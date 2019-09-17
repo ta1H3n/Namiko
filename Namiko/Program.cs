@@ -266,7 +266,7 @@ namespace Namiko
             {
                 await ch?.SendMessageAsync("Hi! Please take good care of me!", false, BasicUtil.GuildJoinEmbed(server.Prefix).Build());
             } catch { }
-            await ((ISocketMessageChannel)Client.GetChannel(StaticSettings.log_channel)).SendMessageAsync($":white_check_mark: I joined `{arg.Id}` **{arg.Name}**.\nOwner: `{arg.Owner.Id}` **{arg.Owner}**");
+            await ((ISocketMessageChannel)Client.GetChannel(StaticSettings.log_channel)).SendMessageAsync($"<:TickYes:577838859107303424> I joined `{arg.Id}` **{arg.Name}**.\nOwner: `{arg.Owner.Id}` **{arg.Owner}**");
         }
         private async Task Client_LeftGuild(SocketGuild arg)
         {
@@ -274,7 +274,7 @@ namespace Namiko
             server.LeaveDate = DateTime.Now;
             await ServerDb.UpdateServer(server);
 
-            await ((ISocketMessageChannel)Client.GetChannel(StaticSettings.log_channel)).SendMessageAsync($":x: I left `{arg.Id}` **{arg.Name}**.\nOwner: `{arg.Owner.Id}` **{arg.Owner}**");
+            await ((ISocketMessageChannel)Client.GetChannel(StaticSettings.log_channel)).SendMessageAsync($"<:TickNo:577838859077943306> I left `{arg.Id}` **{arg.Name}**.\nOwner: `{arg.Owner.Id}` **{arg.Owner}**");
         }
 
         // USER JOIN LOGS
@@ -285,11 +285,11 @@ namespace Namiko
         }
         private async Task Client_UserLeftLog(SocketGuildUser arg)
         {
-            await GetJoinLogChannel(arg.Guild)?.SendMessageAsync($":x: {UserInfo(arg)} left the server.");
+            await GetJoinLogChannel(arg.Guild)?.SendMessageAsync($"<:TickNo:577838859077943306> {UserInfo(arg)} left the server.");
         }
         private async Task Client_UserJoinedLog(SocketGuildUser arg)
         {
-            await GetJoinLogChannel(arg.Guild)?.SendMessageAsync($":white_check_mark: {UserInfo(arg)} joined the server.");
+            await GetJoinLogChannel(arg.Guild)?.SendMessageAsync($"<:TickYes:577838859107303424> {UserInfo(arg)} joined the server.");
         }
         private static string UserInfo(SocketUser user)
         {
