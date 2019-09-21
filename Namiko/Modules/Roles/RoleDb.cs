@@ -130,7 +130,7 @@ namespace Namiko
         {
             using (var db = new SqliteDbContext())
             {
-                db.RemoveRange(db.Invites.Where(x => x.Date.CompareTo(date) < 0));
+                db.RemoveRange(db.Invites.Where(x => x.Date < date));
                 return await db.SaveChangesAsync();
             }
         }

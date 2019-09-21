@@ -460,49 +460,6 @@ namespace Namiko
 
             return left;
         }
-        private static async Task<int[]> SetUpServers(DiscordSocketClient shard = null)
-        {
-            IReadOnlyCollection<SocketGuild> guilds = null;
-            if (shard == null)
-                guilds = Client.Guilds;
-            else
-                guilds = shard.Guilds;
-
-            var servers = ServerDb.GetAll();
-
-            int added = 0;
-            foreach(var x in guilds)
-            {
-                if(!servers.Any(y => y.GuildId == x.Id))
-                {
-                    var server = new Server
-                    {
-                        GuildId = x.Id,
-                        JoinDate = System.DateTime.Now,
-                        Prefix = StaticSettings.prefix
-                    };
-                    await ServerDb.UpdateServer(server);
-                    await ToastieDb.SetToasties(Client.CurrentUser.Id, 1000000, x.Id);
-                    added++;
-                }
-                await Task.Delay(2);
-            }
-
-            int left = 0;
-            foreach(var srv in servers.Where(x => x.LeaveDate == new DateTime(0)))
-            {
-                if(!guilds.Any(y => y.Id == srv.GuildId))
-                {
-                    srv.LeaveDate = DateTime.Now;
-                    await ServerDb.UpdateServer(srv);
-                    left++;
-                }
-                await Task.Delay(2);
-            }
-            Console.WriteLine($"Servers ready. Added {added}. Left {left}.");
-
-            return new int[2] { added, left };
-        }
 
         // PREFIXES
 

@@ -22,20 +22,25 @@ namespace Namiko
     public static class Timers
     {
         private static Timer Minute;
+        private static Timer MinuteVoters;
         private static Timer Minute5;
+        private static Timer MinuteReminders;
         private static Timer Hour;
+        private static Timer HourAgain;
 
-        public static void SetUp()
+        public async static Task SetUp()
         {
             Minute = new Timer(1000 * 60);
             Minute.AutoReset = true;
             Minute.Enabled = true;
             Minute.Elapsed += Timer_TimeoutBlackjack;
 
+            await Task.Delay(10000);
             Minute5 = new Timer(1000 * 60 * 5);
             Minute5.AutoReset = true;
             Minute5.Enabled = true;
 
+            await Task.Delay(10000);
             Hour = new Timer(1000 * 60 * 60);
             Hour.AutoReset = true;
             Hour.Enabled = true;
@@ -43,23 +48,37 @@ namespace Namiko
             Hour.Elapsed += Timer_NamikoSteal;
         }
 
-        public static void SetUpRelease()
+        public async static void SetUpRelease()
         {
-            SetUp();
-
+            await SetUp();
             Minute.Elapsed += Timer_HourlyStats;
-            Minute.Elapsed += Timer_Voters2;
+
+            await Task.Delay(3000);
+            MinuteVoters = new Timer(1000 * 60);
+            MinuteVoters.AutoReset = true;
+            MinuteVoters.Enabled = true;
+            MinuteVoters.Elapsed += Timer_Voters2;
 
             Minute5.Elapsed += Timer_Unban;
             Minute5.Elapsed += Timer_DailyStats;
-            Minute5.Elapsed += Timer_RedditPost;
-            Minute5.Elapsed += Timer_RemindVote;
+            // Minute5.Elapsed += Timer_RedditPost;
 
-            Hour.Elapsed += Timer_BackupData;
-            Hour.Elapsed += Timer_CleanData;
+            await Task.Delay(10000);
+            MinuteReminders = new Timer(1000 * 60 * 5);
+            MinuteReminders.AutoReset = true;
+            MinuteReminders.Enabled = true;
+            MinuteReminders.Elapsed += Timer_RemindVote;
+            
             Hour.Elapsed += Timer_UpdateDBLGuildCount;
             Hour.Elapsed += Timer_ExpirePremium;
-            Hour.Elapsed += Timer_PlayingStatus;
+            // Hour.Elapsed += Timer_PlayingStatus;
+
+            await Task.Delay(10000);
+            HourAgain = new Timer(1000 * 60 * 60);
+            HourAgain.AutoReset = true;
+            HourAgain.Enabled = true;
+            HourAgain.Elapsed += Timer_BackupData;
+            HourAgain.Elapsed += Timer_CleanData;
         }
 
         private static async void Timer_PlayingStatus(object sender, ElapsedEventArgs e)
