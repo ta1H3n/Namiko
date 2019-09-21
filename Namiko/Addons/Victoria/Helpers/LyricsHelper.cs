@@ -27,6 +27,7 @@ namespace Victoria.Helpers
 
         private static Task<string> MakeRequestAsync(string url)
         {
+            url = url.Replace("+", "%20");
             return HttpHelper.Instance.GetStringAsync($"https://api.lyrics.ovh/{url}");
         }
 

@@ -13,6 +13,9 @@ namespace Victoria.Entities
         [JsonIgnore]
         public IUser User { get; set; }
 
+        [JsonIgnore]
+        public bool IsVoice { get; set; } = false;
+
         [JsonProperty("identifier")]
         public string Id { get; internal set; }
 

@@ -7,13 +7,14 @@ using System.Linq;
 using Victoria;
 using Victoria.Entities;
 using System;
+using Victoria.Helpers;
 
 namespace Namiko
 {
     public class Music : InteractiveBase<ShardedCommandContext>
     {
-        private static readonly LavaRestClient RestClient;
-        private static readonly LavaShardClient LavaClient;
+        public static readonly LavaRestClient RestClient;
+        public static readonly LavaShardClient LavaClient;
         private static DiscordShardedClient Client;
 
         private LavaPlayer Player { get => LavaClient.GetPlayer(Context.Guild.Id); }
@@ -54,8 +55,9 @@ namespace Namiko
             var player = Player;
             if (player == null)
             {
-                await LavaClient.ConnectAsync(user.VoiceChannel, Context.Channel as ITextChannel);
-                await ReplyAsync($"Hellooo~ I joined **{user.VoiceChannel.Name}**");
+                player = await LavaClient.ConnectAsync(user.VoiceChannel, Context.Channel as ITextChannel);
+                await ReplyAsync($"Hellooo~ I joined **{user.VoiceChannel.Name}** <:NekoHi:620711213826834443>");
+                await player.PlayLocal("join");
                 return;
             }
 
@@ -72,11 +74,13 @@ namespace Namiko
         [Command("Leave")]
         public async Task Leave([Remainder]string str = "")
         {
-            if (Player != null && Player.IsPlaying)
-                await Player.StopAsync();
+            var player = Player;
+            if (player != null && player.IsPlaying)
+                await player.StopAsync();
 
-            await LavaClient.DisconnectAsync(GetVoiceChannel());
+            await player.PlayLocal("leave", true);
             await ReplyAsync($"See you next time <:NekoHi:620711213826834443>");
+            //await LavaClient.DisconnectAsync(GetVoiceChannel());
         }
 
         [Command("Play")]
@@ -91,7 +95,7 @@ namespace Namiko
 
             var player = GetPlayer();
             if (player == null)
-                player = await LavaClient.ConnectAsync(user.VoiceChannel, Context.Channel as ITextChannel);
+                player = await LavaClient.ConnectAsync(user.VoiceChannel, Context.Channel as ITextChannel); 
 
             if (player.VoiceChannel != user.VoiceChannel)
             {
@@ -253,6 +257,7 @@ namespace Namiko
             if (player.Queue.Count == 0)
             {
                 await player.StopAsync();
+                await player.PlayLocal("skip");
                 await ReplyAsync("The queue is empty, Senpai.");
                 return;
             }
@@ -525,10 +530,22 @@ namespace Namiko
             await ReplyAsync("Queue cleared... <a:Cleaning:621047051999903768>");
         }
 
-        [Command("TestLocal")]
+        [Command("Lyrics")]
         public async Task TestLocal([Remainder]string str = "")
         {
-            await LocalTrackFirstOrDefaultAsync(str);
+            var track = Player?.CurrentTrack;
+            if (track == null && str == "")
+            {
+                await ReplyAsync("I'm not playing anything, Senpai.\n" +
+                    "What song lyrics do you want me to look up?");
+                return;
+            }
+
+            if (str == "")
+                str = track.Title;
+            var lyrics = await LyricsHelper.SearchAsync(str);
+
+            await ReplyAsync(lyrics);
         }
 
 
@@ -536,26 +553,36 @@ namespace Namiko
 
         private static async Task TrackFinished(LavaPlayer player, LavaTrack track, TrackEndReason reason)
         {
+            if (track.Uri.ToString().Contains("leave"))
+            {
+                await LavaClient.DisconnectAsync(player.VoiceChannel);
+                return;
+            }
+
             if (!reason.ShouldPlayNext())
                 return;
 
-            if (player.Repeat)
+            if (player.Repeat && !track.Uri.ToString().StartsWith("file:"))
             {
                 track.IsSeekable = true;
                 player.Queue.EnqueueFirst(track);
             }
 
-            else if (player.Loop)
+            else if (player.Loop && !track.Uri.ToString().StartsWith("file:"))
             {
                 track.IsSeekable = true;
                 player.Queue.Enqueue(track);
             }
 
-            if (!player.Queue.TryDequeue(out var nextTrack) || !(nextTrack is LavaTrack))
+            if ((!player.Queue.TryDequeue(out var nextTrack) || !(nextTrack is LavaTrack)))
             {
-                await player.TextChannel.SendMessageAsync(embed: new EmbedBuilderLava(track.User)
-                    .WithDescription("There are no more tracks in the queue. We should fix that.")
-                    .Build());
+                if (!track.Uri.ToString().StartsWith("file:"))
+                {
+                    await player.PlayLocal("empty");
+                    await player.TextChannel.SendMessageAsync(embed: new EmbedBuilderLava(track.User)
+                        .WithDescription("There are no more tracks in the queue. We should fix that.")
+                        .Build());
+                }
                 return;
             }
 

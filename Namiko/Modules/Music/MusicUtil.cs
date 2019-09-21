@@ -9,12 +9,16 @@ using Victoria.Entities;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
+using System.IO;
+using System.Reflection;
 
 namespace Namiko
 {
     public static class MusicUtil
     {
-        public static async Task<LavaTrack> SelectTrack(List<LavaTrack> tracks, InteractiveBase<ShardedCommandContext> interactive)
+        private static Random rnd = new Random();
+
+        public static async Task<LavaTrack> SelectTrack(List<LavaTrack> tracks, Music interactive)
         {
             var msg = await interactive.Context.Channel.SendMessageAsync(embed: TrackSelectEmbed(tracks, (SocketGuildUser)interactive?.Context.User).Build());
 
@@ -40,7 +44,7 @@ namespace Namiko
 
             return tracks[i - 1];
         }
-        public static async Task<List<LavaTrack>> SearchAndSelect(this LavaRestClient client, string query, InteractiveBase<ShardedCommandContext> interactive)
+        public static async Task<List<LavaTrack>> SearchAndSelect(this LavaRestClient client, string query, Music interactive)
         {
             List<LavaTrack> tracks = null;
             if (Uri.IsWellFormedUriString(query, UriKind.Absolute))
@@ -54,10 +58,38 @@ namespace Namiko
             if (tracks.Count == 1)
                 return tracks;
 
+            var player = interactive.GetPlayer();
+            await player.PlayLocal("select");
             var track = await SelectTrack(tracks, interactive);
             tracks = new List<LavaTrack>();
             tracks.Add(track);
             return tracks;
+        }
+
+        // LOCAL FILES
+
+        public static async Task PlayLocal(this LavaPlayer player, string folder, bool leave = false)
+        {
+            if (player.IsPlaying)
+                return;
+
+            var tracks = await Music.RestClient.SearchTracksAsync(RandomFilePath(folder));
+            if (tracks.LoadType == LoadType.TrackLoaded)
+            {
+                var track = tracks.Tracks.FirstOrDefault();
+                if (track != null)
+                {
+                    track.IsVoice = true;
+                    await player.PlayAsync(track);
+                }
+            }
+        }
+
+        public static string RandomFilePath(string folder)
+        {
+            string root = Assembly.GetEntryAssembly().Location.Replace("Namiko.dll", "VoiceLines/");
+            string[] paths = Directory.GetFiles(root + folder, "*.mp3");
+            return paths[rnd.Next(paths.Length)];
         }
 
 
@@ -116,7 +148,8 @@ namespace Namiko
             if (track.User != null)
                 desc += $" - {track.User?.Mention ?? ""}";
 
-            eb.WithAuthor(track.Title, track.User?.GetAvatarUrl(), track.Uri.ToString());
+            var url = track.Uri.ToString().StartsWith("file:") ? "" : track.Uri.ToString();
+            eb.WithAuthor(track.Title, track.User?.GetAvatarUrl(), url);
             eb.WithDescription(desc);
 
             if (next && player.Queue.Count > 0)

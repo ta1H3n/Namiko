@@ -70,6 +70,7 @@ namespace Namiko
             Client.JoinedGuild += Client_JoinedGuild;
             Client.LeftGuild += Client_LeftGuild;
             Client.MessageReceived += Client_ReadCommand;
+            Client.UserVoiceStateUpdated += Client_UserVoiceChannel;
 
             // Join/leave logging.
             Client.UserJoined += Client_UserJoinedWelcome;
@@ -116,7 +117,7 @@ namespace Namiko
         }
 
 
-        // EVENTS
+        // COMMANDS
 
         private async Task Client_ReadCommand(SocketMessage MessageParam)
         {
@@ -203,6 +204,38 @@ namespace Namiko
             Stats.IncrementCalls();
         }
 
+        // EVENTS
+
+        private async Task Client_UserVoiceChannel(SocketUser user, SocketVoiceState before, SocketVoiceState after)
+        {
+            if (user.IsBot)
+                return;
+
+            var player = Music.LavaClient.GetPlayer(((SocketGuildUser)user).Guild.Id);
+            if (player == null)
+                return;
+
+            if (after.VoiceChannel != null && after.VoiceChannel == player.VoiceChannel)
+            {
+                if (before.VoiceChannel == after.VoiceChannel)
+                    return;
+
+                if (after.VoiceChannel.Users.Count == 2)
+                {
+                    await player.PlayLocal("someonejoinalone");
+                    return;
+                }
+
+                await player.PlayLocal("someonejoin");
+                return;
+            }
+
+            if (before.VoiceChannel == player.VoiceChannel && after.VoiceChannel != player.VoiceChannel)
+            {
+                await player.PlayLocal("someoneleave");
+                return;
+            }
+        }
         private async Task Client_ReactionAdded(Cacheable<IUserMessage, ulong> arg1, ISocketMessageChannel arg2, SocketReaction arg3)
         {
             if(arg3.MessageId != 511188952640913408)
@@ -221,15 +254,6 @@ namespace Namiko
             var ch = sch.Guild.GetTextChannel(chid);
             await ch.SendMessageAsync(GetWelcomeMessageString(user));
         }
-        private async Task Client_UserJoinedWelcome(SocketGuildUser arg)
-        {
-            if (arg.Guild.Id == 417064769309245471)
-                return;
-
-            var chid = ServerDb.GetServer(arg.Guild.Id).WelcomeChannelId;
-            var ch = arg.Guild.GetTextChannel(chid);
-            await ch.SendMessageAsync(GetWelcomeMessageString(arg));
-        }
         private async Task Client_UserLeftToasties(SocketGuildUser arg)
         {
             var amount = ToastieDb.GetToasties(arg.Id, arg.Guild.Id) / 4;
@@ -244,6 +268,9 @@ namespace Namiko
             if(arg.Severity == LogSeverity.Critical)
             await (await Client.GetUser(StaticSettings.owner).GetOrCreateDMChannelAsync()).SendMessageAsync($"`{message}`");
         }
+
+        // NAMIKO JOIN
+
         private async Task Client_JoinedGuild(SocketGuild arg)
         {
             DateTime now = DateTime.Now;
@@ -277,8 +304,17 @@ namespace Namiko
             await ((ISocketMessageChannel)Client.GetChannel(StaticSettings.log_channel)).SendMessageAsync($"<:TickNo:577838859077943306> I left `{arg.Id}` **{arg.Name}**.\nOwner: `{arg.Owner.Id}` **{arg.Owner}**");
         }
 
-        // USER JOIN LOGS
+        // USER JOIN
 
+        private async Task Client_UserJoinedWelcome(SocketGuildUser arg)
+        {
+            if (arg.Guild.Id == 417064769309245471)
+                return;
+
+            var chid = ServerDb.GetServer(arg.Guild.Id).WelcomeChannelId;
+            var ch = arg.Guild.GetTextChannel(chid);
+            await ch.SendMessageAsync(GetWelcomeMessageString(arg));
+        }
         private async Task Client_UserBannedLog(SocketUser arg1, SocketGuild arg2)
         {
             await GetJoinLogChannel(arg2)?.SendMessageAsync($":hammer: {UserInfo(arg1)} was banned.");
