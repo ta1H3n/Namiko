@@ -8,6 +8,7 @@ using Victoria;
 using Victoria.Entities;
 using System;
 using Victoria.Helpers;
+using System.Collections.Generic;
 
 namespace Namiko
 {
@@ -42,7 +43,7 @@ namespace Namiko
             return true;
         }
 
-        [Command("Join")]
+        [Command("Join"), Summary("Namiko joins your voice channel.\n**Usage**: `!join`")]
         public async Task Join([Remainder]string str = "")
         {
             var user = Context.User as SocketGuildUser;
@@ -71,19 +72,20 @@ namespace Namiko
             await ReplyAsync($"Moving over to **{user.VoiceChannel.Name}**");
         }
 
-        [Command("Leave")]
+        [Command("Leave"), Summary("Namiko leaves your voice channel.\n**Usage**: `!leave`")]
         public async Task Leave([Remainder]string str = "")
         {
             var player = Player;
             if (player != null && player.IsPlaying)
                 await player.StopAsync();
 
-            await player.PlayLocal("leave", true);
+            var voice = await player.PlayLocal("leave", true);
             await ReplyAsync($"See you next time <:NekoHi:620711213826834443>");
-            //await LavaClient.DisconnectAsync(GetVoiceChannel());
+            if (!voice)
+                await LavaClient.DisconnectAsync(GetVoiceChannel());
         }
 
-        [Command("Play")]
+        [Command("Play"), Summary("Play a song/playlist or add it to the end of a queue.\n**Usage**: `!play [link_or_search]`")]
         public async Task Play([Remainder]string query)
         {
             var user = Context.User as SocketGuildUser;
@@ -134,7 +136,7 @@ namespace Namiko
             await AddTrack(track, player);
         }
 
-        [Command("PlayFirst")]
+        [Command("PlayFirst"), Summary("Play a song/playlist or add it to the end of a queue. Automatically selects the first result from the search.\n**Usage**: `!play [link_or_search]`")]
         public async Task PlayFirst([Remainder]string query)
         {
             var user = Context.User as SocketGuildUser;
@@ -177,7 +179,7 @@ namespace Namiko
             await AddTrack(track, player);
         }
 
-        [Command("PlayNext")]
+        [Command("PlayNext"), Summary("Play a song/playlist or add it to the start of a queue.\n**Usage**: `!play [link_or_search]`")]
         public async Task PlayNext([Remainder]string query)
         {
             var user = Context.User as SocketGuildUser;
@@ -243,7 +245,7 @@ namespace Namiko
             }
         }
 
-        [Command("Skip")]
+        [Command("Skip"), Summary("Skip the current song.\n**Usage**: `!skip`")]
         public async Task Skip([Remainder]string str = "")
         {
             var player = Player;
@@ -272,7 +274,7 @@ namespace Namiko
             }
         }
 
-        [Command("Remove")]
+        [Command("Remove"), Summary("Remove a song/songs in the specified position from the queue. Works with a range.\n**Usage**: `!remove [from] [to]`")]
         public async Task Remove(int from, int to = -1, [Remainder]string str = "")
         {
             var player = Player;
@@ -310,7 +312,7 @@ namespace Namiko
             await ReplyAsync($"Removed the song at position {from} from the playlist. :fire:");
         }
 
-        [Command("Pause")]
+        [Command("Pause"), Summary("Pauses music playback.\n**Usage**: `!pause`")]
         public async Task Pause([Remainder]string str = "")
         {
             var player = Player;
@@ -334,7 +336,7 @@ namespace Namiko
             }
         }
 
-        [Command("Resume")]
+        [Command("Resume"), Summary("Resumes music playback.\n**Usage**: `!resume`")]
         public async Task Resume([Remainder]string str = "")
         {
             var player = Player;
@@ -357,7 +359,7 @@ namespace Namiko
             }
         }
 
-        [Command("Repeat")]
+        [Command("Repeat"), Summary("Repeats the current song.\n**Usage**: `!repeat`")]
         public async Task Repeat([Remainder]string str = "")
         {
             var player = Player;
@@ -380,7 +382,7 @@ namespace Namiko
             await ReplyAsync($":repeat_one: Repeating *{track.Title}*.\nHere we go again...");
         }
 
-        [Command("Loop")]
+        [Command("Loop"), Summary("Loops the current playlist.\n**Usage**: `!loop`")]
         public async Task Loop([Remainder]string str = "")
         {
             var player = Player;
@@ -401,7 +403,7 @@ namespace Namiko
             await ReplyAsync($":repeat: Looping the playlist!");
         }
 
-        [Command("Shuffle")]
+        [Command("Shuffle"), Summary("Shuffles the playlist.\n**Usage**: `!shuffle`")]
         public async Task Shuffle([Remainder]string str = "")
         {
             var player = Player;
@@ -415,7 +417,7 @@ namespace Namiko
             await ReplyAsync("Playlist shuffled... My head is spinning :dizzy:");
         }
 
-        [Command("Volume")]
+        [Command("Volume"), Summary("Sets the volume of the music playback, default is 40.\n**Usage**: `!volume [2-150]`")]
         public async Task Volume(int vol, [Remainder]string str = "")
         {
             if (vol > 150 || vol < 2)
@@ -436,7 +438,7 @@ namespace Namiko
             await ReplyAsync($"Volume set to: **{vol}**\n{comment}");
         }
 
-        [Command("Seek")]
+        [Command("Seek"), Summary("Seeks to a specific part of the current song.\n**Usage**: `!seek [timestamp, e.g. 01:30]`")]
         public async Task Seek(string timeStr, [Remainder]string str = "")
         {
             if (!TimeSpan.TryParseExact(timeStr, @"mm\:ss", null, out var time))
@@ -452,7 +454,7 @@ namespace Namiko
                 return;
             }
 
-            if (!player.CurrentTrack.IsSeekable)
+            if (player.CurrentTrack.IsStream)
             {
                 await ReplyAsync("The current track is not seekable, Senpai...");
                 return;
@@ -468,10 +470,10 @@ namespace Namiko
             await ReplyAsync($"Moving to {time.ToString(@"mm\:ss")}");
         }
 
-        [Command("NowPlaying"), Alias("Playing", "np")]
+        [Command("NowPlaying"), Alias("Playing", "np"), Summary("Shows the current playing song.\n**Usage**: `!np`")]
         public async Task NowPlaying([Remainder]string str = "")
         {
-            if (Player?.CurrentTrack == null)
+           if (Player?.CurrentTrack == null)
             {
                 await ReplyAsync("I'm not playing anything, Senpai.");
                 return;
@@ -480,7 +482,7 @@ namespace Namiko
             await ReplyAsync(embed: (await MusicUtil.NowPlayingEmbed(Player, true)).Build());
         }
 
-        [Command("Queue")]
+        [Command("Queue"), Summary("Lists all the songs currently in queue.\n**Usage**: `!queue`")]
         public async Task Queue([Remainder]string str = "")
         {
             var player = Player;
@@ -504,19 +506,17 @@ namespace Namiko
                 Url = BasicUtil._patreon
             };
             var pages = CustomPaginatedMessage.PagesArray(player.Queue.Items, 10, (x) => x.Title.ShortenString(70, 65) + "\n");
-            var first = pages.First();
             if (player.Loop)
-                first = first.Insert(0, ":repeat: Looping Playlist\n");
+                msg.Title = "Looping Playlist - :repeat:";
 
-            //msg.Pages = pages.Select((x, i) => index == i ? value : x);
-            msg.Pages = pages; 
-
+            msg.Pages = pages;
+            msg.PageCount = pages.Count();
             msg.Footer = $"Volume: {player.CurrentVolume} ⚬ Powered by: 🌋 Victoria - Lavalink ⚬ ";
 
             await PagedReplyAsync(msg);
         }
 
-        [Command("Clear")] 
+        [Command("Clear"), Summary("Cleares the queue.\n**Usage**: `!clear`")] 
         public async Task Clear([Remainder]string str = "")
         {
             var player = Player;
@@ -530,8 +530,8 @@ namespace Namiko
             await ReplyAsync("Queue cleared... <a:Cleaning:621047051999903768>");
         }
 
-        [Command("Lyrics")]
-        public async Task TestLocal([Remainder]string str = "")
+        [Command("Lyrics"), Summary("Looks up the lyrics of the current song or searches if specified.\n**Usage**: `!lyrics [song-optional]`")]
+        public async Task Lyrics([Remainder]string str = "")
         {
             var track = Player?.CurrentTrack;
             if (track == null && str == "")
@@ -545,7 +545,155 @@ namespace Namiko
                 str = track.Title;
             var lyrics = await LyricsHelper.SearchAsync(str);
 
-            await ReplyAsync(lyrics);
+            var lines = lyrics.Split('\n');
+            string section = "";
+            foreach(var line in lines)
+            {
+                if ((section.Length + line.Length) > 2047)
+                {
+                    await ReplyAsync(section);
+                    section = "";
+                }
+                section += line + '\n';
+            }
+            await ReplyAsync(section);
+        }
+
+        [Command("SavePlaylist"), Summary("Saves the current playlist to be loaded later.\n**Usage**: `!saveplaylist [name]`")]
+        public async Task SavePlaylist([Remainder]string name)
+        {
+            var player = Player;
+            if (player == null || player.Queue.Count <= 0)
+            {
+                await ReplyAsync("There is nothing to save, Senpai...");
+                return;
+            }
+
+            if (MusicDb.IsPlaylist(name, Context.Guild.Id))
+            {
+                await ReplyAsync($"There already is a playlist called **{name}**.\n" +
+                    $"Remove it with `{Program.GetPrefix(Context)}DeletePlaylist`");
+                return;
+            }
+
+            var tracks = new List<LavaTrack>();
+            if (player.CurrentTrack != null)
+                tracks.Add(player.CurrentTrack);
+
+            tracks.AddRange(player.Queue.Items);
+            var playlist = new Playlist
+            {
+                GuildId = Context.Guild.Id,
+                Name = name,
+                UserId = Context.User.Id
+            };
+
+            var playlistTracks = new List<Track>();
+            foreach (var x in tracks)
+            {
+                playlistTracks.Add(new Track
+                {
+                    Playlist = playlist,
+                    SongHash = x.Hash,
+                    UserId = x.User.Id
+                });
+            }
+
+            playlist.Tracks = playlistTracks;
+
+            var res = await MusicDb.AddPlaylist(playlist);
+            Console.WriteLine($"{res} rows affected.");
+            await ReplyAsync($"Playlist **{playlist.Name}** with **{playlist.Tracks.Count}** tracks has been saved!");
+        }
+
+        [Command("Playlists"), Summary("Lists all your saved playlists.\n**Usage**: `!playlists`")]
+        public async Task Playlists([Remainder]string str = "")
+        {
+            var playlists = await MusicDb.GetPlaylists(Context.Guild.Id);
+            await ReplyAsync(embed: MusicUtil.PlaylistListEmbed(playlists, Context.User).Build());
+        }
+
+        [Command("LoadPlaylist"), Summary("Loads a saved playlist to the queue.\n**Usage**: `!loadplaylist`")]
+        public async Task LoadPlaylist([Remainder]string str = "")
+        {
+            var player = Player;
+            var playlists = await MusicDb.GetPlaylists(Context.Guild.Id);
+
+            var playlist = await this.SelectItem(playlists, MusicUtil.PlaylistListEmbed(playlists, Context.User, true));
+            if (playlist == null)
+                return;
+
+            playlist = await MusicDb.GetPlaylist(playlist.Id);
+            var tracks = new List<LavaTrack>();
+            if (player.Queue.Count > 0)
+            {
+                var load = new DialogueBoxOption();
+                load.Action = async (IUserMessage message) =>
+                {
+                    player.Queue.Clear();
+                    foreach (var x in playlist.Tracks)
+                    {
+                        var track = TrackHelper.DecodeTrack($"{x.SongHash}");
+                        track.User = Context.Guild.GetUser(x.UserId);
+                        tracks.Add(track);
+                    }
+                    player.Queue.EnqueueRange(tracks);
+                    await message.ModifyAsync(x => {
+                        x.Embed = new EmbedBuilderLava(Context.User).WithDescription($"Loaded **{playlist.Tracks.Count}** songs from **{playlist.Name}**").Build();
+                    });
+
+                    if (!player.IsPlaying && player.Queue.Count > 0)
+                    {
+                        await player.PlayAsync(player.Queue.Dequeue());
+                        await player.TextChannel.SendMessageAsync(embed: (await MusicUtil.NowPlayingEmbed(player)).Build());
+                    }
+                };
+                load.After = OnExecute.RemoveReactions;
+
+                var cancel = new DialogueBoxOption();
+                cancel.After = OnExecute.Delete;
+
+                var dia = new DialogueBox();
+                dia.Options.Add(Emote.Parse("<:TickYes:577838859107303424>"), load);
+                dia.Options.Add(Emote.Parse("<:TickNo:577838859077943306>"), cancel);
+                dia.Timeout = new TimeSpan(0, 1, 0);
+                dia.Embed = new EmbedBuilderLava(Context.User)
+                    .WithDescription($"Are you sure, senpai?\nLoading **{playlist.Name}** will overwrite the current queue.")
+                    .Build();
+
+                await DialogueReplyAsync(dia);
+            }
+            else
+            {
+                foreach (var x in playlist.Tracks)
+                {
+                    var track = TrackHelper.DecodeTrack($"{x.SongHash}");
+                    track.User = Context.Guild.GetUser(x.UserId);
+                    tracks.Add(track);
+                }
+                player.Queue.EnqueueRange(tracks);
+                await ReplyAsync($"Loaded **{playlist.Tracks.Count}** songs from **{playlist.Name}**");
+
+                if (!player.IsPlaying && player.Queue.Count > 0)
+                {
+                    await player.PlayAsync(player.Queue.Dequeue());
+                    await player.TextChannel.SendMessageAsync(embed: (await MusicUtil.NowPlayingEmbed(player)).Build());
+                }
+            }
+        }
+
+        [Command("DeletePlaylist"), Summary("Deletes a saved playlist.\n**Usage**: `!deleteplaylist`")]
+        public async Task DeletePlaylist([Remainder]string str = "")
+        {
+            var player = Player;
+            var playlists = await MusicDb.GetPlaylists(Context.Guild.Id, false);
+
+            var playlist = await this.SelectItem(playlists, MusicUtil.PlaylistListEmbed(playlists, Context.User, true));
+            if (playlist == null)
+                return;
+
+            await MusicDb.DeletePlaylist(playlist.Id);
+            await ReplyAsync($"**{playlist.Name}** deleted <:KannaSad:625348483968401419>");
         }
 
 
@@ -553,7 +701,7 @@ namespace Namiko
 
         private static async Task TrackFinished(LavaPlayer player, LavaTrack track, TrackEndReason reason)
         {
-            if (track.Uri.ToString().Contains("leave"))
+            if (track.Uri.ToString().Contains("leave") && track.Uri.ToString().StartsWith("file:"))
             {
                 await LavaClient.DisconnectAsync(player.VoiceChannel);
                 return;

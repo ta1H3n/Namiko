@@ -41,6 +41,8 @@ namespace Namiko
         public DbSet<Param> Params { get; set; }
         public DbSet<ShopWaifu> ShopWaifus { get; set; }
         public DbSet<WaifuShop> WaifuShops { get; set; }
+        public DbSet<Track> Tracks { get; set; }
+        public DbSet<Playlist> Playlists { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder Options)
         {

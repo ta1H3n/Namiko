@@ -125,7 +125,7 @@ namespace Namiko
             eb.WithImageUrl(StaticSettings._banner);
             return eb;
         }
-        public static string IdToMention(ulong id)
+        public static string IdToMention(this ulong id)
         {
             return $"<@!{id}>";
         }

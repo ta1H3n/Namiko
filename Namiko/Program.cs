@@ -232,7 +232,7 @@ namespace Namiko
 
             if (before.VoiceChannel == player.VoiceChannel && after.VoiceChannel != player.VoiceChannel)
             {
-                await player.PlayLocal("someoneleave");
+                await player.PlayLocal("someoneleft");
                 return;
             }
         }
@@ -410,7 +410,7 @@ namespace Namiko
             Diag = false;
             Debug = true;
             Locations.SetUpDebug();
-            Timers.SetUp();
+            _ = Timers.SetUp();
             _ = LootboxStats.Reload();
             SetUpPrefixes();
         }

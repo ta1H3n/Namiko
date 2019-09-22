@@ -68,10 +68,12 @@ namespace Namiko
 
         // LOCAL FILES
 
-        public static async Task PlayLocal(this LavaPlayer player, string folder, bool leave = false)
+        public static async Task<bool> PlayLocal(this LavaPlayer player, string folder, bool leave = false)
         {
+            return false;
+
             if (player.IsPlaying)
-                return;
+                return false;
 
             var tracks = await Music.RestClient.SearchTracksAsync(RandomFilePath(folder));
             if (tracks.LoadType == LoadType.TrackLoaded)
@@ -81,8 +83,10 @@ namespace Namiko
                 {
                     track.IsVoice = true;
                     await player.PlayAsync(track);
+                    return true;
                 }
             }
+            return false;
         }
 
         public static string RandomFilePath(string folder)
@@ -118,7 +122,10 @@ namespace Namiko
             var eb = new EmbedBuilderLava(author);
 
             int i = 0;
-            string str = loop ? ":repeat: Looping Playlist\n" : "";
+            if (loop)
+                eb.WithTitle("Looping Playlist - :repeat:");
+            //string str = loop ? ":repeat: - **Looping Playlist**\n" : "";
+            string str = "";
             foreach (var track in tracks)
             {
                 i++;
@@ -136,7 +143,7 @@ namespace Namiko
 
             string emote = "▷";
             if (player.Repeat)
-                emote = ":repeat_one:";
+                emote = ":repeat_one: ▷";
 
             string desc = "";
             if (player.CurrentTrack.IsStream)
@@ -158,6 +165,37 @@ namespace Namiko
             eb.WithThumbnailUrl(await track.FetchThumbnailAsync());
             eb.WithFooter($"Volume: {player.CurrentVolume} ⚬ Powered by: 🌋 Victoria - Lavalink");
             eb.WithColor(BasicUtil.RandomColor());
+            return eb;
+        }
+        public static EmbedBuilder PlaylistListEmbed(List<Playlist> playlists, IUser author = null, bool select = false)
+        {
+            var eb = new EmbedBuilderLava(author);
+            if (playlists.Count < 1)
+            {
+                eb.WithDescription("*~ No Playlists Found ~*");
+                return eb;
+            }
+            string list = "";
+
+            int i = 0;
+            int p = 1;
+            foreach (var playlist in playlists)
+            {
+                if (list.Length + playlist.Name.Length > 1000)
+                {
+                    eb.AddField($"Playlists#{p++}", list);
+                    list = "";
+                }
+                list += $"`#{++i}` {playlist.Name} - {playlist.UserId.IdToMention()}\n";
+            }
+            eb.AddField($"Playlists#{p++}", list);
+
+            if (select)
+            {
+                eb.WithDescription("Enter the number of the playlist you wish to select");
+                eb.WithFooter("Times out in 23 seconds");
+            }
+
             return eb;
         }
     }

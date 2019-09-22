@@ -37,6 +37,12 @@
     <Compile Remove="Migrations\20190509135536_reddit.cs" />
     <Compile Remove="Migrations\20190814144614_gachashop.cs" />
     <Compile Remove="Migrations\20190814144614_gachashop.Designer.cs" />
+    <Compile Remove="Migrations\20190922110858_Playlists.cs" />
+    <Compile Remove="Migrations\20190922110858_Playlists.Designer.cs" />
+    <Compile Remove="Migrations\20190922114542_playlists.cs" />
+    <Compile Remove="Migrations\20190922114542_playlists.Designer.cs" />
+    <Compile Remove="Migrations\20190922133345_playlists.cs" />
+    <Compile Remove="Migrations\20190922133345_playlists.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>
