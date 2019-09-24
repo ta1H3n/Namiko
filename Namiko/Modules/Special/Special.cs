@@ -92,10 +92,7 @@ namespace Namiko
         [Command("Die"), Summary("Kills Namiko"), HomePrecondition]
         public async Task Die()
         {
-            var ch = Context.Client.GetChannel(StaticSettings.log_channel) as ISocketMessageChannel;
-            Task.Run(() => ch.SendMessageAsync($"Killed by {Context.User.Mention} :gun:"));
-
-            Task.Run(() => Context.Channel.SendMessageAsync("Bye bye... :wave:", false, ImageUtil.ToEmbed(ImageDb.GetRandomImage("sudoku")).Build()));
+            _ = WebhookClients.NamikoLogChannel.SendMessageAsync($"`{DateTime.Now.ToString("HH:mm:ss")}` {Context.Client.CurrentUser.Username} killed by {Context.User.Mention} :gun:");
 
             var cts = Program.GetCts();
             await Context.Client.StopAsync();

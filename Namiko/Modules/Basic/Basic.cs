@@ -179,7 +179,7 @@ namespace Namiko
                 } catch { };
             }
             else
-                eb = AllHelpEmbed(commandService, context.Guild == null ? false : ((SocketGuildUser)context.User).Roles.Any(x => x.Id == StaticSettings.insider_role));
+                eb = AllHelpEmbed(commandService, context.Guild == null ? false : ((SocketGuildUser)context.User).Roles.Any(x => x.Id == Config.InsiderRoleId));
 
             if(!desc.Equals(""))
             {

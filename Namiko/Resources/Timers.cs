@@ -16,6 +16,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using DiscordBotsList.Api.Objects;
 using Reddit.Controllers;
+using Discord.Webhook;
 
 namespace Namiko
 {
@@ -288,8 +289,9 @@ namespace Namiko
             string small = SmallReport(servers, commands, usage);
             string big = BigReport(servers, commands, usage).Replace("*", "").Replace("`", "");
 
+            using (var ch = new DiscordWebhookClient(Config.UsageReportWebhook))
             using (var stream = GenerateStreamFromString(big)) {
-                await ((SocketTextChannel)Program.GetClient().GetChannel(550619142105989131)).SendFileAsync(stream, System.DateTime.Now.AddDays(-1).Date.ToString("yyyy-MM-dd") + "_Namiko.txt", small);
+                await ch.SendFileAsync(stream, System.DateTime.Now.AddDays(-1).Date.ToString("yyyy-MM-dd") + "_Namiko.txt", small);
             }
         }
         private static string SmallReport(List<ServerStat> servers, List<CommandStat> commands, List<UsageStat> usage)
@@ -412,7 +414,7 @@ namespace Namiko
 
                 if (add.Count > 500)
                 {
-                    var ch = await Program.GetClient().GetUser(StaticSettings.owner).GetOrCreateDMChannelAsync();
+                    var ch = await Program.GetClient().GetUser(Config.OwnerId).GetOrCreateDMChannelAsync();
                     await ch.SendMessageAsync($"Found {add.Count} new voters.");
                     return;
                 }

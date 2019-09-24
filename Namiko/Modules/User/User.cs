@@ -6,6 +6,7 @@ using Discord.WebSocket;
 using System.Threading.Tasks;
 using Discord.Addons.Interactive;
 using System.Collections.Generic;
+using Discord.Webhook;
 
 namespace Namiko {
     public class User : InteractiveBase<ShardedCommandContext> {
@@ -534,12 +535,18 @@ namespace Namiko {
                 text += $"You have no user premium... Try `{Program.GetPrefix(Context)}donate`";
 
             await Context.Channel.SendMessageAsync(text);
-            if(log)
+            if (log)
             {
-                await ((SocketTextChannel)Program.GetClient().GetChannel(StaticSettings._premiumLogChannel)).SendMessageAsync(embed: new EmbedBuilderPrepared(Context.User)
-                    .WithDescription($"{Context.User.Mention} `{Context.User.Id}`\n{text}")
-                    .WithFooter(System.DateTime.Now.ToLongDateString())
-                    .Build());
+                using (var ch = new DiscordWebhookClient(Config.PremiumWebhook))
+                {
+                    await ch.SendMessageAsync(embeds: new List<Embed>
+                    {
+                        new EmbedBuilderPrepared(Context.User)
+                            .WithDescription($"{Context.User.Mention} `{Context.User.Id}`\n{text}")
+                            .WithFooter(System.DateTime.Now.ToLongDateString())
+                            .Build()
+                    });
+                }
             }
         }
     }

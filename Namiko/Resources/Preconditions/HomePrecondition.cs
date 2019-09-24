@@ -14,7 +14,7 @@ namespace Namiko
         {
             try
             {
-                if (context.User.Id == StaticSettings.owner || ((SocketGuildUser) context.User).Roles.Any(x => x.Id == StaticSettings.insider_role))
+                if (context.User.Id == Config.OwnerId || ((SocketGuildUser) context.User).Roles.Any(x => x.Id == Config.InsiderRoleId))
                     return Task.FromResult(PreconditionResult.FromSuccess());
                 else
                 {

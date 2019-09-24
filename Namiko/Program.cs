@@ -1,21 +1,21 @@
-﻿using System;
-using System.IO;
-using System.Reflection;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using System.Linq;
-using Discord;
-using Discord.Commands;
-using Discord.WebSocket;
+﻿using Discord;
 using Discord.Addons.Interactive;
-using Newtonsoft.Json;
-using Namiko.Data;
-using Microsoft.Extensions.DependencyInjection;
-using System.Collections.Generic;
-using System.Threading;
-using Victoria;
-using System.Net;
+using Discord.Commands;
+using Discord.Webhook;
+using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Namiko.Data;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
+using Victoria;
 
 #pragma warning disable CS1998
 
@@ -53,7 +53,8 @@ namespace Namiko
             //SetUpRelease();
 
             Client = new DiscordShardedClient(new DiscordSocketConfig {
-                LogLevel = LogSeverity.Info
+                LogLevel = LogSeverity.Info,
+                DefaultRetryMode = RetryMode.Retry502
             });
             
             Commands = new CommandService(new CommandServiceConfig
@@ -80,8 +81,9 @@ namespace Namiko
 
             Commands.Log += Client_Log;
             Commands.CommandExecuted += Commands_CommandExecuted;
-            
-            await Client.LoginAsync(TokenType.Bot, ParseSettingsJson());
+
+            ParseSettingsJson();
+            await Client.LoginAsync(TokenType.Bot, Config.Token);
             await Client.StartAsync();
 
             ShardCount = Client.Shards.Count;
@@ -145,10 +147,10 @@ namespace Namiko
 
             if (!isPrefixed)
                 return;
-            if (Pause && Context.User.Id != StaticSettings.owner)
+            if (Pause && Context.User.Id != Config.OwnerId)
             {
                 var cmds = Commands.Search(Context, ArgPos);
-                if (cmds.IsSuccess && Pause && Context.User.Id != StaticSettings.owner)
+                if (cmds.IsSuccess && Pause && Context.User.Id != Config.OwnerId)
                 {
                     await Context.Channel.SendMessageAsync("Commands disabled temporarily. Try again later.");
                     return;
@@ -265,8 +267,8 @@ namespace Namiko
             string message = $"{DateTime.Now} at {arg.Source}] {arg.Message}";
             Console.WriteLine(message);
 
-            if(arg.Severity == LogSeverity.Critical)
-            await (await Client.GetUser(StaticSettings.owner).GetOrCreateDMChannelAsync()).SendMessageAsync($"`{message}`");
+            if(arg.Severity == LogSeverity.Error)
+                await WebhookClients.NamikoLogChannel.SendMessageAsync($"`{message}`");
         }
 
         // NAMIKO JOIN
@@ -280,7 +282,7 @@ namespace Namiko
                 JoinDate = now
             };
             server.LeaveDate = new DateTime(0);
-            server.Prefix = StaticSettings.prefix;
+            server.Prefix = Config.DefaultPrefix;
             await ServerDb.UpdateServer(server);
 
             if(server.JoinDate.Equals(now))
@@ -293,7 +295,7 @@ namespace Namiko
             {
                 await ch?.SendMessageAsync("Hi! Please take good care of me!", false, BasicUtil.GuildJoinEmbed(server.Prefix).Build());
             } catch { }
-            await ((ISocketMessageChannel)Client.GetChannel(StaticSettings.log_channel)).SendMessageAsync($"<:TickYes:577838859107303424> I joined `{arg.Id}` **{arg.Name}**.\nOwner: `{arg.Owner.Id}` **{arg.Owner}**");
+            await WebhookClients.GuildJoinLogChannel.SendMessageAsync($"<:TickYes:577838859107303424> {Client.CurrentUser.Username} joined `{arg.Id}` **{arg.Name}**.\nOwner: `{arg.Owner.Id}` **{arg.Owner}**");
         }
         private async Task Client_LeftGuild(SocketGuild arg)
         {
@@ -301,7 +303,7 @@ namespace Namiko
             server.LeaveDate = DateTime.Now;
             await ServerDb.UpdateServer(server);
 
-            await ((ISocketMessageChannel)Client.GetChannel(StaticSettings.log_channel)).SendMessageAsync($"<:TickNo:577838859077943306> I left `{arg.Id}` **{arg.Name}**.\nOwner: `{arg.Owner.Id}` **{arg.Owner}**");
+            await WebhookClients.GuildJoinLogChannel.SendMessageAsync($"<:TickNo:577838859077943306> {Client.CurrentUser.Username} left `{arg.Id}` **{arg.Name}**.\nOwner: `{arg.Owner.Id}` **{arg.Owner}**");
         }
 
         // USER JOIN
@@ -342,16 +344,16 @@ namespace Namiko
         private async Task Client_ShardReady(DiscordSocketClient arg)
         {
             ReadyCount++;
-            var ch = Client.GetChannel(StaticSettings.log_channel) as ISocketMessageChannel;
+            string name = Client.CurrentUser.Username;
             Console.WriteLine($"{DateTime.Now} - Shard {arg.ShardId} Ready");
-            _ = ch.SendMessageAsync($"`{DateTime.Now} - Shard {arg.ShardId} Ready`");
+            _ = WebhookClients.NamikoLogChannel.SendMessageAsync($"`{DateTime.Now.ToString("HH:mm:ss")}` - `Shard {arg.ShardId} Ready`");
             
             int res;
             res = await CheckJoinedGuilds(arg);
             if (res > 0)
             {
                 Console.WriteLine($"{DateTime.Now} - Joined {res} Guilds.");
-                _ = ch.SendMessageAsync($"`{DateTime.Now} - Joined {res} Guilds.`");
+                _ = WebhookClients.NamikoLogChannel.SendMessageAsync($"`{DateTime.Now.ToString("HH:mm:ss")}` <:TickYes:577838859107303424> {name} joined **{res}** Guilds.");
             }
 
             if (Launch && ReadyCount >= ShardCount)
@@ -363,7 +365,7 @@ namespace Namiko
                 if (res > 0)
                 {
                     Console.WriteLine($"{DateTime.Now} - Left {res} Guilds.");
-                    _ = ch.SendMessageAsync($"`{DateTime.Now} - Left {res} Guilds.`");
+                    _ = WebhookClients.NamikoLogChannel.SendMessageAsync($"`{DateTime.Now.ToString("HH:mm:ss")}` <:TickNo:577838859077943306> {name} left {res} Guilds.`");
                 }
             }
         }
@@ -377,7 +379,7 @@ namespace Namiko
                 WebUtil.SetUpDbl(Client.CurrentUser.Id);
             }
         }
-        private static string ParseSettingsJson()
+        private static void ParseSettingsJson()
         {
             string JSON = "";
             string JSONLocation = Locations.SettingsJSON;
@@ -387,14 +389,8 @@ namespace Namiko
                 JSON = ReadSettings.ReadToEnd();
             }
 
-            Settings Settings = JsonConvert.DeserializeObject<Settings>(JSON);
-            StaticSettings.owner = Settings.Owner;
-            StaticSettings.prefix = Settings.Prefix;
-            StaticSettings.insider_role = Settings.home_server;
-            StaticSettings.log_channel = Settings.log_channel;
-            StaticSettings.version = Settings.Version;
-
-            return Settings.Token;
+            JsonConvert.DeserializeObject<Config>(JSON);
+            return;
         }
         public static bool SetPause()
         {
@@ -447,7 +443,7 @@ namespace Namiko
                             GuildId = guild.Id,
                             JoinDate = System.DateTime.Now,
                             LeaveDate = zerotime,
-                            Prefix = StaticSettings.prefix
+                            Prefix = Config.DefaultPrefix
                         });
 
                         var bal = await db.Toasties.FirstOrDefaultAsync(x => x.UserId == Client.CurrentUser.Id && x.GuildId == guild.Id);
@@ -501,19 +497,19 @@ namespace Namiko
 
         public static string GetPrefix(ulong guildId)
         {
-            return Prefixes.GetValueOrDefault(guildId) ?? StaticSettings.prefix;
+            return Prefixes.GetValueOrDefault(guildId) ?? Config.DefaultPrefix;
         }
         public static string GetPrefix(SocketCommandContext context)
         {
-            return context.Guild == null ? StaticSettings.prefix : GetPrefix(context.Guild.Id);
+            return context.Guild == null ? Config.DefaultPrefix : GetPrefix(context.Guild.Id);
         }
         public static string GetPrefix(SocketGuildUser user)
         {
-            return user.Guild == null ? StaticSettings.prefix : GetPrefix(user.Guild.Id);
+            return user.Guild == null ? Config.DefaultPrefix : GetPrefix(user.Guild.Id);
         }
         public static string GetPrefix(SocketGuild guild)
         {
-            return guild == null ? StaticSettings.prefix : GetPrefix(guild.Id);
+            return guild == null ? Config.DefaultPrefix : GetPrefix(guild.Id);
         }
         private static void SetUpPrefixes()
         {

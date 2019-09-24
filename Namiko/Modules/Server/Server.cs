@@ -1,14 +1,11 @@
-﻿using System;
+﻿using Discord;
+using Discord.Addons.Interactive;
+using Discord.Commands;
+using Discord.Webhook;
+using Discord.WebSocket;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
-using Discord.Commands;
-using Discord.WebSocket;
-
-
-using Discord.Addons.Interactive;
 
 namespace Namiko
 {
@@ -202,10 +199,16 @@ namespace Namiko
             await Context.Channel.SendMessageAsync(text);
             if (log)
             {
-                await ((SocketTextChannel)Program.GetClient().GetChannel(StaticSettings._premiumLogChannel)).SendMessageAsync(embed: new EmbedBuilderPrepared(Context.User)
-                    .WithDescription($"{Context.User.Mention} `{Context.User.Id}`\n{Context.Guild.Name} `{Context.Guild.Id}`\n{text}")
-                    .WithFooter(System.DateTime.Now.ToLongDateString())
-                    .Build());
+                using (var ch = new DiscordWebhookClient(Config.PremiumWebhook))
+                {
+                    await ch.SendMessageAsync(embeds: new List<Embed>
+                    {
+                        new EmbedBuilderPrepared(Context.User)
+                            .WithDescription($"{Context.User.Mention} `{Context.User.Id}`\n{Context.Guild.Name} `{Context.Guild.Id}`\n{text}")
+                            .WithFooter(System.DateTime.Now.ToLongDateString())
+                            .Build()
+                    });
+                }
             }
         }
     }
