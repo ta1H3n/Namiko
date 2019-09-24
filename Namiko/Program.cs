@@ -267,7 +267,7 @@ namespace Namiko
             string message = $"{DateTime.Now} at {arg.Source}] {arg.Message}";
             Console.WriteLine(message);
 
-            if(arg.Severity == LogSeverity.Error)
+            if(arg.Severity == LogSeverity.Error || arg.Severity == LogSeverity.Critical || ((arg.Message.Contains("Connected") || arg.Message.Contains("Disconnected")) && arg.Source.Contains("Shard")))
                 await WebhookClients.NamikoLogChannel.SendMessageAsync($"`{message}`");
         }
 
