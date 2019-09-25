@@ -9,11 +9,13 @@ namespace Namiko
     {
         public static DiscordWebhookClient NamikoLogChannel { get; }
         public static DiscordWebhookClient GuildJoinLogChannel { get; }
+        public static DiscordWebhookClient ErrorLogChannel { get; }
 
         static WebhookClients()
         {
             NamikoLogChannel = new DiscordWebhookClient(Config.LogWebhook);
             GuildJoinLogChannel = new DiscordWebhookClient(Config.GuildJoinWebhook);
+            ErrorLogChannel = new DiscordWebhookClient(Config.ErrorLogWebhook);
         }
     }
 }

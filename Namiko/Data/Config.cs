@@ -35,5 +35,8 @@ namespace Namiko
 
         [JsonProperty("usageReportWebhook")]
         public static string UsageReportWebhook { get; set; }
+
+        [JsonProperty("errorLogWebhook")]
+        public static string ErrorLogWebhook { get; set; }
     }
 }

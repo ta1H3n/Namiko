@@ -61,7 +61,7 @@ namespace Namiko
             {
                 CaseSensitiveCommands = false,
                 DefaultRunMode = Diag ? RunMode.Sync : RunMode.Async,
-                LogLevel = LogSeverity.Critical
+                LogLevel = LogSeverity.Info
             });
             
             //Client.Ready += Client_Ready;
@@ -74,7 +74,8 @@ namespace Namiko
             Client.UserVoiceStateUpdated += Client_UserVoiceChannel;
 
             // Join/leave logging.
-            Client.UserJoined += Client_UserJoinedWelcome;
+            if (!Debug)
+                Client.UserJoined += Client_UserJoinedWelcome;
             Client.UserJoined += Client_UserJoinedLog;
             Client.UserLeft += Client_UserLeftLog;
             Client.UserBanned += Client_UserBannedLog;
@@ -264,11 +265,33 @@ namespace Namiko
         }
         private async Task Client_Log(LogMessage arg)
         {
-            string message = $"{DateTime.Now} at {arg.Source}] {arg.Message}";
-            Console.WriteLine(message);
+            string shortdate = DateTime.Now.ToString("HH:mm:ss");
+            string longdate = DateTime.Now.ToString();
 
-            if(arg.Severity == LogSeverity.Error || arg.Severity == LogSeverity.Critical || ((arg.Message.Contains("Connected") || arg.Message.Contains("Disconnected")) && arg.Source.Contains("Shard")))
-                await WebhookClients.NamikoLogChannel.SendMessageAsync($"`{message}`");
+            string exc = arg.Exception == null ? "" : $"\n`{arg.Exception.HResult}` `{arg.Exception.Message}`. Stack trace: `{arg.Exception.StackTrace}`. At: `{arg.Exception.TargetSite.Name}`";
+            switch(arg.Severity)
+            {
+                case LogSeverity.Info:
+                    Console.WriteLine($"I3 {longdate} at {arg.Source}] {arg.Message}{exc}");
+                    break;
+                case LogSeverity.Warning:
+                    Console.WriteLine($"W2 {longdate} at {arg.Source}] {arg.Message}{exc}");
+                    await WebhookClients.ErrorLogChannel.SendMessageAsync($":warning:`{shortdate}` - `{arg.Message}`{exc}");
+                    break;
+                case LogSeverity.Error:
+                    Console.WriteLine($"E1 {longdate} at {arg.Source}] {arg.Message}{exc}");
+                    await WebhookClients.ErrorLogChannel.SendMessageAsync($"<:TickNo:577838859077943306>`{shortdate}` - `{arg.Message}`{exc}");
+                    break;
+                case LogSeverity.Critical:
+                    Console.WriteLine($"C0 {longdate} at {arg.Source}] {arg.Message}{exc}");
+                    await WebhookClients.ErrorLogChannel.SendMessageAsync($"<:TickNo:577838859077943306><:TickNo:577838859077943306>`{shortdate}` - `{arg.Message}`{exc}");
+                    break;
+                default:
+                    break;
+            }
+
+            if(arg.Severity == LogSeverity.Critical || ((arg.Message.Contains("Connected") || arg.Message.Contains("Disconnected")) && arg.Source.Contains("Shard")))
+                await WebhookClients.NamikoLogChannel.SendMessageAsync($":information_source:`{shortdate} {arg.Source}]` {arg.Message}{exc}");
         }
 
         // NAMIKO JOIN
@@ -405,6 +428,7 @@ namespace Namiko
         {
             Diag = false;
             Debug = true;
+            Pause = true;
             Locations.SetUpDebug();
             _ = Timers.SetUp();
             _ = LootboxStats.Reload();
