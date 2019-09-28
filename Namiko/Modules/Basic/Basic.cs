@@ -188,7 +188,7 @@ namespace Namiko
 
         // HELP COMMAND STUFF
 
-        [Command("Help"), Summary("Shows more information about a command.\n**Usage**: `!help [command/module_name]`")]
+        [Command("Help"), Alias("h"), Summary("Shows more information about a command.\n**Usage**: `!help [command/module_name]`")]
         public async Task Help([Remainder] string cmd = "")
         {
             var commandService = Program.GetCommands();
@@ -314,11 +314,11 @@ namespace Namiko
                 desc += $"**Permissions**: ";
             foreach (var x in commandInfo.Preconditions)
             {
-                if (x.GetType() == typeof(RequireUserPermissionAttribute))
+                if (x is RequireUserPermissionAttribute)
                 { 
                     var prec = x as RequireUserPermissionAttribute;
-                    desc += $"{prec.ChannelPermission} ";
-                    desc += $"{prec.GuildPermission} ";
+                    desc += prec.ChannelPermission != null ? $"{prec.ChannelPermission} " : "";
+                    desc += prec.GuildPermission != null ? $"{prec.GuildPermission} " : "";
                 }
 
                 else if (x is CustomPrecondition)
