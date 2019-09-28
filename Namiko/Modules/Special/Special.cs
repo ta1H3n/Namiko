@@ -92,7 +92,7 @@ namespace Namiko
         [Command("Die"), Summary("Kills Namiko"), HomePrecondition]
         public async Task Die()
         {
-            _ = WebhookClients.NamikoLogChannel.SendMessageAsync($"`{DateTime.Now.ToString("HH:mm:ss")}` {Context.Client.CurrentUser.Username} killed by {Context.User.Mention} :gun:");
+            await WebhookClients.NamikoLogChannel.SendMessageAsync($"`{DateTime.Now.ToString("HH:mm:ss")}` {Context.Client.CurrentUser.Username} killed by {Context.User.Mention} :gun:");
 
             var cts = Program.GetCts();
             await Context.Client.StopAsync();
@@ -191,7 +191,7 @@ namespace Namiko
             var commands = Program.GetCommands();
             var processed = System.DateTime.Now.AddMinutes(-10);
 
-            Func<Optional<CommandInfo>, ICommandContext, IResult, Task> listen =  async (arg1, arg2, arg3) =>
+            async Task listen(Optional<CommandInfo> arg1, ICommandContext arg2, IResult arg3)
             {
                 if (arg2.Message.Equals(Context.Message) && arg1.Value.Name != "Debug")
                 {
@@ -199,7 +199,7 @@ namespace Namiko
                     await Task.Delay(1);
                 }
                 Console.WriteLine("Command debugger");
-            };
+            }
             commands.CommandExecuted += listen;
 
             var received = System.DateTime.Now;

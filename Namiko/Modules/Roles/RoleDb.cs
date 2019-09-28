@@ -5,11 +5,13 @@ using System.Linq;
 
 
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+
 namespace Namiko
 {
-    class PublicRoleDb
+    public static class PublicRoleDb
     {
-        public static Boolean IsPublic(ulong roleId)
+        public static bool IsPublic(ulong roleId)
         {
             using (var DbContext = new SqliteDbContext())
             {
@@ -46,6 +48,58 @@ namespace Namiko
             using (var DbContext = new SqliteDbContext())
             {
                 return DbContext.PublicRoles.Where(x => x.GuildId == guildId).ToList();
+            }
+        }
+    }
+
+    public static class PermissionRoleDb
+    {
+        public static bool IsRole(ulong roleId, RoleType type)
+        {
+            using (var DbContext = new SqliteDbContext())
+            {
+                return DbContext.PermissionRoles.Any(x => x.RoleId == roleId && x.Type == type);
+            }
+        }
+        public static HashSet<ulong> Get(ulong guildId, RoleType type)
+        {
+            using (var DbContext = new SqliteDbContext())
+            {
+                return DbContext.PermissionRoles.Where(x => x.GuildId == guildId && x.Type == type).Select(x => x.RoleId).ToHashSet();
+            }
+        }
+        public static async Task Add(ulong roleId, ulong guildId, RoleType type)
+        {
+            using (var DbContext = new SqliteDbContext())
+            {
+                DbContext.PermissionRoles.Add(new PermissionRole { RoleId = roleId, GuildId = guildId, Type = type });
+                await DbContext.SaveChangesAsync();
+            }
+        }
+        public static async Task Delete(ulong roleId, RoleType type)
+        {
+            using (var DbContext = new SqliteDbContext())
+            {
+                DbContext.PermissionRoles.RemoveRange(DbContext.PermissionRoles.Where(x => x.RoleId == roleId && x.Type == type));
+                await DbContext.SaveChangesAsync();
+            }
+        }
+        public static async Task DeleteByGuild(ulong guildId)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                db.PermissionRoles.RemoveRange(db.PermissionRoles.Where(x => x.GuildId == guildId));
+                await db.SaveChangesAsync();
+            }
+        }
+        public static List<PermissionRole> GetAll(ulong guildId, RoleType type)
+        {
+            using (var DbContext = new SqliteDbContext())
+            {
+                return DbContext.PermissionRoles
+                    .Where(x => x.GuildId == guildId)
+                    .Where(x => x.Type == type)
+                    .ToList();
             }
         }
     }
@@ -125,7 +179,6 @@ namespace Namiko
                 return DbContext.Invites.Any(x => x.TeamId == teamId && x.UserId == userId);
             }
         }
-
         public static async Task<int> DeleteOlder(DateTime date)
         {
             using (var db = new SqliteDbContext())

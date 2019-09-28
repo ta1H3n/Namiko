@@ -12,7 +12,7 @@ namespace Namiko
 {
     public class Waifus : InteractiveBase<ShardedCommandContext>
     {
-        private static Dictionary<ulong, Object> slideLock = new Dictionary<ulong, Object>();
+        private static readonly Dictionary<ulong, Object> slideLock = new Dictionary<ulong, Object>();
 
         [Command("WaifuShop"), Alias("ws"), Summary("Opens the waifu shop.")]
         public async Task WaifuShop([Remainder] string str = "")
@@ -496,7 +496,7 @@ namespace Namiko
                 url = url.EndsWith(".gifv") ? url.Replace(".gifv", ".gif") : url;
                 url = url.EndsWith(".mp4") ? url.Replace(".mp4", ".gif") : url;
 
-                string albumId = null;
+                string albumId;
                 if (!ImageDb.AlbumExists("Waifus"))
                 {
                     albumId = (await ImgurAPI.CreateAlbumAsync("Waifus")).Id;
@@ -617,7 +617,7 @@ namespace Namiko
             url = url.EndsWith(".gifv") ? url.Replace(".gifv", ".gif") : url;
             url = url.EndsWith(".mp4") ? url.Replace(".mp4", ".gif") : url;
 
-            string albumId = null;
+            string albumId;
             if (!ImageDb.AlbumExists("Waifus"))
             {
                 albumId = (await ImgurAPI.CreateAlbumAsync("Waifus")).Id;
@@ -699,7 +699,7 @@ namespace Namiko
                 url = url.EndsWith(".gifv") ? url.Replace(".gifv", ".gif") : url;
                 url = url.EndsWith(".mp4") ? url.Replace(".mp4", ".gif") : url;
 
-                string albumId = null;
+                string albumId;
                 if (!ImageDb.AlbumExists("Waifus"))
                 {
                     albumId = (await ImgurAPI.CreateAlbumAsync("Waifus")).Id;

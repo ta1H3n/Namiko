@@ -33,11 +33,19 @@ namespace Namiko
                 if(image == null)
                     return false;
             }
+
+            if (!RateLimit.CanExecute(Context.Channel.Id))
+            {
+                await Context.Channel.SendMessageAsync($"Woah there, Senpai, calm down! I locked this channel for **{RateLimit.InvokeLockoutPeriod.Seconds}** seconds <:MeguExploded:627470499278094337>\n" +
+                    $"You can only use **{RateLimit.InvokeLimit}** commands per **{RateLimit.InvokeLimitPeriod.Seconds}** seconds per channel.");
+                return false;
+            }
+
             await Context.Channel.SendMessageAsync("", false, ImageUtil.ToEmbed(image).Build());
             return true;
         }
 
-        [Command("List"), Alias("ListAll"), Summary("List of all image commands and how many images there are.\n**Usage**: `listall`")]
+        [Command("List"), Alias("ListAll"), Summary("List of all image commands and how many images there are.\n**Usage**: `!list`")]
         public async Task List([Remainder] string str = "")
         {
             var images = ImageDb.GetImages();

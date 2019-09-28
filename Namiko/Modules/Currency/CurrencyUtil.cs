@@ -79,14 +79,14 @@ namespace Namiko
         public static int ParseAmount(string sAmount, SocketGuildUser user)
         {
             int amount = 0;
-            if (sAmount.Equals("all", StringComparison.InvariantCultureIgnoreCase))
+            if (sAmount.Equals("all", StringComparison.OrdinalIgnoreCase))
             {
                 amount = ToastieDb.GetToasties(user.Id, user.Guild.Id);
                 if (amount > 10000)
                     amount = 10000;
                 return amount;
             }
-            if (sAmount.Equals("half", StringComparison.InvariantCultureIgnoreCase))
+            if (sAmount.Equals("half", StringComparison.OrdinalIgnoreCase))
             {
                 amount = ToastieDb.GetToasties(user.Id, user.Guild.Id) / 2;
                 return amount;

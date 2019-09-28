@@ -57,7 +57,7 @@ namespace Namiko
         {
             using (var DbContext = new SqliteDbContext())
             {
-                int count = DbContext.Images.Where(x => x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase) && x.GuildId == guildId).Count();
+                int count = DbContext.Images.Where(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && x.GuildId == guildId).Count();
                 if (count < 1)
                 {
                     return null;
@@ -66,7 +66,7 @@ namespace Namiko
                 {
                     Random rand = new Random();
                     int random = rand.Next(count);
-                    return DbContext.Images.Where(x => x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase) && x.GuildId == guildId).ToArray<ReactionImage>().ElementAt(random);
+                    return DbContext.Images.Where(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && x.GuildId == guildId).ToArray<ReactionImage>().ElementAt(random);
                 }
             }
         }
@@ -98,7 +98,7 @@ namespace Namiko
         {
             using (var db = new SqliteDbContext())
             {
-                bool res = db.ImgurAlbums.Any(x => x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
+                bool res = db.ImgurAlbums.Any(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
                 return res;
             }
         }
@@ -116,7 +116,7 @@ namespace Namiko
         {
             using (var db = new SqliteDbContext())
             {
-                return db.ImgurAlbums.FirstOrDefault(x => x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
+                return db.ImgurAlbums.FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
             }
         }
 

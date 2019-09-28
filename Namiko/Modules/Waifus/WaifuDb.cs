@@ -45,7 +45,7 @@ namespace Namiko
 
                 if (primaryName)
                 {
-                    Waifu waifu = waifuQuery.Where(x => x.Name.Equals(query, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+                    Waifu waifu = waifuQuery.Where(x => x.Name.Equals(query, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
                     if (waifu != null)
                     {
                         waifus.Add(waifu);
@@ -58,9 +58,9 @@ namespace Namiko
                 foreach (var word in words)
                 {
                     waifuQuery = waifuQuery.Where(x =>
-                        (x.Name.Contains(word, StringComparison.InvariantCultureIgnoreCase)) ||
-                        (x.LongName == null ? false : x.LongName.Contains(word, StringComparison.InvariantCultureIgnoreCase)) ||
-                        (x.Source == null ? false : x.Source.Contains(word, StringComparison.InvariantCultureIgnoreCase)));
+                        (x.Name.Contains(word, StringComparison.OrdinalIgnoreCase)) ||
+                        (x.LongName == null ? false : x.LongName.Contains(word, StringComparison.OrdinalIgnoreCase)) ||
+                        (x.Source == null ? false : x.Source.Contains(word, StringComparison.OrdinalIgnoreCase)));
                 }
 
                 waifus = waifuQuery.ToList();

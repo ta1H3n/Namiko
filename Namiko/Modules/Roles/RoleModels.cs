@@ -29,4 +29,13 @@ namespace Namiko
         public ulong UserId { get; set; }
         public DateTime Date { get; set; }
     }
+
+    public class PermissionRole
+    {
+        [Key]
+        public int Id { get; set; }
+        public ulong RoleId { get; set; }
+        public ulong GuildId { get; set; }
+        public RoleType Type { get; set; }
+    }
 }

@@ -92,7 +92,7 @@ namespace Namiko
         [Command("MarkdownCommands"), OwnerPrecondition]
         public async Task MarkdownCommands()
         {
-            using (var stream = Timers.GenerateStreamFromString(MarkdownCommandList(Program.GetCommands(), "!")))
+            using (var stream = Timers.GenerateStreamFromString(MarkdownCommandList(Program.GetCommands())))
             {
                 await Context.Channel.SendFileAsync(stream, "CommandsMarkdown.txt");
             }
@@ -139,55 +139,84 @@ namespace Namiko
             await Context.Channel.SendMessageAsync($"**{waifu.Name}** shipped!");
         }
 
-      //  [Command("Test"), OwnerPrecondition]
-      //  public async Task Test()
-      //  {
-      //      Timers.Timer_NamikoSteal(null, null);
-      //      await Context.Channel.SendMessageAsync($"It has been done.");
-      //  }
+        //  [Command("Test"), OwnerPrecondition]
+        //  public async Task Test()
+        //  {
+        //      Timers.Timer_NamikoSteal(null, null);
+        //      await Context.Channel.SendMessageAsync($"It has been done.");
+        //  }
+
+        [Command("Blacklist"), OwnerPrecondition]
+        public async Task Blacklist(ulong id)
+        {
+            if (BlacklistDb.IsBlacklisted(id))
+            {
+                await BlacklistDb.Remove(id);
+                await Context.Channel.SendMessageAsync($"Unblacklisted.");
+                await WebhookClients.NamikoLogChannel.SendMessageAsync($"Unblacklisted {id}");
+                Program.Blacklist.Remove(id);
+                return;
+            }
+            else
+            {
+                await BlacklistDb.Add(id);
+                await Context.Channel.SendMessageAsync($"Blacklisted.");
+                Program.Blacklist.Add(id);
+                var client = Program.GetClient();
+                var guild = client.GetGuild(id);
+                string what = $"Blacklisted {id}";
+                if (guild != null)
+                {
+                    var ch = await guild.Owner.GetOrCreateDMChannelAsync();
+                    await ch.SendMessageAsync($"Your guild ({guild.Name} - {id}) has been blacklisted.\n" +
+                        $"Please contact taiHen#2839 in https://discord.gg/W6Ru5sM for more information or if you think this is a mistake.");
+                    what = $"Guild ({guild.Name} {id}) Blacklisted.";
+                } else
+                {
+                    var user = client.GetUser(id);
+                    if (user != null)
+                    {
+                        var ch = await user.GetOrCreateDMChannelAsync();
+                        await ch.SendMessageAsync($"You ({user.Username} - {id}) have been blacklisted.\n" +
+                            $"Please contact taiHen#2839 in https://discord.gg/W6Ru5sM for more information or if you think this is a mistake.");
+                        what = $"User ({user.Username} {id}) Blacklisted.";
+                    }
+                }
+                await WebhookClients.NamikoLogChannel.SendMessageAsync(what);
+            }
+        }
 
         // HELP COMMAND STUFF
 
-        public async Task<bool> Help(SocketCommandContext context, CommandService commandService)
+        [Command("Help"), Summary("Shows more information about a command.\n**Usage**: `!help [command/module_name]`")]
+        public async Task Help([Remainder] string cmd = "")
         {
-            string prefix = Program.GetPrefix(context);
-            var msgStr = context.Message.Content;
-            string[] words = msgStr.Split(null);
-            string cmd = null;
-            if (words[0] != $"{prefix}help" && words[0] != $"{prefix}h")
-                return false;
-            try
-            {
-                if (words[1] != null)
-                    cmd = words[1];
-            #pragma warning disable CS0168 // Variable is declared but never used
-            } catch(IndexOutOfRangeException ex) { }
+            var commandService = Program.GetCommands();
+            string prefix = Program.GetPrefix(Context);
 
             EmbedBuilder eb = null;
             string desc = "";
 
-            if (cmd != null)
+            if (cmd != null && cmd != "")
             {
-                try
-                {
-                    //eb = CommandHelpEmbed(commandService.Commands.Where(x => x.Aliases.Equals(cmd, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault());
-                    desc = CommandHelpString(commandService.Commands.Where(x => x.Aliases.Any(y => y.Equals(cmd, StringComparison.InvariantCultureIgnoreCase))).FirstOrDefault(), prefix);
-                } catch { };
-                try
-                {
-                    eb = ModuleHelpEmbed(commandService.Modules.Where(x => x.Name.Equals(cmd, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault());
-                } catch { };
+
+                desc = CommandHelpString(commandService.Commands.Where(x => x.Aliases.Any(y => y.Equals(cmd, StringComparison.OrdinalIgnoreCase))).FirstOrDefault(), prefix);
+
+                if (desc == "")
+                    eb = ModuleHelpEmbed(commandService.Modules.Where(x => x.Name.Equals(cmd, StringComparison.OrdinalIgnoreCase)).FirstOrDefault());
             }
+
             else
-                eb = AllHelpEmbed(commandService, context.Guild == null ? false : ((SocketGuildUser)context.User).Roles.Any(x => x.Id == Config.InsiderRoleId));
+                eb = AllHelpEmbed(commandService, Context.Guild == null ? false : ((SocketGuildUser)Context.User).Roles.Any(x => x.Id == Config.InsiderRoleId));
 
             if(!desc.Equals(""))
             {
-                await context.Channel.SendMessageAsync(desc);
-                return true;
+                await Context.Channel.SendMessageAsync(desc);
+                return;
             }
-            await context.Channel.SendMessageAsync($":star: Type `{prefix}h [command_name]` for more information about a command. `{prefix}info` to learn more about me!", false, eb.Build());
-            return true;
+
+            if(eb != null) 
+                await Context.Channel.SendMessageAsync($":star: Type `{prefix}h [command_name]` for more information about a command. `{prefix}info` to learn more about me!", false, eb.Build());
         }
 
         private EmbedBuilder AllHelpEmbed(CommandService commandService, bool all = false)
@@ -228,6 +257,9 @@ namespace Namiko
         }
         private EmbedBuilder ModuleHelpEmbed(ModuleInfo moduleInfo)
         {
+            if (moduleInfo == null)
+                return null;
+
             var eb = new EmbedBuilder();
             eb.WithTitle(moduleInfo.Name);
 
@@ -267,6 +299,9 @@ namespace Namiko
 
         public string CommandHelpString(CommandInfo commandInfo, string prefix)
         {
+            if (commandInfo == null)
+                return "";
+
             string desc = "";
             desc += $":star: **{commandInfo.Name.ToUpper()}**\n";
             
@@ -279,24 +314,24 @@ namespace Namiko
                 desc += $"**Permissions**: ";
             foreach (var x in commandInfo.Preconditions)
             {
-                try
-                {
+                if (x.GetType() == typeof(RequireUserPermissionAttribute))
+                { 
                     var prec = x as RequireUserPermissionAttribute;
                     desc += $"{prec.ChannelPermission} ";
                     desc += $"{prec.GuildPermission} ";
-                } catch { }
+                }
 
-                try
+                else if (x is CustomPrecondition)
                 {
                     var prec = x as CustomPrecondition;
                     desc += $"{prec.GetName()} ";
-                } catch { }
+                }
             }
 
             return desc;
         }
 
-        public string MarkdownCommandList(CommandService commandService, string prefix)
+        public string MarkdownCommandList(CommandService commandService)
         {
             string text = "";
             

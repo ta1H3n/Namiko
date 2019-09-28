@@ -96,7 +96,7 @@ namespace Namiko
             var ResponseQuery = await ReplyAsync("", false, WebUtil.AnimeListEmbed(animeSearch).Build());
 
             //Sets a timeout of 20 seconds, changeable if needed
-            SocketMessage UserResponse = null;
+            SocketMessage UserResponse;
             UserResponse = await NextMessageAsync(timeout: TimeSpan.FromSeconds(20));
 
             if (UserResponse.Content == "x" || UserResponse.Content == "X")
@@ -106,7 +106,7 @@ namespace Namiko
                 return;
             };
 
-            long id = 0;
+            long id;
             try
             {
                 int i = int.Parse(UserResponse.Content);
@@ -148,7 +148,7 @@ namespace Namiko
             var ResponseQuery = await ReplyAsync("", false, WebUtil.MangaListEmbed(mangaSearch).Build());
 
             //Sets a timeout of 20 seconds, changeable if needed
-            SocketMessage UserResponse = null;
+            SocketMessage UserResponse;
             UserResponse = await NextMessageAsync(timeout: TimeSpan.FromSeconds(20));                       
 
             if (UserResponse.Content == "x" || UserResponse.Content == "X")
@@ -158,7 +158,7 @@ namespace Namiko
                 return;
             };
 
-            long id = 0;
+            long id;
             try
             {
                 int i = int.Parse(UserResponse.Content);

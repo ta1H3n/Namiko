@@ -2,15 +2,17 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Namiko;
 
 namespace Namiko.Migrations
 {
     [DbContext(typeof(SqliteDbContext))]
-    partial class SqliteDbContextModelSnapshot : ModelSnapshot
+    [Migration("20190925182321_Blacklist")]
+    partial class Blacklist
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -234,22 +236,6 @@ namespace Namiko.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Params");
-                });
-
-            modelBuilder.Entity("Namiko.PermissionRole", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<ulong>("GuildId");
-
-                    b.Property<ulong>("RoleId");
-
-                    b.Property<int>("Type");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("PermissionRoles");
                 });
 
             modelBuilder.Entity("Namiko.Playlist", b =>

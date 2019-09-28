@@ -136,11 +136,11 @@ namespace Namiko
         public static SocketRole GetRoleByName(SocketGuild guild, string roleName)
         {
             var roles = guild.Roles;
-            var role = roles.FirstOrDefault(x => x.Name.Equals(roleName, StringComparison.InvariantCultureIgnoreCase));
+            var role = roles.FirstOrDefault(x => x.Name.Equals(roleName, StringComparison.OrdinalIgnoreCase));
             if (role == null)
             {
-                role = roles.Count(x => x.Name.Contains(roleName, StringComparison.InvariantCultureIgnoreCase)) == 1 ? 
-                    roles.First(x => x.Name.Contains(roleName, StringComparison.InvariantCultureIgnoreCase)) : null;
+                role = roles.Count(x => x.Name.Contains(roleName, StringComparison.OrdinalIgnoreCase)) == 1 ? 
+                    roles.First(x => x.Name.Contains(roleName, StringComparison.OrdinalIgnoreCase)) : null;
             }
             return role;
         }

@@ -43,6 +43,14 @@
     <Compile Remove="Migrations\20190922114542_playlists.Designer.cs" />
     <Compile Remove="Migrations\20190922133345_playlists.cs" />
     <Compile Remove="Migrations\20190922133345_playlists.Designer.cs" />
+    <Compile Remove="Migrations\20190928095830_PermissionRole.cs" />
+    <Compile Remove="Migrations\20190928095830_PermissionRole.Designer.cs" />
+    <Compile Remove="Migrations\20190928095948_PermissionRole.cs" />
+    <Compile Remove="Migrations\20190928095948_PermissionRole.Designer.cs" />
+    <Compile Remove="Migrations\20190928100131_PermissionRole.cs" />
+    <Compile Remove="Migrations\20190928100131_PermissionRole.Designer.cs" />
+    <Compile Remove="Migrations\20190928100208_PermissionRole2.cs" />
+    <Compile Remove="Migrations\20190928100208_PermissionRole2.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -8,7 +8,8 @@ using Discord.Addons.Interactive;
 using System.Collections.Generic;
 using Discord.Webhook;
 
-namespace Namiko {
+namespace Namiko
+{
     public class User : InteractiveBase<ShardedCommandContext> {
 
         [Command("Profile"), Summary("Showsa a users profile.\n**Usage**: `!profile [user_optional]`")]
@@ -490,7 +491,7 @@ namespace Namiko {
         }
 
         [Command("ActivatePremium"), Alias("ap"), Summary("Activates premium subscriptions associated with this account.\n**Usage**: `!ap`")]
-        public async Task ActivatePremium([Remainder] string GuildId = "0")
+        public async Task ActivatePremium([Remainder] string str = "")
         {
             var ntr = Context.Client.GetGuild((ulong)PremiumType.HomeGuildId_NOTAPREMIUMTYPE);
             SocketGuildUser user = ntr.GetUser(Context.User.Id);

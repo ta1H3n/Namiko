@@ -27,9 +27,10 @@ namespace Namiko
         private static CommandService Commands;
         private static IServiceProvider Services;
         private static bool Pause = false;
-        private static Dictionary<ulong, string> Prefixes = new Dictionary<ulong, string>();
-        private static CancellationTokenSource cts = new CancellationTokenSource();
-        private static CancellationToken ct = cts.Token;
+        private static readonly Dictionary<ulong, string> Prefixes = new Dictionary<ulong, string>();
+        private static readonly CancellationTokenSource cts = new CancellationTokenSource();
+        private static readonly CancellationToken ct = cts.Token;
+        public static HashSet<ulong> Blacklist;
         private static bool Launch = true;
         public static bool Debug = false;
         private static bool Diag = false;
@@ -128,11 +129,15 @@ namespace Namiko
             var Context = new ShardedCommandContext(Client, Message);
             string prefix = GetPrefix(Context);
 
-            if (Context.Message == null || Context.Message.Content == "")
+            if (Blacklist.Contains(Context.User.Id) || (Context.Guild != null && Blacklist.Contains(Context.Guild.Id)) || (Context.Channel != null && Blacklist.Contains(Context.Channel.Id)))
                 return;
             if (Context.User.IsBot)
                 return;
+            if (Context.Message == null || Context.Message.Content == "")
+                return;
             if (BlacklistedChannelDb.IsBlacklisted(Context.Channel.Id))
+                return;
+            if (RateLimit.InvokeLockout.TryGetValue(Context.Channel.Id, out var time) && time > DateTime.Now)
                 return;
 
             await SpecialModeResponse(Context);
@@ -148,9 +153,17 @@ namespace Namiko
 
             if (!isPrefixed)
                 return;
+
+            var cmds = Commands.Search(Context, ArgPos);
+            if (cmds.IsSuccess && !RateLimit.CanExecute(Context.Channel.Id))
+            {
+                await Context.Channel.SendMessageAsync($"Woah there, Senpai, calm down! I locked this channel for **{RateLimit.InvokeLockoutPeriod.Seconds}** seconds <:MeguExploded:627470499278094337>\n" +
+                    $"You can only use **{RateLimit.InvokeLimit}** commands per **{RateLimit.InvokeLimitPeriod.Seconds}** seconds per channel.");
+                return;
+            }
+
             if (Pause && Context.User.Id != Config.OwnerId)
             {
-                var cmds = Commands.Search(Context, ArgPos);
                 if (cmds.IsSuccess && Pause && Context.User.Id != Config.OwnerId)
                 {
                     await Context.Channel.SendMessageAsync("Commands disabled temporarily. Try again later.");
@@ -175,15 +188,13 @@ namespace Namiko
             string text = null;
             if (!res.IsSuccess)
             {
-                if (await new Basic().Help(Context, Commands))
-                    text = "Help";
-                else if (await new Images().SendRandomImage(Context))
+                if (await new Images().SendRandomImage(Context))
                     text = "ReactionImage";
 
                 else if (!(res.Error == CommandError.UnknownCommand))
                 {
                     string reason = res.ErrorReason + "\n";
-                    if (!(res.Error == CommandError.UnmetPrecondition))
+                    if (res.Error != CommandError.UnmetPrecondition)
                         reason += CommandHelpString(MessageParam.Content.Split(null)[0].Replace(prefix, ""), prefix);
                     await Context.Channel.SendMessageAsync(reason);
                     return;
@@ -257,18 +268,18 @@ namespace Namiko
             var ch = sch.Guild.GetTextChannel(chid);
             await ch.SendMessageAsync(GetWelcomeMessageString(user));
         }
-        private async Task Client_UserLeftToasties(SocketGuildUser arg)
-        {
-            var amount = ToastieDb.GetToasties(arg.Id, arg.Guild.Id) / 4;
-            await ToastieDb.AddToasties(arg.Id, -amount, arg.Guild.Id);
-            await ToastieDb.AddToasties(Client.CurrentUser.Id, amount, arg.Guild.Id);
-        }
+        //private async Task Client_UserLeftToasties(SocketGuildUser arg)
+        //{
+        //    var amount = ToastieDb.GetToasties(arg.Id, arg.Guild.Id) / 4;
+        //    await ToastieDb.AddToasties(arg.Id, -amount, arg.Guild.Id);
+        //    await ToastieDb.AddToasties(Client.CurrentUser.Id, amount, arg.Guild.Id);
+        //}
         private async Task Client_Log(LogMessage arg)
         {
             string shortdate = DateTime.Now.ToString("HH:mm:ss");
             string longdate = DateTime.Now.ToString();
 
-            string exc = arg.Exception == null ? "" : $"\n`{arg.Exception.HResult}` `{arg.Exception.Message}`. Stack trace: `{arg.Exception.StackTrace}`. At: `{arg.Exception.TargetSite.Name}`";
+            string exc = arg.Exception == null ? "" : $"\n`-{arg.Exception.Message}` ```cs\n{arg.Exception.StackTrace}``` At: `-{arg.Exception.TargetSite.Name}`";
             switch(arg.Severity)
             {
                 case LogSeverity.Info:
@@ -276,15 +287,15 @@ namespace Namiko
                     break;
                 case LogSeverity.Warning:
                     Console.WriteLine($"W2 {longdate} at {arg.Source}] {arg.Message}{exc}");
-                    await WebhookClients.ErrorLogChannel.SendMessageAsync($":warning:`{shortdate}` - `{arg.Message}`{exc}");
+                    await WebhookClients.ErrorLogChannel.SendMessageAsync($":warning:`{shortdate}` - `{arg.Message}` s{exc}");
                     break;
                 case LogSeverity.Error:
                     Console.WriteLine($"E1 {longdate} at {arg.Source}] {arg.Message}{exc}");
-                    await WebhookClients.ErrorLogChannel.SendMessageAsync($"<:TickNo:577838859077943306>`{shortdate}` - `{arg.Message}`{exc}");
+                    await WebhookClients.ErrorLogChannel.SendMessageAsync($"<:TickNo:577838859077943306>`{shortdate}` - `{arg.Message}` {exc}");
                     break;
                 case LogSeverity.Critical:
                     Console.WriteLine($"C0 {longdate} at {arg.Source}] {arg.Message}{exc}");
-                    await WebhookClients.ErrorLogChannel.SendMessageAsync($"<:TickNo:577838859077943306><:TickNo:577838859077943306>`{shortdate}` - `{arg.Message}`{exc}");
+                    await WebhookClients.ErrorLogChannel.SendMessageAsync($"<:TickNo:577838859077943306><:TickNo:577838859077943306>`{shortdate}` - `-{arg.Message}` {exc}");
                     break;
                 default:
                     break;
@@ -433,6 +444,7 @@ namespace Namiko
             _ = Timers.SetUp();
             _ = LootboxStats.Reload();
             SetUpPrefixes();
+            Blacklist = BlacklistDb.GetAll();
         }
         private static void SetUpRelease()
         {
@@ -441,6 +453,7 @@ namespace Namiko
             Timers.SetUpRelease();
             _ = LootboxStats.Reload();
             SetUpPrefixes();
+            Blacklist = BlacklistDb.GetAll();
         }
         private static async Task<int> CheckJoinedGuilds(DiscordSocketClient shard = null)
         {
@@ -561,47 +574,13 @@ namespace Namiko
 
         // RANDOM
 
-        private void Test()
-        {
-            string assemblyFile = new System.Uri(Assembly.GetExecutingAssembly().CodeBase).AbsolutePath;
-            Console.WriteLine(assemblyFile);
-        }
-        private string WelcomeDm()
-        {
-            string sb = "Hai domo! Namiko here, the server's original mascot girl! \nWelcome to **AMFWT**! Please read the rules and visit the #info channel!\r\n" +
-            "\r\n" +
-            "1. **English**. Lots of us know loooooots of languages, but everyone knows English, so use that.\r\n" +
-            "\r\n" +
-            "2. **Keep topics relevant to the chat**. **Don't spam!** We know you need to show best girl to everyone once in a while, but try not to.\r\n" +
-            "\r\n" +
-            "3. **NSFW content in NSFW channels only. No gore whatsoever.** Including cursed images, anything violent, lewd, disgusting or disturbing. Remember, *The Mom* is watching from the shadows.\r\n" +
-            "\r\n" +
-            "4. NO. **YOU CANT LEWD THE LOLI**. NOT EVEN IN NSFW CHANNELS. ITS AGAINST DISCORD TOS. Patting the loli is okay and encouraged. BUT IF YOU LEWD I WILL DEAL WITH YOU PERSONALLY. **SHOTA INCLUDED**.\r\n" +
-            "\r\n" +
-            "5. **No harassment**. Especially the new guys, don't bulli them! Racism, bulli - we having none of that. Pats and Hugs only.\r\n" +
-            "\r\n" +
-            "6. **No spoilers**. We don't want our days ruined just because we haven't seen the latest episode. You can talk about them in the spoilers channels, for specific popular ongoing shows.\r\n" +
-            "\r\n" +
-            "7. **No advertising**. Includes streams, channels, other discord servers etc. However, you can show off your art skills in #oc-art \r\n" +
-            "\r\n" +
-            "8. **No random pings**. Including teams, or spam mentioning someone ... unless you have a very good reason, such as news of real genetically engineered neko-girls.\r\n" +
-            "\r\n" +
-            "9. **No impersonation**. Using someone else's name or profile picture. Bad. No. Don't want the cat to be an undercover dog. \r\n" +
-            "\r\n" +
-            "10. Have Fun. Uppercase F.\r\n";
-
-            return sb;
-        }
         public static string CommandHelpString(string commandName, string prefix)
         {
             try
             {
-                var cmd = Commands.Commands.Where(x => x.Aliases.Any(y => y.Equals(commandName, StringComparison.InvariantCultureIgnoreCase))).FirstOrDefault();
-                string St = cmd.Summary;
-
-                int pFrom = St.IndexOf("**Usage**:");
-
-                string result = St.Substring(pFrom);
+                var cmd = Commands.Commands.Where(x => x.Aliases.Any(y => y.Equals(commandName, StringComparison.OrdinalIgnoreCase))).FirstOrDefault();
+                string str = cmd.Summary;
+                string result = "**Description**: " + str;
                 result = result.Replace("!", prefix);
                 return result;
             } catch

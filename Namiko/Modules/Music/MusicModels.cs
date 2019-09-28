@@ -22,4 +22,10 @@ namespace Namiko
         public List<Track> Tracks { get; set; }
         public ulong UserId { get; set; }
     }
+
+    public class MusicRoles
+    {
+        public ulong GuildId { get; set; }
+        public ulong RoleId { get; set; }
+    }
 }

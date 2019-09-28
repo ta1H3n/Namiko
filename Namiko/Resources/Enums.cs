@@ -37,4 +37,10 @@ namespace Namiko
         Gacha = 2,
         Mod = 3
     }
+
+    [Flags]
+    public enum RoleType
+    {
+        Music
+    }
 }
