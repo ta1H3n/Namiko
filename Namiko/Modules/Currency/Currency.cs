@@ -314,7 +314,7 @@ namespace Namiko
             if (box == null)
             {
                 var listMsg = await Context.Channel.SendMessageAsync(embed: ToastieUtil.BoxShopEmbed(Context.User)
-                    .WithFooter("Times out in 23 seconds")
+                    .WithFooter("Times out in 23 seconds. Try the `lootboxstats` command")
                     .WithDescription("Enter the number of the lootbox you wish to purchase.")
                     .Build());
                 var response = await NextMessageAsync(
@@ -346,12 +346,19 @@ namespace Namiko
             } catch (Exception ex)
             {
                 await Context.Channel.SendMessageAsync(ex.Message);
+                return;
             }
 
             await LootBoxDb.AddLootbox(Context.User.Id, (LootBoxType)box.TypeId, 1, Context.Guild.Id);
             await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared(Context.User)
                 .WithDescription($"You bought a **{box.Name}**!\nType `{Program.GetPrefix(Context)}open` to open it!")
                 .Build());
+        }
+
+        [Command("LootboxStats"), Summary("Shows the stats of all lootboxes.\n**Usage**: `!lootboxstats`")]
+        public async Task ShowLootboxStats([Remainder] string str = "")
+        {
+            await ReplyAsync(embed: ToastieUtil.BoxStatsEmbed(Context.User).Build());
         }
 
         [Command("ToastieLeaderboard"), Alias("tlb"), Summary("Toastie Leaderboard.\n**Usage**: `!tlb`")]

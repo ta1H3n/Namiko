@@ -236,7 +236,7 @@ namespace Namiko
                     string commandList = "";
                     foreach (var y in x.Commands)
                     {
-                        bool prec = y.Preconditions.Any(z => (z.GetType() == typeof(HomePrecondition)) || (z.GetType() == typeof(OwnerPrecondition)));
+                        bool prec = y.Preconditions.Any(z => (z.GetType() == typeof(InsiderAttribute)) || (z.GetType() == typeof(OwnerPrecondition)));
                         if (!prec || all)
                         {
                             if (!commandList.Contains(y.Name))
@@ -341,7 +341,7 @@ namespace Namiko
                 string commandList = "";
                 foreach (var y in x.Commands)
                 {
-                    bool insider = y.Preconditions.Any(z => (z.GetType() == typeof(HomePrecondition)) || (z.GetType() == typeof(OwnerPrecondition)));
+                    bool insider = y.Preconditions.Any(z => (z.GetType() == typeof(InsiderAttribute)) || (z.GetType() == typeof(OwnerPrecondition)));
                     if (!commandList.Contains(y.Name))
                         commandList += $"* **{y.Name}** - {y.Summary}.{(insider?" **Insider only.**":"")}\n";
                 }

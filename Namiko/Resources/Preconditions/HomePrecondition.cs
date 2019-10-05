@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 namespace Namiko
 {
-    public class HomePrecondition : CustomPrecondition
+    public class InsiderAttribute : CustomPrecondition
     {
 
         public override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)

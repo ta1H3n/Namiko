@@ -279,7 +279,7 @@ namespace Namiko
             string shortdate = DateTime.Now.ToString("HH:mm:ss");
             string longdate = DateTime.Now.ToString();
 
-            string exc = arg.Exception == null ? "" : $"\n`-{arg.Exception.Message}` ```cs\n{arg.Exception.StackTrace}``` At: `-{arg.Exception.TargetSite.Name}`";
+            string exc = arg.Exception == null ? "" : $"\n`{arg.Exception.Message}- ` ```cs\n{arg.Exception.StackTrace}- ``` At: `{arg.Exception.TargetSite.Name}- `";
             switch(arg.Severity)
             {
                 case LogSeverity.Info:

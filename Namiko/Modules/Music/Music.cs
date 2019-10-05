@@ -29,6 +29,8 @@ namespace Namiko
             LavaClient.OnTrackException += TrackException;
             LavaClient.OnTrackStuck += TrackStuck;
             LavaClient.OnTrackFinished += TrackFinished;
+            LavaClient.OnServerStats += LavalinkServerStats;
+            LavaClient.OnSocketClosed += LavalinkDied;
         }
 
         public static async Task<bool> Initialize(DiscordShardedClient client)
@@ -90,17 +92,43 @@ namespace Namiko
             await ReplyAsync($"Moving over to **{user.VoiceChannel.Name}**");
         }
 
-        [Command("Leave"), Summary("Namiko leaves your voice channel.\n**Usage**: `!leave`"), PlayerChannel, PermissionRole(RoleType.Music)]
+        [Command("Leave"), Summary("Namiko leaves your voice channel.\n**Usage**: `!leave`"), PermissionRole(RoleType.Music)]
         public async Task Leave([Remainder]string str = "")
         {
-            var player = Player;
-            if (player != null && player.IsPlaying)
-                await player.StopAsync();
+            try
+            {
+                SocketGuildUser user = (SocketGuildUser)Context.User;
+                var player = Player;
+                var vc = user.VoiceChannel;
 
-            var voice = await player.PlayLocal("leave", true);
-            await ReplyAsync($"See you next time <:NekoHi:620711213826834443>");
-            if (!voice)
-                await LavaClient.DisconnectAsync(GetVoiceChannel());
+                if (player == null)
+                {
+                    await GetVoiceChannel().DisconnectAsync();
+                    return;
+                }
+
+                if (!(vc != null && player.VoiceChannel == vc))
+                {
+                    await ReplyAsync("You're not in my voice channel, senpai...");
+                    return;
+                }
+
+                if (player != null && player.IsPlaying)
+                    await player.StopAsync();
+
+                var voice = await player.PlayLocal("leave", true);
+                await ReplyAsync($"See you next time <:NekoHi:620711213826834443>");
+                if (!voice)
+                    await LavaClient.DisconnectAsync(GetVoiceChannel());
+            }
+            catch
+            {
+                var vc = GetVoiceChannel();
+                await LavaClient.DisconnectAsync(vc);
+                await vc.DisconnectAsync();
+                var player = Player;
+                await player.DisposeAsync();
+            }
         }
 
         [Command("Play"), Summary("Play a song/playlist or add it to the end of a queue.\n**Usage**: `!play [link_or_search]`"), PermissionRole(RoleType.Music)]
@@ -147,6 +175,7 @@ namespace Namiko
                 return;
             }
 
+            await Context.Channel.TriggerTypingAsync();
             var tracks = await RestClient.SearchAndSelect(query, this);
             if (tracks.Count <= 0)
             {
@@ -216,6 +245,7 @@ namespace Namiko
                 return;
             }
 
+            await Context.Channel.TriggerTypingAsync();
             var res = await RestClient.SearchYouTubeAsync(query);
             if (res.LoadType == LoadType.NoMatches)
             {
@@ -277,6 +307,7 @@ namespace Namiko
                 return;
             }
 
+            await Context.Channel.TriggerTypingAsync();
             var tracks = await RestClient.SearchAndSelect(query, this);
             if (tracks.Count <= 0)
             {
@@ -617,6 +648,12 @@ namespace Namiko
                 str = track.Title;
             var lyrics = await LyricsHelper.SearchAsync(str);
 
+            if (lyrics?.DefaultIfEmpty() == null)
+            {
+                await Context.Channel.SendMessageAsync($"Gomen, senpai. I can't find lyrics for `{str}`");
+                return;
+            }
+
             var lines = lyrics.Split('\n');
             string section = "";
             foreach(var line in lines)
@@ -780,13 +817,13 @@ namespace Namiko
             if (PermissionRoleDb.IsRole(role.Id, RoleType.Music))
             {
                 await PermissionRoleDb.Delete(role.Id, RoleType.Music);
-                await Context.Channel.SendMessageAsync($"Role **{roleName}** will not be required for music control anymore. <:NadeYay:564880253382819860>");
+                await Context.Channel.SendMessageAsync($"Role **{role.Name}** removed from Music Roles. <:NadeYay:564880253382819860>");
                 return;
             }
             else
             {
                 await PermissionRoleDb.Add(role.Id, Context.Guild.Id, RoleType.Music);
-                await Context.Channel.SendMessageAsync($"Users who have **{roleName}** will now able to control music. <:NadeYay:564880253382819860>");
+                await Context.Channel.SendMessageAsync($"Users who have **{role.Name}** will now able to control music. <:NadeYay:564880253382819860>");
                 return;
             }
         }
@@ -808,7 +845,7 @@ namespace Namiko
                 {
                     var role = Context.Guild.GetRole(r.RoleId);
                     if (role != null)
-                        str += role.Mention + " ";
+                        desc += role.Mention + "\n";
                 } catch { }
             }
 
@@ -821,6 +858,7 @@ namespace Namiko
         {
             if (track.Uri.ToString().Contains("leave") && track.Uri.ToString().StartsWith("file:"))
             {
+                await Task.Delay(1000);
                 await LavaClient.DisconnectAsync(player.VoiceChannel);
                 return;
             }
@@ -875,13 +913,39 @@ namespace Namiko
                 await player.TextChannel.SendMessageAsync($"Track `{track.Title}` is stuck. Skipping...", embed: (await MusicUtil.NowPlayingEmbed(player)).Build());
             }
         }
-        private static Task LavaClient_Log(Discord.LogMessage arg)
+        private static async Task LavaClient_Log(Discord.LogMessage arg)
         {
-            string message = $"{DateTime.Now} at {arg.Source}] {arg.Message}";
+            string message = $"`🌋` `{DateTime.Now.ToString("HH:mm:ss")}` - `{arg.Message}`";
             Console.WriteLine(message);
-            return Task.CompletedTask;
-        }
 
+            await WebhookClients.LavalinkChannel.SendMessageAsync(message);
+        }
+        private static async Task LavalinkServerStats(ServerStats arg)
+        {
+            if (DateTime.Now.Minute % 10 != 0)
+                return;
+
+            var eb = new EmbedBuilder();
+            eb.WithColor(BasicUtil.RandomColor());
+            eb.WithAuthor(DateTime.Now.ToString("HH:mm:ss"), Program.GetClient().CurrentUser.GetAvatarUrl());
+            eb.WithFooter($"🌋 Lavalink running for {Math.Round(arg.Uptime.TotalMinutes, 2)} minutes");
+
+            eb.WithDescription($"Connected: {arg.PlayerCount}\nPlaying: {arg.PlayingPlayers}");
+            eb.AddField("Memory", $"Allocated: {arg.Memory?.Allocated / 1000000}MB\nUsed: {arg.Memory?.Used / 1000000}MB\nFree: {arg.Memory?.Free / 1000000}MB\nReservable: {arg.Memory?.Reservable / 1000000}MB\n", true);
+            eb.AddField("Frames", $"Sent: {arg.Frames?.Sent}\nDeficit: {arg.Frames?.Deficit}\nNulled: {arg.Frames?.Nulled}", true);
+            eb.AddField("Cpu", $"Cores: {arg.Cpu?.Cores}\nSystem Load: {Math.Round(arg.Cpu.SystemLoad, 4)*100}%\nLavalink Load: {Math.Round(arg.Cpu.LavalinkLoad, 4) * 100}%", true);
+
+            await WebhookClients.LavalinkChannel.SendMessageAsync(embeds: new List<Embed> { eb.Build() });
+        }
+        private static async Task LavalinkDied(int arg1, string arg2, bool arg3)
+        {
+
+            string message = $"`🌋` `{DateTime.Now.ToString("HH:mm:ss")}` - `Lavalink died. Attempting to reconnect...`";
+            Console.WriteLine(message);
+            await WebhookClients.LavalinkChannel.SendMessageAsync(message);
+
+            await Initialize(Program.GetClient());
+        }
 
         // HELPERS
 

@@ -38,5 +38,8 @@ namespace Namiko
 
         [JsonProperty("errorLogWebhook")]
         public static string ErrorLogWebhook { get; set; }
+
+        [JsonProperty("lavalinkWebhook")]
+        public static string LavalinkWebhook { get; set; }
     }
 }

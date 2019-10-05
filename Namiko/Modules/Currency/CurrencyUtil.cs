@@ -78,18 +78,14 @@ namespace Namiko
         }
         public static int ParseAmount(string sAmount, SocketGuildUser user)
         {
-            int amount = 0;
-            if (sAmount.Equals("all", StringComparison.OrdinalIgnoreCase))
+            int amount;
+            if (sAmount.Equals("all", StringComparison.OrdinalIgnoreCase) || sAmount.Equals("aww", StringComparison.OrdinalIgnoreCase))
             {
-                amount = ToastieDb.GetToasties(user.Id, user.Guild.Id);
-                if (amount > 10000)
-                    amount = 10000;
-                return amount;
+                return ToastieDb.GetToasties(user.Id, user.Guild.Id);
             }
             if (sAmount.Equals("half", StringComparison.OrdinalIgnoreCase))
             {
-                amount = ToastieDb.GetToasties(user.Id, user.Guild.Id) / 2;
-                return amount;
+                return ToastieDb.GetToasties(user.Id, user.Guild.Id) / 2;
             }
             var div = sAmount.Split('/');
             if(div.Length == 2)
@@ -140,7 +136,7 @@ namespace Namiko
             var ordtList = tList.OrderByDescending(x => x.Value);
 
             string users = "";
-            page = page * 10;
+            page *= 10;
             for (int i = page; i < page + 10; i++)
             {
                 var x = ordtList.ElementAtOrDefault(i);
@@ -176,7 +172,7 @@ namespace Namiko
             var orddList = dList.OrderByDescending(x => x.Value);
 
             string daily = "";
-            page = page * 10;
+            page *= 10;
             for (int i = page; i < page + 10; i++)
             {
                 var y = orddList.ElementAtOrDefault(i);
@@ -224,7 +220,7 @@ namespace Namiko
 
             string users = "";
             string daily = "";
-            page = page * 10;
+            page *= 10;
             for (int i = page; i < page + 10; i++)
             {
                 var x = ordtList.ElementAtOrDefault(i);
@@ -290,7 +286,7 @@ namespace Namiko
         {
             double amount = 100 + 3000 * Math.Log10(streak / 30 + 1);
             double multiplier = (double)(90 + new Random().Next(20)) / 100;
-            amount = amount * multiplier;
+            amount *= multiplier;
 
             return (int)amount;
         }
@@ -430,6 +426,8 @@ namespace Namiko
                 eb.AddField("Global", gstr);
             if(lstr != "")
                 eb.AddField("Local", lstr);
+
+            eb.WithFooter("Try the `lootboxstats` command");
             return eb;
         }
         public static EmbedBuilder BoxShopEmbed(IUser author)
@@ -448,9 +446,31 @@ namespace Namiko
                 }
             }
 
+            eb.WithFooter("Try the `lootboxstats` command");
             eb.WithAuthor("Lootbox Shop", author.GetAvatarUrl(), BasicUtil._patreon);
             eb.AddField("Lootboxes", str);
             return eb;
         }
+        public static EmbedBuilder BoxStatsEmbed(IUser author = null)
+        {
+            var eb = new EmbedBuilderPrepared(author);
+
+            string str = "";
+            foreach (var item in LootboxStats.Lootboxes)
+            {
+                var box = item.Value;
+                str += $"**Waifu Chance**:\n";
+                foreach (var w in box.WaifuChance)
+                    str += $"   T{w.Key} - *{w.Value}%*\n";
+
+                str += $"**Toastie Chance**:\n";
+                str += $"   Chance: *{box.ToastieChance}%*\n";
+                str += $"   Amount: *{box.ToastiesFrom} - {box.ToastiesTo}*\n";
+                eb.AddField($"{box.Emote} {box.Name}", str, true);
+                str = "";
+            }
+
+            return eb;
+        } 
     }
 }

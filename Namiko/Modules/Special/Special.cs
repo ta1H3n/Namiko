@@ -12,6 +12,8 @@ using Discord.WebSocket;
 
 using Discord.Addons.Interactive;
 using Newtonsoft.Json;
+using System.Reflection;
+using System.IO;
 
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 
@@ -89,7 +91,7 @@ namespace Namiko
             }
         }
 
-        [Command("Die"), Summary("Kills Namiko"), HomePrecondition]
+        [Command("Die"), Summary("Kills Namiko"), Insider]
         public async Task Die()
         {
             await WebhookClients.NamikoLogChannel.SendMessageAsync($"`{DateTime.Now.ToString("HH:mm:ss")}` {Context.Client.CurrentUser.Username} killed by {Context.User.Mention} :gun:");
@@ -115,7 +117,7 @@ namespace Namiko
             await Context.Channel.SendMessageAsync(invite == null ? "Nada." : (await invite.CreateInviteAsync()).Url);
         }
 
-        [Command("NewWelcome"), Alias("nwlc"), Summary("Adds a new welcome message. @_ will be replaced with a mention.\n**Usage**: `!nw [welcome]`"), HomePrecondition]
+        [Command("NewWelcome"), Alias("nwlc"), Summary("Adds a new welcome message. @_ will be replaced with a mention.\n**Usage**: `!nw [welcome]`"), Insider]
         public async Task NewWelcome([Remainder] string message)
         {
             if (message.Length < 20)
@@ -127,7 +129,7 @@ namespace Namiko
             await Context.Channel.SendMessageAsync("Message added: '" + message.Replace("@_", Context.User.Mention) + "'");
         }
 
-        [Command("DeleteWelcome"), Alias("dw", "delwelcome"), Summary("Deletes a welcome message by ID.\n**Usage**: `!dw [id]`"), HomePrecondition]
+        [Command("DeleteWelcome"), Alias("dw", "delwelcome"), Summary("Deletes a welcome message by ID.\n**Usage**: `!dw [id]`"), Insider]
         public async Task DeleteWelcome(int id)
         {
 
@@ -139,6 +141,13 @@ namespace Namiko
                 await WelcomeMessageDb.DeleteMessage(id);
                 await Context.Channel.SendMessageAsync($"Deleted welcome message with id: {id}");
             }
+        }
+
+        [Command("StartLavalink"), Summary("Starts Lavalink.\n**Usage**: `!join`"), Insider]
+        public async Task Init([Remainder]string str = "")
+        {
+            await Music.Initialize(Program.GetClient());
+            await ReplyAsync("Done.");
         }
 
         [Command("SendLootboxes"), OwnerPrecondition]
@@ -229,11 +238,104 @@ namespace Namiko
         {
             await Context.Channel.SendMessageAsync(ImgurAPI.GetAuthorizationUrl());
         }
+
         [Command("SetImgurRefreshToken"), Alias("sirt"), OwnerPrecondition]
         public async Task SetImgurRefreshToken(string refreshToken, [Remainder] string msg = "")
         {
             ImgurAPI.SetRefreshToken(refreshToken);
             await Context.Channel.SendMessageAsync("Done.");
+        }
+
+        [Command("TestEmbed"), OwnerPrecondition] 
+        public async Task TestEmbed(string name)
+        {
+            var eb = await JsonHelper.ReadJson<EmbedBuilder>(Assembly.GetEntryAssembly().Location.Replace(@"Namiko.dll", $@"embeds/{name}"));
+            eb.WithColor(BasicUtil.RandomColor());
+            await ReplyAsync(embed: eb.Build());
+        }
+
+        [Command("GetEmbedJson"), OwnerPrecondition]
+        public async Task GetEmbedJson(string name)
+        {
+            var eb = await JsonHelper.ReadJson<EmbedBuilder>(Assembly.GetEntryAssembly().Location.Replace(@"Namiko.dll", $@"embeds/{name}"));
+            string str = JsonConvert.SerializeObject(eb, Formatting.Indented);
+            await ReplyAsync($"```json\n{str}```");
+        }
+
+        [Command("SaveEmbedJson"), OwnerPrecondition]
+        public async Task SaveEmbedJson(string name, [Remainder] string json)
+        {
+            EmbedBuilder eb = JsonConvert.DeserializeObject<EmbedBuilder>(json, new JsonSerializerSettings { Formatting = Formatting.Indented });
+            await JsonHelper.SaveJson(eb, Assembly.GetEntryAssembly().Location.Replace(@"Namiko.dll", $@"embeds/{name}"));
+            await ReplyAsync(embed: eb.Build());
+        }
+
+        [Command("ListEmbeds"), OwnerPrecondition]
+        public async Task ListEmbeds([Remainder] string json = "")
+        {
+            string root = Assembly.GetEntryAssembly().Location.Replace("Namiko.dll", "embeds/");
+            string[] paths = Directory.GetFiles(root);
+            string str = "";
+            foreach (string s in paths)
+            {
+                var split = s.Split("embeds/");
+                str += split.LastOrDefault() + "\n";
+            }
+            await ReplyAsync(str);
+        }
+
+        [Command("TestAnnouncement"), OwnerPrecondition]
+        public async Task TestAnnouncement(string name, int days)
+        {
+            var eb = await JsonHelper.ReadJson<EmbedBuilder>(Assembly.GetEntryAssembly().Location.Replace(@"Namiko.dll", $@"embeds/{name}"));
+            eb.WithColor(BasicUtil.RandomColor());
+            using (var db = new SqliteDbContext())
+            {
+                var voters = db.Voters.Where(x => x.Date > DateTime.Now.AddDays(-days)).Select(x => x.UserId).ToHashSet();
+                int votes = db.Voters.Where(x => x.Date > DateTime.Now.AddDays(-days)).Count();
+                await ReplyAsync($"Sending this to {voters.Count} users. Votes - {votes}");
+                await ReplyAsync(embed: eb.Build());
+            }
+        }
+
+        [Command("SendAnnouncement"), OwnerPrecondition]
+        public async Task SendAnnouncement(string name, int days)
+        {
+            var eb = await JsonHelper.ReadJson<EmbedBuilder>(Assembly.GetEntryAssembly().Location.Replace(@"Namiko.dll", $@"embeds/{name}"));
+            eb.WithColor(BasicUtil.RandomColor());
+            using (var db = new SqliteDbContext())
+            {
+                var voters = db.Voters.Where(x => x.Date > DateTime.Now.AddDays(-days)).Select(x => x.UserId).ToHashSet();
+                int votes = db.Voters.Where(x => x.Date > DateTime.Now.AddDays(-days)).Count();
+                await ReplyAsync($"Sending this to {voters.Count} users. Votes - {votes}");
+                await ReplyAsync(embed: eb.Build());
+                var client = Program.GetClient();
+                var embed = eb.Build();
+
+                int i = 0;
+                foreach (var id in voters)
+                {
+                    try
+                    {
+                        var ch = await client.GetUser(id).GetOrCreateDMChannelAsync();
+                        await ch.SendMessageAsync(embed: embed);
+                        i++;
+                    } catch { }
+                }
+
+                await ReplyAsync($"Delivered to {i} users.");
+            }
+        }
+
+        [Command("SendEmbed"), OwnerPrecondition]
+        public async Task SendEmbed(string name, ulong id)
+        {
+            var eb = await JsonHelper.ReadJson<EmbedBuilder>(Assembly.GetEntryAssembly().Location.Replace(@"Namiko.dll", $@"embeds/{name}"));
+            eb.WithColor(BasicUtil.RandomColor());
+
+            ISocketMessageChannel ch = Context.Client.GetChannel(id) as ISocketMessageChannel;
+            await ch.SendMessageAsync(embed: eb.Build());
+            await Context.Channel.SendMessageAsync($"Saying in {ch.Name}", false, embed: eb.Build());
         }
     }
 }

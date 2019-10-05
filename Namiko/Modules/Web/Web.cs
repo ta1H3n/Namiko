@@ -182,7 +182,7 @@ namespace Namiko
             await ResponseQuery.DeleteAsync();
         }
         
-        [Command("MALWaifu"), Alias("malw"), Summary("Searches MAL for characters.\n**Usage**: `!malw [query]`"), HomePrecondition]
+        [Command("MALWaifu"), Alias("malw"), Summary("Searches MAL for characters.\n**Usage**: `!malw [query]`"), Insider]
         public async Task AutocompleteWaifu([Remainder] string name)
         {
             await Context.Channel.TriggerTypingAsync();
