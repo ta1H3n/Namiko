@@ -71,14 +71,15 @@ namespace Namiko {
 
         // Embeds
         //Embed Method: profile
-        public static EmbedBuilder ProfileEmbed(SocketGuildUser user) {
+        public static async Task<EmbedBuilder> ProfileEmbed(SocketGuildUser user)
+        {
             var eb = new EmbedBuilder();
 
             string name = user.Username;
 
-            try
+            var role = RoleUtil.GetMemberRole(user.Guild, user) ?? RoleUtil.GetLeaderRole(user.Guild, user);
+            if (role != null)
             {
-                var role = RoleUtil.GetMemberRole(user.Guild, user) ?? RoleUtil.GetLeaderRole(user.Guild, user);
                 var team = TeamDb.TeamByMember(role.Id) ?? TeamDb.TeamByLeader(role.Id);
                 if (team != null)
                 {
@@ -88,7 +89,7 @@ namespace Namiko {
 
                     name += $" | {role.Name}";
                 }
-            } catch { }
+            }
 
             bool toastiePremium = PremiumDb.IsPremium(user.Id, PremiumType.Toastie);
             bool waifuPremium = PremiumDb.IsPremium(user.Id, PremiumType.Waifu);
@@ -134,7 +135,8 @@ namespace Namiko {
             }
 
             var rep = UserDb.GetRepAmount(user.Id);
-            string footer = $"Rep: {rep} • ";
+            string footer = $"Votes: {await VoteDb.VoteCount(user.Id)} • ";
+            footer += $"Rep: {rep} • ";
             footer += $"Status: '{user.Status.ToString()}'";
             if (user.Activity != null)
                 footer += $", Playing: '{user.Activity.Name}'";
@@ -142,19 +144,7 @@ namespace Namiko {
 
             //quote 
             string quote = "";
-            //var role = RoleUtil.GetMemberRole(user.Guild, user) ?? RoleUtil.GetLeaderRole(user.Guild, user);
-            //var team = TeamDb.TeamByMember(role.Id) ?? TeamDb.TeamByLeader(role.Id);
-            //if(team != null)
-            //{
-            //    role = user.Guild.Roles.FirstOrDefault(x => x.Id == team.MemberRoleId);
-            //    if (user.Roles.Any(x => x.Id == team.LeaderRoleId))
-            //        quote += $"*~ Leader of {role.Mention} ~*\n\n";
-            //    else
-            //        quote += $"~ *Member of* {role.Mention} ~\n\n";
-            //}
-
             quote += UserDb.GetQuote(user.Id);
-
             if ( !String.IsNullOrEmpty(quote) & !WebUtil.IsValidUrl(quote))
                 eb.WithDescription(quote);
 
@@ -167,7 +157,8 @@ namespace Namiko {
             eb.Color = UserDb.GetHex(out string colour, user.Id)? (Discord.Color) HexToColor(colour) : BasicUtil.RandomColor();
             return eb;
         }
-        public static EmbedBuilder ProposalsEmbed(IUser user, SocketGuild guild) {
+        public static EmbedBuilder ProposalsEmbed(IUser user, SocketGuild guild)
+        {
 
             //embed basics
             EmbedBuilder embed = new EmbedBuilder();
@@ -197,7 +188,8 @@ namespace Namiko {
             if( !String.IsNullOrEmpty(field2) ) embed.AddField("Proposals Received :sparkling_heart:", field2, true);
             return embed;
         }
-        public static EmbedBuilder MarriagesEmbed(IUser user, SocketGuild guild) {
+        public static EmbedBuilder MarriagesEmbed(IUser user, SocketGuild guild)
+        {
 
             //embed basics
             string partners = "";
@@ -267,7 +259,8 @@ namespace Namiko {
             eb.WithColor(UserDb.GetHex(out string colour, user.Id) ? (Discord.Color)HexToColor(colour) : BasicUtil.RandomColor());
             return eb;
         }
-        public static EmbedBuilder QuoteEmbed(IUser User) {
+        public static EmbedBuilder QuoteEmbed(IUser User)
+        {
 
             //necessary string variables 
             string quote = UserDb.GetQuote(User.Id);
@@ -282,7 +275,8 @@ namespace Namiko {
             embed.WithImageUrl(image);
             return embed;
         }
-        public static EmbedBuilder StitchedQuoteEmbed(IReadOnlyCollection<SocketUser> users) {
+        public static EmbedBuilder StitchedQuoteEmbed(IReadOnlyCollection<SocketUser> users)
+        {
 
             //creating variables
             int i = 0;
@@ -315,7 +309,8 @@ namespace Namiko {
             embed.WithFooter(footer + ((i == 1) ? " had the only \"Quote\"" : ""));
             return embed;
         }
-        public static EmbedBuilder SetColourEmbed(IUser user) {
+        public static EmbedBuilder SetColourEmbed(IUser user)
+        {
             EmbedBuilder embed = new EmbedBuilder();
             embed.WithAuthor("Profile Colour");
             embed.WithDescription($"{ user.Username } changed primary colour!");

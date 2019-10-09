@@ -16,7 +16,7 @@ namespace Namiko
         public async Task Profile(IUser user = null, [Remainder] string str = "")
         {
             if (user == null) user = Context.User;
-            await Context.Channel.SendMessageAsync("", false, UserUtil.ProfileEmbed((SocketGuildUser)user).Build());
+            await Context.Channel.SendMessageAsync("", false, (await UserUtil.ProfileEmbed((SocketGuildUser)user)).Build());
         }
 
         [Command("Waifus"), Alias("inv"), Summary("Shows a users waifu list.\n**Usage**: `!waifus [user_optional]`")]
@@ -362,7 +362,7 @@ namespace Namiko
             if (UserInventoryDb.GetWaifus(Context.User.Id, Context.Guild.Id).Any(x => x.Name.Equals(waifu.Name)))
             {
                 await FeaturedWaifuDb.SetFeaturedWaifu(Context.User.Id, waifu, Context.Guild.Id);
-                await Context.Channel.SendMessageAsync($"{waifu.Name} set as your featured waifu!", false, UserUtil.ProfileEmbed((SocketGuildUser)Context.User).Build());
+                await Context.Channel.SendMessageAsync($"{waifu.Name} set as your featured waifu!", false, (await UserUtil.ProfileEmbed((SocketGuildUser)Context.User)).Build());
                 return;
             }
             await Context.Channel.SendMessageAsync($":x: You don't have {waifu.Name}");

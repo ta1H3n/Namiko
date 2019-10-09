@@ -3,6 +3,7 @@ using System.Linq;
 using System.Drawing;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 
 namespace Namiko {
     public static class UserDb {
@@ -372,18 +373,25 @@ namespace Namiko {
                 return db.Voters.ToList();
             }
         }
-        public static List<Voter> GetVoters(int amount)
+        public static async Task<List<ulong>> GetVoters(int amount)
         {
             using (var db = new SqliteDbContext())
             {
-                return db.Voters.Skip(db.Voters.Count() - amount).Take(amount).ToList();
+                return await db.Voters.Skip(await db.Voters.CountAsync() - amount).Take(amount).Select(x => x.UserId).ToListAsync();
             }
         }
-        public static List<Voter> GetVoters(DateTime dateFrom, DateTime dateTo)
+        public static async Task<List<ulong>> GetVoters(DateTime dateFrom, DateTime dateTo)
         {
             using (var db = new SqliteDbContext())
             {
-                return db.Voters.Where(x => x.Date > dateFrom && x.Date < dateTo).ToList();
+                return await db.Voters.Where(x => x.Date > dateFrom && x.Date < dateTo).Select(x => x.UserId).ToListAsync();
+            }
+        }
+        public static async Task<int> VoteCount(ulong userId)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                return await db.Voters.CountAsync(x => x.UserId == userId);
             }
         }
     }

@@ -104,17 +104,48 @@ namespace Namiko
                 if (user == null)
                 {
                     await PremiumDb.DeletePremium(premium);
+                    try
+                    {
+                        var ch = await client.GetUser(premium.UserId).GetOrCreateDMChannelAsync();
+                        await ch.SendMessageAsync(embed: new EmbedBuilderPrepared()
+                            .WithDescription($"Your {premium.Type.ToString()} subscription has expired. It's sad to see you go...\n" +
+                                $"You can renew your subscription [Here](https://www.patreon.com/taiHen)\n" +
+                                $"If you think this is a mistake contact taiHen#2839 [Here](https://discord.gg/W6Ru5sM)")
+                            .Build());
+                    } catch { }
+                    using (var webhook = new DiscordWebhookClient(Config.PremiumWebhook))
+                    {
+                        await webhook.SendMessageAsync($"{premium.UserId} - {premium.Type.ToString()} subscription has expired.");
+                    }
                 }
 
                 else if (!user.Roles.Any(x => x.Id == (ulong)premium.Type))
                 {
                     await PremiumDb.DeletePremium(premium);
+                    try
+                    {
+                        var ch = await client.GetUser(premium.UserId).GetOrCreateDMChannelAsync();
+                        await ch.SendMessageAsync(embed: new EmbedBuilderPrepared()
+                            .WithDescription($"Your {premium.Type.ToString()} subscription has expired. It's sad to see you go...\n" +
+                                $"You can renew your subscription [Here](https://www.patreon.com/taiHen)\n" +
+                                $"If you think this is a mistake contact taiHen#2839 [Here](https://discord.gg/W6Ru5sM)")
+                            .Build());
+                    }
+                    catch { }
+                    using (var webhook = new DiscordWebhookClient(Config.PremiumWebhook))
+                    {
+                        await webhook.SendMessageAsync($"{premium.UserId} - {premium.Type.ToString()} subscription has expired.");
+                    }
                 }
 
                 else
                 {
                     premium.ClaimDate = now;
                     await PremiumDb.UpdatePremium(premium);
+                    using (var webhook = new DiscordWebhookClient(Config.PremiumWebhook))
+                    {
+                        await webhook.SendMessageAsync($"{user.Mention} ({premium.UserId}) - {premium.Type.ToString()} subscription extended.");
+                    }
                 }
             }
         }
@@ -406,11 +437,11 @@ namespace Namiko
                     voters = await WebUtil.GetVotersAsync();
                 }
                 catch { return; }
-                var old = VoteDb.GetVoters(500);
+                var old = await VoteDb.GetVoters(500);
                 var votersParsed = voters.Select(x => x.Id).ToList();
                 votersParsed.Reverse();
 
-                List<ulong> add = NewEntries(old.Select(x => x.UserId).ToList(), votersParsed);
+                List<ulong> add = NewEntries(old, votersParsed);
 
                 if (add.Count > 500)
                 {
@@ -477,7 +508,7 @@ namespace Namiko
                 catch { }
             }
         }
-        public static async Task SendReminders(List<ulong> voters)
+        public static async Task SendReminders(IEnumerable<ulong> voters)
         {
             foreach (var x in voters)
             {
@@ -505,11 +536,11 @@ namespace Namiko
 
                 var dateTo = System.DateTime.Now;
                 dateTo = dateTo.AddHours(-12);
-                var votes = VoteDb.GetVoters(param.Date, dateTo);
+                var votes = await VoteDb.GetVoters(param.Date, dateTo);
 
                 param.Date = dateTo;
                 await ParamDb.UpdateParam(param);
-                await SendReminders(votes.Select(x => x.UserId).ToList());
+                await SendReminders(votes.Distinct());
             }
             catch { }
             finally
