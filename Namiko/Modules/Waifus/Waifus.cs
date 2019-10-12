@@ -319,7 +319,7 @@ namespace Namiko
 
             var waifus = await WaifuWishlistDb.GetWishlist(user.Id, Context.Guild.Id);
             int cap = 5;
-            if (PremiumDb.IsPremium(Context.User.Id, PremiumType.Waifu))
+            if (PemiumDb.IsPemium(Context.User.Id, PemiumType.ProPlus))
                 cap = 12;
 
             string prefix = this.Prefix();
@@ -328,7 +328,7 @@ namespace Namiko
                 await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared(Context.User)
                     .WithDescription($"You have reached your wishlist limit of **{cap}**.\n" +
                         $"Try `{prefix}rww` to remove a waifu.")
-                    .WithFooter($"Increase the limit: `{prefix}Premium`")
+                    .WithFooter($"Increase the limit: `{prefix}pro`")
                     .Build());
                 return;
             }
@@ -385,11 +385,11 @@ namespace Namiko
         {
             var prefix = Program.GetPrefix(Context);
 
-            if (!PremiumDb.IsPremium(Context.Guild.Id, PremiumType.ServerT1))
+            if (!PemiumDb.IsPemium(Context.Guild.Id, PemiumType.GuildPlus))
             {
                 await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared(Context.User)
-                    .WithDescription($"*~ This command requires T1 Server Premium ~*")
-                    .WithFooter($"`{prefix}premium`")
+                    .WithDescription($"*~ This command requires Pro Guild+ ~*")
+                    .WithFooter($"`{prefix}pro`")
                     .Build());
                 return;
             }

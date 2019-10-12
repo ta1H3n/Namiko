@@ -21,13 +21,13 @@ namespace Namiko
     }
 
     [Flags]
-    public enum PremiumType : ulong
+    public enum PemiumType : ulong
     {
         HomeGuildId_NOTAPREMIUMTYPE = 418900885079588884,
-        ServerT1 = 581848782396981250,
-        ServerT2 = 581849178381221900,
-        Toastie = 581849224661172244,
-        Waifu = 581849327274557451
+        GuildPlus = 581848782396981250,
+        Guild = 581849178381221900,
+        ProPlus = 581849224661172244,
+        Pro = 581849327274557451
     }
 
     [Flags]

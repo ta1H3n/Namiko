@@ -80,7 +80,7 @@ namespace Namiko
                 }
             }
             else
-                list += "~ Add Server exclusive reaction images using the `ni` command. Requires Server premium. ~";
+                list += "~ Add Server exclusive reaction images using the `ni` command. Requires Pro Guild+ ~";
 
             eb.AddField("Server images", list);
             

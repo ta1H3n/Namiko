@@ -318,8 +318,8 @@ namespace Namiko
                 $"Vote for me on [Discord Bots](https://discordbots.org/bot/418823684459855882/vote) every day to receive a lootbox!");
             eb.WithColor(BasicUtil.RandomColor());
 
-            if (!(PremiumDb.IsPremium(user.Id, PremiumType.Waifu) || PremiumDb.IsPremium(user.Id, PremiumType.Toastie)))
-                eb.WithFooter($"Namiko now has Premium! `{prefix}Premium`");
+            if (!(PemiumDb.IsPemium(user.Id, PemiumType.Pro) || PemiumDb.IsPemium(user.Id, PemiumType.ProPlus)))
+                eb.WithFooter($"Check out Pro upgrades! `{prefix}Pro`");
             return eb;
         }
         public static EmbedBuilder DailyWaitEmbed(IUser user, int hours, int minutes, int seconds, string prefix)
@@ -331,8 +331,8 @@ namespace Namiko
                 eb.WithImageUrl("https://i.imgur.com/LcqpKmo.png");
             eb.WithColor(BasicUtil.RandomColor());
 
-            if (!(PremiumDb.IsPremium(user.Id, PremiumType.Waifu) || PremiumDb.IsPremium(user.Id, PremiumType.Toastie)))
-                eb.WithFooter($"Namiko now has Premium! `{prefix}Premium`");
+            if (!(PemiumDb.IsPemium(user.Id, PemiumType.Pro) || PemiumDb.IsPemium(user.Id, PemiumType.ProPlus)))
+                eb.WithFooter($"Check out Pro upgrades! `{prefix}Pro`");
             return eb;
         }
 
@@ -347,8 +347,8 @@ namespace Namiko
             eb.WithDescription($"You already claimed your weekly reward.\nYou must wait `{wait}`");
             eb.WithColor(BasicUtil.RandomColor());
 
-            if (!(PremiumDb.IsPremium(user.Id, PremiumType.Waifu) || PremiumDb.IsPremium(user.Id, PremiumType.Toastie)))
-                eb.WithFooter($"Namiko now has Premium! `{prefix}Premium`");
+            if (!(PemiumDb.IsPemium(user.Id, PemiumType.Pro) || PemiumDb.IsPemium(user.Id, PemiumType.ProPlus)))
+                eb.WithFooter($"Check out Pro upgrades! `{prefix}Pro`");
             return eb;
         }
         public static EmbedBuilder WeeklyGetEmbed(int amount, int current, IUser user, string prefix)
@@ -358,8 +358,8 @@ namespace Namiko
             eb.WithDescription($"You received **{amount.ToString("n0")}** {RandomEmote()}\nNow you have **{current.ToString("n0")}** {RandomEmote()}");
             eb.WithColor(BasicUtil.RandomColor());
 
-            if (!(PremiumDb.IsPremium(user.Id, PremiumType.Waifu) || PremiumDb.IsPremium(user.Id, PremiumType.Toastie)))
-                eb.WithFooter($"Namiko now has Premium! `{prefix}Premium`");
+            if (!(PemiumDb.IsPemium(user.Id, PemiumType.Pro) || PemiumDb.IsPemium(user.Id, PemiumType.ProPlus)))
+                eb.WithFooter($"Check out Pro upgrades! `{prefix}Pro`");
             return eb;
         }
         

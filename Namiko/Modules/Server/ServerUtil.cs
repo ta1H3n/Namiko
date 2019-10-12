@@ -17,9 +17,9 @@ namespace Namiko
             var eb = new EmbedBuilder();
 
             string name = guild.Name;
-            if (PremiumDb.IsPremium(guild.Id, PremiumType.ServerT1))
+            if (PemiumDb.IsPemium(guild.Id, PemiumType.GuildPlus))
                 name += " | T1 Guild 🌟";
-            else if (PremiumDb.IsPremium(guild.Id, PremiumType.ServerT2))
+            else if (PemiumDb.IsPemium(guild.Id, PemiumType.Guild))
                 name += " | T2 Guild ⭐";
             eb.WithAuthor(name, guild.IconUrl, BasicUtil._patreon);
 

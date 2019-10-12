@@ -48,7 +48,7 @@ namespace Namiko
         [Command("Join"), Summary("Namiko joins your voice channel.\n**Usage**: `!join`"), PermissionRole(RoleType.Music)]
         public async Task Join([Remainder]string str = "")
         {
-            if (!(PremiumDb.IsPremium(Context.Guild.Id, PremiumType.ServerT1) || PremiumDb.IsPremium(Context.Guild.Id, PremiumType.ServerT2)))
+            if (!(PemiumDb.IsPemium(Context.Guild.Id, PemiumType.GuildPlus) || PemiumDb.IsPemium(Context.Guild.Id, PemiumType.Guild)))
             {
                 await ReplyAsync($"Gomen, Senpai, Music is currently limited to my Pro Guilds :star2:\n" +
                     $"\n" +
@@ -61,7 +61,7 @@ namespace Namiko
                     $"• Look up lyrics of the playing song!\n" +
                     $"• And... I... I will talk to you in voice chat~ <:Awooo:582888496793124866>\n" +
                     $"\n" +
-                    $"Type `{this.Prefix()}premium` for more info! Get all these features and more from 5$/month!\n" +
+                    $"Type `{this.Prefix()}pro` for more info! Get all these features and more from 5$/month!\n" +
                     $"Or join my [Support Server](https://discord.gg/W6Ru5sM) and try!");
                 return;
             }
@@ -134,7 +134,7 @@ namespace Namiko
         [Command("Play"), Summary("Play a song/playlist or add it to the end of a queue.\n**Usage**: `!play [link_or_search]`"), PermissionRole(RoleType.Music)]
         public async Task Play([Remainder]string query)
         {
-            if (!(PremiumDb.IsPremium(Context.Guild.Id, PremiumType.ServerT1) || PremiumDb.IsPremium(Context.Guild.Id, PremiumType.ServerT2)))
+            if (!(PemiumDb.IsPemium(Context.Guild.Id, PemiumType.GuildPlus) || PemiumDb.IsPemium(Context.Guild.Id, PemiumType.Guild)))
             {
                 await ReplyAsync($"Gomen, Senpai, Music is currently limited to my Pro Guilds :star2:\n" +
                     $"\n" +
@@ -147,7 +147,7 @@ namespace Namiko
                     $"• Look up lyrics of the playing song!\n" +
                     $"• And... I... I will talk to you in voice chat~ <:Awooo:582888496793124866>\n" +
                     $"\n" +
-                    $"Type `{this.Prefix()}premium` for more info! Get all these features and more from 5$/month!\n" +
+                    $"Type `{this.Prefix()}pro` for more info! Get all these features and more from 5$/month!\n" +
                     $"Or join my [Support Server](https://discord.gg/W6Ru5sM) and try!");
                 return;
             }
@@ -169,14 +169,17 @@ namespace Namiko
                 return;
             }
 
-            if (player.Queue.Count >= 100)
+            int max = 100;
+            if (PemiumDb.IsPemium(Context.Guild.Id, PemiumType.GuildPlus))
+                max = 500;
+            if (player.Queue.Count >= max)
             {
-                await ReplyAsync("Playlist size is limited to 100, Senpai.");
+                await ReplyAsync($"Playlist size is limited to **{max}**, Senpai.");
                 return;
             }
 
             await Context.Channel.TriggerTypingAsync();
-            var tracks = await RestClient.SearchAndSelect(query, this);
+            var tracks = await RestClient.SearchAndSelect(query, this, max);
             if (tracks.Count <= 0)
             {
                 await ReplyAsync("*~ No Results ~*", Color.DarkRed.RawValue);
@@ -184,7 +187,7 @@ namespace Namiko
             }
             if (tracks.Count > 1)
             {
-                int amount = 100 - player.Queue.Count;
+                int amount = max - player.Queue.Count;
                 amount = amount > tracks.Count ? tracks.Count : amount;
                 player.Queue.EnqueueRange(tracks.Take(amount).Select(t => { t.User = Context.User; return t; } ));
                 await ReplyAsync($"Queued **{amount}** tracks :musical_note:");
@@ -201,72 +204,10 @@ namespace Namiko
             await AddTrack(track, player);
         }
 
-        [Command("PlayFirst"), Summary("Play a song/playlist or add it to the end of a queue. Automatically selects the first result from the search.\n**Usage**: `!play [link_or_search]`"), PermissionRole(RoleType.Music)]
-        public async Task PlayFirst([Remainder]string query)
-        {
-            if (!(PremiumDb.IsPremium(Context.Guild.Id, PremiumType.ServerT1) || PremiumDb.IsPremium(Context.Guild.Id, PremiumType.ServerT2)))
-            {
-                await ReplyAsync($"Gomen, Senpai, Music is currently limited to my Pro Guilds :star2:\n" +
-                    $"\n" +
-                    $"• Play music from any of these sources: youtube, soundcloud, bandcamp, twitch, vimeo, mixer and any http stream, such as radio stations!\n" +
-                    $"• Save and load your playlist directly in/from my database!\n" +
-                    $"• Up to 500 song queues!\n" +
-                    $"• Repeat songs, loop and shuffle playlists!\n" +
-                    $"• Set the volume!\n" +
-                    $"• Limit control of the player to roles of your choice!\n" +
-                    $"• Look up lyrics of the playing song!\n" +
-                    $"• And... I... I will talk to you in voice chat~ <:Awooo:582888496793124866>\n" +
-                    $"\n" +
-                    $"Type `{this.Prefix()}premium` for more info! Get all these features and more from 5$/month!\n" +
-                    $"Or join my [Support Server](https://discord.gg/W6Ru5sM) and try!");
-                return;
-            }
-
-            var user = Context.User as SocketGuildUser;
-            if (user.VoiceChannel is null)
-            {
-                await ReplyAsync("You're not in a voice channel... Baaaaka.");
-                return;
-            }
-
-            var player = GetPlayer();
-            if (player == null)
-                player = await LavaClient.ConnectAsync(user.VoiceChannel, Context.Channel as ITextChannel);
-
-            if (player.VoiceChannel != user.VoiceChannel)
-            {
-                await ReplyAsync("We're not in the same voice channel, Senpai.");
-                return;
-            }
-
-            if (player.Queue.Count == 100)
-            {
-                await ReplyAsync("Playlist size is limited to 100, Senpai.");
-                return;
-            }
-
-            await Context.Channel.TriggerTypingAsync();
-            var res = await RestClient.SearchYouTubeAsync(query);
-            if (res.LoadType == LoadType.NoMatches)
-            {
-                await ReplyAsync("*~ No Results ~*", Color.DarkRed.RawValue);
-                return;
-            }
-            if (res.LoadType == LoadType.LoadFailed)
-            {
-                await ReplyAsync("*Coughing blood*. I-I... failed looking it up... M-mind trying again, Senpai?", Color.DarkRed.RawValue);
-                return;
-            }
-
-            var track = res.Tracks.FirstOrDefault();
-            track.User = Context.User;
-            await AddTrack(track, player);
-        }
-
-        [Command("PlayNext"), Summary("Play a song/playlist or add it to the start of a queue.\n**Usage**: `!play [link_or_search]`"), PermissionRole(RoleType.Music)]
+        [Command("PlayNext"), Alias("pn"), Summary("Play a song/playlist or add it to the start of a queue.\n**Usage**: `!playnext [link_or_search]`"), PermissionRole(RoleType.Music)]
         public async Task PlayNext([Remainder]string query)
         {
-            if (!(PremiumDb.IsPremium(Context.Guild.Id, PremiumType.ServerT1) || PremiumDb.IsPremium(Context.Guild.Id, PremiumType.ServerT2)))
+            if (!(PemiumDb.IsPemium(Context.Guild.Id, PemiumType.GuildPlus) || PemiumDb.IsPemium(Context.Guild.Id, PemiumType.Guild)))
             {
                 await ReplyAsync($"Gomen, Senpai, Music is currently limited to my Pro Guilds :star2:\n" +
                     $"\n" +
@@ -279,7 +220,7 @@ namespace Namiko
                     $"• Look up lyrics of the playing song!\n" +
                     $"• And... I... I will talk to you in voice chat~ <:Awooo:582888496793124866>\n" +
                     $"\n" +
-                    $"Type `{this.Prefix()}premium` for more info! Get all these features and more from 5$/month!\n" +
+                    $"Type `{this.Prefix()}pro` for more info! Get all these features and more from 5$/month!\n" +
                     $"Or join my [Support Server](https://discord.gg/W6Ru5sM) and try!");
                 return;
             }
@@ -301,14 +242,17 @@ namespace Namiko
                 return;
             }
 
-            if (player.Queue.Count >= 100)
+            int max = 100;
+            if (PemiumDb.IsPemium(Context.Guild.Id, PemiumType.GuildPlus))
+                max = 500;
+            if (player.Queue.Count >= max)
             {
-                await ReplyAsync("Playlist size is limited to 100, Senpai.");
+                await ReplyAsync($"Playlist size is limited to **{max}**, Senpai.");
                 return;
             }
 
             await Context.Channel.TriggerTypingAsync();
-            var tracks = await RestClient.SearchAndSelect(query, this);
+            var tracks = await RestClient.SearchAndSelect(query, this, max);
             if (tracks.Count <= 0)
             {
                 await ReplyAsync("*~ No Results ~*", Color.DarkRed.RawValue);
@@ -316,7 +260,7 @@ namespace Namiko
             }
             if (tracks.Count > 1)
             {
-                int amount = 100 - player.Queue.Count;
+                int amount = max - player.Queue.Count;
                 amount = amount > tracks.Count ? tracks.Count : amount;
                 player.Queue.EnqueueRange(tracks.Take(amount).Select(t => { t.User = Context.User; return t; }));
                 await ReplyAsync($"Queued **{amount}** tracks :musical_note:");
@@ -346,6 +290,71 @@ namespace Namiko
                 await ReplyAsync(embed: (await MusicUtil.NowPlayingEmbed(player)).Build());
                 return;
             }
+        }
+
+        [Command("QuickPlay"), Alias("qp"), Summary("Play a song/playlist or add it to the end of a queue. Automatically selects the first result from the search.\n**Usage**: `!qp [link_or_search]`"), PermissionRole(RoleType.Music)]
+        public async Task PlayFirst([Remainder]string query)
+        {
+            if (!(PemiumDb.IsPemium(Context.Guild.Id, PemiumType.GuildPlus) || PemiumDb.IsPemium(Context.Guild.Id, PemiumType.Guild)))
+            {
+                await ReplyAsync($"Gomen, Senpai, Music is currently limited to my Pro Guilds :star2:\n" +
+                    $"\n" +
+                    $"• Play music from any of these sources: youtube, soundcloud, bandcamp, twitch, vimeo, mixer and any http stream, such as radio stations!\n" +
+                    $"• Save and load your playlist directly in/from my database!\n" +
+                    $"• Up to 500 song queues!\n" +
+                    $"• Repeat songs, loop and shuffle playlists!\n" +
+                    $"• Set the volume!\n" +
+                    $"• Limit control of the player to roles of your choice!\n" +
+                    $"• Look up lyrics of the playing song!\n" +
+                    $"• And... I... I will talk to you in voice chat~ <:Awooo:582888496793124866>\n" +
+                    $"\n" +
+                    $"Type `{this.Prefix()}pro` for more info! Get all these features and more from 5$/month!\n" +
+                    $"Or join my [Support Server](https://discord.gg/W6Ru5sM) and try!");
+                return;
+            }
+
+            var user = Context.User as SocketGuildUser;
+            if (user.VoiceChannel is null)
+            {
+                await ReplyAsync("You're not in a voice channel... Baaaaka.");
+                return;
+            }
+
+            var player = GetPlayer();
+            if (player == null)
+                player = await LavaClient.ConnectAsync(user.VoiceChannel, Context.Channel as ITextChannel);
+
+            if (player.VoiceChannel != user.VoiceChannel)
+            {
+                await ReplyAsync("We're not in the same voice channel, Senpai.");
+                return;
+            }
+
+            int max = 100;
+            if (PemiumDb.IsPemium(Context.Guild.Id, PemiumType.GuildPlus))
+                max = 500;
+            if (player.Queue.Count >= max)
+            {
+                await ReplyAsync($"Playlist size is limited to **{max}**, Senpai.");
+                return;
+            }
+
+            await Context.Channel.TriggerTypingAsync();
+            var res = await RestClient.SearchYouTubeAsync(query);
+            if (res.LoadType == LoadType.NoMatches)
+            {
+                await ReplyAsync("*~ No Results ~*", Color.DarkRed.RawValue);
+                return;
+            }
+            if (res.LoadType == LoadType.LoadFailed)
+            {
+                await ReplyAsync("*Coughing blood*. I-I... failed looking it up... M-mind trying again, Senpai?", Color.DarkRed.RawValue);
+                return;
+            }
+
+            var track = res.Tracks.FirstOrDefault();
+            track.User = Context.User;
+            await AddTrack(track, player);
         }
 
         [Command("Skip"), Summary("Skip the current song.\n**Usage**: `!skip`"), PlayerChannel, PermissionRole(RoleType.Music)]
@@ -401,7 +410,7 @@ namespace Namiko
                     to = player.Queue.Count;
 
                 player.Queue.RemoveRange(from-1, to-1);
-                await ReplyAsync($"Removed songs **{from}-{to}** from the playlist. :fire:");
+                await ReplyAsync($"Removed songs **{from}-{to}** from the playlist. <a:Cleaning:621047051999903768>");
                 return;
             }
 
@@ -412,7 +421,7 @@ namespace Namiko
             }
 
             player.Queue.RemoveAt(from-1);
-            await ReplyAsync($"Removed the song at position {from} from the playlist. :fire:");
+            await ReplyAsync($"Removed the song at position {from} from the playlist. <a:Cleaning:621047051999903768>");
         }
 
         [Command("Pause"), Summary("Pauses music playback.\n**Usage**: `!pause`"), PlayerChannel, PermissionRole(RoleType.Music)]
@@ -608,7 +617,7 @@ namespace Namiko
                 IconUrl = Context.User.GetAvatarUrl(),
                 Url = BasicUtil._patreon
             };
-            var pages = CustomPaginatedMessage.PagesArray(player.Queue.Items, 10, (x) => x.Title.ShortenString(70, 65) + "\n");
+            var pages = CustomPaginatedMessage.PagesArray(player.Queue.Items, 10, x => $"[{x.Title.ShortenString(70, 65)}]({x.Uri})\n");
             if (player.Loop)
                 msg.Title = "Looping Playlist - :repeat:";
 
@@ -719,6 +728,7 @@ namespace Namiko
         public async Task Playlists([Remainder]string str = "")
         {
             var playlists = await MusicDb.GetPlaylists(Context.Guild.Id);
+            playlists.AddRange(await MusicDb.GetPlaylists(0));
             await ReplyAsync(embed: MusicUtil.PlaylistListEmbed(playlists, Context.User).Build());
         }
 
@@ -727,6 +737,7 @@ namespace Namiko
         {
             var player = Player;
             var playlists = await MusicDb.GetPlaylists(Context.Guild.Id);
+            playlists.AddRange(await MusicDb.GetPlaylists(0));
 
             var playlist = await this.SelectItem(playlists, MusicUtil.PlaylistListEmbed(playlists, Context.User, true));
             if (playlist == null)
@@ -794,7 +805,7 @@ namespace Namiko
         [Command("DeletePlaylist"), Alias("dp"), Summary("Deletes a saved playlist.\n**Usage**: `!dp`"), PermissionRole(RoleType.Music)]
         public async Task DeletePlaylist([Remainder]string str = "")
         {
-            var playlists = await MusicDb.GetPlaylists(Context.Guild.Id, false);
+            var playlists = await MusicDb.GetPlaylists(Context.Guild.Id);
 
             var playlist = await this.SelectItem(playlists, MusicUtil.PlaylistListEmbed(playlists, Context.User, true));
             if (playlist == null)
@@ -802,6 +813,11 @@ namespace Namiko
 
             await MusicDb.DeletePlaylist(playlist.Id);
             await ReplyAsync($"**{playlist.Name}** deleted <:KannaSad:625348483968401419>");
+            if (playlist.UserId != Context.User.Id)
+            {
+                var ch = await Program.GetClient().GetUser(playlist.UserId).GetOrCreateDMChannelAsync();
+                await ch.SendMessageAsync($"Your playlist ({playlist.Name}) in {Context.Guild.Name} has been deleted by {Context.User}");
+            }
         }
 
         [Command("SetMusicRole"), Alias("smr"), Summary("Adds or removes a role that is required for controlling music.\n**Usage**: `!smr [role_name]`"), CustomUserPermission(GuildPermission.Administrator)]
@@ -907,6 +923,7 @@ namespace Namiko
                 $"Please report this to taiHen#2839 at https://discord.gg/W6Ru5sM \n" +
                 $"Error: `{arg3}`");
 
+            await LavaClient.DisconnectAsync(player.VoiceChannel);
             if (player?.CurrentTrack == track)
             {
                 await player.SkipAsync();
@@ -923,6 +940,8 @@ namespace Namiko
         private static async Task LavalinkServerStats(ServerStats arg)
         {
             if (DateTime.Now.Minute % 10 != 0)
+                return;
+            if (arg.PlayerCount < 1)
                 return;
 
             var eb = new EmbedBuilder();

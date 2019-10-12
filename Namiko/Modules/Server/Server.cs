@@ -128,7 +128,7 @@ namespace Namiko
         [Command("ActivateServerPremium"), Alias("asp"), Summary("Activates server premium in the current server.\n**Usage**: `!asp [tier]`")]
         public async Task ActivateServerPremium(string tier = "", [Remainder] string str = "")
         {
-            var ntr = Context.Client.GetGuild((ulong)PremiumType.HomeGuildId_NOTAPREMIUMTYPE);
+            var ntr = Context.Client.GetGuild((ulong)PemiumType.HomeGuildId_NOTAPREMIUMTYPE);
             SocketGuildUser user = ntr.GetUser(Context.User.Id);
 
             if (user == null)
@@ -145,56 +145,56 @@ namespace Namiko
                 return;
             }
 
-            var current = PremiumDb.GetGuildPremium(Context.Guild.Id);
+            var current = PemiumDb.GetGuildPremium(Context.Guild.Id);
             var roles = user.Roles;
 
             bool log = false;
             string text = "";
             foreach (var role in roles)
             {
-                if (role.Id == (ulong)PremiumType.ServerT1 && tier == "t1")
+                if (role.Id == (ulong)PemiumType.GuildPlus && tier == "t1")
                 {
-                    if (current.Any(x => x.Type == PremiumType.ServerT1))
-                        text += "**T1 Premium** is already activated in this server!\n";
+                    if (current.Any(x => x.Type == PemiumType.GuildPlus))
+                        text += "**Pro Guild+** is already activated in this server!\n";
                     else
                     {
-                        if (PremiumDb.IsPremium(user.Id, PremiumType.ServerT1))
-                            text += "You used your T1 Server premium upgrade in another server...\n";
+                        if (PemiumDb.IsPemium(user.Id, PemiumType.GuildPlus))
+                            text += "You used your **Pro Guild+** premium upgrade in another server...\n";
 
                         else
                         {
-                            await PremiumDb.AddPremium(user.Id, PremiumType.ServerT1, Context.Guild.Id);
+                            await PemiumDb.AddPremium(user.Id, PemiumType.GuildPlus, Context.Guild.Id);
                             try
                             {
-                                await PremiumDb.DeletePremium(PremiumDb.GetGuildPremium(Context.Guild.Id).FirstOrDefault(x => x.Type == PremiumType.ServerT2));
+                                await PemiumDb.DeletePremium(PemiumDb.GetGuildPremium(Context.Guild.Id).FirstOrDefault(x => x.Type == PemiumType.Guild));
                             } catch { }
-                            text += "**T1 Premium** activated!\n";
+                            text += "**Pro Guild+** activated!\n";
                             log = true;
                         }
                     }
                 }
-                if (role.Id == (ulong)PremiumType.ServerT2 && tier == "t2")
+                if (role.Id == (ulong)PemiumType.Guild && tier == "t2")
                 {
-                    if (current.Any(x => x.Type == PremiumType.ServerT1))
-                        text += "**T1 Premium** is already activated in this server!\n";
-                    else if (current.Any(x => x.Type == PremiumType.ServerT2))
-                        text += "**T2 Premium** is already activated in this server!\n";
+                    if (current.Any(x => x.Type == PemiumType.GuildPlus))
+                        text += "**Pro Guild+** is already activated in this server!\n";
+                    else if (current.Any(x => x.Type == PemiumType.Guild))
+                        text += "**Pro Guild** is already activated in this server!\n";
                     else
                     {
-                        if (PremiumDb.IsPremium(user.Id, PremiumType.ServerT2))
-                            text += "You used your T2 Server premium upgrade in another server...\n";
+                        if (PemiumDb.IsPemium(user.Id, PemiumType.Guild))
+                            text += "You used your **Pro Guild** premium upgrade in another server...\n";
 
                         else
                         {
-                            await PremiumDb.AddPremium(user.Id, PremiumType.ServerT2, Context.Guild.Id);
-                            text += "**T2 Premium** activated!\n";
+                            await PemiumDb.AddPremium(user.Id, PemiumType.Guild, Context.Guild.Id);
+                            text += "**Pro Guild** activated!\n";
                             log = true;
                         }
                     }
                 }
             }
             if (text == "")
-                text += $"You have no server premium... Try `{Program.GetPrefix(Context)}donate`";
+                text += $"You have no Pro Guild... Try `{Program.GetPrefix(Context)}Pro`";
 
             await Context.Channel.SendMessageAsync(text);
             if (log)

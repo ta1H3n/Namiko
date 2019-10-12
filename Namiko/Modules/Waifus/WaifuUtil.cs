@@ -73,9 +73,7 @@ namespace Namiko
             int t2amount = Constants.shopt2amount;
             int t3amount = Constants.shopt3amount;
             int pages = 1;
-            if (PremiumDb.IsPremium(guildId, PremiumType.ServerT2))
-                pages = 2;
-            if (PremiumDb.IsPremium(guildId, PremiumType.ServerT1))
+            if (PemiumDb.IsPemium(guildId, PemiumType.GuildPlus))
                 pages = 3;
             int randomizerMultiplier = 7 - pages;
 
@@ -85,7 +83,7 @@ namespace Namiko
             var tier2 = await WaifuDb.RandomWaifus(2, t2amount * pages * randomizerMultiplier, excludeSource: gachaSource);
             var tier3 = await WaifuDb.RandomWaifus(3, t3amount * pages * randomizerMultiplier, excludeSource: gachaSource);
 
-            var wishlists = await WaifuWishlistDb.GetAllPremiumWishlists(guildId, PremiumType.Toastie);
+            var wishlists = await WaifuWishlistDb.GetAllPremiumWishlists(guildId, PemiumType.Pro);
             wishlists.RemoveAll(x => gachaSource.Contains(x.Waifu.Source));
             var ids = wishlists.Select(x => x.UserId).Distinct().ToArray();
             var guild = Program.GetClient().GetGuild(guildId);
@@ -170,9 +168,7 @@ namespace Namiko
             int t2amount = Constants.gachat2amount;
             int t3amount = Constants.gachat3amount;
             int pages = 1;
-            if (PremiumDb.IsPremium(guildId, PremiumType.ServerT2))
-                pages = 2;
-            if (PremiumDb.IsPremium(guildId, PremiumType.ServerT1))
+            if (PemiumDb.IsPemium(guildId, PemiumType.GuildPlus))
                 pages = 3;
             int randomizerMultiplier = 7 - pages;
 
@@ -183,7 +179,7 @@ namespace Namiko
             waifus.AddRange(await WaifuDb.RandomWaifus(2, t2amount * pages * randomizerMultiplier, includeSource: gachaSource));
             waifus.AddRange(await WaifuDb.RandomWaifus(3, t3amount * pages * randomizerMultiplier, includeSource: gachaSource));
 
-            var wishlists = await WaifuWishlistDb.GetAllPremiumWishlists(guildId, PremiumType.Toastie);
+            var wishlists = await WaifuWishlistDb.GetAllPremiumWishlists(guildId, PemiumType.Pro);
             wishlists.RemoveAll(x => !gachaSource.Contains(x.Waifu.Source));
             var ids = wishlists.Select(x => x.UserId).Distinct().ToArray();
             var guild = Program.GetClient().GetGuild(guildId);
@@ -349,7 +345,7 @@ namespace Namiko
             if(type == ShopType.Mod)
             {
                 eb.WithAuthor("Mod Shop", client.CurrentUser.GetAvatarUrl(), BasicUtil._patreon);
-                eb.WithDescription($"A waifu shop controlled by server moderators.\n`{prefix}MsAddWaifu` | `{prefix}MsRemoveWaifu` - requires T1 Server Premium.");
+                eb.WithDescription($"A waifu shop controlled by server moderators.\n`{prefix}MsAddWaifu` | `{prefix}MsRemoveWaifu` - requires Namiko Pro Guild+.");
             }
             else
             {

@@ -87,7 +87,7 @@ namespace Namiko
             eb.WithImageUrl(Config.NamikoBannerUrl);
             return eb;
         }
-        public static EmbedBuilder DonateEmbed()
+        public static EmbedBuilder DonateEmbed(string prefix)
         {
             var eb = new EmbedBuilder();
             var client = Program.GetClient();
@@ -96,6 +96,16 @@ namespace Namiko
             eb.WithDescription(desc);
 
             string field = "";
+            field += $"Namiko **Pro** -  *5$/month* `{prefix}InfoPro`\n";
+            field += $"Namiko **Pro+** - *10$/month* `{prefix}InfoProPlus`\n";
+            eb.AddField("User Upgrades <:Pro:632544044643516416>", field, true);
+
+            field = "";
+            field += $"Pro **Guild** -  *5$/month* `{prefix}InfoGuild`\n";
+            field += $"Pro **Guild+** - *10$/month* `{prefix}InfoGuildPlus`\n";
+            eb.AddField("Server Wide Upgrades <:Guild:632544044660031498>", field, true);
+
+            field = "";
             field += ":star: [Patreon](https://www.patreon.com/taiHen) - includes rewards.\n";
             field += ":dollar: [Paypal](https://www.paypal.me/NamikoBot)\n";
             eb.AddField("Donation Links", field);

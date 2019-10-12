@@ -80,7 +80,7 @@ namespace Namiko
 
             long timeNow = DateTimeOffset.Now.ToUnixTimeMilliseconds();
             int ms = 72000000;
-            if (PremiumDb.IsPremium(Context.Guild.Id, PremiumType.ServerT1) || PremiumDb.IsPremium(Context.Guild.Id, PremiumType.ServerT2))
+            if (PemiumDb.IsPemium(Context.User.Id, PemiumType.ProPlus))
                 ms /= 2;
 
             if ((daily.Date + ms) < timeNow)
@@ -129,7 +129,7 @@ namespace Namiko
             }
 
             int hours = 168;
-            if (PremiumDb.IsPremium(Context.User.Id, PremiumType.Toastie))
+            if (PemiumDb.IsPemium(Context.Guild.Id, PemiumType.Guild))
                 hours /= 2;
 
             if (weekly.Date == null ? true : weekly.Date.AddHours(hours).CompareTo(DateTime.Now) < 0)
@@ -138,26 +138,14 @@ namespace Namiko
                 int amount = ToastieUtil.DailyAmount(streak);
                 int tax = ToastieUtil.DailyTax(amount, ToastieDb.GetToasties(Context.User.Id, Context.Guild.Id), ToastieDb.GetToasties(Context.Client.CurrentUser.Id, Context.Guild.Id), await ToastieDb.TotalToasties(Context.Guild.Id));
                 amount -= tax / 2;
-                //int cap = Constants.weeklycap;
-                //if (PremiumDb.IsPremium(Context.Guild.Id, PremiumType.ServerT1))
-                //    cap += 1000;
-                //amount = amount > cap ? cap : amount;
-                if (PremiumDb.IsPremium(Context.Guild.Id, PremiumType.ServerT1))
+                if (PemiumDb.IsPemium(Context.Guild.Id, PemiumType.GuildPlus))
                     amount += 1000;
 
                 string text = "";
-                if (PremiumDb.IsPremium(Context.User.Id, PremiumType.Waifu))
+                if (PemiumDb.IsPemium(Context.User.Id, PemiumType.ProPlus))
                 {
-                    if (PremiumDb.IsPremium(Context.User.Id, PremiumType.Toastie))
-                    {
-                        await LootBoxDb.AddLootbox(Context.User.Id, LootBoxType.Premium, 1, Context.Guild.Id);
-                        text = "You receive a lootbox! :star2:";
-                    }
-                    else
-                    {
-                        await LootBoxDb.AddLootbox(Context.User.Id, LootBoxType.Vote, 1, Context.Guild.Id);
-                        text = "You receive a lootbox! :star:";
-                    }
+                    await LootBoxDb.AddLootbox(Context.User.Id, LootBoxType.WaifuT1, 1, Context.Guild.Id);
+                    text = "You receive a T1 Waifu lootbox! :star2:";
                 }
 
                 await ToastieDb.AddToasties(Context.User.Id, amount, Context.Guild.Id);
@@ -303,6 +291,18 @@ namespace Namiko
         [Command("BuyLootbox"), Alias("bl"), Summary("Buy a lootbox.\n**Usage**: `!bl [name]`")]
         public async Task BuyLootbox([Remainder] string str = "")
         {
+            var prefix = Program.GetPrefix(Context);
+
+            if (!PemiumDb.IsPemium(Context.Guild.Id, PemiumType.GuildPlus))
+            {
+                await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared(Context.User)
+                    .WithDescription($"*~ This command requires Pro Guild+ ~*\n" +
+                    $"Try `{prefix}lootboxstats` to see drop rates.")
+                    .WithFooter($"`{prefix}pro`")
+                    .Build());
+                return;
+            }
+
             LootboxStat box = null;
             var boxes = LootboxStats.Lootboxes.Where(x => x.Value.Price >= 0).Select(x => x.Value).ToList();
             if (str != "")
@@ -503,7 +503,7 @@ namespace Namiko
 
             if (type.IsWaifu())
             {
-                bool isPremium = PremiumDb.IsPremium(Context.User.Id, PremiumType.Waifu);
+                bool isPremium = PemiumDb.IsPemium(Context.User.Id, PemiumType.Pro);
                 var waifu = await ToastieUtil.UnboxWaifu(type, isPremium, Context.User.Id, Context.Guild.Id);
                 while(UserInventoryDb.OwnsWaifu(Context.User.Id, waifu, Context.Guild.Id))
                     waifu = await ToastieUtil.UnboxWaifu(type, isPremium, Context.User.Id, Context.Guild.Id);

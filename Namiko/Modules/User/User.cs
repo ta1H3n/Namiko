@@ -100,7 +100,7 @@ namespace Namiko
             if (MarriageDb.GetMarriages(Context.User.Id, Context.Guild.Id).Count >= UserUtil.GetMarriageLimit(Context.User.Id) 
                 || MarriageDb.GetMarriages(wife.Id, Context.Guild.Id).Count >= UserUtil.GetMarriageLimit(wife.Id)) {
                 eb.WithDescription($"One of you has reached the maximum number of marriages.");
-                eb.WithFooter($"Limit can be increased to {Constants.PremiumMarriageLimit} with Waifu Premium.");
+                eb.WithFooter($"Limit can be increased to {Constants.ProMarriageLimit} or {Constants.ProPlusMarriageLimit} with Namiko Pro.");
                 await Context.Channel.SendMessageAsync("", false, eb.Build());
                 return;
             }
@@ -493,7 +493,7 @@ namespace Namiko
         [Command("ActivatePremium"), Alias("ap"), Summary("Activates premium subscriptions associated with this account.\n**Usage**: `!ap`")]
         public async Task ActivatePremium([Remainder] string str = "")
         {
-            var ntr = Context.Client.GetGuild((ulong)PremiumType.HomeGuildId_NOTAPREMIUMTYPE);
+            var ntr = Context.Client.GetGuild((ulong)PemiumType.HomeGuildId_NOTAPREMIUMTYPE);
             SocketGuildUser user = ntr.GetUser(Context.User.Id);
 
             if (user == null)
@@ -502,32 +502,32 @@ namespace Namiko
                 return;
             }
 
-            var current = PremiumDb.GetUserPremium(user.Id);
+            var current = PemiumDb.GetUserPremium(user.Id);
             var roles = user.Roles;
 
             bool log = false;
             string text = "";
             foreach(var role in roles)
             {
-                if(role.Id == (ulong) PremiumType.Toastie)
+                if(role.Id == (ulong) PemiumType.ProPlus)
                 {
-                    if (current.Any(x => x.Type == PremiumType.Toastie))
-                        text += "You already have **Toastie Premium**!\n";
+                    if (current.Any(x => x.Type == PemiumType.ProPlus))
+                        text += "You already have **Pro+**!\n";
                     else
                     {
-                        await PremiumDb.AddPremium(user.Id, PremiumType.Toastie);
-                        text += "**Toastie Premium** activated!\n";
+                        await PemiumDb.AddPremium(user.Id, PemiumType.ProPlus);
+                        text += "**Pro+** activated!\n";
                         log = true;
                     }
                 }
-                if (role.Id == (ulong)PremiumType.Waifu)
+                if (role.Id == (ulong)PemiumType.Pro)
                 {
-                    if (current.Any(x => x.Type == PremiumType.Waifu))
-                        text += "You already have **Waifu Premium**!\n";
+                    if (current.Any(x => x.Type == PemiumType.Pro))
+                        text += "You already have **Pro**!\n";
                     else
                     {
-                        await PremiumDb.AddPremium(user.Id, PremiumType.Waifu);
-                        text += "**Waifu Premium** activated!\n";
+                        await PemiumDb.AddPremium(user.Id, PemiumType.Pro);
+                        text += "**Pro+** activated!\n";
                         log = true;
                     }
                 }

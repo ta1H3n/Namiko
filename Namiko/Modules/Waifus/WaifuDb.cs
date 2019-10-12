@@ -413,7 +413,7 @@ namespace Namiko
                 var entry = new WaifuWish { UserId = userId, Waifu = waifu, GuildId = guildId };
 
                 int cap = 5;
-                if (PremiumDb.IsPremium(userId, PremiumType.Waifu))
+                if (PemiumDb.IsPemium(userId, PemiumType.Pro))
                     cap = 12;
 
                 db.WaifuWishlist.Update(entry);
@@ -467,7 +467,7 @@ namespace Namiko
                 }
             }
         }
-        public static async Task<List<WaifuWish>> GetAllPremiumWishlists(ulong guildId, PremiumType premium)
+        public static async Task<List<WaifuWish>> GetAllPremiumWishlists(ulong guildId, PemiumType premium)
         {
             using (var db = new SqliteDbContext())
             {

@@ -41,7 +41,7 @@ namespace Namiko
                 {
                     count++;
                     if (counter)
-                        str += $"#{count} ";
+                        str += $"`#{count}` ";
                     str += toString(y);
                 }
                 strList.Add(str);

@@ -204,14 +204,14 @@ namespace Namiko
         {
             var subs = SpecialChannelDb.GetChannelsByGuild(Context.Guild.Id, ChannelType.Reddit);
             int limit = 1;
-            if (PremiumDb.IsPremium(Context.Guild.Id, PremiumType.ServerT2))
+            if (PemiumDb.IsPemium(Context.Guild.Id, PemiumType.Guild))
                 limit = 5;
-            if (PremiumDb.IsPremium(Context.Guild.Id, PremiumType.ServerT1))
+            if (PemiumDb.IsPemium(Context.Guild.Id, PemiumType.GuildPlus))
                 limit = 10;
 
             if (subs.Count() >= limit)
             {
-                await Context.Channel.SendMessageAsync($"Limit {limit} subscription per guild. Upgrade server to increase the limit! `{Program.GetPrefix(Context)}Premium`", embed: WebUtil.SubListEmbed(Context.Guild.Id).Build());
+                await Context.Channel.SendMessageAsync($"Limit {limit} subscription per guild. Upgrade server to increase the limit! `{Program.GetPrefix(Context)}Pro`", embed: WebUtil.SubListEmbed(Context.Guild.Id).Build());
                 return;
             }
 

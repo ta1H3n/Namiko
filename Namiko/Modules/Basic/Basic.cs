@@ -35,10 +35,100 @@ namespace Namiko
             await Context.Channel.SendMessageAsync("", false, BasicUtil.InfoEmbed().Build());
         }
 
-        [Command("Donate"), Alias("Premium", "Support", "Patreon", "Paypal"), Summary("Donation Links.")]
+        [Command("Pro"), Alias("Premium", "Support", "Patreon", "Paypal", "Donate"), Summary("Donation Links.")]
         public async Task Donate([Remainder] string str = "")
         {
-            await Context.Channel.SendMessageAsync("", false, BasicUtil.DonateEmbed().Build());
+            await Context.Channel.SendMessageAsync("", false, BasicUtil.DonateEmbed(this.Prefix()).Build());
+        }
+
+        [Command("InfoPro"), Summary("Donation Links.")]
+        public async Task InfoPro([Remainder] string str = "")
+        {
+            string prefix = this.Prefix();
+            var eb = new EmbedBuilder()
+                .WithAuthor(Program.GetClient().CurrentUser)
+                .WithDescription($"Namiko Pro Upgrades :star:\n" +
+                    $"\n" +
+                    $"- Waifus from your wishlist have a much higher chance to appear in the `{prefix}waifushop`\n" +
+                    $"- Much higher chance to find waifus from your wishlist in your lootboxes\n" +
+                    $"- Get upgraded lootboxes for voting: chance to get **T1** and **T2** waifus, more toasties.\n" +
+                    $"- Marry up to **3** users\n" +
+                    $"\n" +
+                    $":star: Subscribe on [Patreon](https://www.patreon.com/taiHen)")
+                .WithImageUrl("https://i.imgur.com/NIAP5QC.png")
+                .WithFooter("-What are you? Twelve?")
+                .WithColor(BasicUtil.RandomColor());
+
+            await Context.Channel.SendMessageAsync("", false, eb.Build());
+        }
+
+        [Command("InfoProPlus"), Summary("Donation Links.")]
+        public async Task InfoProPlus([Remainder] string str = "")
+        {
+            string prefix = this.Prefix();
+            var eb = new EmbedBuilder()
+                .WithAuthor(Program.GetClient().CurrentUser)
+                .WithDescription($"Namiko Pro+ Upgrades :star2:\n" +
+                    $"\n" +
+                    $"- All upgrades in Pro\n" +
+                    $"- **Halved** `{prefix}daily` cooldown in all servers\n" +
+                    $"- Get a **T1 Waifu** Lootbox when using `{prefix}weekly`\n" +
+                    $"- Request a **custom waifu** that is only obtainable by you (Stays after premium ends)\n" +
+                    $"- Waifu **wishlist** limit increased to **12**\n" +
+                    $"- Marry up to **10** users\n" +
+                    $"- Behind the scenes access in *Namiko Test Realm*\n" +
+                    $"\n" +
+                    $":star: Subscribe on [Patreon](https://www.patreon.com/taiHen)")
+                .WithImageUrl("https://i.imgur.com/0150Lvg.png")
+                .WithFooter("-What are you? Twelve?")
+                .WithColor(BasicUtil.RandomColor());
+
+            await Context.Channel.SendMessageAsync("", false, eb.Build());
+        }
+
+        [Command("InfoGuild"), Summary("Donation Links.")]
+        public async Task InfoGuild([Remainder] string str = "")
+        {
+            string prefix = this.Prefix();
+            var eb = new EmbedBuilder()
+                .WithAuthor(Program.GetClient().CurrentUser)
+                .WithDescription($"Namiko Pro Guild Upgrades :star:\n" +
+                    $"\n" +
+                    $"- **Music** with a lot of features! Try `{prefix}join`\n" +
+                    $"- Halved `{prefix}weekly` cooldown\n" +
+                    $"- **3** times more waifus in waifu shop and gacha shop\n" +
+                    $"- Subreddit follow limit increased to **5**\n" +
+                    $"\n" +
+                    $":star: Subscribe on [Patreon](https://www.patreon.com/taiHen)")
+                .WithImageUrl("https://i.imgur.com/e35BY05.png")
+                .WithFooter("-What are you? Twelve?")
+                .WithColor(BasicUtil.RandomColor());
+
+            await Context.Channel.SendMessageAsync("", false, eb.Build());
+        }
+
+        [Command("InfoGuildPlus"), Summary("Donation Links.")]
+        public async Task InfoGuildPlus([Remainder] string str = "")
+        {
+            string prefix = this.Prefix();
+            var eb = new EmbedBuilder()
+                .WithAuthor(Program.GetClient().CurrentUser)
+                .WithDescription($"Namiko Pro Guild+ Upgrades :star2:\n" +
+                    $"\n" +
+                    $"- All upgrades in Guild\n" +
+                    $"- Music queue limit increased from **100** to **500**\n" +
+                    $"- A new waifu shop that can be controlled by your mods\n" +
+                    $"- Waifu **lootboxes** will be up for purchase for users\n" +
+                    $"- Create **reaction image commands** exclusive to your server (Stays after premium ends)\n" +
+                    $"- Weekly increased by **1000** for everyone\n" +
+                    $"- Subreddit follow limit increased to **10**\n" +
+                    $"\n" +
+                    $":star: Subscribe on [Patreon](https://www.patreon.com/taiHen)")
+                .WithImageUrl("https://i.imgur.com/CSB0nYy.png")
+                .WithFooter("-What are you? Twelve?")
+                .WithColor(BasicUtil.RandomColor());
+
+            await Context.Channel.SendMessageAsync("", false, eb.Build());
         }
 
         [Command("Vote")]

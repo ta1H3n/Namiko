@@ -62,8 +62,10 @@ namespace Namiko {
         public static int GetMarriageLimit(ulong userId)
         {
             int limit = Constants.MarriageLimit;
-            if (PremiumDb.IsPremium(userId, PremiumType.Waifu))
-                limit = Constants.PremiumMarriageLimit;
+            if (PemiumDb.IsPemium(userId, PemiumType.Pro))
+                limit = Constants.ProMarriageLimit;
+            if (PemiumDb.IsPemium(userId, PemiumType.ProPlus))
+                limit = Constants.ProPlusMarriageLimit;
 
             return limit;
         }
@@ -91,14 +93,10 @@ namespace Namiko {
                 }
             }
 
-            bool toastiePremium = PremiumDb.IsPremium(user.Id, PremiumType.Toastie);
-            bool waifuPremium = PremiumDb.IsPremium(user.Id, PremiumType.Waifu);
-            if (toastiePremium && waifuPremium)
-                name += " | Toastie and Waifu 🌟";
-            else if (waifuPremium)
-                name += " | Waifu ⭐";
-            else if (toastiePremium)
-                name += " | Toastie ⭐";
+            if (PemiumDb.IsPemium(user.Id, PemiumType.ProPlus))
+                name += " | Pro+ 🌟";
+            else if (PemiumDb.IsPemium(user.Id, PemiumType.Pro))
+                name += " | Pro ⭐";
             eb.WithAuthor(name, user.GetAvatarUrl(), BasicUtil._patreon);
 
             var waifus = UserInventoryDb.GetWaifus(user.Id, user.Guild.Id);

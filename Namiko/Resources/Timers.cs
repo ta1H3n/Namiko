@@ -62,7 +62,7 @@ namespace Namiko
 
             Minute5.Elapsed += Timer_Unban;
             Minute5.Elapsed += Timer_DailyStats;
-            // Minute5.Elapsed += Timer_RedditPost;
+            Minute5.Elapsed += Timer_RedditPost;
 
             await Task.Delay(10000);
             MinuteReminders = new Timer(1000 * 60 * 5);
@@ -89,9 +89,9 @@ namespace Namiko
         private static async void Timer_ExpirePremium(object sender, ElapsedEventArgs e)
         {
             var now = System.DateTime.Now;
-            var expired = PremiumDb.GetAllPremiums(now.AddMonths(-1).AddDays(-1));
+            var expired = PemiumDb.GetAllPremiums(now.AddMonths(-1).AddDays(-1));
             var client = Program.GetClient();
-            var ntr = client.GetGuild((ulong)PremiumType.HomeGuildId_NOTAPREMIUMTYPE);
+            var ntr = client.GetGuild((ulong)PemiumType.HomeGuildId_NOTAPREMIUMTYPE);
 
             foreach (var premium in expired)
             {
@@ -103,12 +103,12 @@ namespace Namiko
 
                 if (user == null)
                 {
-                    await PremiumDb.DeletePremium(premium);
+                    await PemiumDb.DeletePremium(premium);
                     try
                     {
                         var ch = await client.GetUser(premium.UserId).GetOrCreateDMChannelAsync();
                         await ch.SendMessageAsync(embed: new EmbedBuilderPrepared()
-                            .WithDescription($"Your {premium.Type.ToString()} subscription has expired. It's sad to see you go...\n" +
+                            .WithDescription($"Your **{premium.Type.ToString()}** subscription has expired. It's sad to see you go...\n" +
                                 $"You can renew your subscription [Here](https://www.patreon.com/taiHen)\n" +
                                 $"If you think this is a mistake contact taiHen#2839 [Here](https://discord.gg/W6Ru5sM)")
                             .Build());
@@ -121,12 +121,12 @@ namespace Namiko
 
                 else if (!user.Roles.Any(x => x.Id == (ulong)premium.Type))
                 {
-                    await PremiumDb.DeletePremium(premium);
+                    await PemiumDb.DeletePremium(premium);
                     try
                     {
                         var ch = await client.GetUser(premium.UserId).GetOrCreateDMChannelAsync();
                         await ch.SendMessageAsync(embed: new EmbedBuilderPrepared()
-                            .WithDescription($"Your {premium.Type.ToString()} subscription has expired. It's sad to see you go...\n" +
+                            .WithDescription($"Your **{premium.Type.ToString()}** subscription has expired. It's sad to see you go...\n" +
                                 $"You can renew your subscription [Here](https://www.patreon.com/taiHen)\n" +
                                 $"If you think this is a mistake contact taiHen#2839 [Here](https://discord.gg/W6Ru5sM)")
                             .Build());
@@ -141,7 +141,7 @@ namespace Namiko
                 else
                 {
                     premium.ClaimDate = now;
-                    await PremiumDb.UpdatePremium(premium);
+                    await PemiumDb.UpdatePremium(premium);
                     using (var webhook = new DiscordWebhookClient(Config.PremiumWebhook))
                     {
                         await webhook.SendMessageAsync($"{user.Mention} ({premium.UserId}) - {premium.Type.ToString()} subscription extended.");
@@ -494,7 +494,7 @@ namespace Namiko
                 try
                 {
                     var type = LootBoxType.Vote;
-                    if (PremiumDb.IsPremium(x, PremiumType.Toastie))
+                    if (PemiumDb.IsPemium(x, PemiumType.ProPlus))
                         type = LootBoxType.Premium;
                     
                     await LootBoxDb.AddLootbox(x, type, 1);

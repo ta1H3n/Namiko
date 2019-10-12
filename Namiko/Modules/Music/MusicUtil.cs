@@ -44,12 +44,12 @@ namespace Namiko
 
             return tracks[i - 1];
         }
-        public static async Task<List<LavaTrack>> SearchAndSelect(this LavaRestClient client, string query, Music interactive)
+        public static async Task<List<LavaTrack>> SearchAndSelect(this LavaRestClient client, string query, Music interactive, int limit = 500)
         {
             List<LavaTrack> tracks = null;
             if (Uri.IsWellFormedUriString(query, UriKind.Absolute))
             {
-                tracks = (await client.SearchTracksAsync(query, true)).Tracks.Take(100).ToList();
+                tracks = (await client.SearchTracksAsync(query, true)).Tracks.Take(limit).ToList();
                 return tracks;
             }
 
@@ -127,7 +127,7 @@ namespace Namiko
             foreach (var track in tracks)
             {
                 i++;
-                str += $"`#{i}` {track.Title.ShortenString(70, 65)}\n";
+                str += $"`#{i}` [{track.Title.ShortenString(70, 65)}]({track.Uri})\n";
             }
 
             eb.WithAuthor($"Song Queue", author?.GetAvatarUrl(), BasicUtil._patreon);
@@ -158,7 +158,7 @@ namespace Namiko
             eb.WithDescription(desc);
 
             if (next && player.Queue.Count > 0)
-                eb.AddField("Next up:", $"{player.Queue.Peek().Title}");
+                eb.AddField("Next up:", $"[{player.Queue.Peek().Title}]({player.Queue.Peek().Uri})");
 
             eb.WithThumbnailUrl(await track.FetchThumbnailAsync());
             eb.WithFooter($"Volume: {player.CurrentVolume} ⚬ Powered by: 🌋 Victoria - Lavalink");

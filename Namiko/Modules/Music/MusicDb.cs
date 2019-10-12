@@ -26,11 +26,11 @@ namespace Namiko
             }
         }
 
-        public static async Task<List<Playlist>> GetPlaylists(ulong guildId, bool includeGlobal = true)
+        public static async Task<List<Playlist>> GetPlaylists(ulong guildId)
         {
             using (var db = new SqliteDbContext())
             {
-                return await db.Playlists.Where(x => x.GuildId == guildId || (includeGlobal && x.GuildId == 0)).ToListAsync();
+                return await db.Playlists.Where(x => x.GuildId == guildId).ToListAsync();
             }
         }
 

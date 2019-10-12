@@ -23,7 +23,8 @@ namespace Namiko {
 
         //maximum number of partners 
         public const int MarriageLimit = 1;
-        public const int PremiumMarriageLimit = 3;
+        public const int ProMarriageLimit = 3;
+        public const int ProPlusMarriageLimit = 10;
 
 
         // WAIFUS
