@@ -79,7 +79,7 @@ namespace Namiko
                     $"- Behind the scenes access in *Namiko Test Realm*\n" +
                     $"\n" +
                     $":star: Subscribe on [Patreon](https://www.patreon.com/taiHen)")
-                .WithImageUrl("https://i.imgur.com/0150Lvg.png")
+                .WithImageUrl("https://i.imgur.com/uq9eip4.png")
                 .WithFooter("-What are you? Twelve?")
                 .WithColor(BasicUtil.RandomColor());
 
@@ -100,7 +100,7 @@ namespace Namiko
                     $"- Subreddit follow limit increased to **5**\n" +
                     $"\n" +
                     $":star: Subscribe on [Patreon](https://www.patreon.com/taiHen)")
-                .WithImageUrl("https://i.imgur.com/e35BY05.png")
+                .WithImageUrl("https://i.imgur.com/XxFJ1gH.png")
                 .WithFooter("-What are you? Twelve?")
                 .WithColor(BasicUtil.RandomColor());
 
@@ -124,7 +124,7 @@ namespace Namiko
                     $"- Subreddit follow limit increased to **10**\n" +
                     $"\n" +
                     $":star: Subscribe on [Patreon](https://www.patreon.com/taiHen)")
-                .WithImageUrl("https://i.imgur.com/CSB0nYy.png")
+                .WithImageUrl("https://i.imgur.com/f8XYQxU.png")
                 .WithFooter("-What are you? Twelve?")
                 .WithColor(BasicUtil.RandomColor());
 
