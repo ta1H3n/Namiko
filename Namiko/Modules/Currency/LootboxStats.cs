@@ -36,7 +36,8 @@ namespace Namiko
         public int GetRandomTier()
         {
             var rnd = new Random();
-            var val = rnd.Next(TotalChance()) - ToastieChance;
+            var total = TotalChance() - ToastieChance;
+            var val = rnd.Next(total);
 
             int chance = 0;
             foreach (var item in WaifuChance)
@@ -51,7 +52,7 @@ namespace Namiko
         public int GetRandomToasties()
         {
             var add = new Random().Next(ToastiesTo - ToastiesFrom);
-            add -= (add + 50) % 100;
+            add -= ((add + 50) % 100) - 50;
 
             return ToastiesFrom + add;
         }

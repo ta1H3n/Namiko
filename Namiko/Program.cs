@@ -34,6 +34,7 @@ namespace Namiko
         private static bool Launch = true;
         public static bool Debug = false;
         private static bool Diag = false;
+        private static bool ReadySetup = true;
         private static int ShardCount;
 
         static void Main(string[] args)
@@ -55,7 +56,8 @@ namespace Namiko
 
             Client = new DiscordShardedClient(new DiscordSocketConfig {
                 LogLevel = LogSeverity.Info,
-                DefaultRetryMode = RetryMode.Retry502
+                DefaultRetryMode = RetryMode.Retry502,
+                ExclusiveBulkDelete = true
             });
             
             Commands = new CommandService(new CommandServiceConfig
@@ -125,7 +127,13 @@ namespace Namiko
 
         private async Task Client_ReadCommand(SocketMessage MessageParam)
         {
+            if (Client == null)
+                return; 
+
             var Message = MessageParam as SocketUserMessage;
+            if (Message == null)
+                return;
+
             var Context = new ShardedCommandContext(Client, Message);
             string prefix = GetPrefix(Context);
 
@@ -224,8 +232,14 @@ namespace Namiko
         {
             if (user.IsBot)
                 return;
+            if (Music.LavaClient == null)
+                return;
+            if (user == null || !(user is SocketGuildUser))
+                return;
+            if (((SocketGuildUser)user).Guild == null)
+                return;
 
-            var player = Music.LavaClient.GetPlayer(((SocketGuildUser)user).Guild.Id);
+            var player = Music.LavaClient?.GetPlayer(((SocketGuildUser)user).Guild.Id);
             if (player == null)
                 return;
 
@@ -276,6 +290,9 @@ namespace Namiko
         //}
         private async Task Client_Log(LogMessage arg)
         {
+            if (arg.Exception.Message.Contains("403") || arg.Exception.Message.Contains("500"))
+                return; 
+
             string shortdate = DateTime.Now.ToString("HH:mm:ss");
             string longdate = DateTime.Now.ToString();
 
@@ -344,24 +361,34 @@ namespace Namiko
 
         private async Task Client_UserJoinedWelcome(SocketGuildUser arg)
         {
-            if (arg.Guild.Id == 417064769309245471)
+            if (arg?.Guild?.Id == 417064769309245471)
                 return;
 
-            var chid = ServerDb.GetServer(arg.Guild.Id).WelcomeChannelId;
-            var ch = arg.Guild.GetTextChannel(chid);
-            await ch.SendMessageAsync(GetWelcomeMessageString(arg));
+            var server = ServerDb.GetServer(arg.Guild.Id);
+            if (server != null && server.WelcomeChannelId != 0)
+            {
+                var ch = arg.Guild.GetTextChannel(server.WelcomeChannelId);
+                if (ch != null)
+                    await ch.SendMessageAsync(GetWelcomeMessageString(arg));
+            }
         }
         private async Task Client_UserBannedLog(SocketUser arg1, SocketGuild arg2)
         {
-            await GetJoinLogChannel(arg2)?.SendMessageAsync($":hammer: {UserInfo(arg1)} was banned.");
+            var ch = GetJoinLogChannel(arg2);
+            if (ch != null)
+                await ch.SendMessageAsync($":hammer: {UserInfo(arg1)} was banned.");
         }
         private async Task Client_UserLeftLog(SocketGuildUser arg)
         {
-            await GetJoinLogChannel(arg.Guild)?.SendMessageAsync($"<:TickNo:577838859077943306> {UserInfo(arg)} left the server.");
+            var ch = GetJoinLogChannel(arg.Guild);
+            if (ch != null)
+                await ch.SendMessageAsync($"<:TickNo:577838859077943306> {UserInfo(arg)} left the server.");
         }
         private async Task Client_UserJoinedLog(SocketGuildUser arg)
         {
-            await GetJoinLogChannel(arg.Guild)?.SendMessageAsync($"<:TickYes:577838859107303424> {UserInfo(arg)} joined the server.");
+            var ch = GetJoinLogChannel(arg.Guild);
+            if (ch != null)
+                await ch.SendMessageAsync($"<:TickYes:577838859107303424> {UserInfo(arg)} joined the server.");
         }
         private static string UserInfo(SocketUser user)
         {
@@ -377,6 +404,14 @@ namespace Namiko
         private int ReadyCount = 0;
         private async Task Client_ShardReady(DiscordSocketClient arg)
         {
+            if (ReadySetup)
+            {
+                ReadySetup = false;
+                WebUtil.SetUpDbl(Client.CurrentUser.Id);
+                _ = Music.Initialize(Client);
+                _ = Client.SetActivityAsync(new Game("Chinese Cartoons. Try @Namiko help", ActivityType.Watching));
+            }
+
             ReadyCount++;
             string name = Client.CurrentUser.Username;
             Console.WriteLine($"{DateTime.Now} - Shard {arg.ShardId} Ready");
@@ -394,7 +429,6 @@ namespace Namiko
             {
                 Launch = false;
                 Ready();
-                _ = Client.SetActivityAsync(new Game("Chinese Cartoons. Try @Namiko help", ActivityType.Watching));
                 res = await CheckLeftGuilds();
                 if (res > 0)
                 {
@@ -405,12 +439,10 @@ namespace Namiko
         }
         private async void Ready()
         {
-            _ = Music.Initialize(Client);
             if (!Debug)
             {
                 RedditAPI.Poke();
                 ImgurAPI.Poke();
-                WebUtil.SetUpDbl(Client.CurrentUser.Id);
             }
         }
         private static void ParseSettingsJson()
@@ -457,41 +489,71 @@ namespace Namiko
         }
         private static async Task<int> CheckJoinedGuilds(DiscordSocketClient shard = null)
         {
+            //IReadOnlyCollection<SocketGuild> guilds = null;
+            //if (shard == null)
+            //    guilds = Client.Guilds;
+            //else
+            //    guilds = shard.Guilds;
+
+            //var zerotime = new DateTime(0);
+            //int added = 0;
+
+            ////var servers = new List<Server>();
+            ////var toasties = new List<Balance>();
+            //using (var db = new SqliteDbContext())
+            //{
+            //    var ids = db.Servers.Where(x => x.LeaveDate == zerotime).Select(x => x.GuildId).ToHashSet();
+            //    foreach (var guild in guilds)
+            //    {
+            //        if (!ids.Contains(guild.Id))
+            //        {
+            //            db.Servers.Add(new Server
+            //            {
+            //                GuildId = guild.Id,
+            //                JoinDate = System.DateTime.Now,
+            //                LeaveDate = zerotime,
+            //                Prefix = Config.DefaultPrefix
+            //            });
+
+            //            var bal = await db.Toasties.FirstOrDefaultAsync(x => x.UserId == Client.CurrentUser.Id && x.GuildId == guild.Id);
+            //            if (bal == null)
+            //                db.Toasties.Add(new Balance { UserId = Client.CurrentUser.Id, Amount = 1000000, GuildId = guild.Id });
+
+            //            added++;
+            //        }
+            //    }
+            //    //db.AddRange(servers);
+            //    //db.AddRange(toasties);
+            //    await db.SaveChangesAsync();
+            //}
+
+            //return added;
+
             IReadOnlyCollection<SocketGuild> guilds = null;
             if (shard == null)
                 guilds = Client.Guilds;
             else
                 guilds = shard.Guilds;
 
+            var existingIds = ServerDb.GetNotLeft();
             var zerotime = new DateTime(0);
+
             int added = 0;
-
-            var servers = new List<Server>();
-            var toasties = new List<Balance>();
-            using (var db = new SqliteDbContext())
+            foreach (var guild in guilds)
             {
-                var ids = db.Servers.Where(x => x.LeaveDate == zerotime && shard == null ? true : (int)(x.GuildId >> 22) % ShardCount == shard.ShardId).Select(x => x.GuildId).ToHashSet();
-                foreach (var guild in guilds)
+                if (!existingIds.Contains(guild.Id))
                 {
-                    if (!ids.Contains(guild.Id))
+                    var server = new Server
                     {
-                        servers.Add(new Server
-                        {
-                            GuildId = guild.Id,
-                            JoinDate = System.DateTime.Now,
-                            LeaveDate = zerotime,
-                            Prefix = Config.DefaultPrefix
-                        });
-
-                        var bal = await db.Toasties.FirstOrDefaultAsync(x => x.UserId == Client.CurrentUser.Id && x.GuildId == guild.Id);
-                        toasties.Add(bal ?? new Balance { UserId = Client.CurrentUser.Id, Amount = 1000000, GuildId = guild.Id });
-
-                        added++;
-                    }
+                        GuildId = guild.Id,
+                        JoinDate = System.DateTime.Now,
+                        LeaveDate = zerotime,
+                        Prefix = Config.DefaultPrefix
+                    };
+                    await ServerDb.UpdateServer(server);
+                    await ToastieDb.SetToasties(Client.CurrentUser.Id, 1000000, guild.Id);
+                    added++;
                 }
-                db.AddRange(servers);
-                db.AddRange(toasties);
-                await db.SaveChangesAsync();
             }
 
             return added;
@@ -626,6 +688,9 @@ namespace Namiko
         }
         private async Task SpecialResponse(SocketUserMessage message)
         {
+            if (Client == null)
+                return;
+
             if (message.Content.Contains("rep", StringComparison.OrdinalIgnoreCase))
                 return;
 

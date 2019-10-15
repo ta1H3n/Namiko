@@ -360,7 +360,7 @@ namespace Namiko
             await Context.Channel.SendMessageAsync(null, false, WaifuUtil.WishlistEmbed(waifus, (SocketGuildUser)user).Build());
         }
 
-        [Command("RemoveWish"), Alias("rww, RemoveWaifuWish"), Summary("Removes a waifu from your wishlist.\n**Usage**: `!rww [waifu]`")]
+        [Command("RemoveWish"), Alias("rww", "RemoveWaifuWish"), Summary("Removes a waifu from your wishlist.\n**Usage**: `!rww [waifu]`")]
         public async Task RemoveWaifuWish([Remainder] string str = "")
         {
             var user = Context.User;

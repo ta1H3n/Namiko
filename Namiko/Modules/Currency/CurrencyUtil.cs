@@ -449,6 +449,7 @@ namespace Namiko
             eb.WithFooter("Try the `lootboxstats` command");
             eb.WithAuthor("Lootbox Shop", author.GetAvatarUrl(), BasicUtil._patreon);
             eb.AddField("Lootboxes", str);
+            eb.WithDescription("`!bl` to buy a lootbox!");
             return eb;
         }
         public static EmbedBuilder BoxStatsEmbed(IUser author = null)

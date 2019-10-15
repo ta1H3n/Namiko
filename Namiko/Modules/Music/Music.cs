@@ -40,7 +40,11 @@ namespace Namiko
             {
                 AutoDisconnect = true,
                 DefaultVolume = 40,
-                LogSeverity = LogSeverity.Info
+                LogSeverity = LogSeverity.Info,
+                Host = "127.0.0.1",
+                Port = 2333,
+                Password = "NamikoLove",
+                PreservePlayers = true
             });
             return true;
         }
@@ -709,12 +713,15 @@ namespace Namiko
             var playlistTracks = new List<Track>();
             foreach (var x in tracks)
             {
-                playlistTracks.Add(new Track
+                try
                 {
-                    Playlist = playlist,
-                    SongHash = x.Hash,
-                    UserId = x.User.Id
-                });
+                    playlistTracks.Add(new Track
+                    {
+                        Playlist = playlist,
+                        SongHash = x.Hash,
+                        UserId = x.User.Id
+                    });
+                } catch { }
             }
 
             playlist.Tracks = playlistTracks;
@@ -919,15 +926,14 @@ namespace Namiko
         }
         private static async Task TrackException(LavaPlayer player, LavaTrack track, string arg3)
         {
-            await player.TextChannel.SendMessageAsync($"Track `{track.Title}` threw an Error. You were never supposed to see this, Senpai.\n" +
-                $"Please report this to taiHen#2839 at https://discord.gg/W6Ru5sM \n" +
-                $"Error: `{arg3}`");
-
-            await LavaClient.DisconnectAsync(player.VoiceChannel);
             if (player?.CurrentTrack == track)
             {
                 await player.SkipAsync();
-                await player.TextChannel.SendMessageAsync($"Track `{track.Title}` is stuck. Skipping...", embed: (await MusicUtil.NowPlayingEmbed(player)).Build());
+                if (player.Queue.Count == 0)
+                {
+                    await player.TextChannel.SendMessageAsync("Gomen, Senpai... *Coughs blood* ... The player broke! Try starting a new one?");
+                    await player.DisposeAsync();
+                }
             }
         }
         private static async Task LavaClient_Log(Discord.LogMessage arg)

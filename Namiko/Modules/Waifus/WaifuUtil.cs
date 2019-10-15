@@ -40,9 +40,13 @@ namespace Namiko
         }
         public static async Task<WaifuShop> CreateNewShop(ulong guildId, ShopType type)
         {
+            var date = System.DateTime.Now.Date;
+            if (DateTime.Now.Hour >= 12)
+                date = date.AddHours(12);
+
             WaifuShop shop = new WaifuShop
             {
-                GeneratedDate = System.DateTime.Now,
+                GeneratedDate = date,
                 GuildId = guildId,
                 Type = type
             };

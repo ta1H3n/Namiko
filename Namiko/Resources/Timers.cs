@@ -278,7 +278,7 @@ namespace Namiko
             using (SqliteStatsDbContext db = new SqliteStatsDbContext())
             {
                 var sample = db.ServerStats.LastOrDefault();
-                if (sample == null || sample.Date.Date < date)
+                if (sample == null || sample.Date.Date < date.Date)
                 {
                     servers = Stats.ParseServerStats();
                     commands = Stats.ParseCommandStats();

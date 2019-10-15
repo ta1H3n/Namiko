@@ -159,7 +159,9 @@ namespace Victoria
         /// <returns><see cref="LavaPlayer"/></returns>
         public LavaPlayer GetPlayer(ulong guildId)
         {
-            return Players.TryGetValue(guildId, out var player) ? player : default;
+            if (Players == null)
+                return null;
+            return Players.TryGetValue(guildId, out var player) ? player : null;
         }
 
         /// <summary>

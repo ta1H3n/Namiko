@@ -45,6 +45,7 @@ namespace Discord.Addons.Interactive
                     pages = pages > _pager.Pages.Count() ? pages : _pager.Pages.Count();
                 } catch { }
             }
+            _pager.PageCount = pages;
         }
 
         public async Task DisplayAsync()

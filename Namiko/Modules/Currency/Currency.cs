@@ -129,7 +129,7 @@ namespace Namiko
             }
 
             int hours = 168;
-            if (PemiumDb.IsPemium(Context.Guild.Id, PemiumType.Guild))
+            if (PemiumDb.IsPemium(Context.Guild.Id, PemiumType.Guild) || PemiumDb.IsPemium(Context.Guild.Id, PemiumType.GuildPlus))
                 hours /= 2;
 
             if (weekly.Date == null ? true : weekly.Date.AddHours(hours).CompareTo(DateTime.Now) < 0)
@@ -496,6 +496,7 @@ namespace Namiko
             } catch
             {
                 await Context.Channel.SendMessageAsync("You tried.");
+                return;
             }
             var msg = await Context.Channel.SendMessageAsync("", false, ToastieUtil.BoxOpeningEmbed(Context.User).Build());
             await UserDb.IncrementLootboxOpened(Context.User.Id);
