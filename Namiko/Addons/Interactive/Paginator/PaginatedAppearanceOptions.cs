@@ -21,7 +21,7 @@ namespace Discord.Addons.Interactive
         public bool DisplayInformationIcon = true;
 
         public TimeSpan? Timeout = null;
-        public TimeSpan InfoTimeout = TimeSpan.FromSeconds(30);
+        public TimeSpan InfoTimeout = TimeSpan.FromSeconds(90);
     }
 
     public enum JumpDisplayOptions

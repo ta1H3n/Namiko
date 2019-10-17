@@ -496,6 +496,12 @@ namespace Namiko
                 url = url.EndsWith(".gifv") ? url.Replace(".gifv", ".gif") : url;
                 url = url.EndsWith(".mp4") ? url.Replace(".mp4", ".gif") : url;
 
+                if (ImgurAPI.RateLimit.ClientRemaining < 15)
+                {
+                    await ReplyAsync("Not enough imgur credits to upload. Please try again later.");
+                    return;
+                }
+
                 string albumId;
                 if (!ImageDb.AlbumExists("Waifus"))
                 {
@@ -617,6 +623,12 @@ namespace Namiko
             url = url.EndsWith(".gifv") ? url.Replace(".gifv", ".gif") : url;
             url = url.EndsWith(".mp4") ? url.Replace(".mp4", ".gif") : url;
 
+            if (ImgurAPI.RateLimit.ClientRemaining < 15)
+            {
+                await ReplyAsync("Not enough imgur credits to upload. Please try again later.");
+                return;
+            }
+
             string albumId;
             if (!ImageDb.AlbumExists("Waifus"))
             {
@@ -629,7 +641,10 @@ namespace Namiko
             waifu.ImageUrl = iImage.Link;
 
             if (await WaifuDb.UpdateWaifu(waifu) > 0)
-                await Context.Channel.SendMessageAsync($":white_check_mark: {waifu.Name} updated.");
+            {
+                var rl = ImgurAPI.RateLimit;
+                await Context.Channel.SendMessageAsync($":white_check_mark: {waifu.Name} updated. {rl.ClientRemaining}/{rl.ClientLimit} imgur credits remaining.");
+            }
             else
                 await Context.Channel.SendMessageAsync($":x: Failed to update {name}");
         }
@@ -698,6 +713,12 @@ namespace Namiko
             {
                 url = url.EndsWith(".gifv") ? url.Replace(".gifv", ".gif") : url;
                 url = url.EndsWith(".mp4") ? url.Replace(".mp4", ".gif") : url;
+
+                if (ImgurAPI.RateLimit.ClientRemaining < 15)
+                {
+                    await ReplyAsync("Not enough imgur credits to upload. Please try again later.");
+                    return;
+                }
 
                 string albumId;
                 if (!ImageDb.AlbumExists("Waifus"))

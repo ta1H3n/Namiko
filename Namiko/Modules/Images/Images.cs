@@ -131,6 +131,12 @@ namespace Namiko
             url = url.EndsWith(".gifv") ? url.Replace(".gifv", ".gif") : url;
             url = url.EndsWith(".mp4") ? url.Replace(".mp4", ".gif") : url;
 
+            if (ImgurAPI.RateLimit.ClientRemaining < 50)
+            {
+                await ReplyAsync("Not enough imgur credits to upload. Please try again later.");
+                return;
+            }
+
             string albumId;
             string albumName = insider ? name : name + Context.Guild.Id;
             if (!ImageDb.AlbumExists(albumName))
@@ -145,8 +151,10 @@ namespace Namiko
 
             //Test
             var image = ImageDb.GetLastImage();
+
             await ImgurAPI.EditImageAsync(iImage.Id.ToString(), null, image.Id.ToString());
-            await Context.Channel.SendMessageAsync("", false, ImageUtil.ToEmbed(image).Build());
+            var rl = ImgurAPI.RateLimit;
+            await Context.Channel.SendMessageAsync($"{rl.ClientRemaining-20}/{rl.ClientLimit} imgur credits remaining.", false, ImageUtil.ToEmbed(image).Build());
         }
 
         [Command("DeleteImage"), Alias("di"), Summary("Deletes image from the database using the id.\n**Usage**: `di [id]`"), HomeOrT1GuildPrecondition, CustomUserPermission(GuildPermission.ManageMessages)]

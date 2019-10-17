@@ -17,6 +17,7 @@ namespace Namiko
     public static class ImgurAPI
     {
         private static ImgurClient Client;
+        public static IRateLimit RateLimit { get { return Client.RateLimit; } }
 
         static ImgurAPI()
         {

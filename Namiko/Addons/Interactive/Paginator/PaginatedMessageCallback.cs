@@ -109,7 +109,7 @@ namespace Discord.Addons.Interactive
                         .AddCriterion(new EnsureFromUserCriterion(reaction.UserId))
                         .AddCriterion(new EnsureIsIntegerCriterion())
                         .AddCriterion(new EnsureRangeCriterion(pages));
-                    var response = await Interactive.NextMessageAsync(Context, criteria, TimeSpan.FromSeconds(15));
+                    var response = await Interactive.NextMessageAsync(Context, criteria, TimeSpan.FromSeconds(60));
                     var request = int.Parse(response.Content);
                     page = request;
                     await RenderAsync().ConfigureAwait(false);
