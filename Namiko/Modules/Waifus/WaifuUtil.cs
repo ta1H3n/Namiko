@@ -32,7 +32,7 @@ namespace Namiko
             if (overrideNew || shop == null || shop.GeneratedDate.AddHours(12) < System.DateTime.Now)
             {
                 var newShop = await CreateNewShop(guildId, type);
-                await WaifuShopDb.AddShop(newShop);
+                await WaifuShopDb.AddShop(newShop, false);
                 return newShop;
             }
 
@@ -52,6 +52,7 @@ namespace Namiko
             };
 
             List<ShopWaifu> waifus = null;
+            shop = await WaifuShopDb.AddShop(shop, true);
 
             switch (type)
             {

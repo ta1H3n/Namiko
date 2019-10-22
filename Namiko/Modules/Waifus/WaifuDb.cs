@@ -295,22 +295,25 @@ namespace Namiko
                 await db.SaveChangesAsync();
             }
         }
-        public static async Task<WaifuShop> AddShop(WaifuShop shop)
+        public static async Task<WaifuShop> AddShop(WaifuShop shop, bool overwrite)
         {
             using (var db = new SqliteDbContext())
             {
-                var old = db.WaifuShops.Where(x => x.GuildId == shop.GuildId && x.Type == shop.Type).Include(x => x.ShopWaifus).ToList();
-                db.WaifuShops.RemoveRange(old);
-                foreach(var oldshop in old)
-                {
-                    db.ShopWaifus.RemoveRange(oldshop.ShopWaifus);
-                }
-
                 var items = shop.ShopWaifus ?? new List<ShopWaifu>();
 
-                shop.ShopWaifus = null;
-                db.WaifuShops.Add(shop);
-                await db.SaveChangesAsync();
+                if (overwrite)
+                {
+                    var old = db.WaifuShops.Where(x => x.GuildId == shop.GuildId && x.Type == shop.Type).Include(x => x.ShopWaifus).ToList();
+                    db.WaifuShops.RemoveRange(old);
+                    foreach (var oldshop in old)
+                    {
+                        db.ShopWaifus.RemoveRange(oldshop.ShopWaifus);
+                    }
+
+                    shop.ShopWaifus = null;
+                    db.WaifuShops.Add(shop);
+                    await db.SaveChangesAsync();
+                }
 
                 foreach (var item in items)
                 {

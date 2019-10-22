@@ -20,7 +20,7 @@ namespace Namiko
             WaifuShop shop = await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Waifu);
             int count = Constants.shoplimitedamount + Constants.shopt1amount + Constants.shopt2amount + Constants.shopt3amount;
             string prefix = Program.GetPrefix(Context);
-            var waifus = shop.ShopWaifus;
+            var waifus = shop.ShopWaifus.OrderByDescending(x => x.Limited).ThenBy(x => x.Waifu.Tier).ThenBy(x => x.Waifu.Source).ToList();
 
             if (waifus.Count <= count)
             {
@@ -37,7 +37,7 @@ namespace Namiko
         {
             WaifuShop shop = await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Gacha);
             string prefix = Program.GetPrefix(Context);
-            var waifus = shop.ShopWaifus;
+            var waifus = shop.ShopWaifus.OrderByDescending(x => x.Limited).ThenBy(x => x.Waifu.Tier).ThenBy(x => x.Waifu.Source).ToList();
 
             var eb = WaifuUtil.NewShopEmbed(waifus, prefix, ShopType.Gacha);
             await Context.Channel.SendMessageAsync("", false, eb.Build());
@@ -249,7 +249,7 @@ namespace Namiko
             var fields = new List<FieldPages>();
             fields.Add(new FieldPages
             {
-                Title = "Globaly Bought",
+                Title = "Globally Bought",
                 Pages = CustomPaginatedMessage.PagesArray(waifus, 10, (x) => $"**{x.Key}** - {x.Value}\n")
             });
             msg.Fields = fields;
@@ -395,7 +395,7 @@ namespace Namiko
             }
 
             var shop = await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Mod);
-            if(shop == null)
+            if (shop == null)
             {
                 shop = new WaifuShop
                 {
@@ -404,7 +404,7 @@ namespace Namiko
                     Type = ShopType.Mod,
                     ShopWaifus = new List<ShopWaifu>()
                 };
-                shop = await WaifuShopDb.AddShop(shop);
+                shop = await WaifuShopDb.AddShop(shop, true);
             }
             var waifus = shop.ShopWaifus.Select(x => x.Waifu);
 
@@ -470,6 +470,14 @@ namespace Namiko
             var waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(name), this);
             if (waifu == null)
                 return;
+
+            if (waifu.Tier < 1 || waifu.Tier > 3)
+            {
+                await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared(Context.User)
+                    .WithDescription($"*~ You can only ship Tier 1-3 waifus ~*")
+                    .Build());
+                return;
+            }
 
             if (UserInventoryDb.OwnsWaifu(user.Id, waifu, Context.Guild.Id))
             {
