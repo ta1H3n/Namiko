@@ -57,11 +57,17 @@ namespace Discord.Addons.Interactive
             // Reactions take a while to add, don't wait for them
             _ = Task.Run(async () =>
             {
-                await message.AddReactionAsync(options.First);
+                if (_pager.PageCount > 4)
+                    await message.AddReactionAsync(options.First);
+
                 await message.AddReactionAsync(options.Back);
                 await message.AddReactionAsync(options.Next);
-                await message.AddReactionAsync(options.Last);
-                await message.AddReactionAsync(options.Jump);
+
+                if (_pager.PageCount > 4)
+                    await message.AddReactionAsync(options.Last);
+
+                if (_pager.PageCount > 4)
+                    await message.AddReactionAsync(options.Jump);
             });
             // TODO: (Next major version) timeouts need to be handled at the service-level!
             if (Timeout.HasValue && Timeout.Value != null)
