@@ -35,13 +35,15 @@ namespace Namiko
                 return await DbContext.SaveChangesAsync();
             }
         }
-        public static List<Waifu> SearchWaifus(string query, bool primaryName = false, IEnumerable<Waifu> from = null)
+        public static List<Waifu> SearchWaifus(string query, bool primaryName = false, IEnumerable<Waifu> from = null, bool includeMAL = false)
         {
             using (var DbContext = new SqliteDbContext())
             {
                 List<Waifu> waifus = new List<Waifu>();
 
                 var waifuQuery = from == null ? DbContext.Waifus : from.AsQueryable();
+                if (includeMAL)
+                    waifuQuery.Include(x => x.Mal);
 
                 if (primaryName)
                 {
@@ -154,6 +156,37 @@ namespace Namiko
                 db.FeaturedWaifus.AddRange(featL);
 
                 return res + await db.SaveChangesAsync();
+            }
+        }
+
+        public static async Task<int> AddMalWaifu(MalWaifu waifu)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                db.MalWaifus.Add(waifu);
+                return await db.SaveChangesAsync();
+            }
+        }
+        public static async Task<int> UpdateMalWaifu(MalWaifu waifu)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                db.MalWaifus.Update(waifu);
+                return await db.SaveChangesAsync();
+            }
+        }
+        public static async Task<MalWaifu> GetMalWaifu(string waifuName)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                return await db.MalWaifus.Include(x => x.Waifu).FirstOrDefaultAsync(x => x.WaifuName == waifuName);
+            }
+        }
+        public static async Task<MalWaifu> GetMalWaifu(long malId)
+        {
+            using (var db = new SqliteDbContext())
+            {
+                return await db.MalWaifus.Include(x => x.Waifu).FirstOrDefaultAsync(x => x.MalId == malId);
             }
         }
     }

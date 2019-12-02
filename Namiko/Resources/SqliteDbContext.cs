@@ -45,6 +45,7 @@ namespace Namiko
         public DbSet<Playlist> Playlists { get; set; }
         public DbSet<Blacklisted> Blacklist { get; set; }
         public DbSet<PermissionRole> PermissionRoles { get; set; }
+        public DbSet<MalWaifu> MalWaifus { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder Options)
         {

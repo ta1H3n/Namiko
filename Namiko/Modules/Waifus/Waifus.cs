@@ -779,11 +779,39 @@ namespace Namiko
                     $"Autocompleted **{waifu.Name}**. Has **{mal.MemberFavorites}** favorites.",
                     embed: WaifuUtil.WaifuEmbedBuilder(waifu, true, Context).Build()
                 );
+
+                await WaifuDb.AddMalWaifu(new MalWaifu
+                {
+                    MalId = malId,
+                    WaifuName = waifu.Name,
+                    LastUpdated = DateTime.Now,
+                    MalConfirmed = true
+                });
             }
             else
             {
                 await Context.Channel.SendMessageAsync("Rip");
             }
+        }
+
+        [Command("WaifuMal"), Alias("wm"), Summary("Sets waifus MAL Id.\n**Usage**: `!wm [name] [MAL_ID]`"), Insider]
+        public async Task WaifuMal(string name, long malId)
+        {
+            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(name, true, includeMAL: true), this);
+            if (waifu == null)
+            {
+                return;
+            }
+
+            var mal = waifu.Mal ?? new MalWaifu { WaifuName = waifu.Name };
+            mal.LastUpdated = DateTime.Now;
+            mal.MalConfirmed = true;
+            mal.MalId = malId;
+
+            if ((await WaifuDb.UpdateMalWaifu(mal)) > 0)
+                await Context.Channel.SendMessageAsync($":white_check_mark: {waifu.Name} updated.");
+            else
+                await Context.Channel.SendMessageAsync($":x: Failed to update {name}");
         }
 
         [Command("ResetWaifuShop"), Alias("rws"), Summary("Resets the waifu shop contents."), Insider]

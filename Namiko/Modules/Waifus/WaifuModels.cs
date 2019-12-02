@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Namiko
 {
@@ -14,6 +15,20 @@ namespace Namiko
         public string Source { get; set; }
         public int Tier { get; set; }
         public string ImageUrl { get; set; }
+
+        public virtual MalWaifu Mal { get; set; }
+    }
+
+    public class MalWaifu
+    {
+        [Key]
+        [ForeignKey("Waifu")]
+        public string WaifuName { get; set; }
+        public long MalId { get; set; }
+        public bool MalConfirmed { get; set; }
+        public DateTime LastUpdated { get; set; }
+
+        public virtual Waifu Waifu { get; set; }
     }
 
     public class UserInventory
