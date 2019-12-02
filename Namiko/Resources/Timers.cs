@@ -89,9 +89,9 @@ namespace Namiko
         private static async void Timer_ExpirePremium(object sender, ElapsedEventArgs e)
         {
             var now = System.DateTime.Now;
-            var expired = PemiumDb.GetAllPremiums(now.AddMonths(-1).AddDays(-1));
+            var expired = PremiumDb.GetAllPremiums(now.AddMonths(-1).AddDays(-1));
             var client = Program.GetClient();
-            var ntr = client.GetGuild((ulong)PemiumType.HomeGuildId_NOTAPREMIUMTYPE);
+            var ntr = client.GetGuild((ulong)PremiumType.HomeGuildId_NOTAPREMIUMTYPE);
 
             foreach (var premium in expired)
             {
@@ -103,7 +103,7 @@ namespace Namiko
 
                 if (user == null)
                 {
-                    await PemiumDb.DeletePremium(premium);
+                    await PremiumDb.DeletePremium(premium);
                     try
                     {
                         var ch = await client.GetUser(premium.UserId).GetOrCreateDMChannelAsync();
@@ -121,7 +121,7 @@ namespace Namiko
 
                 else if (!user.Roles.Any(x => x.Id == (ulong)premium.Type))
                 {
-                    await PemiumDb.DeletePremium(premium);
+                    await PremiumDb.DeletePremium(premium);
                     try
                     {
                         var ch = await client.GetUser(premium.UserId).GetOrCreateDMChannelAsync();
@@ -141,7 +141,7 @@ namespace Namiko
                 else
                 {
                     premium.ClaimDate = now;
-                    await PemiumDb.UpdatePremium(premium);
+                    await PremiumDb.UpdatePremium(premium);
                     using (var webhook = new DiscordWebhookClient(Config.PremiumWebhook))
                     {
                         await webhook.SendMessageAsync($"{user.Mention} ({premium.UserId}) - {premium.Type.ToString()} subscription extended.");
@@ -494,7 +494,7 @@ namespace Namiko
                 try
                 {
                     var type = LootBoxType.Vote;
-                    if (PemiumDb.IsPemium(x, PemiumType.ProPlus))
+                    if (PremiumDb.IsPremium(x, PremiumType.ProPlus))
                         type = LootBoxType.Premium;
                     
                     await LootBoxDb.AddLootbox(x, type, 1);

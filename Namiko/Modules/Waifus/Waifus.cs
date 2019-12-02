@@ -96,6 +96,10 @@ namespace Namiko
             var shopwaifus = (await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Waifu)).ShopWaifus;
             shopwaifus.AddRange((await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Gacha)).ShopWaifus);
 
+            var modshop = await WaifuShopDb.GetWaifuShop(Context.Guild.Id, ShopType.Mod);
+            if (modshop != null)
+                shopwaifus.AddRange(modshop.ShopWaifus);
+
             var waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(str, false, shopwaifus.Select(x => x.Waifu)), this);
 
             if (waifu == null)
@@ -319,7 +323,7 @@ namespace Namiko
 
             var waifus = await WaifuWishlistDb.GetWishlist(user.Id, Context.Guild.Id);
             int cap = 5;
-            if (PemiumDb.IsPemium(Context.User.Id, PemiumType.ProPlus))
+            if (PremiumDb.IsPremium(Context.User.Id, PremiumType.ProPlus))
                 cap = 12;
 
             string prefix = this.Prefix();
@@ -385,7 +389,7 @@ namespace Namiko
         {
             var prefix = Program.GetPrefix(Context);
 
-            if (!PemiumDb.IsPemium(Context.Guild.Id, PemiumType.GuildPlus))
+            if (!PremiumDb.IsPremium(Context.Guild.Id, PremiumType.GuildPlus))
             {
                 await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared(Context.User)
                     .WithDescription($"*~ This command requires Pro Guild+ ~*")
@@ -577,7 +581,6 @@ namespace Namiko
         [Command("WaifuSource"), Alias("wsrc"), Summary("Changes the source of a waifu.\n**Usage**: `!ws [name] [source]`"), Insider]
         public async Task WaifuSource(string name, [Remainder] string source = null)
         {
-
             var waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(name, true), this);
             if (waifu == null)
             {
@@ -740,7 +743,7 @@ namespace Namiko
                 url = iImage.Link;
             }
 
-            var waifu = new Waifu { Name = name, Tier = 404, ImageUrl = url, Description = null, LongName = null};
+            var waifu = new Waifu { Name = name, Tier = 404, ImageUrl = url, Description = null, LongName = null };
 
             var mal = await WebUtil.GetWaifu(malId);
             waifu.LongName = $"{mal.Name} ({mal.NameKanji})";
@@ -776,6 +779,10 @@ namespace Namiko
                     $"Autocompleted **{waifu.Name}**. Has **{mal.MemberFavorites}** favorites.",
                     embed: WaifuUtil.WaifuEmbedBuilder(waifu, true, Context).Build()
                 );
+            }
+            else
+            {
+                await Context.Channel.SendMessageAsync("Rip");
             }
         }
 

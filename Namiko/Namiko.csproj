@@ -51,6 +51,18 @@
     <Compile Remove="Migrations\20190928100131_PermissionRole.Designer.cs" />
     <Compile Remove="Migrations\20190928100208_PermissionRole2.cs" />
     <Compile Remove="Migrations\20190928100208_PermissionRole2.Designer.cs" />
+    <Compile Remove="Migrations\20191202172846_MalWaifu.cs" />
+    <Compile Remove="Migrations\20191202172846_MalWaifu.Designer.cs" />
+    <Compile Remove="Migrations\20191202172958_MalWaifu.cs" />
+    <Compile Remove="Migrations\20191202172958_MalWaifu.Designer.cs" />
+    <Compile Remove="Migrations\20191202174058_MalWaifu.cs" />
+    <Compile Remove="Migrations\20191202174058_MalWaifu.Designer.cs" />
+    <Compile Remove="Migrations\20191202174613_MalWaifu.cs" />
+    <Compile Remove="Migrations\20191202174613_MalWaifu.Designer.cs" />
+    <Compile Remove="Migrations\20191202182138_MalWaifu.cs" />
+    <Compile Remove="Migrations\20191202182138_MalWaifu.Designer.cs" />
+    <Compile Remove="Migrations\20191202182513_MalWaifu.cs" />
+    <Compile Remove="Migrations\20191202182513_MalWaifu.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

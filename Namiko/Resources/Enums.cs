@@ -21,7 +21,7 @@ namespace Namiko
     }
 
     [Flags]
-    public enum PemiumType : ulong
+    public enum PremiumType : ulong
     {
         HomeGuildId_NOTAPREMIUMTYPE = 418900885079588884,
         GuildPlus = 581848782396981250,

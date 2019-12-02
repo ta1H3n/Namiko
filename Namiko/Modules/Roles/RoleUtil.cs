@@ -7,44 +7,46 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Namiko
 {
     public static class RoleUtil
     {
-        public static EmbedBuilder TeamListEmbed(List<SocketRole> teams, List<SocketRole> leaders)
+        public static async Task<EmbedBuilder> TeamListEmbed(List<Team> teams, SocketGuild guild)
         {
             var eb = new EmbedBuilder();
+            eb.WithColor(BasicUtil.RandomColor());
 
             string teamstr = "";
+            string leaderstr = "";
             int count = 1;
             foreach(var x in teams)
             {
-                if(x != null)
+                var teamRole = guild.GetRole(x.MemberRoleId);
+                var leaderRole = guild.GetRole(x.LeaderRoleId);
+
+                if (teamRole != null && leaderRole != null)
                 {
-                    teamstr += $"\n`#{count}` **{x.Name}**";
+                    teamstr += $"\n`#{count}` {teamRole.Mention}";
+                    leaderstr += $"\n`#{count}` {leaderRole.Mention}";
                     count++;
+                }
+                else
+                {
+                    await TeamDb.DeleteTeam(x);
                 }
             }
 
-            string leaderstr = "";
-            count = 1;
-            foreach (var x in leaders)
-            {
-                if (x != null)
-                {
-                    leaderstr += $"\n`#{count}` **{x.Name}**";
-                    count++;
-                }
-            }
             try {
                 eb.AddField("Teams :shield:", teamstr, true);
                 eb.AddField("Leaders :crown:", leaderstr, true);
+                eb.WithColor(Color.DarkRed);
             } catch
             {
                 eb.WithDescription("*~ There are no teams ~*");
             }
-            eb.WithColor(BasicUtil.RandomColor());
+            eb.WithTitle("Teams :european_castle:");
             return eb;
         }
         public static EmbedBuilder PublicRoleListEmbed(List<SocketRole> roles)
@@ -55,7 +57,7 @@ namespace Namiko
             foreach (var x in roles)
             {
                 if (x != null)
-                    rolestr += $"\n**{x.Name}**";
+                    rolestr += $"\n{x.Mention}";
             }
 
             eb.WithDescription(rolestr);

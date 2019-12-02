@@ -207,7 +207,7 @@ namespace Namiko {
                 }
 
                 await db.SaveChangesAsync();
-                return user?.Rep ?? 0;
+                return user?.Rep ?? amount;
             }
         }
 
@@ -396,7 +396,7 @@ namespace Namiko {
         }
     }
 
-    public static class PemiumDb
+    public static class PremiumDb
     {
         public static List<Premium> GetUserPremium(ulong UserId)
         {
@@ -412,7 +412,7 @@ namespace Namiko {
                 return db.Premiums.Where(x => x.GuildId == GuildId).ToList();
             }
         }
-        public static bool IsPemium(ulong Id, PemiumType type)
+        public static bool IsPremium(ulong Id, PremiumType type)
         {
             using (var db = new SqliteDbContext())
             {
@@ -450,7 +450,7 @@ namespace Namiko {
                 return await db.SaveChangesAsync();
             }
         }
-        public async static Task<int> AddPremium(ulong userId, PemiumType type, ulong guildId = 0)
+        public async static Task<int> AddPremium(ulong userId, PremiumType type, ulong guildId = 0)
         {
             using (var db = new SqliteDbContext())
             {

@@ -62,9 +62,9 @@ namespace Namiko {
         public static int GetMarriageLimit(ulong userId)
         {
             int limit = Constants.MarriageLimit;
-            if (PemiumDb.IsPemium(userId, PemiumType.Pro))
+            if (PremiumDb.IsPremium(userId, PremiumType.Pro))
                 limit = Constants.ProMarriageLimit;
-            if (PemiumDb.IsPemium(userId, PemiumType.ProPlus))
+            if (PremiumDb.IsPremium(userId, PremiumType.ProPlus))
                 limit = Constants.ProPlusMarriageLimit;
 
             return limit;
@@ -93,9 +93,9 @@ namespace Namiko {
                 }
             }
 
-            if (PemiumDb.IsPemium(user.Id, PemiumType.ProPlus))
+            if (PremiumDb.IsPremium(user.Id, PremiumType.ProPlus))
                 name += " | Pro+ 🌟";
-            else if (PemiumDb.IsPemium(user.Id, PemiumType.Pro))
+            else if (PremiumDb.IsPremium(user.Id, PremiumType.Pro))
                 name += " | Pro ⭐";
             eb.WithAuthor(name, user.GetAvatarUrl(), BasicUtil._patreon);
 

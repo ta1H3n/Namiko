@@ -17,7 +17,7 @@ namespace Namiko
             {
                 if (context.User.Id == Config.OwnerId || ((SocketGuildUser)context.User).Roles.Any(x => x.Id == Config.InsiderRoleId))
                     return Task.FromResult(PreconditionResult.FromSuccess());
-                else if (PemiumDb.IsPemium(context.Guild.Id, PemiumType.GuildPlus))
+                else if (PremiumDb.IsPremium(context.Guild.Id, PremiumType.GuildPlus))
                     return Task.FromResult(PreconditionResult.FromSuccess());
                 else
                 {
@@ -26,7 +26,7 @@ namespace Namiko
             }
             catch
             {
-                if (PemiumDb.IsPemium(context.Guild.Id, PemiumType.GuildPlus))
+                if (PremiumDb.IsPremium(context.Guild.Id, PremiumType.GuildPlus))
                     return Task.FromResult(PreconditionResult.FromSuccess());
                 return Task.FromResult(PreconditionResult.FromError("This command is only for my insiders or Pro Guild+ Servers."));
             }

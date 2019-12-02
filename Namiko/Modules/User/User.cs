@@ -450,26 +450,37 @@ namespace Namiko
         }
 
         [Command("Rep"), Summary("Gives rep to a user.\n**Usage**: `!rep [user]`")]
-        public async Task Rep(IUser user)
+        public async Task Rep(IUser user = null)
         {
+            var author = await UserDb.GetProfile(Context.User.Id);
+            var cooldown = author.RepDate.AddHours(20);
+            var now = System.DateTime.Now;
+
+            if (user == null || cooldown > now)
+            {
+                if (cooldown > now)
+                {
+                    var span = cooldown.Subtract(now);
+                    await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared(Context.User)
+                        .WithDescription("You already repped someone today. If everyone is cool then no one is cool.\n" +
+                        $"You must wait `{span.Hours} hours {span.Minutes} minutes {span.Seconds} seconds`")
+                        .WithColor(Color.DarkRed)
+                        .Build());
+                    return;
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared(Context.User)
+                        .WithDescription("Rep ready!")
+                        .WithColor(BasicUtil.RandomColor())
+                        .Build());
+                    return;
+                }
+            }
+
             if(user == Context.User)
             {
                 await Context.Channel.SendMessageAsync("Nice try, Mr. Perfect.");
-                return;
-            }
-
-            var author = await UserDb.GetProfile(Context.User.Id);
-
-            var cooldown = author.RepDate.AddHours(20);
-            var now = System.DateTime.Now;
-            if (cooldown > now)
-            {
-                var span = cooldown.Subtract(now);
-                await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared(Context.User)
-                    .WithDescription("You already repped someone today. If everyone is cool then no one is cool.\n" +
-                    $"You must wait `{span.Hours} hours {span.Minutes} minutes {span.Seconds} seconds`")
-                    .WithColor(Color.DarkRed)
-                    .Build());
                 return;
             }
 
@@ -490,10 +501,10 @@ namespace Namiko
             }
         }
 
-        [Command("ActivatePremium"), Alias("ap"), Summary("Activates premium subscriptions associated with this account.\n**Usage**: `!ap`")]
+        [Command("ActivatePro"), Alias("ap", "ActivatePremium"), Summary("Activates premium subscriptions associated with this account.\n**Usage**: `!ap`")]
         public async Task ActivatePremium([Remainder] string str = "")
         {
-            var ntr = Context.Client.GetGuild((ulong)PemiumType.HomeGuildId_NOTAPREMIUMTYPE);
+            var ntr = Context.Client.GetGuild((ulong)PremiumType.HomeGuildId_NOTAPREMIUMTYPE);
             SocketGuildUser user = ntr.GetUser(Context.User.Id);
 
             if (user == null)
@@ -502,32 +513,32 @@ namespace Namiko
                 return;
             }
 
-            var current = PemiumDb.GetUserPremium(user.Id);
+            var current = PremiumDb.GetUserPremium(user.Id);
             var roles = user.Roles;
 
             bool log = false;
             string text = "";
             foreach(var role in roles)
             {
-                if(role.Id == (ulong) PemiumType.ProPlus)
+                if(role.Id == (ulong) PremiumType.ProPlus)
                 {
-                    if (current.Any(x => x.Type == PemiumType.ProPlus))
+                    if (current.Any(x => x.Type == PremiumType.ProPlus))
                         text += "You already have **Pro+**!\n";
                     else
                     {
-                        await PemiumDb.AddPremium(user.Id, PemiumType.ProPlus);
+                        await PremiumDb.AddPremium(user.Id, PremiumType.ProPlus);
                         text += "**Pro+** activated!\n";
                         log = true;
                     }
                 }
-                if (role.Id == (ulong)PemiumType.Pro)
+                if (role.Id == (ulong)PremiumType.Pro)
                 {
-                    if (current.Any(x => x.Type == PemiumType.Pro))
+                    if (current.Any(x => x.Type == PremiumType.Pro))
                         text += "You already have **Pro**!\n";
                     else
                     {
-                        await PemiumDb.AddPremium(user.Id, PemiumType.Pro);
-                        text += "**Pro+** activated!\n";
+                        await PremiumDb.AddPremium(user.Id, PremiumType.Pro);
+                        text += "**Pro** activated!\n";
                         log = true;
                     }
                 }

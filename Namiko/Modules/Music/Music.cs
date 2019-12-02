@@ -52,7 +52,7 @@ namespace Namiko
         [Command("Join"), Summary("Namiko joins your voice channel.\n**Usage**: `!join`"), PermissionRole(RoleType.Music)]
         public async Task Join([Remainder]string str = "")
         {
-            if (!(PemiumDb.IsPemium(Context.Guild.Id, PemiumType.GuildPlus) || PemiumDb.IsPemium(Context.Guild.Id, PemiumType.Guild)))
+            if (!(PremiumDb.IsPremium(Context.Guild.Id, PremiumType.GuildPlus) || PremiumDb.IsPremium(Context.Guild.Id, PremiumType.Guild)))
             {
                 await ReplyAsync($"Gomen, Senpai, Music is currently limited to my Pro Guilds :star2:\n" +
                     $"\n" +
@@ -138,7 +138,7 @@ namespace Namiko
         [Command("Play"), Summary("Play a song/playlist or add it to the end of a queue.\n**Usage**: `!play [link_or_search]`"), PermissionRole(RoleType.Music)]
         public async Task Play([Remainder]string query)
         {
-            if (!(PemiumDb.IsPemium(Context.Guild.Id, PemiumType.GuildPlus) || PemiumDb.IsPemium(Context.Guild.Id, PemiumType.Guild)))
+            if (!(PremiumDb.IsPremium(Context.Guild.Id, PremiumType.GuildPlus) || PremiumDb.IsPremium(Context.Guild.Id, PremiumType.Guild)))
             {
                 await ReplyAsync($"Gomen, Senpai, Music is currently limited to my Pro Guilds :star2:\n" +
                     $"\n" +
@@ -174,7 +174,7 @@ namespace Namiko
             }
 
             int max = 100;
-            if (PemiumDb.IsPemium(Context.Guild.Id, PemiumType.GuildPlus))
+            if (PremiumDb.IsPremium(Context.Guild.Id, PremiumType.GuildPlus))
                 max = 500;
             if (player.Queue.Count >= max)
             {
@@ -211,7 +211,7 @@ namespace Namiko
         [Command("PlayNext"), Alias("pn"), Summary("Play a song/playlist or add it to the start of a queue.\n**Usage**: `!playnext [link_or_search]`"), PermissionRole(RoleType.Music)]
         public async Task PlayNext([Remainder]string query)
         {
-            if (!(PemiumDb.IsPemium(Context.Guild.Id, PemiumType.GuildPlus) || PemiumDb.IsPemium(Context.Guild.Id, PemiumType.Guild)))
+            if (!(PremiumDb.IsPremium(Context.Guild.Id, PremiumType.GuildPlus) || PremiumDb.IsPremium(Context.Guild.Id, PremiumType.Guild)))
             {
                 await ReplyAsync($"Gomen, Senpai, Music is currently limited to my Pro Guilds :star2:\n" +
                     $"\n" +
@@ -247,7 +247,7 @@ namespace Namiko
             }
 
             int max = 100;
-            if (PemiumDb.IsPemium(Context.Guild.Id, PemiumType.GuildPlus))
+            if (PremiumDb.IsPremium(Context.Guild.Id, PremiumType.GuildPlus))
                 max = 500;
             if (player.Queue.Count >= max)
             {
@@ -299,7 +299,7 @@ namespace Namiko
         [Command("QuickPlay"), Alias("qp"), Summary("Play a song/playlist or add it to the end of a queue. Automatically selects the first result from the search.\n**Usage**: `!qp [link_or_search]`"), PermissionRole(RoleType.Music)]
         public async Task PlayFirst([Remainder]string query)
         {
-            if (!(PemiumDb.IsPemium(Context.Guild.Id, PemiumType.GuildPlus) || PemiumDb.IsPemium(Context.Guild.Id, PemiumType.Guild)))
+            if (!(PremiumDb.IsPremium(Context.Guild.Id, PremiumType.GuildPlus) || PremiumDb.IsPremium(Context.Guild.Id, PremiumType.Guild)))
             {
                 await ReplyAsync($"Gomen, Senpai, Music is currently limited to my Pro Guilds :star2:\n" +
                     $"\n" +
@@ -335,7 +335,7 @@ namespace Namiko
             }
 
             int max = 100;
-            if (PemiumDb.IsPemium(Context.Guild.Id, PemiumType.GuildPlus))
+            if (PremiumDb.IsPremium(Context.Guild.Id, PremiumType.GuildPlus))
                 max = 500;
             if (player.Queue.Count >= max)
             {

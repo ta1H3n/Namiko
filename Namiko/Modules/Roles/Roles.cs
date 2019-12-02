@@ -271,15 +271,7 @@ namespace Namiko
         [Command("TeamList"), Alias("tl", "teams"), Summary("Lists all teams.\n**Usage**: `!tl`")]
         public async Task TeamList([Remainder] string str = "")
         {
-            var teams = new List<SocketRole>();
-            var leaders = new List<SocketRole>();
-            foreach (var x in TeamDb.Teams(Context.Guild.Id))
-            {
-                teams.Add(Context.Guild.GetRole(x.MemberRoleId));
-                leaders.Add(Context.Guild.GetRole(x.LeaderRoleId));
-            }
-
-            var eb = RoleUtil.TeamListEmbed(teams, leaders);
+            var eb = await RoleUtil.TeamListEmbed(TeamDb.Teams(Context.Guild.Id), Context.Guild);
             await Context.Channel.SendMessageAsync("", false, eb.Build());
         }
 
