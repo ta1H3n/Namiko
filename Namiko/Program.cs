@@ -57,7 +57,10 @@ namespace Namiko
             Client = new DiscordShardedClient(new DiscordSocketConfig {
                 LogLevel = LogSeverity.Info,
                 DefaultRetryMode = RetryMode.Retry502,
-                ExclusiveBulkDelete = true
+                ExclusiveBulkDelete = true,
+                AlwaysDownloadUsers = false,
+                MessageCacheSize = 0,
+                LargeThreshold = 50
             });
             
             Commands = new CommandService(new CommandServiceConfig
