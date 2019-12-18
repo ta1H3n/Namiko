@@ -128,7 +128,7 @@ namespace Namiko
                 };
             }
 
-            int hours = 168;
+            int hours = 164;
             if (PremiumDb.IsPremium(Context.Guild.Id, PremiumType.Guild) || PremiumDb.IsPremium(Context.Guild.Id, PremiumType.GuildPlus))
                 hours /= 2;
 
