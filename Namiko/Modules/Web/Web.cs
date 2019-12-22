@@ -19,11 +19,11 @@ namespace Namiko
     public class Web : InteractiveBase<ShardedCommandContext>
     {
         [Command("IQDB"), Summary("Finds the source of an image in iqdb.\n**Usage**: `!iqdb [image_url]` or `!iqdb` with attached image.")]
-        public async Task Iqdb(string url = "", [Remainder] string str = "")
+        public async Task Iqdb(string url = null, [Remainder] string str = "")
         {
             await Context.Channel.TriggerTypingAsync();
 
-            url = !url.Equals("") ? url : Context.Message.Attachments.FirstOrDefault()?.Url;
+            url = url ?? Context.Message.Attachments.FirstOrDefault()?.Url;
 
             if (url == null)
             {
@@ -47,7 +47,7 @@ namespace Namiko
         {
             await Context.Channel.TriggerTypingAsync();
 
-            url = !url.Equals("") ? url : Context.Message.Attachments.FirstOrDefault()?.Url;
+            url = url ?? Context.Message.Attachments.FirstOrDefault()?.Url;
 
             if (url == null)
             {

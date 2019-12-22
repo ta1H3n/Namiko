@@ -51,8 +51,8 @@ namespace Namiko
         }
         private async Task MainAsync()
         {
-            SetUpDebug();
-            //SetUpRelease();
+            //SetUpDebug();
+            SetUpRelease();
 
             Client = new DiscordShardedClient(new DiscordSocketConfig {
                 LogLevel = LogSeverity.Info,
