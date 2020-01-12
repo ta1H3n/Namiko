@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Text;
+﻿using System.Reflection;
 
 namespace Namiko.Data
 {
@@ -27,13 +24,13 @@ namespace Namiko.Data
         }
         public static void SetUpDebug()
         {
-            SettingsJSON = Assembly.GetEntryAssembly().Location.Replace(@"bin\Debug\netcoreapp2.1\Namiko.dll", @"Data\Settings.json");
-            ImgurJSON = Assembly.GetEntryAssembly().Location.Replace(@"bin\Debug\netcoreapp2.1\Namiko.dll", @"Data\Imgur.json");
-            RedditJSON = Assembly.GetEntryAssembly().Location.Replace(@"bin\Debug\netcoreapp2.1\Namiko.dll", @"Data\Reddit.json");
-            LootboxStatsJSON = Assembly.GetEntryAssembly().Location.Replace(@"bin\Debug\netcoreapp2.1\Namiko.dll", @"Data\BoxStats.json");
-            DblTokenTxt = Assembly.GetEntryAssembly().Location.Replace(@"bin\Debug\netcoreapp2.1\Namiko.dll", @"Data\DblToken.txt");
-            SqliteDb = Assembly.GetEntryAssembly().Location.Replace(@"bin\Debug\netcoreapp2.1\Namiko.dll", @"Data\");
-            SpookyLinesXml =  Assembly.GetEntryAssembly().Location.Replace(@"bin\Debug\netcoreapp2.1\Namiko.dll", @"Resources\Xml\SpookyLines.xml");
+            SettingsJSON = Assembly.GetEntryAssembly().Location.Replace(@"bin\Debug\netcoreapp3.1\Namiko.dll", @"Data\Settings.json");
+            ImgurJSON = Assembly.GetEntryAssembly().Location.Replace(@"bin\Debug\netcoreapp3.1\Namiko.dll", @"Data\Imgur.json");
+            RedditJSON = Assembly.GetEntryAssembly().Location.Replace(@"bin\Debug\netcoreapp3.1\Namiko.dll", @"Data\Reddit.json");
+            LootboxStatsJSON = Assembly.GetEntryAssembly().Location.Replace(@"bin\Debug\netcoreapp3.1\Namiko.dll", @"Data\BoxStats.json");
+            DblTokenTxt = Assembly.GetEntryAssembly().Location.Replace(@"bin\Debug\netcoreapp3.1\Namiko.dll", @"Data\DblToken.txt");
+            SqliteDb = Assembly.GetEntryAssembly().Location.Replace(@"bin\Debug\netcoreapp3.1\Namiko.dll", @"Data\");
+            SpookyLinesXml =  Assembly.GetEntryAssembly().Location.Replace(@"bin\Debug\netcoreapp3.1\Namiko.dll", @"Resources\Xml\SpookyLines.xml");
         }
     }
 }

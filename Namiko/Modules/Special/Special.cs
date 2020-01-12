@@ -1,19 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Linq;
-
-using Discord;
-using Discord.Commands;
-
-
-
-using Discord.WebSocket;
-
+﻿using Discord;
 using Discord.Addons.Interactive;
+using Discord.Commands;
+using Discord.WebSocket;
 using Newtonsoft.Json;
-using System.Reflection;
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Net;
+using System.Reflection;
+using System.Threading.Tasks;
 
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 
@@ -345,6 +341,98 @@ namespace Namiko
             ISocketMessageChannel ch = Context.Client.GetChannel(id) as ISocketMessageChannel;
             await ch.SendMessageAsync(embed: eb.Build());
             await Context.Channel.SendMessageAsync($"Saying in {ch.Name}", false, embed: eb.Build());
+        }
+
+        [Command("DownloadFiles"), Summary("Downloads files from a channel.\n**Usage**: `!DownloadImages [path] [amount] [skip] [channel_id}`"), OwnerPrecondition]
+        public async Task DownloadFiles(string path, int amount, int skip = 0, ulong channelId = 0)
+        {
+            await Context.Message.DeleteAsync();
+            var ch = channelId == 0 ? Context.Channel : (ISocketMessageChannel) Context.Client.GetChannel(channelId);
+            var messages = await ch.GetMessagesAsync(amount, CacheMode.AllowDownload).FlattenAsync();
+
+            int total = 0;
+            int downloaded = 0;
+
+            foreach (var msg in messages.Skip(skip))
+            {
+                if (msg.Type != MessageType.Default)
+                {
+                    continue;
+                }
+
+                foreach (var attachment in msg.Attachments.Where(x => x.Height != null && x.Width != null))
+                {
+                    if (WebUtil.IsValidUrl(attachment.ProxyUrl))
+                    {
+                        Task.Run(() => DownloadFile(attachment.ProxyUrl, 
+                            path + @"\" 
+                            + msg.Timestamp.UtcDateTime.ToString("yyyy-MM-dd_HHmm") + "_" 
+                            + attachment.Filename))
+                            .ContinueWith(x =>
+                             {
+                                 if (x.Result == true)
+                                 {
+                                     downloaded++;
+                                     if (downloaded % 5 == 0)
+                                     {
+                                         Console.WriteLine("Downloaded: " + downloaded);
+                                     }
+                                 }
+                             });
+                        total++;
+                        if (total % 50 == 0)
+                        {
+                            Console.WriteLine("Total: " + total);
+                        }
+                    }
+                }
+
+                foreach (var word in msg.Content.Split(' '))
+                {
+                    if (WebUtil.IsValidUrl(word) && WebUtil.IsImageUrl(word))
+                    {
+                        Task.Run(() => DownloadFile(word,
+                            path + @"\"
+                            + msg.Timestamp.UtcDateTime.ToString("yyyy-MM-dd_HHmm") + "_"
+                            + word.Split(@"/").Last()))
+                            .ContinueWith(x =>
+                            {
+                                if (x.Result == true)
+                                {
+                                    downloaded++;
+                                    if (downloaded % 5 == 0)
+                                    {
+                                        Console.WriteLine("Downloaded: " + downloaded);
+                                    }
+                                }
+                            });
+                        total++;
+                        if (total % 50 == 0)
+                        {
+                            Console.WriteLine("Total: " + total);
+                        }
+                    }
+                }
+            }
+            Console.WriteLine("Total: " + total);
+        }
+
+        public bool DownloadFile(string url, string path)
+        {
+            if (File.Exists(path))
+                return false;
+
+            try
+            {
+                using var client = new WebClient();
+                client.Credentials = new NetworkCredential("UserName", "Password");
+                client.DownloadFile(url, path);
+                return true;
+            } catch
+            {
+                Console.WriteLine("Failed: " + url);
+                return false;
+            }
         }
     }
 }

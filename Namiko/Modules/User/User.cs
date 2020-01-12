@@ -1,12 +1,12 @@
 ﻿using Discord;
-using System;
-using System.Linq;
-using Discord.Commands;
-using Discord.WebSocket;
-using System.Threading.Tasks;
 using Discord.Addons.Interactive;
-using System.Collections.Generic;
+using Discord.Commands;
 using Discord.Webhook;
+using Discord.WebSocket;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Namiko
 {
@@ -250,7 +250,7 @@ namespace Namiko
 
              //
             //setting start values & checking for possible name or hex value
-            System.Drawing.Color color;
+            System.Drawing.Color color = System.Drawing.Color.White;
             if (UserUtil.GetNamedColour(ref color, colour, shade) || UserUtil.GetHexColour(ref color, colour)) {
 
                 //toastie + saving hex colour

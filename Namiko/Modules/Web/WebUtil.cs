@@ -1,22 +1,18 @@
 ﻿using Discord;
+using DiscordBotsList.Api;
+using DiscordBotsList.Api.Objects;
 using IqdbApi;
 using IqdbApi.Models;
+using JikanDotNet;
+using Namiko.Data;
+using Reddit.Controllers;
+using SauceNET;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
-using System.Threading.Tasks;
 using System.Linq;
-using SauceNET;
 using System.Net;
-using System.Globalization;
-using JikanDotNet;
-using DiscordBotsList.Api.Internal;
-using DiscordBotsList.Api.Internal.Queries;
-using DiscordBotsList.Api.Objects;
-using DiscordBotsList.Api;
-using Namiko.Data;
-using Reddit.Controllers;
+using System.Threading.Tasks;
 
 namespace Namiko
 {
@@ -140,7 +136,7 @@ namespace Namiko
                 var req = (HttpWebRequest)HttpWebRequest.Create(url);
                 req.Method = "HEAD";
                 using (var resp = req.GetResponse()) {
-                    return resp.ContentType.ToLower(CultureInfo.InvariantCulture).StartsWith("image/");
+                    return resp.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase);
                 }
             } catch (UriFormatException){ return false; }
         }
