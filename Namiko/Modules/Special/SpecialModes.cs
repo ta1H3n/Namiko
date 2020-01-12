@@ -20,7 +20,18 @@ namespace Namiko
     {
         public static bool ChristmasModeEnable { get; set; }
         public static int ChristmasModeRate { get; set; }
-        public string[] ChristmasEmotes = { "<:ChristmasAwoo:523987349743599616> ",  "<:XmasYeah:523986875497578522>", "<:ChristmasOwO:523983823591964699>", "<:ChristmasPanda:523987350313762816>", "<:Padoru:523993285275156480>", "<:XmasSip:523995761742970901>", "<:MikuPresent:523995762028445701>", "<:OwOPresent:523995763559235594>" };
+        public string[] ChristmasEmotes = 
+        { 
+            "<:ChristmasAwoo:523987349743599616> ",  
+            "<:XmasYeah:523986875497578522>", 
+            "<:ChristmasOwO:523983823591964699>", 
+            "<:ChristmasPanda:523987350313762816>", 
+            "<:Padoru:523993285275156480>", 
+            "<:XmasSip:523995761742970901>", 
+            "<:MikuPresent:523995762028445701>", 
+            "<:OwOPresent:523995763559235594>",
+            "<a:PPADORUUUU:523993285312643095>"
+        };
         public static bool SpookModeEnable { get; set; }
         public static int SpookModeRate { get; set; }
         private static List<string> Lines { get; set; }

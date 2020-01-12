@@ -83,7 +83,16 @@ namespace Namiko
                 var list = db.DynamicListFromSql(str, new Dictionary<string, object>());
 
                 string text = $"Results: {list.Count()}\n";
-                text += $"```json\n{JsonConvert.SerializeObject(list, Formatting.Indented)}```";
+                text += $"```yaml\n";
+                foreach (var item in list)
+                {
+                    foreach (var row in item)
+                    {
+                        text += row.Key + ": " + row.Value + "\n";
+                    }
+                    text += "\n";
+                }
+                text += "```";
 
                 if (text.Length > 2000)
                     text = text.Substring(0, 1990) + "\n...```";

@@ -64,7 +64,7 @@ namespace Namiko
 
     public static class SqliteHelper
     {
-        public static IEnumerable<dynamic> DynamicListFromSql(this DbContext db, string Sql, Dictionary<string, object> Params)
+        public static IEnumerable<IEnumerable<KeyValuePair<string, object>>> DynamicListFromSql(this DbContext db, string Sql, Dictionary<string, object> Params)
         {
             using (var cmd = db.Database.GetDbConnection().CreateCommand())
             {
@@ -83,10 +83,10 @@ namespace Namiko
                 {
                     while (dataReader.Read())
                     {
-                        var row = new ExpandoObject() as IDictionary<string, object>;
+                        var row = new List<KeyValuePair<string, object>>();
                         for (var fieldCount = 0; fieldCount < dataReader.FieldCount; fieldCount++)
                         {
-                            row.Add(dataReader.GetName(fieldCount), dataReader[fieldCount]);
+                            row.Add(new KeyValuePair<string, object>(dataReader.GetName(fieldCount), dataReader[fieldCount]));
                         }
                         yield return row;
                     }
