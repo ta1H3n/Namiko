@@ -477,10 +477,13 @@ namespace Namiko
 
             if (waifu.Tier < 1 || waifu.Tier > 3)
             {
-                await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared(Context.User)
-                    .WithDescription($"*~ You can only ship Tier 1-3 waifus ~*")
-                    .Build());
-                return;
+                if (!(Context.Guild.Id == 482974382445035520 && waifu.Tier == 825))
+                {
+                    await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared(Context.User)
+                        .WithDescription($"*~ You can only ship Tier 1-3 waifus ~*")
+                        .Build());
+                    return;
+                }
             }
 
             if (UserInventoryDb.OwnsWaifu(user.Id, waifu, Context.Guild.Id))
