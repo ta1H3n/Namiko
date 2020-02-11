@@ -160,6 +160,16 @@ namespace Namiko {
                 return user.LootboxesOpened;
             }
         }
+        public static async Task<List<KeyValuePair<ulong, int>>> GetAllLootboxOpenedAmount()
+        {
+            using (var db = new SqliteDbContext())
+            {
+                return await db.Profiles
+                    .Where(x => x.LootboxesOpened > 0)
+                    .Select(x => new KeyValuePair<ulong, int>(x.UserId, x.LootboxesOpened))
+                    .ToListAsync();
+            }
+        }
         public static async Task IncrementLootboxOpened(ulong userId, int amount = 1)
         {
             using (var db = new SqliteDbContext())
@@ -208,6 +218,16 @@ namespace Namiko {
 
                 await db.SaveChangesAsync();
                 return user?.Rep ?? amount;
+            }
+        }
+        public static async Task<List<KeyValuePair<ulong, int>>> GetAllRep()
+        {
+            using (var db = new SqliteDbContext())
+            {
+                return await db.Profiles
+                    .Where(x => x.Rep > 0)
+                    .Select(x => new KeyValuePair<ulong, int>(x.UserId, x.Rep))
+                    .ToListAsync();
             }
         }
 
@@ -392,6 +412,16 @@ namespace Namiko {
             using (var db = new SqliteDbContext())
             {
                 return await db.Voters.CountAsync(x => x.UserId == userId);
+            }
+        }
+        public static async Task<List<KeyValuePair<ulong, int>>> GetAllVotes()
+        {
+            using (var db = new SqliteDbContext())
+            {
+                return await db.Voters
+                    .GroupBy(x => x.UserId)
+                    .Select(x => new KeyValuePair<ulong, int>(x.Key, x.Count()))
+                    .ToListAsync();
             }
         }
     }

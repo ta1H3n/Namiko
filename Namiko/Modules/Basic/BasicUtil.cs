@@ -78,7 +78,8 @@ namespace Namiko
             field += "Origin Server: [AMFWT](https://discord.gg/pBjSCVN)\n";
             field += "Invite Link: [Namiko](https://discordapp.com/oauth2/authorize?client_id=418823684459855882&scope=bot&permissions=268707844)\n";
             field += "Repository: [Github](https://github.com/ta1H3n/Namiko)\n";
-            field += "Donate: [Paypal](https://www.paypal.me/NamikoBot), [Patreon](https://www.patreon.com/taiHen)\n";
+            field += "Donate: [Paypal](https://www.paypal.me/NamikoBot)\n";
+            field += "Get Pro: [Patreon](https://www.patreon.com/taiHen) :star:";
             eb.AddField("References", field);
 
             eb.WithAuthor(client.CurrentUser);

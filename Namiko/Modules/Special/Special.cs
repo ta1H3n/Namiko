@@ -424,8 +424,10 @@ namespace Namiko
 
             try
             {
-                using var client = new WebClient();
-                client.Credentials = new NetworkCredential("UserName", "Password");
+                using var client = new WebClient
+                {
+                    Credentials = new NetworkCredential("UserName", "Password")
+                };
                 client.DownloadFile(url, path);
                 return true;
             } catch

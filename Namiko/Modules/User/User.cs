@@ -501,6 +501,102 @@ namespace Namiko
             }
         }
 
+        [Command("ServerRepLeaderboard"), Alias("srlb"), Summary("Highest rep users in this server.\n**Usage**: `!tw`")]
+        public async Task ServerRepLeaderboard([Remainder] string str = "")
+        {
+            IEnumerable<KeyValuePair<ulong, int>> rep = await UserDb.GetAllRep();
+            rep = rep.Where(x => Context.Guild.Users.Select(u => u.Id).Contains(x.Key)).OrderByDescending(x => x.Value);
+            var msg = new CustomPaginatedMessage();
+
+            msg.Title = ":star: Rep Leaderboards";
+            var fields = new List<FieldPages>();
+            fields.Add(new FieldPages
+            {
+                Title = "Users Here",
+                Pages = CustomPaginatedMessage.PagesArray(rep, 10, (x) => $"**{BasicUtil.IdToMention(x.Key)}** - {x.Value}\n")
+            });
+            msg.Fields = fields;
+
+            await PagedReplyAsync(msg);
+        }
+
+        [Command("RepLeaderboard"), Alias("rlb"), Summary("Highest rep users.\n**Usage**: `!tw`")]
+        public async Task RepLeaderboard([Remainder] string str = "")
+        {
+            IEnumerable<KeyValuePair<ulong, int>> repRaw = await UserDb.GetAllRep();
+            List<KeyValuePair<string, int>> rep = new List<KeyValuePair<string, int>>();
+            int i = 0;
+            foreach (var x in repRaw)
+            {
+                SocketUser user = Context.Client.GetUser(x.Key);
+                if (user == null)
+                    continue;
+
+                rep.Add(new KeyValuePair<string, int>(user.Username + "#" + user.Discriminator, x.Value));
+            }
+            rep = rep.OrderByDescending(x => x.Value).ToList();
+            var msg = new CustomPaginatedMessage();
+
+            msg.Title = ":star: Rep Leaderboards";
+            var fields = new List<FieldPages>();
+            fields.Add(new FieldPages
+            {
+                Title = "All Users",
+                Pages = CustomPaginatedMessage.PagesArray(rep, 10, (x) => $"`#{++i}` {x.Key} - {x.Value}\n", false)
+            });
+            msg.Fields = fields;
+
+            await PagedReplyAsync(msg);
+        }
+
+        [Command("ServerVoteLeaderboard"), Alias("svlb"), Summary("Highest rep users in this server.\n**Usage**: `!tw`")]
+        public async Task ServerVoteLeaderboard([Remainder] string str = "")
+        {
+            IEnumerable<KeyValuePair<ulong, int>> votes = await VoteDb.GetAllVotes();
+            votes = votes.Where(x => Context.Guild.Users.Select(u => u.Id).Contains(x.Key)).OrderByDescending(x => x.Value);
+            var msg = new CustomPaginatedMessage();
+
+            msg.Title = ":star: Vote Leaderboards";
+            var fields = new List<FieldPages>();
+            fields.Add(new FieldPages
+            {
+                Title = "Users Here",
+                Pages = CustomPaginatedMessage.PagesArray(votes, 10, (x) => $"**{BasicUtil.IdToMention(x.Key)}** - {x.Value}\n")
+            });
+            msg.Fields = fields;
+
+            await PagedReplyAsync(msg);
+        }
+
+        [Command("VoteLeaderboard"), Alias("vlb"), Summary("Highest rep users.\n**Usage**: `!tw`")]
+        public async Task VoteLeaderboard([Remainder] string str = "")
+        {
+            IEnumerable<KeyValuePair<ulong, int>> votesRaw = await VoteDb.GetAllVotes();
+            List<KeyValuePair<string, int>> votes = new List<KeyValuePair<string, int>>();
+            foreach (var x in votesRaw)
+            {
+                SocketUser user = Context.Client.GetUser(x.Key);
+                if (user == null)
+                    continue;
+
+                votes.Add(new KeyValuePair<string, int>(user.Username + "#" + user.Discriminator, x.Value));
+            }
+            votes = votes.OrderByDescending(x => x.Value).ToList();
+            var msg = new CustomPaginatedMessage();
+
+            msg.Title = ":star: Vote Leaderboards";
+            var fields = new List<FieldPages>();
+            int i = 0;
+            fields.Add(new FieldPages
+            {
+                Title = "All Users",
+                Pages = CustomPaginatedMessage.PagesArray(votes, 10, (x) => $"`#{++i}` {x.Key} - {x.Value}\n", false)
+            });
+            msg.Fields = fields;
+
+            await PagedReplyAsync(msg);
+        }
+
         [Command("ActivatePro"), Alias("ap", "ActivatePremium"), Summary("Activates premium subscriptions associated with this account.\n**Usage**: `!ap`")]
         public async Task ActivatePremium([Remainder] string str = "")
         {

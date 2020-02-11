@@ -51,8 +51,8 @@ namespace Namiko
         }
         private async Task MainAsync()
         {
-            //SetUpDebug();
-            SetUpRelease();
+            SetUpDebug();
+            //SetUpRelease();
 
             Client = new DiscordShardedClient(new DiscordSocketConfig {
                 LogLevel = LogSeverity.Info,
@@ -532,7 +532,7 @@ namespace Namiko
 
             //return added;
 
-            IReadOnlyCollection<SocketGuild> guilds = null;
+            IReadOnlyCollection<SocketGuild> guilds;
             if (shard == null)
                 guilds = Client.Guilds;
             else

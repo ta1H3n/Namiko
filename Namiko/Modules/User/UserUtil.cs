@@ -233,10 +233,10 @@ namespace Namiko {
                 string wstr = "";
                 foreach (var x in waifus)
                 {
-                    if (x.Source.Length > 45)
-                        x.Source = x.Source.Substring(0, 33) + "...";
-                    x.Source = x.Source ?? "";
-                    wstr += String.Format("**{0}** - *{1}*\n", x.Name, x.Source);
+                    string row = String.Format("**{0}** - *{1}*", x.Name, x.Source);
+                    if (row.Length > 47)
+                        row = row.Substring(0, 43) + "...";
+                    wstr += row + "\n";
                 }
                 eb.AddField("Waifus", wstr);
 
@@ -339,7 +339,7 @@ namespace Namiko {
                         new TimeSpan(0, 0, 23));
 
                     _ = msg.DeleteAsync();
-                    int i = 0;
+                    int i;
                     try
                     {
                         i = int.Parse(response.Content);

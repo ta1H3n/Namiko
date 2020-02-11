@@ -110,7 +110,6 @@ namespace Namiko
         [Command("InfoGuildPlus"), Summary("Donation Links.")]
         public async Task InfoGuildPlus([Remainder] string str = "")
         {
-            string prefix = this.Prefix();
             var eb = new EmbedBuilder()
                 .WithAuthor(Program.GetClient().CurrentUser)
                 .WithDescription($"Namiko Pro Guild+ Upgrades :star2:\n" +
@@ -182,10 +181,8 @@ namespace Namiko
         [Command("MarkdownCommands"), OwnerPrecondition]
         public async Task MarkdownCommands()
         {
-            using (var stream = Timers.GenerateStreamFromString(MarkdownCommandList(Program.GetCommands())))
-            {
-                await Context.Channel.SendFileAsync(stream, "CommandsMarkdown.txt");
-            }
+            using var stream = Timers.GenerateStreamFromString(MarkdownCommandList(Program.GetCommands()));
+            await Context.Channel.SendFileAsync(stream, "CommandsMarkdown.txt");
         }
 
         [Command("Wait"), OwnerPrecondition]

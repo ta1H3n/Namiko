@@ -138,16 +138,16 @@ namespace Namiko
                 return;
             }
 
+            await UserInventoryDb.AddWaifu(Context.User.Id, waifu, Context.Guild.Id);
+            await Context.Channel.SendMessageAsync($"Congratulations! You bought **{waifu.Name}**!", false, WaifuUtil.WaifuEmbedBuilder(waifu).Build());
+            await ToastieDb.AddToasties(Context.Client.CurrentUser.Id, price / 13, Context.Guild.Id);
+
             if (shopWaifu.Limited > 0)
             {
                 shopWaifu.BoughtBy = Context.User.Id;
                 shopWaifu.Limited -= 1;
                 await WaifuShopDb.UpdateShopWaifu(shopWaifu);
             }
-
-            await UserInventoryDb.AddWaifu(Context.User.Id, waifu, Context.Guild.Id);
-            await Context.Channel.SendMessageAsync($"Congratulations! You bought **{waifu.Name}**!", false, WaifuUtil.WaifuEmbedBuilder(waifu).Build());
-            await ToastieDb.AddToasties(Context.Client.CurrentUser.Id, price / 13, Context.Guild.Id);
         }
 
         [Command("SellWaifu"), Alias("sw"), Summary("Sells a waifu you already own for a discounted price.\n**Usage**: `!sw [name]`")]
