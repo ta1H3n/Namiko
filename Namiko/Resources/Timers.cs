@@ -277,7 +277,7 @@ namespace Namiko
 
             using (SqliteStatsDbContext db = new SqliteStatsDbContext())
             {
-                var sample = db.ServerStats.LastOrDefault();
+                var sample = db.ServerStats.OrderByDescending(x => x.Id).FirstOrDefault();
                 if (sample == null || sample.Date.Date < date.Date)
                 {
                     servers = Stats.ParseServerStats();
@@ -301,7 +301,7 @@ namespace Namiko
 
             using (SqliteStatsDbContext db = new SqliteStatsDbContext())
             {
-                var sample = db.UsageStats.LastOrDefault();
+                var sample = db.UsageStats.OrderByDescending(x => x.Date).FirstOrDefault();
                 if (sample == null || sample.Date.AddHours(2) < date)
                 {
                     db.UsageStats.Add(new UsageStat { Date = date.AddHours(-1).AddMinutes(-date.Minute).AddSeconds(-date.Second), Count = Stats.TotalCalls });
