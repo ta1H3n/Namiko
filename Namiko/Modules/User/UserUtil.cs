@@ -141,16 +141,14 @@ namespace Namiko {
             eb.WithFooter(footer);
 
             //quote 
-            string quote = "";
-            quote += UserDb.GetQuote(user.Id);
-            if ( !String.IsNullOrEmpty(quote) & !WebUtil.IsValidUrl(quote))
+            string quote = UserDb.GetQuote(user.Id);
+            if (!String.IsNullOrEmpty(quote) & !WebUtil.IsValidUrl(quote))
                 eb.WithDescription(quote);
 
             //image
             string image = UserDb.GetImage(user.Id); 
-            if ( WebUtil.IsValidUrl(image) )
+            if (WebUtil.IsValidUrl(image))
                 eb.WithThumbnailUrl(image);
-
 
             eb.Color = UserDb.GetHex(out string colour, user.Id)? (Discord.Color) HexToColor(colour) : BasicUtil.RandomColor();
             return eb;

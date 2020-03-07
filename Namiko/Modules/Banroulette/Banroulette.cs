@@ -180,7 +180,13 @@ namespace Namiko
             if (banroulette.BanLengthHours > 0)
             {
                 await BanDb.AddBan(ban);
-                await Context.Guild.AddBanAsync(user, 0, $"Banroulette {banroulette.Id}, {banroulette.BanLengthHours} hours.");
+                try
+                {
+                    await Context.Guild.AddBanAsync(user, 0, $"Banroulette {banroulette.Id}, {banroulette.BanLengthHours} hours.");
+                } catch { }
+                {
+                    await Context.Channel.SendMessageAsync($"I couldn't ban {user}, they are too powerful. *Wipes off blood.* This usually means that their role is higher than mine.");
+                }
             }
         }
 

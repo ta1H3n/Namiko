@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Namiko.Data;
 using Newtonsoft.Json;
+using Sentry;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -46,14 +47,17 @@ namespace Namiko
                     Console.WriteLine("Instance Already Running!");
                     return;
                 }
-                new Program().MainAsync().GetAwaiter().GetResult();
+
+                SetUpConfig();
+                using (SentrySdk.Init(Config.SentryWebhook))
+                {
+                    SetUp();
+                    new Program().MainAsync().GetAwaiter().GetResult();
+                }
             }
         }
         private async Task MainAsync()
         {
-            SetUpDebug();
-            //SetUpRelease();
-
             Client = new DiscordShardedClient(new DiscordSocketConfig {
                 LogLevel = LogSeverity.Info,
                 DefaultRetryMode = RetryMode.Retry502,
@@ -72,7 +76,7 @@ namespace Namiko
             
             //Client.Ready += Client_Ready;
             Client.ShardReady += Client_ShardReady;
-            Client.Log += Client_Log;
+            //Client.Log += Client_Log;
             Client.ReactionAdded += Client_ReactionAdded;
             Client.JoinedGuild += Client_JoinedGuild;
             Client.LeftGuild += Client_LeftGuild;
@@ -86,10 +90,9 @@ namespace Namiko
             Client.UserLeft += Client_UserLeftLog;
             Client.UserBanned += Client_UserBannedLog;
 
-            Commands.Log += Client_Log;
+            //Commands.Log += Client_Log;
             Commands.CommandExecuted += Commands_CommandExecuted;
 
-            ParseSettingsJson();
             await Client.LoginAsync(TokenType.Bot, Config.Token);
             await Client.StartAsync();
 
@@ -102,7 +105,6 @@ namespace Namiko
                 .AddSingleton<LavaRestClient>()
                 .BuildServiceProvider();
 
-            //await Commands.AddModulesAsync(Assembly.GetEntryAssembly(), Services);
             await Commands.AddModuleAsync(typeof(Banroulettes), Services);
             await Commands.AddModuleAsync(typeof(Basic), Services);
             await Commands.AddModuleAsync(typeof(Currency), Services);
@@ -299,7 +301,7 @@ namespace Namiko
             string shortdate = DateTime.Now.ToString("HH:mm:ss");
             string longdate = DateTime.Now.ToString();
 
-            string exc = arg.Exception == null ? "" : $"\n`{arg.Exception.Message}- ` ```cs\n{arg.Exception.StackTrace}- ``` At: `{arg.Exception.TargetSite.Name}- `";
+            string exc = arg.Exception == null ? "" : $"\n`{arg.Exception.Message}- ` ```cs\n{arg.Exception.StackTrace ?? "..."}- ``` At: `{arg.Exception.TargetSite?.Name ?? "..."}- `";
             switch(arg.Severity)
             {
                 case LogSeverity.Info:
@@ -448,10 +450,32 @@ namespace Namiko
                 ImgurAPI.Poke();
             }
         }
-        private static void ParseSettingsJson()
+        private static void SetUp()
+        {
+            switch (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"))
+            {
+                case "Development":
+                    SetUpDebug();
+                    break;
+                default:
+                    SetUpRelease();
+                    break;
+            }
+        }
+        private static void SetUpConfig()
         {
             string JSON = "";
-            string JSONLocation = Locations.SettingsJSON;
+            string JSONLocation;
+            switch (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"))
+            {
+                case "Development":
+                    JSONLocation = Assembly.GetEntryAssembly().Location.Replace(@"bin\Debug\netcoreapp3.1\Namiko.dll", @"Data\Settings.json");
+                    break;
+                default:
+                    JSONLocation = Assembly.GetEntryAssembly().Location.Replace(@"Namiko.dll", @"data/Settings.json");
+                    break;
+            }
+
             using (var Stream = new FileStream(JSONLocation, FileMode.Open, FileAccess.Read))
             using (var ReadSettings = new StreamReader(Stream))
             {

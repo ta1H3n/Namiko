@@ -22,7 +22,7 @@ namespace Namiko
         {
             using (var db = new SqliteDbContext())
             {
-                return db.Playlists.Any(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && x.GuildId == guildId);
+                return db.Playlists.Any(x => x.Name.ToUpper().Equals(name.ToUpper()) && x.GuildId == guildId);
             }
         }
 

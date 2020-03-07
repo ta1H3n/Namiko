@@ -57,7 +57,7 @@ namespace Namiko
         {
             using (var DbContext = new SqliteDbContext())
             {
-                int count = DbContext.Images.Where(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && x.GuildId == guildId).Count();
+                int count = DbContext.Images.Where(x => x.Name.ToUpper().Equals(name.ToUpper()) && x.GuildId == guildId).Count();
                 if (count < 1)
                 {
                     return null;
@@ -66,7 +66,7 @@ namespace Namiko
                 {
                     Random rand = new Random();
                     int random = rand.Next(count);
-                    return DbContext.Images.Where(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && x.GuildId == guildId).ToArray<ReactionImage>().ElementAt(random);
+                    return DbContext.Images.Where(x => x.Name.ToUpper().Equals(name.ToUpper()) && x.GuildId == guildId).ToArray<ReactionImage>().ElementAt(random);
                 }
             }
         }
@@ -75,7 +75,7 @@ namespace Namiko
         {
             using (var DbContext = new SqliteDbContext())
             {
-                ReactionImage message = DbContext.Images.Last();
+                ReactionImage message = DbContext.Images.OrderByDescending(x => x.Id).FirstOrDefault();
                 return message;
             }
         }
@@ -98,7 +98,7 @@ namespace Namiko
         {
             using (var db = new SqliteDbContext())
             {
-                bool res = db.ImgurAlbums.Any(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+                bool res = db.ImgurAlbums.Any(x => x.Name.ToUpper().Equals(name.ToUpper()));
                 return res;
             }
         }
@@ -116,7 +116,7 @@ namespace Namiko
         {
             using (var db = new SqliteDbContext())
             {
-                return db.ImgurAlbums.FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+                return db.ImgurAlbums.FirstOrDefault(x => x.Name.ToUpper().Equals(name.ToUpper()));
             }
         }
 

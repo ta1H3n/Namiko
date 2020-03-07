@@ -22,6 +22,9 @@ namespace Namiko
         [JsonProperty("namikoBannerUrl")]
         public static string NamikoBannerUrl { get; set; }
 
+        [JsonProperty("sentryWebhook")]
+        public static string SentryWebhook { get; set; }
+
 
 
         [JsonProperty("logWebhook")]

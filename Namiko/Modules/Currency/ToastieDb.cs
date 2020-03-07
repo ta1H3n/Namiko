@@ -96,7 +96,7 @@ namespace Namiko
         {
             using (var db = new SqliteDbContext())
             {
-                return await db.Toasties.Where(x => x.Amount > 0 && x.GuildId == guildId).SumAsync(x => Convert.ToInt64(x.Amount));
+                return await db.Toasties.Where(x => x.Amount > 0 && x.GuildId == guildId).SumAsync(x => x.Amount);
             }
         }
     }
@@ -122,8 +122,9 @@ namespace Namiko
         {
             using (var db = new SqliteDbContext())
             {
+                long now = DateTimeOffset.Now.ToUnixTimeMilliseconds();
                 return await db.Dailies
-                    .Where(x => (x.GuildId == GuildId) && ((x.Date + 48 * 60 * 60 * 1000) > DateTimeOffset.Now.ToUnixTimeMilliseconds()))
+                    .Where(x => (x.GuildId == GuildId) && ((x.Date + 48 * 60 * 60 * 1000) > now))
                     .Select(x => new LeaderboardEntryId
                     {
                         Id = x.UserId,
@@ -139,7 +140,8 @@ namespace Namiko
             {
                 try
                 {
-                    return await db.Dailies.Where(x => x.GuildId == GuildId && ((x.Date + 48 * 60 * 60 * 1000) > DateTimeOffset.Now.ToUnixTimeMilliseconds())).MaxAsync(x => x.Streak);
+                    long now = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                    return await db.Dailies.Where(x => x.GuildId == GuildId && ((x.Date + 48 * 60 * 60 * 1000) > now)).MaxAsync(x => x.Streak);
                 }
                 catch { return 1; }
             }

@@ -47,7 +47,7 @@ namespace Namiko
 
                 if (primaryName)
                 {
-                    Waifu waifu = waifuQuery.Where(x => x.Name.Equals(query, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                    Waifu waifu = waifuQuery.Where(x => x.Name.ToUpper().Equals(query.ToUpper())).FirstOrDefault();
                     if (waifu != null)
                     {
                         waifus.Add(waifu);
@@ -60,9 +60,9 @@ namespace Namiko
                 foreach (var word in words)
                 {
                     waifuQuery = waifuQuery.Where(x =>
-                        (x.Name.Contains(word, StringComparison.OrdinalIgnoreCase)) ||
-                        (x.LongName == null ? false : x.LongName.Contains(word, StringComparison.OrdinalIgnoreCase)) ||
-                        (x.Source == null ? false : x.Source.Contains(word, StringComparison.OrdinalIgnoreCase)));
+                        (x.Name.ToUpper().Contains(word.ToUpper())) ||
+                        (x.LongName == null ? false : x.LongName.ToUpper().Contains(word.ToUpper())) ||
+                        (x.Source == null ? false : x.Source.ToUpper().Contains(word.ToUpper())));
                 }
 
                 waifus = waifuQuery.ToList();
@@ -104,11 +104,12 @@ namespace Namiko
         {
             using (var db = new SqliteDbContext())
             {
-                return await db.Waifus.Where(x => x.Tier == tier && 
-                (includeSource == null || includeSource.Contains(x.Source)) && 
+                return (await db.Waifus.Where(x => x.Tier == tier &&
+                (includeSource == null || includeSource.Contains(x.Source)) &&
                 (excludeSource == null || !excludeSource.Contains(x.Source)))
+                    .ToListAsync())
                     .OrderBy(r => Guid.NewGuid())
-                    .Take(amount).ToListAsync();
+                    .Take(amount).ToList();
             }
         }
         public static async Task<int> RenameWaifu(string oldName, string newName)
@@ -361,7 +362,7 @@ namespace Namiko
         {
             using (var db = new SqliteDbContext())
             {
-                var shop = await db.WaifuShops.Include(x => x.ShopWaifus).ThenInclude(x => x.Waifu).LastOrDefaultAsync(x => x.GuildId == guildId && x.Type == type);
+                var shop = await db.WaifuShops.OrderByDescending(x => x.Id).Include(x => x.ShopWaifus).ThenInclude(x => x.Waifu).FirstOrDefaultAsync(x => x.GuildId == guildId && x.Type == type);
                 return shop;
             }
         }
@@ -416,9 +417,9 @@ namespace Namiko
         {
             using (var db = new SqliteDbContext())
             {
-                var waifu = db.FeaturedWaifus.Where(x => x.UserId == userId && x.GuildId == guildId).Select(x => x.Waifu).LastOrDefault();
+                var waifu = db.FeaturedWaifus.Where(x => x.UserId == userId && x.GuildId == guildId).OrderByDescending(x => x.id).Select(x => x.Waifu).FirstOrDefault();
                 if (waifu == null)
-                    waifu = UserInventoryDb.GetWaifus(userId, guildId).LastOrDefault();
+                    waifu = db.UserInventories.Where(x => x.UserId == userId && x.GuildId == guildId).OrderByDescending(x => x.Id).Select(x => x.Waifu).FirstOrDefault();
                 return waifu;
             }
         }

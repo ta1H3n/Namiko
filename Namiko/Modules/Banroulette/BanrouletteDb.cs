@@ -23,7 +23,7 @@ namespace Namiko
         {
             using (var db = new SqliteDbContext())
             {
-                return db.Banroulettes.LastOrDefault(x => x.ChannelId == channelId && x.Active);
+                return db.Banroulettes.OrderByDescending(x => x.Id).FirstOrDefault(x => x.ChannelId == channelId && x.Active);
             }
         }
         public static async Task EndBanroulette(int banrouletteId)

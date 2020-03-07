@@ -24,7 +24,7 @@ namespace Namiko
         {
             using (var db = new SqliteDbContext())
             {
-                return await db.Database.ExecuteSqlCommandAsync(query);
+                return await db.Database.ExecuteSqlRawAsync(query);
             }
         }
     }

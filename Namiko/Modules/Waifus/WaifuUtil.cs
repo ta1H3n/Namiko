@@ -66,7 +66,8 @@ namespace Namiko
                     return null;
             }
 
-            _ = Task.Run(() => NotifyWishlist(waifus.Select(x => x.Waifu), guildId));
+            if (Program.Debug == false)
+                _ = Task.Run(() => NotifyWishlist(waifus.Select(x => x.Waifu), guildId));
 
             shop.ShopWaifus = waifus;
             return shop;

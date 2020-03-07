@@ -12,7 +12,7 @@ namespace Namiko
 {
     public static class RedditAPI
     {
-        private static Reddit.RedditAPI Client;
+        private static Reddit.RedditClient Client;
         
         static RedditAPI()
         {
@@ -31,7 +31,7 @@ namespace Namiko
 
             ApiLogin settings = JsonConvert.DeserializeObject<ApiLogin>(JSON);
 
-            Client = new Reddit.RedditAPI(settings.ClientId, settings.RefreshToken, settings.ClientSecret);
+            Client = new Reddit.RedditClient(settings.ClientId, settings.RefreshToken, settings.ClientSecret);
         }
 
         public static async Task<List<Post>> GetHot(string subredditName, int limit = 15)
