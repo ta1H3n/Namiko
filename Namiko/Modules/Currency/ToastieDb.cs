@@ -96,7 +96,7 @@ namespace Namiko
         {
             using (var db = new SqliteDbContext())
             {
-                return await db.Toasties.Where(x => x.Amount > 0 && x.GuildId == guildId).SumAsync(x => x.Amount);
+                return await db.Toasties.Where(x => x.Amount > 0 && x.GuildId == guildId).SumAsync(x => (long)x.Amount);
             }
         }
     }

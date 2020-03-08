@@ -27,7 +27,7 @@ namespace Namiko
             var waifus = await UserInventoryDb.GetAllWaifuItems(guild.Id);
 
             string field = "";
-            field += $"Total toasties: **{toasties.Sum(x => x.Amount).ToString("n0")}**\n";
+            field += $"Total toasties: **{toasties.Sum(x => (long)x.Amount).ToString("n0")}**\n";
             SocketGuildUser user = guild.GetUser(toasties.FirstOrDefault(x => x.UserId != Program.GetClient().CurrentUser.Id).UserId);
             if(user != null)
                 field += $"Richest user: {user.Mention} - **{toasties.FirstOrDefault(x => x.UserId == user.Id).Amount.ToString("n0")}**\n";
