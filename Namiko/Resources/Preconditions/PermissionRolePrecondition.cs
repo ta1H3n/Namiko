@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Discord.Commands;
+using Discord.WebSocket;
+using Model;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord.Commands;
-using Discord.WebSocket;
 
 namespace Namiko
 {

@@ -1,11 +1,8 @@
 ﻿using Discord;
+using Discord.WebSocket;
+using Model;
 using System;
 using System.Linq;
-using System.Globalization;
-
-using Discord.WebSocket;
-
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Namiko
@@ -23,7 +20,7 @@ namespace Namiko
                 name += " | T2 Guild ⭐";
             eb.WithAuthor(name, guild.IconUrl, BasicUtil._patreon);
 
-            var toasties = (await ToastieDb.GetAllToastiesRaw(guild.Id)).OrderByDescending(x => x.Amount);
+            var toasties = (await BalanceDb.GetAllToastiesRaw(guild.Id)).OrderByDescending(x => x.Amount);
             var waifus = await UserInventoryDb.GetAllWaifuItems(guild.Id);
 
             string field = "";

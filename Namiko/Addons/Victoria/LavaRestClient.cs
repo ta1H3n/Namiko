@@ -33,7 +33,7 @@ namespace Victoria
         /// <param name="configuration"><see cref="Configuration"/></param>
         public LavaRestClient(Configuration configuration = null)
         {
-            configuration = configuration ?? new Configuration();
+            configuration ??= new Configuration();
             _rest.Host = configuration.Host;
             _rest.Port = configuration.Port;
             _rest.Password = configuration.Password;

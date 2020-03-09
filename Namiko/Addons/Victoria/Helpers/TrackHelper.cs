@@ -16,24 +16,22 @@ namespace Victoria.Helpers
                 Hash = trackString
             };
 
-            using (var ms = new MemoryStream(raw))
-            using (var jb = new JavaBinaryHelper(ms))
-            {
-                var messageHeader = jb.ReadInt32();
-                var messageFlags = (int)((messageHeader & 0xC0000000L) >> 30);
-                var version = (messageFlags & trackInfoVersioned) != 0 ? jb.ReadSByte() & 0xFF : 1;
+            using var ms = new MemoryStream(raw);
+            using var jb = new JavaBinaryHelper(ms);
+            var messageHeader = jb.ReadInt32();
+            var messageFlags = (int)((messageHeader & 0xC0000000L) >> 30);
+            var version = (messageFlags & trackInfoVersioned) != 0 ? jb.ReadSByte() & 0xFF : 1;
 
-                decoded.Title = jb.ReadJavaUtf8();
-                decoded.Author = jb.ReadJavaUtf8();
-                decoded.TrackLength = jb.ReadInt64();
-                decoded.Id = jb.ReadJavaUtf8();
-                decoded.IsStream = jb.ReadBoolean();
+            decoded.Title = jb.ReadJavaUtf8();
+            decoded.Author = jb.ReadJavaUtf8();
+            decoded.TrackLength = jb.ReadInt64();
+            decoded.Id = jb.ReadJavaUtf8();
+            decoded.IsStream = jb.ReadBoolean();
 
-                var uri = jb.ReadNullableString();
-                decoded.Uri = uri != null && version >= 2 ? new Uri(uri) : null;
+            var uri = jb.ReadNullableString();
+            decoded.Uri = uri != null && version >= 2 ? new Uri(uri) : null;
 
-                return decoded;
-            }
+            return decoded;
         }
     }
 }

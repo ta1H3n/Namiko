@@ -3,6 +3,7 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.Webhook;
 using Discord.WebSocket;
+using Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +23,7 @@ namespace Namiko
         [Command("Waifus"), Alias("inv"), Summary("Shows a users waifu list.\n**Usage**: `!waifus [user_optional]`")]
         public async Task Waifus(IUser user = null, [Remainder] string str = "")
         {
-            user = user ?? Context.User;
+            user ??= Context.User;
 
             var waifus = UserInventoryDb.GetWaifus(user.Id, Context.Guild.Id);
 
@@ -54,7 +55,7 @@ namespace Namiko
 
             //commonly used variables + embed basics
             EmbedBuilder eb = new EmbedBuilder();
-            eb.WithColor(UserDb.GetHex(out string colour, Context.User.Id) ? (Discord.Color)UserUtil.HexToColor(colour) : BasicUtil.RandomColor());
+            eb.WithColor(ProfileDb.GetHex(out string colour, Context.User.Id) ? (Discord.Color)UserUtil.HexToColor(colour) : BasicUtil.RandomColor());
             ulong guildID = Context.Guild.Id;
             IUser user = Context.User;
             eb.WithAuthor(user);
@@ -62,7 +63,7 @@ namespace Namiko
              // checks
             //making sure u cant do anything weird 
             if ( wife == null || wife == user || wife.IsBot) {
-                eb.WithDescription($"You can't propose to { ((wife == null) ? "no one" : (wife.IsBot) ? "bots" : "yourself ") } unfortunately.");
+                eb.WithDescription($"You can't propose to { ((wife == null) ? "no one" : wife.IsBot ? "bots" : "yourself ") } unfortunately.");
                 await Context.Channel.SendMessageAsync("", false, eb.Build());
                 return;
             }
@@ -122,7 +123,7 @@ namespace Namiko
             IUser user = Context.User;
             EmbedBuilder eb = new EmbedBuilder();
             eb.WithAuthor(user);
-            eb.WithColor(UserDb.GetHex(out string colour, user.Id) ? (Discord.Color)UserUtil.HexToColor(colour) : BasicUtil.RandomColor());
+            eb.WithColor(ProfileDb.GetHex(out string colour, user.Id) ? (Discord.Color)UserUtil.HexToColor(colour) : BasicUtil.RandomColor());
 
             var proposals = MarriageDb.GetProposalsReceived(user.Id, Context.Guild.Id);
             proposals.AddRange(MarriageDb.GetProposalsSent(user.Id, Context.Guild.Id));
@@ -174,7 +175,7 @@ namespace Namiko
             //common variables
             IUser user = Context.User;
             EmbedBuilder eb = new EmbedBuilder();
-            Discord.Color userColour = UserDb.GetHex(out string colour, user.Id) ? (Discord.Color)UserUtil.HexToColor(colour) : BasicUtil.RandomColor();
+            Discord.Color userColour = ProfileDb.GetHex(out string colour, user.Id) ? (Discord.Color)UserUtil.HexToColor(colour) : BasicUtil.RandomColor();
             eb.WithColor(userColour);
             eb.WithAuthor(user);
 
@@ -234,7 +235,7 @@ namespace Namiko
              //
             //way to set it back to default
             if ( shade.Equals("") ) {
-                await UserDb.HexDefault(Context.User.Id);
+                await ProfileDb.HexDefault(Context.User.Id);
                 
                 //sending embed + exception & error confermations 
                 EmbedBuilder embed = UserUtil.SetColourEmbed(Context.User);
@@ -255,8 +256,8 @@ namespace Namiko
 
                 //toastie + saving hex colour
                 try {
-                    await ToastieDb.AddToasties(Context.User.Id, -Constants.colour, Context.Guild.Id);
-                    await UserDb.SetHex(color, Context.User.Id);
+                    await BalanceDb.AddToasties(Context.User.Id, -Constants.colour, Context.Guild.Id);
+                    await ProfileDb.SetHex(color, Context.User.Id);
                     await Context.Channel.SendMessageAsync("", false, UserUtil.SetColourEmbed(Context.User).Build());
                 } catch (Exception ex) { await Context.Channel.SendMessageAsync(ex.Message); }
             } 
@@ -267,7 +268,7 @@ namespace Namiko
 
             //null me babi
             if(quote == null) {
-                await UserDb.SetQuote(Context.User.Id, null);
+                await ProfileDb.SetQuote(Context.User.Id, null);
                 await Context.Channel.SendMessageAsync("Quote removed.");
                 return;
             }
@@ -279,19 +280,19 @@ namespace Namiko
             }
             
             //setting quote + getting embed & quote
-            await UserDb.SetQuote(Context.User.Id, quote);
+            await ProfileDb.SetQuote(Context.User.Id, quote);
             await Context.Channel.SendMessageAsync("Quote set!", false, UserUtil.QuoteEmbed(Context.User).Build());
         }
 
         [Command("SetImage"), Alias("si"), Summary("Sets thumbnail Image on profile. \n**Usage**: `!si [image_url_or_attachment]`")]
         public async Task SetPersonalImage([Remainder] string image = null) {
 
-            image = image ?? Context.Message.Attachments.FirstOrDefault()?.Url;
+            image ??= Context.Message.Attachments.FirstOrDefault()?.Url;
 
             //to delete image
             if (image == null)
             {
-                await UserDb.SetImage(Context.User.Id, null);
+                await ProfileDb.SetImage(Context.User.Id, null);
                 await Context.Channel.SendMessageAsync("Image removed.");
                 return;
             }
@@ -311,7 +312,7 @@ namespace Namiko
             }
 
             //building embed
-            await UserDb.SetImage(Context.User.Id, image);
+            await ProfileDb.SetImage(Context.User.Id, image);
             EmbedBuilder embed = UserUtil.QuoteEmbed(Context.User);
             await Context.Channel.SendMessageAsync("Image set!", false, embed.Build());
         }
@@ -336,7 +337,7 @@ namespace Namiko
             //checking quote
             embed = UserUtil.QuoteEmbed(user);
             if(embed == null){
-                await Context.Channel.SendMessageAsync($"{((isMe)? "You don't" : $"{ user.Username } doesn't") } have an image or a quote. Set one with `sq` and `si` commands.");
+                await Context.Channel.SendMessageAsync($"{(isMe? "You don't" : $"{ user.Username } doesn't") } have an image or a quote. Set one with `sq` and `si` commands.");
                 return;
 
             //sending quote
@@ -379,11 +380,11 @@ namespace Namiko
 
             //checking featured exists
             if (waifu == null) {
-                await Context.Channel.SendMessageAsync(((isMe) ? "You Have" : $"{ user.Username } Has") + " No Featured Waifu qq");
+                await Context.Channel.SendMessageAsync((isMe ? "You Have" : $"{ user.Username } Has") + " No Featured Waifu qq");
                 return;
 
             }
-            await Context.Channel.SendMessageAsync(((isMe) ? $"You have { waifu.Name } as your" : $"{ user.Username } has { waifu.Name } as his") + " Featured waifu!", false, WaifuUtil.WaifuEmbedBuilder(waifu, true, Context).Build());
+            await Context.Channel.SendMessageAsync((isMe ? $"You have { waifu.Name } as your" : $"{ user.Username } has { waifu.Name } as his") + " Featured waifu!", false, WaifuUtil.WaifuEmbedBuilder(waifu, true, Context).Build());
         }
 
         [Command("UndoColour"), Alias("uc", "UndoColor"), Summary("Switch back to a previous color.\n**Usage**: `!scp`")]
@@ -397,14 +398,14 @@ namespace Namiko
 
             //stack check, dumb as fuck imo
             IUser user = Context.User;
-            string stack = UserDb.GetHexStack(user.Id);
+            string stack = ProfileDb.GetHexStack(user.Id);
             if (stack.Length < 6)
             {
                 await Context.Channel.SendMessageAsync("You have no colours in the stack.");
                 return;
 
             //if they do
-            } await UserDb.PopStack(user.Id);
+            } await ProfileDb.PopStack(user.Id);
 
             //creating comfermation embed
             EmbedBuilder embed = UserUtil.SetColourEmbed(user);
@@ -416,7 +417,7 @@ namespace Namiko
         {
 
             //stack check, dumb as fuck imo
-            string stack = UserDb.GetHexStack(Context.User.Id);
+            string stack = ProfileDb.GetHexStack(Context.User.Id);
             if (stack.Length < 6)
             {
                 await Context.Channel.SendMessageAsync("You have no Colour List.");
@@ -452,7 +453,7 @@ namespace Namiko
         [Command("Rep"), Summary("Gives rep to a user.\n**Usage**: `!rep [user]`")]
         public async Task Rep(IUser user = null)
         {
-            var author = await UserDb.GetProfile(Context.User.Id);
+            var author = await ProfileDb.GetProfile(Context.User.Id);
             var cooldown = author.RepDate.AddHours(20);
             var now = System.DateTime.Now;
 
@@ -485,8 +486,8 @@ namespace Namiko
             }
 
             author.RepDate = now;
-            int rep = await UserDb.IncrementRep(user.Id);
-            await UserDb.UpdateProfile(author);
+            int rep = await ProfileDb.IncrementRep(user.Id);
+            await ProfileDb.UpdateProfile(author);
 
             await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared(Context.User)
                 .WithDescription($"You repped {user.Mention}\nNow they have **{rep}** rep!")
@@ -496,7 +497,7 @@ namespace Namiko
             var bot = Program.GetClient().CurrentUser;
             if (user.Id == bot.Id)
             {
-                await ToastieDb.AddToasties(Context.User.Id, 50, Context.Guild.Id);
+                await BalanceDb.AddToasties(Context.User.Id, 50, Context.Guild.Id);
                 await Context.Channel.SendMessageAsync($"Thank you {Context.User.Mention}! <a:loveme:536705504798441483>", embed: ToastieUtil.GiveEmbed(bot, Context.User, 50).Build());
             }
         }
@@ -504,17 +505,19 @@ namespace Namiko
         [Command("ServerRepLeaderboard"), Alias("srlb"), Summary("Highest rep users in this server.\n**Usage**: `!tw`")]
         public async Task ServerRepLeaderboard([Remainder] string str = "")
         {
-            IEnumerable<KeyValuePair<ulong, int>> rep = await UserDb.GetAllRep();
+            IEnumerable<KeyValuePair<ulong, int>> rep = await ProfileDb.GetAllRep();
             rep = rep.Where(x => Context.Guild.Users.Select(u => u.Id).Contains(x.Key)).OrderByDescending(x => x.Value);
             var msg = new CustomPaginatedMessage();
 
             msg.Title = ":star: Rep Leaderboards";
-            var fields = new List<FieldPages>();
-            fields.Add(new FieldPages
+            var fields = new List<FieldPages>
             {
-                Title = "Users Here",
-                Pages = CustomPaginatedMessage.PagesArray(rep, 10, (x) => $"**{BasicUtil.IdToMention(x.Key)}** - {x.Value}\n")
-            });
+                new FieldPages
+                {
+                    Title = "Users Here",
+                    Pages = CustomPaginatedMessage.PagesArray(rep, 10, (x) => $"**{BasicUtil.IdToMention(x.Key)}** - {x.Value}\n")
+                }
+            };
             msg.Fields = fields;
 
             await PagedReplyAsync(msg);
@@ -523,7 +526,7 @@ namespace Namiko
         [Command("RepLeaderboard"), Alias("rlb"), Summary("Highest rep users.\n**Usage**: `!tw`")]
         public async Task RepLeaderboard([Remainder] string str = "")
         {
-            IEnumerable<KeyValuePair<ulong, int>> repRaw = await UserDb.GetAllRep();
+            IEnumerable<KeyValuePair<ulong, int>> repRaw = await ProfileDb.GetAllRep();
             List<KeyValuePair<string, int>> rep = new List<KeyValuePair<string, int>>();
             int i = 0;
             foreach (var x in repRaw)
@@ -538,12 +541,14 @@ namespace Namiko
             var msg = new CustomPaginatedMessage();
 
             msg.Title = ":star: Rep Leaderboards";
-            var fields = new List<FieldPages>();
-            fields.Add(new FieldPages
+            var fields = new List<FieldPages>
             {
-                Title = "All Users",
-                Pages = CustomPaginatedMessage.PagesArray(rep, 10, (x) => $"`#{++i}` {x.Key} - {x.Value}\n", false)
-            });
+                new FieldPages
+                {
+                    Title = "All Users",
+                    Pages = CustomPaginatedMessage.PagesArray(rep, 10, (x) => $"`#{++i}` {x.Key} - {x.Value}\n", false)
+                }
+            };
             msg.Fields = fields;
 
             await PagedReplyAsync(msg);
@@ -557,12 +562,14 @@ namespace Namiko
             var msg = new CustomPaginatedMessage();
 
             msg.Title = ":star: Vote Leaderboards";
-            var fields = new List<FieldPages>();
-            fields.Add(new FieldPages
+            var fields = new List<FieldPages>
             {
-                Title = "Users Here",
-                Pages = CustomPaginatedMessage.PagesArray(votes, 10, (x) => $"**{BasicUtil.IdToMention(x.Key)}** - {x.Value}\n")
-            });
+                new FieldPages
+                {
+                    Title = "Users Here",
+                    Pages = CustomPaginatedMessage.PagesArray(votes, 10, (x) => $"**{BasicUtil.IdToMention(x.Key)}** - {x.Value}\n")
+                }
+            };
             msg.Fields = fields;
 
             await PagedReplyAsync(msg);
@@ -645,16 +652,14 @@ namespace Namiko
             await Context.Channel.SendMessageAsync(text);
             if (log)
             {
-                using (var ch = new DiscordWebhookClient(Config.PremiumWebhook))
-                {
-                    await ch.SendMessageAsync(embeds: new List<Embed>
+                using var ch = new DiscordWebhookClient(Config.PremiumWebhook);
+                await ch.SendMessageAsync(embeds: new List<Embed>
                     {
                         new EmbedBuilderPrepared(Context.User)
                             .WithDescription($"{Context.User.Mention} `{Context.User.Id}`\n{text}")
                             .WithFooter(System.DateTime.Now.ToLongDateString())
                             .Build()
                     });
-                }
             }
         }
     }

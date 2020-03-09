@@ -14,10 +14,8 @@ namespace Namiko
             await Task.Run(() =>
             {
                 var json = JsonConvert.SerializeObject(item, Formatting.Indented);
-                using (var Stream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write))
-                {
-                    Stream.Write(Encoding.ASCII.GetBytes(json));
-                }
+                using var Stream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write);
+                Stream.Write(Encoding.ASCII.GetBytes(json));
             });
 
             return true;

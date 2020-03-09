@@ -1,10 +1,8 @@
 ﻿using Discord;
-
-using System;
+using Model;
 using System.Collections.Generic;
-using System.Text;
-using static Namiko.Images;
 using System.Linq;
+using static Namiko.Images;
 
 namespace Namiko
 {

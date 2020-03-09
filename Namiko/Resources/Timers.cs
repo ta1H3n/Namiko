@@ -1,22 +1,19 @@
-﻿using Namiko.Data;
-
-using System;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Timers;
-using System.Reflection;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
-
-using Discord;
-using Discord.Commands;
+﻿using Discord;
+using Discord.Webhook;
 using Discord.WebSocket;
 using DiscordBotsList.Api.Objects;
+using Microsoft.EntityFrameworkCore;
+using Model;
+using Namiko.Data;
 using Reddit.Controllers;
-using Discord.Webhook;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
+using System.Timers;
 
 namespace Namiko
 {
@@ -113,10 +110,8 @@ namespace Namiko
                                 $"If you think this is a mistake contact taiHen#2839 [Here](https://discord.gg/W6Ru5sM)")
                             .Build());
                     } catch { }
-                    using (var webhook = new DiscordWebhookClient(Config.PremiumWebhook))
-                    {
-                        await webhook.SendMessageAsync($"{premium.UserId} - {premium.Type.ToString()} subscription has expired.");
-                    }
+                    using var webhook = new DiscordWebhookClient(Config.PremiumWebhook);
+                    await webhook.SendMessageAsync($"{premium.UserId} - {premium.Type.ToString()} subscription has expired.");
                 }
 
                 else if (!user.Roles.Any(x => x.Id == (ulong)premium.Type))
@@ -132,20 +127,16 @@ namespace Namiko
                             .Build());
                     }
                     catch { }
-                    using (var webhook = new DiscordWebhookClient(Config.PremiumWebhook))
-                    {
-                        await webhook.SendMessageAsync($"{premium.UserId} - {premium.Type.ToString()} subscription has expired.");
-                    }
+                    using var webhook = new DiscordWebhookClient(Config.PremiumWebhook);
+                    await webhook.SendMessageAsync($"{premium.UserId} - {premium.Type.ToString()} subscription has expired.");
                 }
 
                 else
                 {
                     premium.ClaimDate = now;
                     await PremiumDb.UpdatePremium(premium);
-                    using (var webhook = new DiscordWebhookClient(Config.PremiumWebhook))
-                    {
-                        await webhook.SendMessageAsync($"{user.Mention} ({premium.UserId}) - {premium.Type.ToString()} subscription extended.");
-                    }
+                    using var webhook = new DiscordWebhookClient(Config.PremiumWebhook);
+                    await webhook.SendMessageAsync($"{user.Mention} ({premium.UserId}) - {premium.Type.ToString()} subscription extended.");
                 }
             }
         }
@@ -275,40 +266,36 @@ namespace Namiko
             List<ServerStat> servers = null;
             List<CommandStat> commands = null;
 
-            using (SqliteStatsDbContext db = new SqliteStatsDbContext())
+            using SqliteStatsDbContext db = new SqliteStatsDbContext();
+            var sample = db.ServerStats.OrderByDescending(x => x.Id).FirstOrDefault();
+            if (sample == null || sample.Date.Date < date.Date)
             {
-                var sample = db.ServerStats.OrderByDescending(x => x.Id).FirstOrDefault();
-                if (sample == null || sample.Date.Date < date.Date)
-                {
-                    servers = Stats.ParseServerStats();
-                    commands = Stats.ParseCommandStats();
+                servers = Stats.ParseServerStats();
+                commands = Stats.ParseCommandStats();
 
-                    db.ServerStats.AddRange(servers);
-                    db.CommandStats.AddRange(commands);
+                db.ServerStats.AddRange(servers);
+                db.CommandStats.AddRange(commands);
 
-                    await db.SaveChangesAsync();
+                await db.SaveChangesAsync();
 
-                    List<UsageStat> usage = db.UsageStats.Where(x => x.Date > date.AddDays(-1) && x.Date < date).ToList();
-                    await UsageReport(servers, commands, usage);
-                    Stats.CommandCalls.Clear();
-                    Stats.ServerCommandCalls.Clear();
-                }
+                List<UsageStat> usage = db.UsageStats.Where(x => x.Date > date.AddDays(-1) && x.Date < date).ToList();
+                await UsageReport(servers, commands, usage);
+                Stats.CommandCalls.Clear();
+                Stats.ServerCommandCalls.Clear();
             }
         }
         public static async void Timer_HourlyStats(object sender, ElapsedEventArgs e)
         {
             var date = System.DateTime.Now;
 
-            using (SqliteStatsDbContext db = new SqliteStatsDbContext())
+            using SqliteStatsDbContext db = new SqliteStatsDbContext();
+            var sample = db.UsageStats.OrderByDescending(x => x.Date).FirstOrDefault();
+            if (sample == null || sample.Date.AddHours(2) < date)
             {
-                var sample = db.UsageStats.OrderByDescending(x => x.Date).FirstOrDefault();
-                if (sample == null || sample.Date.AddHours(2) < date)
-                {
-                    db.UsageStats.Add(new UsageStat { Date = date.AddHours(-1).AddMinutes(-date.Minute).AddSeconds(-date.Second), Count = Stats.TotalCalls });
+                db.UsageStats.Add(new UsageStat { Date = date.AddHours(-1).AddMinutes(-date.Minute).AddSeconds(-date.Second), Count = Stats.TotalCalls });
 
-                    await db.SaveChangesAsync();
-                    Stats.TotalCalls = 0;
-                }
+                await db.SaveChangesAsync();
+                Stats.TotalCalls = 0;
             }
         }
 
@@ -320,10 +307,9 @@ namespace Namiko
             string small = SmallReport(servers, commands, usage);
             string big = BigReport(servers, commands, usage).Replace("*", "").Replace("`", "");
 
-            using (var ch = new DiscordWebhookClient(Config.UsageReportWebhook))
-            using (var stream = GenerateStreamFromString(big)) {
-                await ch.SendFileAsync(stream, System.DateTime.Now.AddDays(-1).Date.ToString("yyyy-MM-dd") + "_Namiko.txt", small);
-            }
+            using var ch = new DiscordWebhookClient(Config.UsageReportWebhook);
+            using var stream = GenerateStreamFromString(big);
+            await ch.SendFileAsync(stream, System.DateTime.Now.AddDays(-1).Date.ToString("yyyy-MM-dd") + "_Namiko.txt", small);
         }
         private static string SmallReport(List<ServerStat> servers, List<CommandStat> commands, List<UsageStat> usage)
         {
@@ -419,8 +405,7 @@ namespace Namiko
         private static bool ReminderLock = false;
         public static void Timer_UpdateDBLGuildCount(object sender, ElapsedEventArgs e)
         {
-            int amount = 0;
-            amount = Program.GetClient().Guilds.Count;
+            int amount = Program.GetClient().Guilds.Count;
             WebUtil.UpdateGuildCount(amount);
         }
         public static async void Timer_Voters2(object sender, ElapsedEventArgs e)
@@ -461,7 +446,7 @@ namespace Namiko
         }
         public static List<T> NewEntries<T>(List<T> oldList, List<T> newList, Func<T, T, bool> equal = null)
         {
-            equal = equal ?? delegate (T x, T y) { return x.Equals(y); };
+            equal ??= delegate (T x, T y) { return x.Equals(y); };
             List<T> list = new List<T>();
 
             bool done = false;
@@ -560,7 +545,7 @@ namespace Namiko
             try
             {
                 RedditLock = true;
-                var ids = SpecialChannelDb.GetChannelsByType(ChannelType.Reddit);
+                var ids = SpecialChannelDb.GetChannelsByType(Model.ChannelType.Reddit);
                 var channels = await GetChannels(ids);
                 var grouped = channels.GroupBy(x => x.Subreddit);
 

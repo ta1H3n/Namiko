@@ -1,10 +1,10 @@
-﻿using System;
-using Discord;
+﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using System.Threading.Tasks;
-
+using Model;
+using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Namiko
 {
@@ -46,7 +46,7 @@ namespace Namiko
         {
             try
             {
-                await ToastieDb.AddToasties(Context.User.Id, -game.Toasties, Context.Guild.Id);
+                await BalanceDb.AddToasties(Context.User.Id, -game.Toasties, Context.Guild.Id);
                 game.Toasties *= 2;
                 game.Hit();
                 await Stand(Context, game);
@@ -60,14 +60,14 @@ namespace Namiko
         {
             var user = Context.User;
 
-            await ToastieDb.AddToasties(user.Id, game.Toasties / 2, Context.Guild.Id);
-            await ToastieDb.AddToasties(Context.Client.CurrentUser.Id, game.Toasties / 2, Context.Guild.Id);
+            await BalanceDb.AddToasties(user.Id, game.Toasties / 2, Context.Guild.Id);
+            await BalanceDb.AddToasties(Context.Client.CurrentUser.Id, game.Toasties / 2, Context.Guild.Id);
 
             EmbedBuilder eb = new EmbedBuilder();
 
             eb.WithAuthor(user.Username + " | You Lose", null, user.GetAvatarUrl());
             eb.WithDescription("You forfeit. You get half your toasties back. Lost `" + game.Toasties / 2 + "`" + ToastieUtil.RandomEmote() + "\n" +
-            "New balance `" + ToastieDb.GetToasties(user.Id, Context.Guild.Id) + "`" + ToastieUtil.RandomEmote());
+            "New balance `" + BalanceDb.GetToasties(user.Id, Context.Guild.Id) + "`" + ToastieUtil.RandomEmote());
             eb.AddField("Your hand (" + game.SumHand(game.Hand) + ")", HandToString(game.Hand, false), true);
             eb.AddField("Namiko's hand (" + game.SumHand(game.Dealer) + ")", HandToString(game.Dealer, false), true);
             eb.WithColor(Color.DarkBlue);
@@ -99,38 +99,38 @@ namespace Namiko
 
             if (game.SumHand(game.Hand) > 21)
             {
-                await ToastieDb.AddToasties(Context.Client.CurrentUser.Id, game.Toasties, Context.Guild.Id);
+                await BalanceDb.AddToasties(Context.Client.CurrentUser.Id, game.Toasties, Context.Guild.Id);
                 eb.WithAuthor(user.Username + " | You Lose", user.GetAvatarUrl());
                 eb.WithDescription("Your hand is a bust. You lose `" + game.Toasties + "` " + ToastieUtil.RandomEmote() + "\n" +
-                "New balance `" + ToastieDb.GetToasties(user.Id, Context.Guild.Id) + "` " + ToastieUtil.RandomEmote());
+                "New balance `" + BalanceDb.GetToasties(user.Id, Context.Guild.Id) + "` " + ToastieUtil.RandomEmote());
                 eb.WithColor(Color.DarkRed);
             }
 
             else if (game.SumHand(game.Hand) > game.SumHand(game.Dealer) || game.SumHand(game.Dealer) > 21)
             {
-                await ToastieDb.AddToasties(user.Id, game.Toasties * 2, Context.Guild.Id);
-                await ToastieDb.AddToasties(Context.Client.CurrentUser.Id, -game.Toasties, Context.Guild.Id);
+                await BalanceDb.AddToasties(user.Id, game.Toasties * 2, Context.Guild.Id);
+                await BalanceDb.AddToasties(Context.Client.CurrentUser.Id, -game.Toasties, Context.Guild.Id);
                 eb.WithAuthor(user.Username + " | You Win", user.GetAvatarUrl());
                 eb.WithDescription("Your score is higher than Namiko's. You win `" + game.Toasties + "` " + ToastieUtil.RandomEmote() + "\n" +
-                "New balance `" + ToastieDb.GetToasties(user.Id, Context.Guild.Id) + "` " + ToastieUtil.RandomEmote());
+                "New balance `" + BalanceDb.GetToasties(user.Id, Context.Guild.Id) + "` " + ToastieUtil.RandomEmote());
                 eb.WithColor(Color.Gold);
             }
 
             else if (game.SumHand(game.Hand) == game.SumHand(game.Dealer))
             {
-                await ToastieDb.AddToasties(user.Id, game.Toasties, Context.Guild.Id);
+                await BalanceDb.AddToasties(user.Id, game.Toasties, Context.Guild.Id);
                 eb.WithAuthor(user.Username + " | Tie", user.GetAvatarUrl());
                 eb.WithDescription("Your score is tied with Namiko's. You get your " + ToastieUtil.RandomEmote() + " back!\n" +
-                "Your balance `" + ToastieDb.GetToasties(user.Id, Context.Guild.Id) + "` " + ToastieUtil.RandomEmote());
+                "Your balance `" + BalanceDb.GetToasties(user.Id, Context.Guild.Id) + "` " + ToastieUtil.RandomEmote());
                 eb.WithColor(Color.DarkGreen);
             }
 
             else
             {
-                await ToastieDb.AddToasties(Context.Client.CurrentUser.Id, game.Toasties, Context.Guild.Id);
+                await BalanceDb.AddToasties(Context.Client.CurrentUser.Id, game.Toasties, Context.Guild.Id);
                 eb.WithAuthor(user.Username + " | You Lose", user.GetAvatarUrl());
                 eb.WithDescription("Namiko's score is higher. You lose `" + game.Toasties + "` " + ToastieUtil.RandomEmote() + "\n" +
-                "New balance `" + ToastieDb.GetToasties(user.Id, Context.Guild.Id) + "` " + ToastieUtil.RandomEmote());
+                "New balance `" + BalanceDb.GetToasties(user.Id, Context.Guild.Id) + "` " + ToastieUtil.RandomEmote());
                 eb.WithColor(Color.DarkRed);
             }
 
@@ -182,38 +182,38 @@ namespace Namiko
 
                 if (game.SumHand(game.Hand) > 21)
                 {
-                    await ToastieDb.AddToasties(bot, game.Toasties, game.Channel.Guild.Id);
+                    await BalanceDb.AddToasties(bot, game.Toasties, game.Channel.Guild.Id);
                     eb.WithAuthor(user.Username + " | Timeout", user.GetAvatarUrl());
                     eb.WithDescription("Your hand is a bust. You lose `" + game.Toasties + "` " + ToastieUtil.RandomEmote() + "\n" +
-                    "New balance `" + ToastieDb.GetToasties(user.Id, game.Channel.Guild.Id) + "` " + ToastieUtil.RandomEmote());
+                    "New balance `" + BalanceDb.GetToasties(user.Id, game.Channel.Guild.Id) + "` " + ToastieUtil.RandomEmote());
                     eb.WithColor(Color.DarkRed);
                 }
 
                 else if (game.SumHand(game.Hand) > game.SumHand(game.Dealer) || game.SumHand(game.Dealer) > 21)
                 {
-                    await ToastieDb.AddToasties(user.Id, game.Toasties * 2, game.Channel.Guild.Id);
-                    await ToastieDb.AddToasties(bot, -game.Toasties, game.Channel.Guild.Id);
+                    await BalanceDb.AddToasties(user.Id, game.Toasties * 2, game.Channel.Guild.Id);
+                    await BalanceDb.AddToasties(bot, -game.Toasties, game.Channel.Guild.Id);
                     eb.WithAuthor(user.Username + " | Timeout", user.GetAvatarUrl());
                     eb.WithDescription("Your score is higher than Namiko's. You win `" + game.Toasties + "` " + ToastieUtil.RandomEmote() + "\n" +
-                    "New balance `" + ToastieDb.GetToasties(user.Id, game.Channel.Guild.Id) + "` " + ToastieUtil.RandomEmote());
+                    "New balance `" + BalanceDb.GetToasties(user.Id, game.Channel.Guild.Id) + "` " + ToastieUtil.RandomEmote());
                     eb.WithColor(Color.Gold);
                 }
 
                 else if (game.SumHand(game.Hand) == game.SumHand(game.Dealer))
                 {
-                    await ToastieDb.AddToasties(user.Id, game.Toasties, game.Channel.Guild.Id);
+                    await BalanceDb.AddToasties(user.Id, game.Toasties, game.Channel.Guild.Id);
                     eb.WithAuthor(user.Username + " | Timeout", user.GetAvatarUrl());
                     eb.WithDescription("Your score is tied with Namiko's. You get your " + ToastieUtil.RandomEmote() + " back!\n" +
-                    "Your balance `" + ToastieDb.GetToasties(user.Id, game.Channel.Guild.Id) + "` " + ToastieUtil.RandomEmote());
+                    "Your balance `" + BalanceDb.GetToasties(user.Id, game.Channel.Guild.Id) + "` " + ToastieUtil.RandomEmote());
                     eb.WithColor(Color.DarkGreen);
                 }
 
                 else
                 {
-                    await ToastieDb.AddToasties(bot, game.Toasties, game.Channel.Guild.Id);
+                    await BalanceDb.AddToasties(bot, game.Toasties, game.Channel.Guild.Id);
                     eb.WithAuthor(user.Username + " | Timeout", user.GetAvatarUrl());
                     eb.WithDescription("Namiko's score is higher. You lose `" + game.Toasties + "` " + ToastieUtil.RandomEmote() + "\n" +
-                    "New balance `" + ToastieDb.GetToasties(user.Id, game.Channel.Guild.Id) + "` " + ToastieUtil.RandomEmote());
+                    "New balance `" + BalanceDb.GetToasties(user.Id, game.Channel.Guild.Id) + "` " + ToastieUtil.RandomEmote());
                     eb.WithColor(Color.DarkRed);
                 }
 

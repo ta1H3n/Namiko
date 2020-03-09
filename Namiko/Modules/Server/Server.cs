@@ -3,6 +3,7 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.Webhook;
 using Discord.WebSocket;
+using Model;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
