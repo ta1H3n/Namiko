@@ -1,14 +1,15 @@
 ﻿using Discord;
+using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
-using Discord.Addons.Interactive;
-using System.Threading.Tasks;
+using Model;
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Victoria;
 using Victoria.Entities;
-using System;
 using Victoria.Helpers;
-using System.Collections.Generic;
 
 namespace Namiko
 {
@@ -120,7 +121,7 @@ namespace Namiko
                 if (player != null && player.IsPlaying)
                     await player.StopAsync();
 
-                var voice = await player.PlayLocal("leave", true);
+                var voice = await player.PlayLocal("leave");
                 await ReplyAsync($"See you next time <:NekoHi:620711213826834443>");
                 if (!voice)
                     await LavaClient.DisconnectAsync(GetVoiceChannel());
@@ -901,7 +902,7 @@ namespace Namiko
                 player.Queue.Enqueue(track);
             }
 
-            if ((!player.Queue.TryDequeue(out var nextTrack) || !(nextTrack is LavaTrack)))
+            if (!player.Queue.TryDequeue(out var nextTrack) || !(nextTrack is LavaTrack))
             {
                 if (!track.Uri.ToString().StartsWith("file:"))
                 {

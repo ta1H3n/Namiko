@@ -1,17 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using System.Linq;
-
-using Discord;
-using Discord.Commands;
-
-
-
-using Discord.WebSocket;
-using Discord.Rest;
+﻿using Discord;
 using Discord.Addons.Interactive;
+using Discord.Commands;
+using Discord.WebSocket;
+using Model;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 

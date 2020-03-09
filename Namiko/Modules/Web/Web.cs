@@ -1,18 +1,12 @@
-﻿using System.Threading.Tasks;
-using System.Linq;
-
-using Discord.Commands;
-using Discord;
-
-
-
-using System.Collections.Generic;
-using System;
-
-using Discord.WebSocket;
-
+﻿using Discord;
 using Discord.Addons.Interactive;
+using Discord.Commands;
+using Discord.WebSocket;
+using Model;
 using Reddit.Controllers;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Namiko
 {
@@ -23,7 +17,7 @@ namespace Namiko
         {
             await Context.Channel.TriggerTypingAsync();
 
-            url = url ?? Context.Message.Attachments.FirstOrDefault()?.Url;
+            url ??= Context.Message.Attachments.FirstOrDefault()?.Url;
 
             if (url == null)
             {
@@ -47,7 +41,7 @@ namespace Namiko
         {
             await Context.Channel.TriggerTypingAsync();
 
-            url = url ?? Context.Message.Attachments.FirstOrDefault()?.Url;
+            url ??= Context.Message.Attachments.FirstOrDefault()?.Url;
 
             if (url == null)
             {
@@ -202,7 +196,7 @@ namespace Namiko
         [Command("Subreddit"), Alias("sub"), Summary("Set a subreddit for Namiko to post hot posts from.\n**Usage**: `!sub [subreddit_name] [min_upvotes]`"), CustomUserPermission(GuildPermission.ManageChannels), RequireContext(ContextType.Guild)]
         public async Task Subreddit(string name, int upvotes)
         {
-            var subs = SpecialChannelDb.GetChannelsByGuild(Context.Guild.Id, ChannelType.Reddit);
+            var subs = SpecialChannelDb.GetChannelsByGuild(Context.Guild.Id, Model.ChannelType.Reddit);
             int limit = 1;
             if (PremiumDb.IsPremium(Context.Guild.Id, PremiumType.Guild))
                 limit = 5;
@@ -252,7 +246,7 @@ namespace Namiko
                 await SpecialChannelDb.Delete(old);
             }
 
-            await SpecialChannelDb.AddChannel(Context.Channel.Id, ChannelType.Reddit, Context.Guild.Id, sub.Name + "," + upvotes);
+            await SpecialChannelDb.AddChannel(Context.Channel.Id, Model.ChannelType.Reddit, Context.Guild.Id, sub.Name + "," + upvotes);
             await Context.Channel.SendMessageAsync(embed: WebUtil.SubredditSubscribedEmbed(sub, upvotes).Build());
         }
 
@@ -271,7 +265,7 @@ namespace Namiko
                 return;
             }
 
-            var subs = SpecialChannelDb.GetChannelsByGuild(Context.Guild.Id, ChannelType.Reddit);
+            var subs = SpecialChannelDb.GetChannelsByGuild(Context.Guild.Id, Model.ChannelType.Reddit);
             var olds = subs.Where(x => x.Args.Split(",")[0].Equals(sub.Name));
             foreach (var old in olds)
             {

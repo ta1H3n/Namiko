@@ -32,7 +32,7 @@ namespace Namiko
             var strList = new List<String>();
             int count = 0;
 
-            toString = toString ?? delegate(T x) { return $"{x.ToString()}\n"; };
+            toString ??= delegate(T x) { return $"{x.ToString()}\n"; };
 
             foreach (var x in lists)
             {

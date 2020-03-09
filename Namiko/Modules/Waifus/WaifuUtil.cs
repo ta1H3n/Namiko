@@ -1,16 +1,13 @@
 ﻿using Discord;
-using System;
-using System.Text;
-using System.Linq;
-using Discord.Commands;
-using Discord.WebSocket;
-
-
-
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Discord.Addons.Interactive;
+using Discord.Commands;
 using Discord.Rest;
+using Discord.WebSocket;
+using Model;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 
 namespace Namiko
@@ -139,7 +136,7 @@ namespace Namiko
                     }
                     else
                     {
-                        r = r - tier1.Count;
+                        r -= tier1.Count;
                         item = new ShopWaifu { Waifu = tier0[r], Limited = -1, BoughtBy = 0};
                         tier0.RemoveAll(x => x.Name.Equals(tier0[r].Name));
                     }
@@ -482,32 +479,25 @@ namespace Namiko
                         0;
 
             if (discount >= 0)
-                price = price - (price / 100 * discount);
+                price -= price / 100 * discount;
 
             return price;
         }
-        public static int GetSalePrice(int tier) {
-
-            //creating nessacary variables 
-            Random rnd = new Random();
-            int num = rnd.Next(1, 31);
+        public static int GetSalePrice(int tier) 
+        {
             int worth = (int)(GetPrice(tier) *  ((tier == 3)? 0.70 :   //70%
                                                 (tier == 2)? 0.60 :    //60%
 
                                                 //default, also 55%
                                                 0.55));
-
-            //random 3 in 17 chance to have increased sale
-            //if (num < 10) return worth + worth / (num * 4);
             return worth;
         }
         public static int FavoritesToTier(int fav)
         {
-            int tier = 404;
-            tier = fav > 7000 ? 1 :
-                fav > 800 ? 2 :
-                fav < 100 ? 0 :
-                3;
+            int tier = fav > 7000 ? 1 :
+    fav > 800 ? 2 :
+    fav < 100 ? 0 :
+    3;
 
             return tier;
         }
@@ -547,7 +537,7 @@ namespace Namiko
 
             if (guildDetails)
             {
-                string footer = ($"Tier: {waifu.Tier}");
+                string footer = $"Tier: {waifu.Tier}";
                 footer += WaifuOwnerString(waifu, context);
                 eb.WithFooter(footer);
 
@@ -745,7 +735,7 @@ namespace Namiko
                 {
                     if (x.Source.Length > 45)
                         x.Source = x.Source.Substring(0, 33) + "...";
-                    x.Source = x.Source ?? "";
+                    x.Source ??= "";
                     wstr += String.Format("**{0}** - *{1}*\n", x.Name, x.Source);
                 }
                 eb.AddField("Wishlist", wstr);
@@ -759,7 +749,7 @@ namespace Namiko
                 eb.WithDescription(desc);
             }
 
-            eb.WithColor(UserDb.GetHex(out string colour, user.Id) ? (Discord.Color)UserUtil.HexToColor(colour) : BasicUtil.RandomColor());
+            eb.WithColor(ProfileDb.GetHex(out string colour, user.Id) ? (Discord.Color)UserUtil.HexToColor(colour) : BasicUtil.RandomColor());
             return eb;
         }
 

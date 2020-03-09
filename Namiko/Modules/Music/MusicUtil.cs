@@ -1,22 +1,21 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using Discord;
+using Discord.Addons.Interactive;
+using Discord.WebSocket;
+using Model;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
-using Discord;
+using System.Reflection;
+using System.Threading.Tasks;
 using Victoria;
 using Victoria.Entities;
-using Discord.Addons.Interactive;
-using Discord.Commands;
-using Discord.WebSocket;
-using System.IO;
-using System.Reflection;
 
 namespace Namiko
 {
     public static class MusicUtil
     {
-        private static Random rnd = new Random();
+        private static readonly Random rnd = new Random();
 
         public static async Task<LavaTrack> SelectTrack(List<LavaTrack> tracks, Music interactive)
         {
@@ -30,7 +29,7 @@ namespace Namiko
                 new TimeSpan(0, 0, 23));
 
             _ = msg.DeleteAsync();
-            int i = 0;
+            int i;
             try
             {
                 i = int.Parse(response.Content);
@@ -46,7 +45,7 @@ namespace Namiko
         }
         public static async Task<List<LavaTrack>> SearchAndSelect(this LavaRestClient client, string query, Music interactive, int limit = 500)
         {
-            List<LavaTrack> tracks = null;
+            List<LavaTrack> tracks;
             if (Uri.IsWellFormedUriString(query, UriKind.Absolute))
             {
                 tracks = (await client.SearchTracksAsync(query, true)).Tracks.Take(limit).ToList();
@@ -61,14 +60,16 @@ namespace Namiko
             var player = interactive.GetPlayer();
             await player.PlayLocal("select");
             var track = await SelectTrack(tracks, interactive);
-            tracks = new List<LavaTrack>();
-            tracks.Add(track);
+            tracks = new List<LavaTrack>
+            {
+                track
+            };
             return tracks;
         }
 
         // LOCAL FILES
 
-        public static async Task<bool> PlayLocal(this LavaPlayer player, string folder, bool leave = false)
+        public static async Task<bool> PlayLocal(this LavaPlayer player, string folder)
         {
             if (Program.Debug == true)
                 return false;
@@ -146,7 +147,7 @@ namespace Namiko
             if (player.Repeat)
                 emote = ":repeat_one: ▷";
 
-            string desc = "";
+            string desc;
             if (player.CurrentTrack.IsStream)
                 desc = $"{emote} `Live Stream`";
             else

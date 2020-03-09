@@ -1,14 +1,16 @@
 ﻿using Discord;
-using System;
-using System.Linq;
-using Discord.WebSocket;
-using System.Globalization;
-using System.Collections.Generic;
 using Discord.Addons.Interactive;
 using Discord.Commands;
+using Discord.WebSocket;
+using Model;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 
-namespace Namiko {
+namespace Namiko
+{
     class UserUtil {
         
         //Method: basic named colours i.e "white"
@@ -36,10 +38,10 @@ namespace Namiko {
                 case "white":   color = new Color(255, 255, 255); break;
                 case "pink":    color = new Color(255, 165, 229); break;
                 case "black":   color = new Color(0, 0, 0); break;
-                case "red":     color = (shade.Equals("dark")) ? Color.DarkRed :new Color(255, 50, 50); break;
-                case "blue":    color = (shade.Equals("dark")) ? Color.DarkBlue : new Color(90, 161, 255); break;
-                case "purple":  color = (shade.Equals("dark")) ? color = Color.DarkPurple : new Color(123, 104, 238); break;
-                case "green":   color = (shade.Equals("dark")) ? color = Color.DarkGreen : new Color(112, 255, 65); break;
+                case "red":     color = shade.Equals("dark") ? Color.DarkRed :new Color(255, 50, 50); break;
+                case "blue":    color = shade.Equals("dark") ? Color.DarkBlue : new Color(90, 161, 255); break;
+                case "purple":  color = shade.Equals("dark") ? Color.DarkPurple : new Color(123, 104, 238); break;
+                case "green":   color = shade.Equals("dark") ? Color.DarkGreen : new Color(112, 255, 65); break;
 
                 //default stooffz
                 default: return false;
@@ -107,9 +109,9 @@ namespace Namiko {
             long timeNow = DateTimeOffset.Now.ToUnixTimeMilliseconds();
 
             string text = "";
-            text += $"Amount: {ToastieDb.GetToasties(user.Id, user.Guild.Id).ToString("n0")}\n" +
+            text += $"Amount: {BalanceDb.GetToasties(user.Id, user.Guild.Id).ToString("n0")}\n" +
                 $"Daily: {(daily == null ? "0" : ((daily.Date + 172800000) < timeNow ? "0" : daily.Streak.ToString()))}\n" +
-                $"Boxes Opened: {UserDb.GetLootboxOpenedAmount(user.Id)}\n";
+                $"Boxes Opened: {ProfileDb.GetLootboxOpenedAmount(user.Id)}\n";
             eb.AddField("Toasties <:toastie3:454441133876183060>", text, true);
 
             text = $"Amount: {waifucount}\n" +
@@ -132,7 +134,7 @@ namespace Namiko {
                 eb.AddField("Featured Waifu <:MiaHug:536580304018735135>", $"**{waifu.Name}** - *{waifu.Source}*");
             }
 
-            var rep = UserDb.GetRepAmount(user.Id);
+            var rep = ProfileDb.GetRepAmount(user.Id);
             string footer = $"Votes: {await VoteDb.VoteCount(user.Id)} • ";
             footer += $"Rep: {rep} • ";
             footer += $"Status: '{user.Status.ToString()}'";
@@ -141,16 +143,16 @@ namespace Namiko {
             eb.WithFooter(footer);
 
             //quote 
-            string quote = UserDb.GetQuote(user.Id);
+            string quote = ProfileDb.GetQuote(user.Id);
             if (!String.IsNullOrEmpty(quote) & !WebUtil.IsValidUrl(quote))
                 eb.WithDescription(quote);
 
             //image
-            string image = UserDb.GetImage(user.Id); 
+            string image = ProfileDb.GetImage(user.Id); 
             if (WebUtil.IsValidUrl(image))
                 eb.WithThumbnailUrl(image);
 
-            eb.Color = UserDb.GetHex(out string colour, user.Id)? (Discord.Color) HexToColor(colour) : BasicUtil.RandomColor();
+            eb.Color = ProfileDb.GetHex(out string colour, user.Id)? (Discord.Color) HexToColor(colour) : BasicUtil.RandomColor();
             return eb;
         }
         public static EmbedBuilder ProposalsEmbed(IUser user, SocketGuild guild)
@@ -159,7 +161,7 @@ namespace Namiko {
             //embed basics
             EmbedBuilder embed = new EmbedBuilder();
             embed.WithAuthor(user);
-            embed.WithColor(UserDb.GetHex(out string colour, user.Id) ? (Discord.Color)UserUtil.HexToColor(colour) : BasicUtil.RandomColor());
+            embed.WithColor(ProfileDb.GetHex(out string colour, user.Id) ? (Discord.Color)UserUtil.HexToColor(colour) : BasicUtil.RandomColor());
 
             //proposals
             List<Marriage> sent = MarriageDb.GetProposalsSent(user.Id, guild.Id);
@@ -195,7 +197,7 @@ namespace Namiko {
             
             //embed
             EmbedBuilder embed = new EmbedBuilder();
-            embed.WithColor(UserDb.GetHex(out string colour, user.Id) ? (Discord.Color)UserUtil.HexToColor(colour) : BasicUtil.RandomColor());
+            embed.WithColor(ProfileDb.GetHex(out string colour, user.Id) ? (Discord.Color)UserUtil.HexToColor(colour) : BasicUtil.RandomColor());
             if (!String.IsNullOrEmpty(partners))
             {
                 embed.AddField("Married To", partners, true);
@@ -252,20 +254,20 @@ namespace Namiko {
                 eb.WithDescription(desc);
             }
 
-            eb.WithColor(UserDb.GetHex(out string colour, user.Id) ? (Discord.Color)HexToColor(colour) : BasicUtil.RandomColor());
+            eb.WithColor(ProfileDb.GetHex(out string colour, user.Id) ? (Discord.Color)HexToColor(colour) : BasicUtil.RandomColor());
             return eb;
         }
         public static EmbedBuilder QuoteEmbed(IUser User)
         {
 
             //necessary string variables 
-            string quote = UserDb.GetQuote(User.Id);
-            string image = UserDb.GetImage(User.Id);
+            string quote = ProfileDb.GetQuote(User.Id);
+            string image = ProfileDb.GetImage(User.Id);
             EmbedBuilder embed = new EmbedBuilder();
 
             //quote embed
             if ( String.IsNullOrEmpty(quote) && !WebUtil.IsValidUrl(image)) return null;
-            embed.WithColor(UserDb.GetHex(out string colour, User.Id)? (Discord.Color) HexToColor(colour) : BasicUtil.RandomColor());
+            embed.WithColor(ProfileDb.GetHex(out string colour, User.Id)? (Discord.Color) HexToColor(colour) : BasicUtil.RandomColor());
             embed.WithAuthor(User);
             embed.WithDescription(quote);
             embed.WithImageUrl(image);
@@ -282,7 +284,7 @@ namespace Namiko {
 
             //building quote and footer
             foreach (SocketUser user in users) {
-                string quote = UserDb.GetQuote(user.Id);
+                string quote = ProfileDb.GetQuote(user.Id);
                 if( String.IsNullOrEmpty(quote) )
                     continue;
                 
@@ -310,7 +312,7 @@ namespace Namiko {
             EmbedBuilder embed = new EmbedBuilder();
             embed.WithAuthor("Profile Colour");
             embed.WithDescription($"{ user.Username } changed primary colour!");
-            embed.WithColor(UserDb.GetHex(out string colour, user.Id) ? (Discord.Color)HexToColor(colour) : BasicUtil.RandomColor());
+            embed.WithColor(ProfileDb.GetHex(out string colour, user.Id) ? (Discord.Color)HexToColor(colour) : BasicUtil.RandomColor());
             return embed;
         }
 

@@ -112,10 +112,8 @@ namespace Namiko
             var json = JsonConvert.SerializeObject(settings, Formatting.Indented);
 
             string JSONLocation = Locations.ImgurJSON;
-            using (var Stream = new FileStream(JSONLocation, FileMode.OpenOrCreate, FileAccess.Write))
-            {
-                Stream.Write(Encoding.ASCII.GetBytes(json));
-            }
+            using var Stream = new FileStream(JSONLocation, FileMode.OpenOrCreate, FileAccess.Write);
+            Stream.Write(Encoding.ASCII.GetBytes(json));
         }
 
         public static ApiLogin GetApiLogin()

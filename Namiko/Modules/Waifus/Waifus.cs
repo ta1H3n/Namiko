@@ -1,12 +1,12 @@
-﻿using System.Threading.Tasks;
-using System.Linq;
-using System;
-using System.Collections.Generic;
-
-using Discord;
+﻿using Discord;
+using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
-using Discord.Addons.Interactive;
+using Model;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Namiko
 {
@@ -130,7 +130,7 @@ namespace Namiko
 
             try
             {
-                await ToastieDb.AddToasties(Context.User.Id, -price, Context.Guild.Id);
+                await BalanceDb.AddToasties(Context.User.Id, -price, Context.Guild.Id);
             }
             catch (Exception ex)
             {
@@ -140,7 +140,7 @@ namespace Namiko
 
             await UserInventoryDb.AddWaifu(Context.User.Id, waifu, Context.Guild.Id);
             await Context.Channel.SendMessageAsync($"Congratulations! You bought **{waifu.Name}**!", false, WaifuUtil.WaifuEmbedBuilder(waifu).Build());
-            await ToastieDb.AddToasties(Context.Client.CurrentUser.Id, price / 13, Context.Guild.Id);
+            await BalanceDb.AddToasties(Context.Client.CurrentUser.Id, price / 13, Context.Guild.Id);
 
             if (shopWaifu.Limited > 0)
             {
@@ -168,14 +168,14 @@ namespace Namiko
                 var sell = new DialogueBoxOption();
                 sell.Action = async (IUserMessage message) =>
                 {
-                    try { await ToastieDb.AddToasties(Context.User.Id, worth, Context.Guild.Id); }
+                    try { await BalanceDb.AddToasties(Context.User.Id, worth, Context.Guild.Id); }
                     catch (Exception ex) { await Context.Channel.SendMessageAsync(ex.Message); }
 
                     //removing waifu + confirmation
                     await UserInventoryDb.DeleteWaifu(Context.User.Id, waifu, Context.Guild.Id);
                     await message.ModifyAsync(x => {
                         x.Content = $"You sold **{waifu.Name}** for **{worth.ToString("n0")}** toasties.";
-                        x.Embed = ToastieUtil.ToastieEmbed(Context.User, ToastieDb.GetToasties(Context.User.Id, Context.Guild.Id)).Build();
+                        x.Embed = ToastieUtil.ToastieEmbed(Context.User, BalanceDb.GetToasties(Context.User.Id, Context.Guild.Id)).Build();
                     });
                 };
                 sell.After = OnExecute.RemoveReactions;
@@ -210,7 +210,7 @@ namespace Namiko
                 return;
             }
             var waifus = UserInventoryDb.GetWaifus(Context.User.Id, Context.Guild.Id);
-            if (!(waifus.Any(x => x.Name.Equals(waifu.Name))))
+            if (!waifus.Any(x => x.Name.Equals(waifu.Name)))
             {
                 await Context.Channel.SendMessageAsync($"**{waifu.Name}** is just like my love - you don't have it.");
                 return;
@@ -250,12 +250,14 @@ namespace Namiko
             var msg = new CustomPaginatedMessage();
 
             msg.Title = ":two_hearts: Waifu Leaderboards";
-            var fields = new List<FieldPages>();
-            fields.Add(new FieldPages
+            var fields = new List<FieldPages>
             {
-                Title = "Globally Bought",
-                Pages = CustomPaginatedMessage.PagesArray(waifus, 10, (x) => $"**{x.Key}** - {x.Value}\n")
-            });
+                new FieldPages
+                {
+                    Title = "Globally Bought",
+                    Pages = CustomPaginatedMessage.PagesArray(waifus, 10, (x) => $"**{x.Key}** - {x.Value}\n")
+                }
+            };
             msg.Fields = fields;
             msg.ThumbnailUrl = WaifuDb.GetWaifu(waifus.First().Key).ImageUrl;
 
@@ -269,12 +271,14 @@ namespace Namiko
             var msg = new CustomPaginatedMessage();
 
             msg.Title = ":two_hearts: Waifu Leaderboards";
-            var fields = new List<FieldPages>();
-            fields.Add(new FieldPages
+            var fields = new List<FieldPages>
             {
-                Title = "Bought Here",
-                Pages = CustomPaginatedMessage.PagesArray(waifus, 10, (x) => $"**{x.Key}** - {x.Value}\n")
-            });
+                new FieldPages
+                {
+                    Title = "Bought Here",
+                    Pages = CustomPaginatedMessage.PagesArray(waifus, 10, (x) => $"**{x.Key}** - {x.Value}\n")
+                }
+            };
             msg.Fields = fields;
             msg.ThumbnailUrl = WaifuDb.GetWaifu(waifus.First().Key).ImageUrl;
 
@@ -300,12 +304,14 @@ namespace Namiko
             var msg = new CustomPaginatedMessage();
 
             msg.Title = "User Leaderboards";
-            var fields = new List<FieldPages>();
-            fields.Add(new FieldPages
+            var fields = new List<FieldPages>
             {
-                Title = "Waifu Value <:toastie3:454441133876183060>",
-                Pages = CustomPaginatedMessage.PagesArray(ordUsers, 10, (x) => $"{x.Key.Mention} - {x.Value}\n")
-            });
+                new FieldPages
+                {
+                    Title = "Waifu Value <:toastie3:454441133876183060>",
+                    Pages = CustomPaginatedMessage.PagesArray(ordUsers, 10, (x) => $"{x.Key.Mention} - {x.Value}\n")
+                }
+            };
             msg.Fields = fields;
 
             await PagedReplyAsync(msg);
@@ -358,7 +364,7 @@ namespace Namiko
         [Command("WaifuWishlist"), Alias("wwl"), Summary("Shows yours or someone's waifu wishlist.\n**Usage**: `!wwl [user_optional]`")]
         public async Task WaifuWishlist(IUser user = null, [Remainder] string str = "")
         {
-            user = user ?? Context.User;
+            user ??= Context.User;
             var waifus = await WaifuWishlistDb.GetWishlist(user.Id, Context.Guild.Id);
 
             await Context.Channel.SendMessageAsync(null, false, WaifuUtil.WishlistEmbed(waifus, (SocketGuildUser)user).Build());
@@ -504,7 +510,7 @@ namespace Namiko
         {
             await Context.Channel.TriggerTypingAsync();
 
-            url = url ?? Context.Message.Attachments.FirstOrDefault()?.Url;
+            url ??= Context.Message.Attachments.FirstOrDefault()?.Url;
 
             if (url != null)
             {
@@ -626,7 +632,7 @@ namespace Namiko
 
             await Context.Channel.TriggerTypingAsync();
 
-            url = url ?? Context.Message.Attachments.FirstOrDefault()?.Url;
+            url ??= Context.Message.Attachments.FirstOrDefault()?.Url;
 
             if (url == null)
             {
@@ -721,7 +727,7 @@ namespace Namiko
         {
             await Context.Channel.TriggerTypingAsync();
 
-            url = url ?? Context.Message.Attachments.FirstOrDefault()?.Url;
+            url ??= Context.Message.Attachments.FirstOrDefault()?.Url;
 
             if (url != null)
             {

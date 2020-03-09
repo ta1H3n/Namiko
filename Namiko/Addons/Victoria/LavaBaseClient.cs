@@ -70,7 +70,7 @@ namespace Victoria
 
         protected async Task InitializeAsync(BaseSocketClient baseSocketClient, Configuration configuration)
         {
-            configuration = configuration ?? new Configuration();
+            configuration ??= new Configuration();
 
             _baseSocketClient = baseSocketClient;
             var shards = ((DiscordShardedClient)baseSocketClient).Shards.Count;
