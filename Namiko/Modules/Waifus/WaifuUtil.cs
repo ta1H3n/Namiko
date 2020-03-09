@@ -495,9 +495,9 @@ namespace Namiko
         public static int FavoritesToTier(int fav)
         {
             int tier = fav > 7000 ? 1 :
-    fav > 800 ? 2 :
-    fav < 100 ? 0 :
-    3;
+                        fav > 800 ? 2 :
+                        fav < 100 ? 0 :
+                        3;
 
             return tier;
         }
