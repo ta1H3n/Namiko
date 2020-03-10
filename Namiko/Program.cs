@@ -76,6 +76,7 @@ namespace Namiko
             
             //Client.Ready += Client_Ready;
             Client.ShardReady += Client_ShardReady;
+            Client.ShardDisconnected += Client_ShardDisconnected;
             //Client.Log += Client_Log;
             Client.ReactionAdded += Client_ReactionAdded;
             Client.JoinedGuild += Client_JoinedGuild;
@@ -126,7 +127,6 @@ namespace Namiko
             catch { }
             cts.Dispose();
         }
-
 
         // COMMANDS
 
@@ -412,6 +412,7 @@ namespace Namiko
             if (ReadySetup)
             {
                 ReadySetup = false;
+                _ = WebhookClients.NamikoLogChannel.SendMessageAsync($"<:TickYes:577838859107303424> `{DateTime.Now.ToString("HH:mm:ss")}` - `{Client.CurrentUser.Username} Logged in`");
                 WebUtil.SetUpDbl(Client.CurrentUser.Id);
                 _ = Music.Initialize(Client);
                 _ = Client.SetActivityAsync(new Game("Chinese Cartoons. Try @Namiko help", ActivityType.Watching));
@@ -420,7 +421,7 @@ namespace Namiko
             ReadyCount++;
             string name = Client.CurrentUser.Username;
             Console.WriteLine($"{DateTime.Now} - Shard {arg.ShardId} Ready");
-            _ = WebhookClients.NamikoLogChannel.SendMessageAsync($"`{DateTime.Now.ToString("HH:mm:ss")}` - `Shard {arg.ShardId} Ready`");
+            _ = WebhookClients.NamikoLogChannel.SendMessageAsync($"<:TickYes:577838859107303424> `{DateTime.Now.ToString("HH:mm:ss")}` - `Shard {arg.ShardId} Ready`");
             
             int res;
             res = await CheckJoinedGuilds(arg);
@@ -441,6 +442,11 @@ namespace Namiko
                     _ = WebhookClients.NamikoLogChannel.SendMessageAsync($"`{DateTime.Now.ToString("HH:mm:ss")}` <:TickNo:577838859077943306> {name} left {res} Guilds.`");
                 }
             }
+        }
+        private async Task Client_ShardDisconnected(Exception arg1, DiscordSocketClient arg2)
+        {
+            await WebhookClients.NamikoLogChannel.SendMessageAsync(
+                $"<:TickNo:577838859077943306> `{DateTime.Now.ToString("HH:mm:ss")}` - `Shard {arg2.ShardId} Disconnected` - `{arg1.Message}`");
         }
         private async void Ready()
         {
