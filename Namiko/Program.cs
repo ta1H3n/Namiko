@@ -449,6 +449,7 @@ namespace Namiko
                 RedditAPI.Poke();
                 ImgurAPI.Poke();
             }
+            StartTimers();
         }
         private static void SetUp()
         {
@@ -500,7 +501,6 @@ namespace Namiko
             Debug = true;
             Pause = true;
             Locations.SetUpDebug();
-            _ = Timers.SetUp();
             _ = LootboxStats.Reload();
             SetUpPrefixes();
             Blacklist = BlacklistDb.GetAll();
@@ -509,10 +509,16 @@ namespace Namiko
         {
             Console.WriteLine("Entry: " + Assembly.GetEntryAssembly().Location);
             Locations.SetUpRelease();
-            Timers.SetUpRelease();
             _ = LootboxStats.Reload();
             SetUpPrefixes();
             Blacklist = BlacklistDb.GetAll();
+        }
+        private static void StartTimers()
+        {
+            if (Debug)
+                _ = Timers.SetUp();
+            else
+                Timers.SetUpRelease();
         }
         private static async Task<int> CheckJoinedGuilds(DiscordSocketClient shard = null)
         {
