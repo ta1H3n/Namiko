@@ -431,12 +431,7 @@ namespace Namiko
             try
             {
                 VoteLock = true;
-                IList<IDblEntity> voters = null;
-                try
-                {
-                    voters = await WebUtil.GetVotersAsync();
-                }
-                catch { return; }
+                var voters = await WebUtil.GetVotersAsync();
                 var old = await VoteDb.GetVoters(500);
                 var votersParsed = voters.Select(x => x.Id).ToList();
                 votersParsed.Reverse();
