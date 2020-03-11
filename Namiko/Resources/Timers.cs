@@ -17,6 +17,7 @@ using Discord.WebSocket;
 using DiscordBotsList.Api.Objects;
 using Reddit.Controllers;
 using Discord.Webhook;
+using Sentry;
 
 namespace Namiko
 {
@@ -448,7 +449,10 @@ namespace Namiko
                 await VoteDb.AddVoters(add);
                 await SendRewards(add);
             }
-            catch { }
+            catch (Exception ex) 
+            {
+                SentrySdk.CaptureException(ex);
+            }
             finally
             {
                 VoteLock = false;
