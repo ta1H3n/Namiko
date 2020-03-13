@@ -78,14 +78,17 @@ namespace Namiko
         [Command("Album"), Alias("All"), Summary("All reaction images from a single command.\n**Usage**: `!all [image_name]`")]
         public async Task All(string name, [Remainder] string str = "")
         {
-            var album = ImageDb.GetAlbum(name);
-            if(album == null)
-                album = ImageDb.GetAlbum(name + Context.Guild.Id);
+            var album = ImageDb.GetAlbum(name + Context.Guild.Id);
+            var album2 = ImageDb.GetAlbum(name);
 
-            if(album == null)
+            string albums = album == null ? "" : $"<{ImgurAPI.ParseAlbumLink(album.AlbumId)}>";
+            if (album2 != null)
+                albums += $"\n<{ImgurAPI.ParseAlbumLink(album2.AlbumId)}>";
+
+            if (albums == "")
                 await Context.Channel.SendMessageAsync($"Album **{name}** doesn't exist.");
 
-            await Context.Channel.SendMessageAsync($"<{ImgurAPI.ParseAlbumLink(album.AlbumId)}>");
+            await Context.Channel.SendMessageAsync(albums);
         }
 
         [Command("Image"), Alias("i"), Summary("Sends a reaction image by id.\n**Usage**: `!i [id]`")]
