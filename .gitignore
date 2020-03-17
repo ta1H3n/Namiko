@@ -279,3 +279,5 @@ __pycache__/
 /Namiko/Data/stats.sqlite
 /Namiko/somefolder
 /Namiko/Properties/PublishProfiles/FolderProfile.pubxml
+/Namiko/Data/stats.sqlite-journal
+*LinuxProfile.pubxml

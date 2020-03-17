@@ -196,39 +196,34 @@ namespace Namiko
                 return;
             }
 
-            var res = await Commands.ExecuteAsync(Context, ArgPos, Services);
+            _ = Commands.ExecuteAsync(Context, ArgPos, Services);
+        }
+        private async Task Commands_CommandExecuted(Optional<CommandInfo> cmd, ICommandContext context, IResult res)
+        {
+            string cmdName = cmd.IsSpecified ? cmd.Value.Name : null;
 
-            string text = null;
             if (!res.IsSuccess)
             {
-                if (await new Images().SendRandomImage(Context))
-                    text = "ReactionImage";
+                // Try sending a reaction image if there is no such command
+                if (await new Images().SendRandomImage(context))
+                {
+                    cmdName = "ReactionImage";
+                }
 
-                else if (!(res.Error == CommandError.UnknownCommand))
+                // If the command is found but failed then send help message for said command
+                else
+                if (!(res.Error == CommandError.UnknownCommand))
                 {
                     string reason = res.ErrorReason + "\n";
                     if (res.Error != CommandError.UnmetPrecondition)
-                        reason += CommandHelpString(MessageParam.Content.Split(null)[0].Replace(prefix, ""), prefix);
-                    await Context.Channel.SendMessageAsync(reason);
-                    return;
+                        reason += CommandHelpString(context.Message.Content.Split(null)[0].Replace(GetPrefix(context.Guild), ""), GetPrefix(context.Guild));
+                    await context.Channel.SendMessageAsync(reason);
                 }
             }
 
-            if (text == null)
-                return;
-
-            Stats.IncrementServer(Context.Guild.Id);
-            Stats.IncrementCommand(text);
-            Stats.IncrementCalls();
-        }
-        private async Task Commands_CommandExecuted(Optional<CommandInfo> arg1, ICommandContext arg2, IResult arg3)
-        {
-            if (!arg3.IsSuccess)
-                return;
-
-            Stats.IncrementServer(arg2.Guild.Id);
-            Stats.IncrementCommand(arg1.Value.Name);
-            Stats.IncrementCalls();
+            // If command is found - save a log of it
+            if (cmdName != null)
+                await Stats.LogCommand(cmdName, context, res.IsSuccess);
         }
 
         // EVENTS
@@ -412,9 +407,10 @@ namespace Namiko
             if (ReadySetup)
             {
                 ReadySetup = false;
-                _ = WebhookClients.NamikoLogChannel.SendMessageAsync($"<:TickYes:577838859107303424> `{DateTime.Now.ToString("HH:mm:ss")}` - `{Client.CurrentUser.Username} Logged in`");
                 WebUtil.SetUpDbl(Client.CurrentUser.Id);
+                StartTimers();
                 _ = Music.Initialize(Client);
+                _ = WebhookClients.NamikoLogChannel.SendMessageAsync($"<:TickYes:577838859107303424> `{DateTime.Now.ToString("HH:mm:ss")}` - `{Client.CurrentUser.Username} Logged in`");
                 _ = Client.SetActivityAsync(new Game("Chinese Cartoons. Try @Namiko help", ActivityType.Watching));
             }
 
@@ -455,7 +451,6 @@ namespace Namiko
                 RedditAPI.Poke();
                 ImgurAPI.Poke();
             }
-            StartTimers();
         }
         private static void SetUp()
         {
@@ -645,7 +640,7 @@ namespace Namiko
         {
             return user.Guild == null ? Config.DefaultPrefix : GetPrefix(user.Guild.Id);
         }
-        public static string GetPrefix(SocketGuild guild)
+        public static string GetPrefix(IGuild guild)
         {
             return guild == null ? Config.DefaultPrefix : GetPrefix(guild.Id);
         }

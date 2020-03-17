@@ -53,7 +53,6 @@ namespace Namiko
         public async static void SetUpRelease()
         {
             await SetUp();
-            Minute.Elapsed += Timer_HourlyStats;
 
             await Task.Delay(3000);
             MinuteVoters = new Timer(1000 * 60);
@@ -62,7 +61,6 @@ namespace Namiko
             MinuteVoters.Elapsed += Timer_Voters2;
 
             Minute5.Elapsed += Timer_Unban;
-            Minute5.Elapsed += Timer_DailyStats;
             Minute5.Elapsed += Timer_RedditPost;
 
             await Task.Delay(10000);
@@ -73,7 +71,6 @@ namespace Namiko
             
             Hour.Elapsed += Timer_UpdateDBLGuildCount;
             Hour.Elapsed += Timer_ExpirePremium;
-            // Hour.Elapsed += Timer_PlayingStatus;
 
             await Task.Delay(10000);
             HourAgain = new Timer(1000 * 60 * 60);
@@ -418,6 +415,7 @@ namespace Namiko
         // DISCORBBOTLIST
         private static bool VoteLock = false;
         private static bool ReminderLock = false;
+        public static List<Stopwatch> VoteTimers = new List<Stopwatch> { new Stopwatch(), new Stopwatch(), new Stopwatch(), new Stopwatch() };
         public static void Timer_UpdateDBLGuildCount(object sender, ElapsedEventArgs e)
         {
             int amount = 0;
@@ -432,12 +430,16 @@ namespace Namiko
             try
             {
                 VoteLock = true;
+                VoteTimers.ForEach(x => x.Restart());
                 var voters = await WebUtil.GetVotersAsync();
+                VoteTimers[0].Stop();
                 var old = await VoteDb.GetVoters(500);
+                VoteTimers[1].Stop();
                 var votersParsed = voters.Select(x => x.Id).ToList();
                 votersParsed.Reverse();
 
                 List<ulong> add = NewEntries(old, votersParsed);
+                VoteTimers[2].Stop();
 
                 if (add.Count > 500)
                 {
@@ -448,6 +450,7 @@ namespace Namiko
 
                 await VoteDb.AddVoters(add);
                 await SendRewards(add);
+                VoteTimers[3].Stop();
             }
             catch (Exception ex) 
             {
@@ -455,6 +458,8 @@ namespace Namiko
             }
             finally
             {
+                Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} Vote Timers:");
+                VoteTimers.ForEach(x => Console.WriteLine($"{x.ElapsedMilliseconds}{(x.IsRunning ? " - running" : "")}"));
                 VoteLock = false;
             }
         }

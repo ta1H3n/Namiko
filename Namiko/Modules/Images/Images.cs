@@ -19,10 +19,10 @@ namespace Namiko
 {
     public class Images : InteractiveBase<ShardedCommandContext>
     {
-        public async Task<bool> SendRandomImage(SocketCommandContext Context)
+        public async Task<bool> SendRandomImage(ICommandContext Context)
         {
             string text = Context.Message.Content;
-            text = text.Replace(Program.GetPrefix(Context), "");
+            text = text.Replace(Program.GetPrefix(Context.Guild), "");
             text = text.Split(' ')[0];
             text = text.ToLower();
 
