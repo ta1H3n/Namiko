@@ -201,6 +201,7 @@ namespace Namiko
         private async Task Commands_CommandExecuted(Optional<CommandInfo> cmd, ICommandContext context, IResult res)
         {
             string cmdName = cmd.IsSpecified ? cmd.Value.Name : null;
+            bool success = res.IsSuccess;
 
             if (!res.IsSuccess)
             {
@@ -208,6 +209,7 @@ namespace Namiko
                 if (await new Images().SendRandomImage(context))
                 {
                     cmdName = "ReactionImage";
+                    success = true;
                 }
 
                 // If the command is found but failed then send help message for said command
@@ -223,7 +225,7 @@ namespace Namiko
 
             // If command is found - save a log of it
             if (cmdName != null)
-                await Stats.LogCommand(cmdName, context, res.IsSuccess);
+                await Stats.LogCommand(cmdName, context, success);
         }
 
         // EVENTS
