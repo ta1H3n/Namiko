@@ -450,6 +450,9 @@ namespace Namiko
         }
         private async Task Client_ShardDisconnected(Exception arg1, DiscordSocketClient arg2)
         {
+            if (arg1.Message.Equals("The operation has timed out."))
+                return;
+
             await WebhookClients.NamikoLogChannel.SendMessageAsync(
                 $"<:TickNo:577838859077943306> `{DateTime.Now.ToString("HH:mm:ss")}` - `Shard {arg2.ShardId} Disconnected` - `{arg1.Message}`");
         }
