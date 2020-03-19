@@ -2,6 +2,7 @@
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
+using Model;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -74,26 +75,24 @@ namespace Namiko
         [Command("SQLGET"), Summary("Executes an SQL GET query. DANGEROUS"), OwnerPrecondition]
         public async Task SqlGet([Remainder] string str = "")
         {
-            using (var db = new SqliteDbContext())
+            using var db = new SqliteDbContext();
+            var list = db.DynamicListFromSql(str, new Dictionary<string, object>());
+
+            string text = $"Results: {list.Count()}\n";
+            text += $"```yaml\n";
+            foreach (var item in list)
             {
-                var list = db.DynamicListFromSql(str, new Dictionary<string, object>());
-
-                string text = $"Results: {list.Count()}\n";
-                text += $"```yaml\n";
-                foreach (var item in list)
+                foreach (var row in item)
                 {
-                    foreach (var row in item)
-                    {
-                        text += row.Key + ": " + row.Value + "\n";
-                    }
-                    text += "\n";
+                    text += row.Key + ": " + row.Value + "\n";
                 }
-                text += "```";
-
-                if (text.Length > 2000)
-                    text = text.Substring(0, 1990) + "\n...```";
-                await Context.Channel.SendMessageAsync(text);
+                text += "\n";
             }
+            text += "```";
+
+            if (text.Length > 2000)
+                text = text.Substring(0, 1990) + "\n...```";
+            await Context.Channel.SendMessageAsync(text);
         }
 
         [Command("Die"), Summary("Kills Namiko"), Insider]
@@ -279,13 +278,11 @@ namespace Namiko
         {
             var eb = await JsonHelper.ReadJson<EmbedBuilder>(Assembly.GetEntryAssembly().Location.Replace(@"Namiko.dll", $@"embeds/{name}"));
             eb.WithColor(BasicUtil.RandomColor());
-            using (var db = new SqliteDbContext())
-            {
-                var voters = db.Voters.Where(x => x.Date > DateTime.Now.AddDays(-days)).Select(x => x.UserId).ToHashSet();
-                int votes = db.Voters.Where(x => x.Date > DateTime.Now.AddDays(-days)).Count();
-                await ReplyAsync($"Sending this to {voters.Count} users. Votes - {votes}");
-                await ReplyAsync(embed: eb.Build());
-            }
+            using var db = new SqliteDbContext();
+            var voters = db.Voters.Where(x => x.Date > DateTime.Now.AddDays(-days)).Select(x => x.UserId).ToHashSet();
+            int votes = db.Voters.Where(x => x.Date > DateTime.Now.AddDays(-days)).Count();
+            await ReplyAsync($"Sending this to {voters.Count} users. Votes - {votes}");
+            await ReplyAsync(embed: eb.Build());
         }
 
         [Command("SendAnnouncement"), OwnerPrecondition]
@@ -293,28 +290,27 @@ namespace Namiko
         {
             var eb = await JsonHelper.ReadJson<EmbedBuilder>(Assembly.GetEntryAssembly().Location.Replace(@"Namiko.dll", $@"embeds/{name}"));
             eb.WithColor(BasicUtil.RandomColor());
-            using (var db = new SqliteDbContext())
+            using var db = new SqliteDbContext();
+            var voters = db.Voters.Where(x => x.Date > DateTime.Now.AddDays(-days)).Select(x => x.UserId).ToHashSet();
+            int votes = db.Voters.Where(x => x.Date > DateTime.Now.AddDays(-days)).Count();
+            await ReplyAsync($"Sending this to {voters.Count} users. Votes - {votes}");
+            await ReplyAsync(embed: eb.Build());
+            var client = Program.GetClient();
+            var embed = eb.Build();
+
+            int i = 0;
+            foreach (var id in voters)
             {
-                var voters = db.Voters.Where(x => x.Date > DateTime.Now.AddDays(-days)).Select(x => x.UserId).ToHashSet();
-                int votes = db.Voters.Where(x => x.Date > DateTime.Now.AddDays(-days)).Count();
-                await ReplyAsync($"Sending this to {voters.Count} users. Votes - {votes}");
-                await ReplyAsync(embed: eb.Build());
-                var client = Program.GetClient();
-                var embed = eb.Build();
-
-                int i = 0;
-                foreach (var id in voters)
+                try
                 {
-                    try
-                    {
-                        var ch = await client.GetUser(id).GetOrCreateDMChannelAsync();
-                        await ch.SendMessageAsync(embed: embed);
-                        i++;
-                    } catch { }
+                    var ch = await client.GetUser(id).GetOrCreateDMChannelAsync();
+                    await ch.SendMessageAsync(embed: embed);
+                    i++;
                 }
-
-                await ReplyAsync($"Delivered to {i} users.");
+                catch { }
             }
+
+            await ReplyAsync($"Delivered to {i} users.");
         }
 
         [Command("SendEmbed"), OwnerPrecondition]

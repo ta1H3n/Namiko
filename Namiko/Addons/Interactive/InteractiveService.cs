@@ -26,7 +26,7 @@ namespace Discord.Addons.Interactive
             Discord = discord;
             Discord.ReactionAdded += HandleReactionAsync;
 
-            config = config ?? new InteractiveServiceConfig();
+            config ??= new InteractiveServiceConfig();
             _defaultTimeout = config.DefaultTimeout;
 
             _callbacks = new Dictionary<ulong, IReactionCallback>();
@@ -51,7 +51,7 @@ namespace Discord.Addons.Interactive
             TimeSpan? timeout = null,
             CancellationToken token = default(CancellationToken))
         {
-            timeout = timeout ?? _defaultTimeout;
+            timeout ??= _defaultTimeout;
 
             var eventTrigger = new TaskCompletionSource<SocketMessage>();
             var cancelTrigger = new TaskCompletionSource<bool>();
@@ -86,7 +86,7 @@ namespace Discord.Addons.Interactive
             TimeSpan? timeout = null, 
             RequestOptions options = null)
         {
-            timeout = timeout ?? _defaultTimeout;
+            timeout ??= _defaultTimeout;
             var message = await context.Channel.SendMessageAsync(content, isTTS, embed, options).ConfigureAwait(false);
             _ = Task.Delay(timeout.Value)
                 .ContinueWith(_ => message.DeleteAsync().ConfigureAwait(false))
@@ -125,8 +125,8 @@ namespace Discord.Addons.Interactive
             SocketReaction reaction)
         {
             if (reaction.UserId == Discord.CurrentUser.Id) return;
-            if (!(_callbacks.TryGetValue(message.Id, out var callback))) return;
-            if (!(await callback.Criterion.JudgeAsync(callback.Context, reaction).ConfigureAwait(false)))
+            if (!_callbacks.TryGetValue(message.Id, out var callback)) return;
+            if (!await callback.Criterion.JudgeAsync(callback.Context, reaction).ConfigureAwait(false))
                 return;
             switch (callback.RunMode)
             {

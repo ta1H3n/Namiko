@@ -17,6 +17,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Victoria;
+using Model;
 
 #pragma warning disable CS1998
 
@@ -40,20 +41,18 @@ namespace Namiko
 
         static void Main(string[] args)
         {
-            using (Mutex mutex = new Mutex(true, "Global-NamikoBot", out bool createdNew))
+            using Mutex mutex = new Mutex(true, "Global-NamikoBot", out bool createdNew);
+            if (!createdNew)
             {
-                if (!createdNew)
-                {
-                    Console.WriteLine("Instance Already Running!");
-                    return;
-                }
+                Console.WriteLine("Instance Already Running!");
+                return;
+            }
 
-                SetUpConfig();
-                using (SentrySdk.Init(Config.SentryWebhook))
-                {
-                    SetUp();
-                    new Program().MainAsync().GetAwaiter().GetResult();
-                }
+            SetUpConfig();
+            using (SentrySdk.Init(Config.SentryWebhook))
+            {
+                SetUp();
+                new Program().MainAsync().GetAwaiter().GetResult();
             }
         }
         private async Task MainAsync()
@@ -135,10 +134,9 @@ namespace Namiko
         private async Task Client_ReadCommand(SocketMessage MessageParam)
         {
             if (Client == null)
-                return; 
+                return;
 
-            var Message = MessageParam as SocketUserMessage;
-            if (Message == null)
+            if (!(MessageParam is SocketUserMessage Message))
                 return;
 
             var Context = new ShardedCommandContext(Client, Message);
@@ -286,12 +284,7 @@ namespace Namiko
             var ch = sch.Guild.GetTextChannel(chid);
             await ch.SendMessageAsync(GetWelcomeMessageString(user));
         }
-        //private async Task Client_UserLeftToasties(SocketGuildUser arg)
-        //{
-        //    var amount = ToastieDb.GetToasties(arg.Id, arg.Guild.Id) / 4;
-        //    await ToastieDb.AddToasties(arg.Id, -amount, arg.Guild.Id);
-        //    await ToastieDb.AddToasties(Client.CurrentUser.Id, amount, arg.Guild.Id);
-        //}
+
         private async Task Client_Log(LogMessage arg)
         {
             if (arg.Exception.Message.Contains("403") || arg.Exception.Message.Contains("500"))
@@ -342,7 +335,7 @@ namespace Namiko
 
             if(server.JoinDate.Equals(now))
             {
-                await ToastieDb.SetToasties(Client.CurrentUser.Id, 1000000, arg.Id);
+                await BalanceDb.SetToasties(Client.CurrentUser.Id, 1000000, arg.Id);
             }
 
             SocketTextChannel ch = arg.SystemChannel ?? arg.DefaultChannel;
@@ -483,17 +476,11 @@ namespace Namiko
         private static void SetUpConfig()
         {
             string JSON = "";
-            string JSONLocation;
-            switch (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"))
+            var JSONLocation = (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")) switch
             {
-                case "Development":
-                    JSONLocation = Assembly.GetEntryAssembly().Location.Replace(@"bin\Debug\netcoreapp3.1\Namiko.dll", @"Data\Settings.json");
-                    break;
-                default:
-                    JSONLocation = Assembly.GetEntryAssembly().Location.Replace(@"Namiko.dll", @"data/Settings.json");
-                    break;
-            }
-
+                "Development" => Assembly.GetEntryAssembly().Location.Replace(@"bin\Debug\netcoreapp3.1\Namiko.dll", @"Data\Settings.json"),
+                _ => Assembly.GetEntryAssembly().Location.Replace(@"Namiko.dll", @"data/Settings.json"),
+            };
             using (var Stream = new FileStream(JSONLocation, FileMode.Open, FileAccess.Read))
             using (var ReadSettings = new StreamReader(Stream))
             {
@@ -518,7 +505,8 @@ namespace Namiko
             Debug = true;
             Pause = true;
             Locations.SetUpDebug();
-            _ = LootboxStats.Reload();
+            SqliteDbContext.ConnectionString = $"Data Source={Locations.SqliteDb}Database.sqlite";
+            _ = LootboxStats.Reload(Locations.LootboxStatsJSON);
             SetUpPrefixes();
             Blacklist = BlacklistDb.GetAll();
         }
@@ -526,7 +514,8 @@ namespace Namiko
         {
             Console.WriteLine("Entry: " + Assembly.GetEntryAssembly().Location);
             Locations.SetUpRelease();
-            _ = LootboxStats.Reload();
+            SqliteDbContext.ConnectionString = $"Data Source={Locations.SqliteDb}Database.sqlite";
+            _ = LootboxStats.Reload(Locations.LootboxStatsJSON);
             SetUpPrefixes();
             Blacklist = BlacklistDb.GetAll();
         }
@@ -539,46 +528,6 @@ namespace Namiko
         }
         private static async Task<int> CheckJoinedGuilds(DiscordSocketClient shard = null)
         {
-            //IReadOnlyCollection<SocketGuild> guilds = null;
-            //if (shard == null)
-            //    guilds = Client.Guilds;
-            //else
-            //    guilds = shard.Guilds;
-
-            //var zerotime = new DateTime(0);
-            //int added = 0;
-
-            ////var servers = new List<Server>();
-            ////var toasties = new List<Balance>();
-            //using (var db = new SqliteDbContext())
-            //{
-            //    var ids = db.Servers.Where(x => x.LeaveDate == zerotime).Select(x => x.GuildId).ToHashSet();
-            //    foreach (var guild in guilds)
-            //    {
-            //        if (!ids.Contains(guild.Id))
-            //        {
-            //            db.Servers.Add(new Server
-            //            {
-            //                GuildId = guild.Id,
-            //                JoinDate = System.DateTime.Now,
-            //                LeaveDate = zerotime,
-            //                Prefix = Config.DefaultPrefix
-            //            });
-
-            //            var bal = await db.Toasties.FirstOrDefaultAsync(x => x.UserId == Client.CurrentUser.Id && x.GuildId == guild.Id);
-            //            if (bal == null)
-            //                db.Toasties.Add(new Balance { UserId = Client.CurrentUser.Id, Amount = 1000000, GuildId = guild.Id });
-
-            //            added++;
-            //        }
-            //    }
-            //    //db.AddRange(servers);
-            //    //db.AddRange(toasties);
-            //    await db.SaveChangesAsync();
-            //}
-
-            //return added;
-
             IReadOnlyCollection<SocketGuild> guilds;
             if (shard == null)
                 guilds = Client.Guilds;
@@ -586,25 +535,10 @@ namespace Namiko
                 guilds = shard.Guilds;
 
             var existingIds = ServerDb.GetNotLeft();
-            var zerotime = new DateTime(0);
+            var newIds = guilds.Where(x => !existingIds.Contains(x.Id)).Select(x => x.Id);
 
-            int added = 0;
-            foreach (var guild in guilds)
-            {
-                if (!existingIds.Contains(guild.Id))
-                {
-                    var server = new Server
-                    {
-                        GuildId = guild.Id,
-                        JoinDate = System.DateTime.Now,
-                        LeaveDate = zerotime,
-                        Prefix = Config.DefaultPrefix
-                    };
-                    await ServerDb.UpdateServer(server);
-                    await ToastieDb.SetToasties(Client.CurrentUser.Id, 1000000, guild.Id);
-                    added++;
-                }
-            }
+            int addedBal = await BalanceDb.AddNewServerBotBalance(newIds, Client.CurrentUser.Id);
+            int added = await ServerDb.AddNewServers(newIds, Config.DefaultPrefix);
 
             return added;
         }
@@ -613,18 +547,6 @@ namespace Namiko
             var guilds = Client.Guilds;
             HashSet<ulong> existingIds = new HashSet<ulong>(guilds.Select(x => x.Id));
             int left = 0;
-
-            //var servers = ServerDb.GetNotLeft();
-
-            //foreach (var srv in servers)
-            //{
-            //    if (!existingIds.Contains(srv.GuildId))
-            //    {
-            //        srv.LeaveDate = DateTime.Now;
-            //        await ServerDb.UpdateServer(srv);
-            //        left++;
-            //    }
-            //}
 
             using (var db = new SqliteDbContext())
             {

@@ -40,10 +40,8 @@ namespace Namiko
         public static T FromXml<T>(string xml)
         {
             XmlSerializer xs = new XmlSerializer(typeof(T));
-            using (StringReader sr = new StringReader(xml))
-            {
-                return (T)xs.Deserialize(sr);
-            }
+            using StringReader sr = new StringReader(xml);
+            return (T)xs.Deserialize(sr);
         }
         
         /// Deserializes an object from an XML string, using the specified type name.
@@ -51,10 +49,8 @@ namespace Namiko
         {
             Type T = Type.GetType(typeName);
             XmlSerializer xs = new XmlSerializer(T);
-            using (StringReader sr = new StringReader(xml))
-            {
-                return xs.Deserialize(sr);
-            }
+            using StringReader sr = new StringReader(xml);
+            return xs.Deserialize(sr);
         }
         
         /// Serializes an object to an XML file.
@@ -65,10 +61,8 @@ namespace Namiko
             var ws = new XmlWriterSettings { Indent = true, NewLineOnAttributes = NewLineOnAttributes, OmitXmlDeclaration = true };
             ns.Add("", "");
 
-            using (XmlWriter writer = XmlWriter.Create(filePath, ws))
-            {
-                xs.Serialize(writer, obj);
-            }
+            using XmlWriter writer = XmlWriter.Create(filePath, ws);
+            xs.Serialize(writer, obj);
         }
         
         /// Deserializes an object from an XML file.

@@ -32,8 +32,7 @@ namespace Victoria.Helpers
         public async Task<string> GetStringAsync(string url)
         {
             CheckClient();
-            HttpResponseMessage get = null;
-
+            HttpResponseMessage get;
             try
             {
                 get = await _client.GetAsync(url).ConfigureAwait(false);
@@ -44,11 +43,9 @@ namespace Victoria.Helpers
             if (!get.IsSuccessStatusCode)
                 return string.Empty;
 
-            using (var content = get.Content)
-            {
-                var read = await content.ReadAsStringAsync().ConfigureAwait(false);
-                return read;
-            }
+            using var content = get.Content;
+            var read = await content.ReadAsStringAsync().ConfigureAwait(false);
+            return read;
         }
 
         public HttpHelper WithCustomHeader(string key, string value)

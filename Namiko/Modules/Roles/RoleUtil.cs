@@ -1,12 +1,9 @@
 ﻿using Discord;
-using Discord.Commands;
 using Discord.WebSocket;
-
-
+using Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Namiko
@@ -82,7 +79,7 @@ namespace Namiko
             {
                 memberList += $"\n`{x.Username}`";
 
-                totalToasties += ToastieDb.GetToasties(x.Id, x.Guild.Id);
+                totalToasties += BalanceDb.GetToasties(x.Id, x.Guild.Id);
                 var waifus = UserInventoryDb.GetWaifus(x.Id, x.Guild.Id);
                 totalWaifus += waifus.Count;
                 totalWaifuValue += WaifuUtil.WaifuValue(waifus);
@@ -93,7 +90,7 @@ namespace Namiko
             {
                 leaderList += $"\n`{x.Username}`";
 
-                totalToasties += ToastieDb.GetToasties(x.Id, x.Guild.Id);
+                totalToasties += BalanceDb.GetToasties(x.Id, x.Guild.Id);
                 var waifus = UserInventoryDb.GetWaifus(x.Id, x.Guild.Id);
                 totalWaifus += waifus.Count;
                 totalWaifuValue += WaifuUtil.WaifuValue(waifus);

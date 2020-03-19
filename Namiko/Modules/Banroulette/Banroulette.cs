@@ -1,12 +1,11 @@
-﻿using System.Threading.Tasks;
-using System.Linq;
-
-using Discord.Commands;
-using Discord;
-
-using System;
-using Discord.WebSocket;
+﻿using Discord;
 using Discord.Addons.Interactive;
+using Discord.Commands;
+using Discord.WebSocket;
+using Model;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Namiko
 {
@@ -168,7 +167,7 @@ namespace Namiko
                 msg += $"Prize pool of {banroulette.RewardPool} ({prize} each) split between: ";
                 foreach (var x in users)
                 {
-                    await ToastieDb.AddToasties(x.Id, prize, Context.Guild.Id);
+                    await BalanceDb.AddToasties(x.Id, prize, Context.Guild.Id);
                     msg += x.Mention + " ";
                 }
             }
@@ -214,7 +213,7 @@ namespace Namiko
 
             try
             {
-                await ToastieDb.AddToasties(Context.User.Id, -amount, Context.Guild.Id);
+                await BalanceDb.AddToasties(Context.User.Id, -amount, Context.Guild.Id);
             }
             catch(Exception ex)
             {

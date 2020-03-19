@@ -1,10 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System.Reflection;
-using Discord;
-using Discord.WebSocket;
+using Model;
 using Namiko.Data;
 using System.Threading.Tasks;
-
 
 namespace Namiko
 {
@@ -23,10 +20,8 @@ namespace Namiko
 
         public async static Task<int> ExecuteSQL(string query)
         {
-            using (var db = new SqliteDbContext())
-            {
-                return await db.Database.ExecuteSqlRawAsync(query);
-            }
+            using var db = new SqliteDbContext();
+            return await db.Database.ExecuteSqlRawAsync(query);
         }
     }
 }

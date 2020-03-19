@@ -25,7 +25,7 @@ namespace Namiko
                 new TimeSpan(0, 0, 23));
 
             _ = msg.DeleteAsync();
-            int i = 0;
+            int i;
             try
             {
                 i = int.Parse(response.Content);

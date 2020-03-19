@@ -4,6 +4,7 @@ using DiscordBotsList.Api.Objects;
 using IqdbApi;
 using IqdbApi.Models;
 using JikanDotNet;
+using Model;
 using Namiko.Data;
 using Reddit.Controllers;
 using SauceNET;
@@ -106,28 +107,6 @@ namespace Namiko
             return eb;
         }
 
-        // BOORU
-
-        public async static void BooruTest()
-        {
-            var booru = new Booru.Net.BooruClient();
-            var kona = await booru.GetKonaChanImagesAsync("zerotwo", "order:score");
-            foreach (var x in kona)
-            {
-                Console.WriteLine($"PostURL:   {x.PostUrl}");
-                Console.WriteLine($"Rating:    {x.Rating}");
-                Console.WriteLine($"Score:     {x.Score}");
-                Console.WriteLine($"Tags:      ");
-                foreach (var t in x.Tags)
-                    Console.Write(t + " ");
-
-                Console.WriteLine();
-                Console.WriteLine();
-            }
-
-            Console.WriteLine("Count: " + kona.Count);
-        }
-
         // GLOBAL
 
         public static bool IsImageUrl(string url)
@@ -136,9 +115,8 @@ namespace Namiko
             try {
                 var req = (HttpWebRequest)HttpWebRequest.Create(url);
                 req.Method = "HEAD";
-                using (var resp = req.GetResponse()) {
-                    return resp.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase);
-                }
+                using var resp = req.GetResponse();
+                return resp.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase);
             } catch (UriFormatException){ return false; }
         }
         public static bool IsValidUrl(string url)
@@ -227,7 +205,7 @@ namespace Namiko
         }
         public static EmbedBuilder MangaEmbed(Manga manga)
         {
-            string MangaState = "";
+            string MangaState;
             if (manga.Status == "Publishing") MangaState = "^"; else MangaState = manga.Chapters;
 
             var eb = new EmbedBuilder();
@@ -303,7 +281,7 @@ namespace Namiko
         public static EmbedBuilder SubListEmbed(ulong guildId)
         {
             var eb = new EmbedBuilder();
-            var subs = SpecialChannelDb.GetChannelsByGuild(guildId, ChannelType.Reddit);
+            var subs = SpecialChannelDb.GetChannelsByGuild(guildId, Model.ChannelType.Reddit);
 
             string desc = "";
             int i = 1;

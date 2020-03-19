@@ -1,19 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using System.Linq;
-using Discord;
-using Discord.Commands;
-using Discord.WebSocket;
-using Imgur.API.Models;
-
-
-
-using System.Diagnostics.Contracts;
-
-
+﻿using Discord;
 using Discord.Addons.Interactive;
+using Discord.Commands;
+using Model;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Namiko
 {
@@ -109,7 +101,7 @@ namespace Namiko
             await Context.Channel.TriggerTypingAsync();
             bool insider = Context.Guild.Id == 418900885079588884;
 
-            url = url ?? Context.Message.Attachments.FirstOrDefault()?.Url;
+            url ??= Context.Message.Attachments.FirstOrDefault()?.Url;
 
             if (!insider)
             {
