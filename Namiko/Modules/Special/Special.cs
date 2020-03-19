@@ -68,31 +68,100 @@ namespace Namiko
         [Command("SQL"), Summary("Executes an SQL query. DANGEROUS"), OwnerPrecondition]
         public async Task Sql([Remainder] string str = "")
         {
-            int res = await SqliteDbContext.ExecuteSQL(str);
-            await Context.Channel.SendMessageAsync($"{res} rows affected.");
+            try
+            {
+                int res = await SqliteDbContext.ExecuteSQL(str);
+                await Context.Channel.SendMessageAsync($"{res} rows affected.");
+            } catch (Exception ex)
+            {
+                string err = $"Thrown: `{ex.Message}`\n";
+                if (ex.InnerException != null)
+                    err += $"Inner: `{ex.InnerException.Message}`";
+                await Context.Channel.SendMessageAsync(err);
+            }
+        }
+
+        [Command("SSQL"), Summary("Executes an SQL query on the stats db. DANGEROUS"), OwnerPrecondition]
+        public async Task SSql([Remainder] string str = "")
+        {
+            try
+            {
+                int res = await SqliteStatsDbContext.ExecuteSQL(str);
+                await Context.Channel.SendMessageAsync($"{res} rows affected.");
+            }
+            catch (Exception ex)
+            {
+                string err = $"Thrown: `{ex.Message}`\n";
+                if (ex.InnerException != null)
+                    err += $"Inner: `{ex.InnerException.Message}`";
+                await Context.Channel.SendMessageAsync(err);
+            }
         }
 
         [Command("SQLGET"), Summary("Executes an SQL GET query. DANGEROUS"), OwnerPrecondition]
         public async Task SqlGet([Remainder] string str = "")
         {
-            using var db = new SqliteDbContext();
-            var list = db.DynamicListFromSql(str, new Dictionary<string, object>());
-
-            string text = $"Results: {list.Count()}\n";
-            text += $"```yaml\n";
-            foreach (var item in list)
+            try
             {
-                foreach (var row in item)
-                {
-                    text += row.Key + ": " + row.Value + "\n";
-                }
-                text += "\n";
-            }
-            text += "```";
+                using var db = new SqliteDbContext();
+                var list = db.DynamicListFromSql(str, new Dictionary<string, object>());
 
-            if (text.Length > 2000)
-                text = text.Substring(0, 1990) + "\n...```";
-            await Context.Channel.SendMessageAsync(text);
+                string text = $"Results: {list.Count()}\n";
+                text += $"```yaml\n";
+                foreach (var item in list)
+                {
+                    foreach (var row in item)
+                    {
+                        text += row.Key + ": " + row.Value + "\n";
+                    }
+                    text += "\n";
+                }
+                text += "```";
+
+                if (text.Length > 2000)
+                    text = text.Substring(0, 1990) + "\n...```";
+                await Context.Channel.SendMessageAsync(text);
+            }
+            catch (Exception ex)
+            {
+                string err = $"Thrown: `{ex.Message}`\n";
+                if (ex.InnerException != null)
+                    err += $"Inner: `{ex.InnerException.Message}`";
+                await Context.Channel.SendMessageAsync(err);
+            }
+        }
+
+        [Command("SSQLGET"), Summary("Executes an SQL GET query on the stats db. DANGEROUS"), OwnerPrecondition]
+        public async Task SSqlGet([Remainder] string str = "")
+        {
+            try
+            {
+                using var db = new SqliteStatsDbContext();
+                var list = db.DynamicListFromSql(str, new Dictionary<string, object>());
+
+                string text = $"Results: {list.Count()}\n";
+                text += $"```yaml\n";
+                foreach (var item in list)
+                {
+                    foreach (var row in item)
+                    {
+                        text += row.Key + ": " + row.Value + "\n";
+                    }
+                    text += "\n";
+                }
+                text += "```";
+
+                if (text.Length > 2000)
+                    text = text.Substring(0, 1990) + "\n...```";
+                await Context.Channel.SendMessageAsync(text);
+            }
+            catch (Exception ex)
+            {
+                string err = $"Thrown: `{ex.Message}`\n";
+                if (ex.InnerException != null)
+                    err += $"Inner: `{ex.InnerException.Message}`";
+                await Context.Channel.SendMessageAsync(err);
+            }
         }
 
         [Command("Die"), Summary("Kills Namiko"), Insider]
