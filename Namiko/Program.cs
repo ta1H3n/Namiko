@@ -35,7 +35,7 @@ namespace Namiko
         private static bool Launch = true;
         public static bool Debug = false;
         private static bool Diag = false;
-        private static bool ReadySetup = true;
+        private static bool Startup = true;
         private static int ShardCount;
 
         static void Main(string[] args)
@@ -83,6 +83,7 @@ namespace Namiko
             Client.LeftGuild += Client_LeftGuild;
             Client.MessageReceived += Client_ReadCommand;
             Client.UserVoiceStateUpdated += Client_UserVoiceChannel;
+            Client.ShardConnected += Client_ShardConnected;
 
             // Join/leave logging.
             if (!Debug)
@@ -96,6 +97,7 @@ namespace Namiko
 
             await Client.LoginAsync(TokenType.Bot, Config.Token);
             await Client.StartAsync();
+            _ = WebhookClients.NamikoLogChannel.SendMessageAsync($"<:TickYes:577838859107303424> `{DateTime.Now.ToString("HH:mm:ss")}` - `Logged in`");
 
             ShardCount = Client.Shards.Count;
 
@@ -406,20 +408,10 @@ namespace Namiko
         private int ReadyCount = 0;
         private async Task Client_ShardReady(DiscordSocketClient arg)
         {
-            if (ReadySetup)
-            {
-                ReadySetup = false;
-                WebUtil.SetUpDbl(Client.CurrentUser.Id);
-                StartTimers();
-                _ = Music.Initialize(Client);
-                _ = WebhookClients.NamikoLogChannel.SendMessageAsync($"<:TickYes:577838859107303424> `{DateTime.Now.ToString("HH:mm:ss")}` - `{Client.CurrentUser.Username} Logged in`");
-                _ = Client.SetActivityAsync(new Game("Chinese Cartoons. Try @Namiko help", ActivityType.Watching));
-            }
-
             ReadyCount++;
             string name = Client.CurrentUser.Username;
             Console.WriteLine($"{DateTime.Now} - Shard {arg.ShardId} Ready");
-            _ = WebhookClients.NamikoLogChannel.SendMessageAsync($"<:TickYes:577838859107303424> `{DateTime.Now.ToString("HH:mm:ss")}` - `Shard {arg.ShardId} Ready`");
+            _ = WebhookClients.NamikoLogChannel.SendMessageAsync($":european_castle: `{DateTime.Now.ToString("HH:mm:ss")}` - `Shard {arg.ShardId} Ready`");
             
             int res;
             res = await CheckJoinedGuilds(arg);
@@ -438,6 +430,28 @@ namespace Namiko
                 {
                     Console.WriteLine($"{DateTime.Now} - Left {res} Guilds.");
                     _ = WebhookClients.NamikoLogChannel.SendMessageAsync($"`{DateTime.Now.ToString("HH:mm:ss")}` <:TickNo:577838859077943306> {name} left {res} Guilds.`");
+                }
+            }
+        }
+        private async Task Client_ShardConnected(DiscordSocketClient arg)
+        {
+            Console.WriteLine($"{DateTime.Now} - Shard {arg.ShardId} Connected");
+            _ = WebhookClients.NamikoLogChannel.SendMessageAsync($"<:TickYes:577838859107303424> `{DateTime.Now.ToString("HH:mm:ss")}` - `Shard {arg.ShardId} Connected`");
+
+            if (Startup)
+            {
+                Startup = false;
+                try
+                {
+                    WebUtil.SetUpDbl(arg.CurrentUser.Id);
+                    await StartTimers();
+                    if (!Debug)
+                        await Music.Initialize(Client);
+                    await Client.SetActivityAsync(new Game($"Chinese Cartoons. Try @{arg.CurrentUser.Username} help", ActivityType.Watching));
+                } catch (Exception ex)
+                {
+                    Startup = true;
+                    SentrySdk.CaptureException(ex);
                 }
             }
         }
@@ -516,12 +530,12 @@ namespace Namiko
             SetUpPrefixes();
             Blacklist = BlacklistDb.GetAll();
         }
-        private static void StartTimers()
+        private async static Task StartTimers()
         {
             if (Debug)
-                _ = Timers.SetUp();
+                await Timers.SetUp();
             else
-                Timers.SetUpRelease();
+                await Timers.SetUpRelease();
         }
         private static async Task<int> CheckJoinedGuilds(DiscordSocketClient shard = null)
         {

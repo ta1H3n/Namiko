@@ -158,34 +158,19 @@ namespace Namiko
         [Command("SendLootboxes"), OwnerPrecondition]
         public async Task SendLootboxes()
         {
-            var voters = await WebUtil.GetVotersAsync();
-            var votesNew = new Dictionary<ulong, int>();
+            var voters = (await WebUtil.GetVotersAsync()).Select(x => x.Id).Distinct();
+            int sent = await Timers.SendRewards(voters);
 
-            var add = new List<ulong>();
-            foreach (var x in voters)
-                if (!votesNew.ContainsKey(x.Id))
-                {
-                    votesNew.Add(x.Id, 1);
-                    add.Add(x.Id);
-                }
-
-            await Timers.SendRewards(add);
+            Context.Channel.SendMessageAsync($"Broadcasted to {sent}/{voters.Count()} users.");
         }
 
         [Command("MessageVoters"), OwnerPrecondition]
         public async Task MessageVoters([Remainder] string msg = "")
         {
-            var voters = await WebUtil.GetVotersAsync();
-            var votesNew = new List<ulong>();
-
-            foreach (var x in voters)
-                if (!votesNew.Contains(x.Id))
-                {
-                    votesNew.Add(x.Id);
-                }
+            var voters = (await WebUtil.GetVotersAsync()).Select(x => x.Id).Distinct();
 
             int sent = 0;
-            foreach (var x in votesNew)
+            foreach (var x in voters)
             {
                 try
                 {
@@ -196,7 +181,7 @@ namespace Namiko
                 catch { }
             }
 
-            Context.Channel.SendMessageAsync($"Broadcasted to {sent} users.");
+            Context.Channel.SendMessageAsync($"Broadcasted to {sent}/{voters.Count()} users.");
         }
 
         [Command("Debug"), OwnerPrecondition]

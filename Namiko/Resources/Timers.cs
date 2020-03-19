@@ -50,7 +50,7 @@ namespace Namiko
             Hour.Elapsed += Timer_NamikoSteal;
         }
 
-        public async static void SetUpRelease()
+        public async static Task SetUpRelease()
         {
             await SetUp();
 
@@ -491,8 +491,9 @@ namespace Namiko
             list.Reverse();
             return list;
         }
-        public static async Task SendRewards(List<ulong> voters)
+        public static async Task<int> SendRewards(IEnumerable<ulong> voters)
         {
+            int sent = 0;
             foreach(var x in voters)
             {
                 try
@@ -502,6 +503,7 @@ namespace Namiko
                         type = LootBoxType.Premium;
                     
                     await LootBoxDb.AddLootbox(x, type, 1);
+                    sent++;
                     var user = Program.GetClient().GetUser(x);
                     var ch = await user.GetOrCreateDMChannelAsync();
                     await ch.SendMessageAsync(embed: new EmbedBuilderPrepared(user)
@@ -511,6 +513,7 @@ namespace Namiko
                 }
                 catch { }
             }
+            return sent;
         }
         public static async Task SendReminders(IEnumerable<ulong> voters)
         {

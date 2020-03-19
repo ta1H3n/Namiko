@@ -7,6 +7,7 @@ using JikanDotNet;
 using Namiko.Data;
 using Reddit.Controllers;
 using SauceNET;
+using Sentry;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -258,7 +259,15 @@ namespace Namiko
 
         public static async Task<IList<IDblEntity>> GetVotersAsync()
         {
-            return await DblApi.GetVotersAsync();
+            try
+            {
+                return await DblApi.GetVotersAsync();
+            } catch (Exception ex)
+            {
+                SetUpDbl(Program.GetClient().CurrentUser.Id);
+                SentrySdk.CaptureException(ex);
+                throw ex;
+            }
         }
         public static void SetUpDbl(ulong id)
         {

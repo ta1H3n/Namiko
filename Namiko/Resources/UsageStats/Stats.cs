@@ -64,7 +64,7 @@ namespace Namiko
                 Attachment = context.Message.Attachments.FirstOrDefault()?.ProxyUrl,
                 Message = context.Message.Content,
                 ChannelId = context.Channel.Id,
-                GuildId = context.Guild.Id,
+                GuildId = context.Guild?.Id ?? 0,
                 Command = commandName,
                 MessageId = context.Message.Id,
                 UserId = context.User.Id,
