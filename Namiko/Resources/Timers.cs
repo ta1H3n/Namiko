@@ -1,11 +1,11 @@
 ﻿using Discord;
 using Discord.Webhook;
 using Discord.WebSocket;
-using DiscordBotsList.Api.Objects;
 using Microsoft.EntityFrameworkCore;
 using Model;
 using Namiko.Data;
 using Reddit.Controllers;
+using Sentry;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -14,14 +14,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Timers;
-
-using Discord;
-using Discord.Commands;
-using Discord.WebSocket;
-using DiscordBotsList.Api.Objects;
-using Reddit.Controllers;
-using Discord.Webhook;
-using Sentry;
 
 namespace Namiko
 {
