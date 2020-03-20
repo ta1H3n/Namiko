@@ -19,11 +19,6 @@ namespace Namiko
         private static ImgurClient Client;
         public static IRateLimit RateLimit { get { return Client.RateLimit; } }
 
-        static ImgurAPI()
-        {
-            _ = ImgurSetup();
-        }
-
         public async static Task ImgurSetup()
         {
             ApiLogin settings = GetApiLogin();
@@ -127,11 +122,6 @@ namespace Namiko
             }
 
             return JsonConvert.DeserializeObject<ApiLogin>(JSON);
-        }
-
-        public static void Poke()
-        {
-
         }
     }
 }

@@ -33,7 +33,6 @@ namespace Namiko
             Minute.Enabled = true;
             Minute.Elapsed += Timer_TimeoutBlackjack;
 
-            await Task.Delay(10000);
             Minute5 = new Timer(1000 * 60 * 5);
             Minute5.AutoReset = true;
             Minute5.Enabled = true;

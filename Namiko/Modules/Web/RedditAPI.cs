@@ -13,13 +13,8 @@ namespace Namiko
     public static class RedditAPI
     {
         private static Reddit.RedditClient Client;
-        
-        static RedditAPI()
-        {
-            RedditSetup();
-        }
 
-        private static void RedditSetup()
+        public static void RedditSetup()
         {
             string JSON = "";
             string JSONLocation = Locations.RedditJSON;
@@ -48,11 +43,6 @@ namespace Namiko
             var sub = Client.Subreddit(subredditName);
             await Task.Run(() => sub = sub.About());
             return sub;
-        }
-
-        public static void Poke()
-        {
-
         }
     }
 }

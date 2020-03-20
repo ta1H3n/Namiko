@@ -32,7 +32,7 @@ namespace Namiko
         private static readonly CancellationTokenSource cts = new CancellationTokenSource();
         private static readonly CancellationToken ct = cts.Token;
         public static HashSet<ulong> Blacklist;
-        private static bool Launch = true;
+        private static bool WaitingForAllGuildsReady = true;
         public static bool Debug = false;
         private static bool Diag = false;
         private static bool Pause = false;
@@ -73,10 +73,8 @@ namespace Namiko
                 LogLevel = LogSeverity.Info
             });
             
-            //Client.Ready += Client_Ready;
             Client.ShardReady += Client_ShardReady;
             Client.ShardDisconnected += Client_ShardDisconnected;
-            //Client.Log += Client_Log;
             Client.ReactionAdded += Client_ReactionAdded;
             Client.JoinedGuild += Client_JoinedGuild;
             Client.LeftGuild += Client_LeftGuild;
@@ -91,7 +89,6 @@ namespace Namiko
             Client.UserLeft += Client_UserLeftLog;
             Client.UserBanned += Client_UserBannedLog;
 
-            //Commands.Log += Client_Log;
             Commands.CommandExecuted += Commands_CommandExecuted;
 
             await Client.LoginAsync(TokenType.Bot, Config.Token);
@@ -417,10 +414,9 @@ namespace Namiko
                 _ = WebhookClients.NamikoLogChannel.SendMessageAsync($"`{DateTime.Now.ToString("HH:mm:ss")}` <:TickYes:577838859107303424> {name} joined **{res}** Guilds.");
             }
 
-            if (Launch && ReadyCount >= ShardCount)
+            if (WaitingForAllGuildsReady && ReadyCount >= ShardCount)
             {
-                Launch = false;
-                Ready();
+                WaitingForAllGuildsReady = false;
                 res = await CheckLeftGuilds();
                 if (res > 0)
                 {
@@ -458,14 +454,6 @@ namespace Namiko
 
             await WebhookClients.NamikoLogChannel.SendMessageAsync(
                 $"<:TickNo:577838859077943306> `{DateTime.Now.ToString("HH:mm:ss")}` - `Shard {arg2.ShardId} Disconnected` - `{arg1.Message}`");
-        }
-        private async void Ready()
-        {
-            if (!Debug)
-            {
-                RedditAPI.Poke();
-                ImgurAPI.Poke();
-            }
         }
         private static void SetUpConfig()
         {
@@ -506,6 +494,8 @@ namespace Namiko
                 default:
                     Console.WriteLine("Entry: " + Assembly.GetEntryAssembly().Location);
                     Locations.SetUpRelease();
+                    RedditAPI.RedditSetup();
+                    _ = ImgurAPI.ImgurSetup();
                     break;
             }
             SqliteDbContext.ConnectionString = $"Data Source={Locations.SqliteDb}Database.sqlite";
