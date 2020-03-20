@@ -96,7 +96,10 @@ namespace Namiko
 
             await Client.LoginAsync(TokenType.Bot, Config.Token);
             await Client.StartAsync();
-            _ = WebhookClients.NamikoLogChannel.SendMessageAsync($"<:TickYes:577838859107303424> `{DateTime.Now.ToString("HH:mm:ss")}` - `Logged in`");
+            _ = WebhookClients.NamikoLogChannel.SendMessageAsync(
+                $"------------------------------\n" +
+                $"<:TickYes:577838859107303424> `{DateTime.Now.ToString("HH:mm:ss")}` - `Logged in`\n" +
+                $"------------------------------");
 
             ShardCount = Client.Shards.Count;
 
