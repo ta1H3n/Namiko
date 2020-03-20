@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,12 +18,12 @@ namespace Model
             await DbContext.SaveChangesAsync();
         }
 
-        public static List<ReactionImage> GetImages(string name = null, ulong guildId = 0)
+        public static async Task<List<ReactionImage>> GetImages(string name = null, ulong guildId = 0)
         {
             using var db = new SqliteDbContext();
             if (name == null)
-                return db.Images.Where(x => x.GuildId == guildId).ToList();
-            return db.Images.Where(x => x.Name == name && x.GuildId == guildId).ToList();
+                return await db.Images.Where(x => x.GuildId == guildId).ToListAsync();
+            return await db.Images.Where(x => x.Name == name && x.GuildId == guildId).ToListAsync();
 
         }
 
@@ -62,6 +63,14 @@ namespace Model
             using var DbContext = new SqliteDbContext();
             ReactionImage message = DbContext.Images.OrderByDescending(x => x.Id).FirstOrDefault();
             return message;
+        }
+
+        public static HashSet<string> GetReactionImageCommandHashSet()
+        {
+            using (var db = new SqliteDbContext())
+            {
+                return db.Images.Select(x => x.Name).Distinct().ToHashSet(StringComparer.OrdinalIgnoreCase);
+            }
         }
 
         public static async Task ToLower()

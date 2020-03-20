@@ -28,14 +28,14 @@ namespace Namiko
         private static DiscordShardedClient Client;
         private static CommandService Commands;
         private static IServiceProvider Services;
-        private static bool Pause = false;
-        private static readonly Dictionary<ulong, string> Prefixes = new Dictionary<ulong, string>();
+        private static Dictionary<ulong, string> Prefixes;
         private static readonly CancellationTokenSource cts = new CancellationTokenSource();
         private static readonly CancellationToken ct = cts.Token;
         public static HashSet<ulong> Blacklist;
         private static bool Launch = true;
         public static bool Debug = false;
         private static bool Diag = false;
+        private static bool Pause = false;
         private static bool Startup = true;
         private static int ShardCount;
 
@@ -464,18 +464,6 @@ namespace Namiko
                 ImgurAPI.Poke();
             }
         }
-        private static void SetUp()
-        {
-            switch (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"))
-            {
-                case "Development":
-                    SetUpDebug();
-                    break;
-                default:
-                    SetUpRelease();
-                    break;
-            }
-        }
         private static void SetUpConfig()
         {
             string JSON = "";
@@ -502,24 +490,25 @@ namespace Namiko
 
             return Pause;
         }
-        private static void SetUpDebug()
+        private static void SetUp()
         {
-            Diag = false;
-            Debug = true;
-            Pause = true;
-            Locations.SetUpDebug();
+            switch (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"))
+            {
+                case "Development":
+                    Diag = false;
+                    Debug = true;
+                    Pause = true;
+                    Locations.SetUpDebug();
+                    break;
+                default:
+                    Console.WriteLine("Entry: " + Assembly.GetEntryAssembly().Location);
+                    Locations.SetUpRelease();
+                    break;
+            }
             SqliteDbContext.ConnectionString = $"Data Source={Locations.SqliteDb}Database.sqlite";
             _ = LootboxStats.Reload(Locations.LootboxStatsJSON);
-            SetUpPrefixes();
-            Blacklist = BlacklistDb.GetAll();
-        }
-        private static void SetUpRelease()
-        {
-            Console.WriteLine("Entry: " + Assembly.GetEntryAssembly().Location);
-            Locations.SetUpRelease();
-            SqliteDbContext.ConnectionString = $"Data Source={Locations.SqliteDb}Database.sqlite";
-            _ = LootboxStats.Reload(Locations.LootboxStatsJSON);
-            SetUpPrefixes();
+            Prefixes = ServerDb.GetPrefixes();
+            Images.ReactionImageCommands = ImageDb.GetReactionImageCommandHashSet();
             Blacklist = BlacklistDb.GetAll();
         }
         private async static Task StartTimers()
@@ -584,18 +573,6 @@ namespace Namiko
         public static string GetPrefix(IGuild guild)
         {
             return guild == null ? Config.DefaultPrefix : GetPrefix(guild.Id);
-        }
-        private static void SetUpPrefixes()
-        {
-            var servers = ServerDb.GetAll();
-            foreach (var x in servers)
-            {
-                try
-                {
-                    Prefixes.Add(x.GuildId, x.Prefix);
-                }
-                catch { }
-            }
         }
         public static bool UpdatePrefix(ulong guildId, string prefix)
         {

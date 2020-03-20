@@ -13,6 +13,13 @@ namespace Model
             using var db = new SqliteDbContext();
             return db.Servers.Where(x => x.GuildId == GuildId).FirstOrDefault();
         }
+        public static Dictionary<ulong, string> GetPrefixes()
+        {
+            using (var db = new SqliteDbContext())
+            {
+                return db.Servers.ToDictionary(x => x.GuildId, x => x.Prefix);
+            }
+        }
         public static async Task UpdateServer(Server server)
         {
             using var db = new SqliteDbContext();

@@ -11,13 +11,18 @@ namespace Namiko
 {
     public class Images : InteractiveBase<ShardedCommandContext>
     {
+        public static HashSet<string> ReactionImageCommands { get; set; }
+
         public async Task<bool> SendRandomImage(ICommandContext Context)
         {
             string text = Context.Message.Content;
             text = text.Replace(Program.GetPrefix(Context.Guild), "");
             text = text.Split(' ')[0];
-            text = text.ToLower();
 
+            if (!ReactionImageCommands.Contains(text))
+                return false;
+
+            text = text.ToLower();
             var image = ImageDb.GetRandomImage(text, Context.Guild.Id);
             if (image == null)
             {
@@ -40,7 +45,7 @@ namespace Namiko
         [Command("List"), Alias("ListAll", "Images", "Albums"), Summary("List of all image commands and how many images there are.\n**Usage**: `!list`")]
         public async Task List([Remainder] string str = "")
         {
-            var images = ImageDb.GetImages();
+            var images = await ImageDb.GetImages();
             List<ImageCount> names = new List<ImageCount>();
 
             foreach (ReactionImage x in images)
@@ -63,7 +68,7 @@ namespace Namiko
 
             names = names.OrderBy(x => x.Name).ToList();
             var eb = ImageUtil.ListAllEmbed(names, Program.GetPrefix(Context), Context.User);
-            eb = ImageUtil.AddGuildImagesToEmbed(eb, ImageDb.GetImages(null, Context.Guild.Id).Select(x => x.Name).Distinct().OrderBy(x => x));
+            eb = ImageUtil.AddGuildImagesToEmbed(eb, (await ImageDb.GetImages(null, Context.Guild.Id)).Select(x => x.Name).Distinct().OrderBy(x => x));
             await Context.Channel.SendMessageAsync(embed: eb.Build());
         }
 
@@ -111,7 +116,7 @@ namespace Namiko
                     return;
                 }
 
-                if (ImageDb.GetImages(name, 0).Any())
+                if ((await ImageDb.GetImages(name, 0)).Any())
                 {
                     await Context.Channel.SendMessageAsync($"There is already a default image command called **{name}**. It will be replaced with your custom one.");
                 }
@@ -143,6 +148,9 @@ namespace Namiko
 
             var iImage = await ImgurAPI.UploadImageAsync(url, albumId);
             await ImageDb.AddImage(name.ToLower(), iImage.Link, insider ? 0 : Context.Guild.Id);
+
+            if (!ReactionImageCommands.Contains(name.ToLower()))
+                ReactionImageCommands.Add(name.ToLower());
 
             //Test
             var image = ImageDb.GetLastImage();
