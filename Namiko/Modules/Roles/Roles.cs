@@ -102,7 +102,7 @@ namespace Namiko
         }
 
         [Command("Invite"), Summary("Invites a user to your team.\n**Usage**: `!inv [user]`")]
-        public async Task Invite(IUser user = null, [Remainder] string str = "")
+        public async Task Invite([Remainder] IUser user = null)
         {
             var channel = Context.Channel;
             var leaderRole = RoleUtil.GetLeaderRole(Context.Guild, Context.User);

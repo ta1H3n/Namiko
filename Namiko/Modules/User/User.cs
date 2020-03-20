@@ -14,14 +14,14 @@ namespace Namiko
     public class User : InteractiveBase<ShardedCommandContext> {
 
         [Command("Profile"), Summary("Showsa a users profile.\n**Usage**: `!profile [user_optional]`")]
-        public async Task Profile(IUser user = null, [Remainder] string str = "")
+        public async Task Profile([Remainder] IUser user = null)
         {
             if (user == null) user = Context.User;
             await Context.Channel.SendMessageAsync("", false, (await UserUtil.ProfileEmbed((SocketGuildUser)user)).Build());
         }
 
         [Command("Waifus"), Alias("inv"), Summary("Shows a users waifu list.\n**Usage**: `!waifus [user_optional]`")]
-        public async Task Waifus(IUser user = null, [Remainder] string str = "")
+        public async Task Waifus([Remainder] IUser user = null)
         {
             user ??= Context.User;
 
@@ -218,13 +218,13 @@ namespace Namiko
         }
         
         [Command("Proposals"), Alias("ShowProposals", "Proposal"), Summary("Displays sent & received proposals.\n**Usage**: `!proposals`")]
-        public async Task Proposals(IUser user = null, [Remainder] string str = "")
+        public async Task Proposals([Remainder] IUser user = null)
         {
             await Context.Channel.SendMessageAsync("", false, UserUtil.ProposalsEmbed(user ?? Context.User, Context.Guild).Build());
         }
 
         [Command("Marriages"), Alias("ShowMarriages", "Marraiges", "Marriage", "sm"), Summary("Displays marriages.\n**Usage**: `!sm`")]
-        public async Task Marriages(IUser user = null, [Remainder] string str = "")
+        public async Task Marriages([Remainder] IUser user = null)
         {
             await Context.Channel.SendMessageAsync("", false, UserUtil.MarriagesEmbed(user ?? Context.User, Context.Guild).Build());
         }
@@ -317,13 +317,17 @@ namespace Namiko
             await Context.Channel.SendMessageAsync("Image set!", false, embed.Build());
         }
 
-        [Command("Quote"), Alias("q"), Summary("Allows user to see their personal quote and Image.\n**Usage**: `!q` [user(s)_optional]")]
-        public async Task DisplayPersonalQuote(IUser iuser = null, [Remainder] string str = "") {
-
+        [Command("Quote"), Alias("q"), Summary("Allows user to see their personal quote and Image.\n**Usage**: `!q [user(s)_optional]`")]
+        public async Task DisplayPersonalQuote([Remainder] IUser user = null)
+        {
             //variables
             EmbedBuilder embed;
-            bool isMe = iuser == null;
-            IUser user = iuser ?? Context.User;
+            bool isMe = false;
+            if (user == null)
+            {
+                user = Context.User;
+                isMe = true;
+            }
 
             //
             IReadOnlyCollection<SocketUser> users = Context.Message.MentionedUsers;
@@ -370,12 +374,15 @@ namespace Namiko
         }
 
         [Command("FeaturedWaifu"), Alias("fw"), Summary("Views Featured Waifu.\n**Usage**: `!fw`")]
-        public async Task DisplayFeaturedWaifu(IUser iuser = null, [Remainder] string str = "")
+        public async Task DisplayFeaturedWaifu([Remainder] IUser user = null)
         {
-
-            //using variables for names
-            bool isMe = iuser == null;
-            IUser user = iuser ?? Context.User;
+            //variables
+            bool isMe = false;
+            if (user == null)
+            {
+                user = Context.User;
+                isMe = true;
+            }
             var waifu = FeaturedWaifuDb.GetFeaturedWaifu(user.Id, Context.Guild.Id);
 
             //checking featured exists
@@ -437,7 +444,7 @@ namespace Namiko
         }
 
         [Command("Avatar"), Alias("pfp"), Summary("View a users profile picture.\n**Usage**: `!pfp [user]`")]
-        public async Task Avatar(IUser user = null)
+        public async Task Avatar([Remainder] IUser user = null)
         {
             if (user == null)
             {
@@ -451,7 +458,7 @@ namespace Namiko
         }
 
         [Command("Rep"), Summary("Gives rep to a user.\n**Usage**: `!rep [user]`")]
-        public async Task Rep(IUser user = null)
+        public async Task Rep([Remainder] IUser user = null)
         {
             var author = await ProfileDb.GetProfile(Context.User.Id);
             var cooldown = author.RepDate.AddHours(20);

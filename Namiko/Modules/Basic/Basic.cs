@@ -306,11 +306,12 @@ namespace Namiko
 
             if (eb != null)
             {
-                await Context.Channel.SendMessageAsync($":star: Type `{prefix}h [command_name]` for more information about a command. `{prefix}info` to learn more about me!", false, eb.Build());
-                await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared($"Type `{prefix}images` for a list of reaction image commands").Build());
+                await Context.Channel.SendMessageAsync(embed: eb.Build());
+                string msg = $"Check out this simple guide detailing my main features: <https://github.com/ta1H3n/Namiko/wiki>\n" +
+                    $"Type `{prefix}info` to learn more about me and find useful links!\n" +
+                    $"Type `{prefix}images` for a list of my reaction image commands!";
+                await Context.Channel.SendMessageAsync(msg);
             }
-
-
         }
 
         private EmbedBuilder AllHelpEmbed(CommandService commandService, bool all = false)

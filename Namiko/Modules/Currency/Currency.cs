@@ -219,13 +219,13 @@ namespace Namiko
         }
 
         [Command("Balance"), Alias("toastie", "bal", "toasties"), Summary("Shows amount of toasties.\n**Usage**: `!bal [user_optional]`")]
-        public async Task Toastie(IUser User = null, [Remainder] string str = "")
+        public async Task Toastie([Remainder] IUser user = null)
         {
-            if (User == null)
+            if (user == null)
             {
-                User = Context.User;
+                user = Context.User;
             }
-            await Context.Channel.SendMessageAsync("", false, ToastieUtil.ToastieEmbed(User, BalanceDb.GetToasties(User.Id, Context.Guild.Id)).Build());
+            await Context.Channel.SendMessageAsync("", false, ToastieUtil.ToastieEmbed(user, BalanceDb.GetToasties(user.Id, Context.Guild.Id)).Build());
         }
 
         [Command("Give"), Summary("Give a user some of your toasties.\n**Usage**: `!give [user] [amount]`")]
@@ -533,7 +533,7 @@ namespace Namiko
         }
 
         [Command("Lootboxes"), Summary("Lists your lootboxes.\n**Usage**: `!Lootboxes`")]
-        public async Task Lootboxes(IUser user = null, [Remainder] string str = "")
+        public async Task Lootboxes([Remainder] IUser user = null)
         {
             user ??= Context.User;
 

@@ -362,7 +362,7 @@ namespace Namiko
         }
 
         [Command("WaifuWishlist"), Alias("wwl"), Summary("Shows yours or someone's waifu wishlist.\n**Usage**: `!wwl [user_optional]`")]
-        public async Task WaifuWishlist(IUser user = null, [Remainder] string str = "")
+        public async Task WaifuWishlist([Remainder] IUser user = null)
         {
             user ??= Context.User;
             var waifus = await WaifuWishlistDb.GetWishlist(user.Id, Context.Guild.Id);
