@@ -37,7 +37,7 @@ namespace Namiko
             return true;
         }
 
-        [Command("List"), Alias("ListAll"), Summary("List of all image commands and how many images there are.\n**Usage**: `!list`")]
+        [Command("List"), Alias("ListAll", "Images", "Albums"), Summary("List of all image commands and how many images there are.\n**Usage**: `!list`")]
         public async Task List([Remainder] string str = "")
         {
             var images = ImageDb.GetImages();

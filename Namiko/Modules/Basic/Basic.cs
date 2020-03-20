@@ -304,8 +304,13 @@ namespace Namiko
                 return;
             }
 
-            if(eb != null) 
+            if (eb != null)
+            {
                 await Context.Channel.SendMessageAsync($":star: Type `{prefix}h [command_name]` for more information about a command. `{prefix}info` to learn more about me!", false, eb.Build());
+                await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared($"Type `{prefix}images` for a list of reaction image commands").Build());
+            }
+
+
         }
 
         private EmbedBuilder AllHelpEmbed(CommandService commandService, bool all = false)

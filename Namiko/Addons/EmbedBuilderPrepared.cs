@@ -13,6 +13,12 @@ namespace Namiko
             if (author != null)
                 WithAuthor(author.Username + "#" + author.Discriminator, author.GetAvatarUrl(), BasicUtil._patreon);
         }
+
+        public EmbedBuilderPrepared(string desc) : base()
+        {
+            WithColor(BasicUtil.RandomColor());
+            WithDescription(desc);
+        }
     }
 
     public static class EmbedBuilderExtensions
