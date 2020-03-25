@@ -185,11 +185,9 @@ namespace Namiko
 
             await Context.Channel.TriggerTypingAsync();
             var tracks = await RestClient.SearchAndSelect(query, this, max);
-            if (tracks.Count <= 0)
-            {
-                await ReplyAsync("*~ No Results ~*", Color.DarkRed.RawValue);
+            if (tracks == null)
                 return;
-            }
+
             if (tracks.Count > 1)
             {
                 int amount = max - player.Queue.Count;
@@ -258,11 +256,9 @@ namespace Namiko
 
             await Context.Channel.TriggerTypingAsync();
             var tracks = await RestClient.SearchAndSelect(query, this, max);
-            if (tracks.Count <= 0)
-            {
-                await ReplyAsync("*~ No Results ~*", Color.DarkRed.RawValue);
+            if (tracks == null)
                 return;
-            }
+
             if (tracks.Count > 1)
             {
                 int amount = max - player.Queue.Count;

@@ -57,14 +57,19 @@ namespace Namiko
             if (tracks.Count == 1)
                 return tracks;
 
+            if (tracks.Count <= 0)
+            {
+                await interactive.ReplyAsync("*~ No Results ~*", Color.DarkRed.RawValue);
+                return null;
+            }
+
             var player = interactive.GetPlayer();
             await player.PlayLocal("select");
             var track = await SelectTrack(tracks, interactive);
-            tracks = new List<LavaTrack>
+            return track == null ? null : new List<LavaTrack>
             {
                 track
             };
-            return tracks;
         }
 
         // LOCAL FILES
