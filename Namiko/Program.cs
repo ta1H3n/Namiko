@@ -214,9 +214,9 @@ namespace Namiko
 
                 // If the command is found but failed then send help message for said command
                 else
-                if (!(res.Error == CommandError.UnknownCommand))
+                if (!(res.Error == CommandError.UnknownCommand || res.Error == CommandError.Exception))
                 {
-                    string reason = res.ErrorReason + "\n";
+                    string reason = res.ErrorReason;
                     if (res.Error != CommandError.UnmetPrecondition)
                         reason += CommandHelpString(context.Message.Content.Split(null)[0].Replace(GetPrefix(context.Guild), ""), GetPrefix(context.Guild));
                     await context.Channel.SendMessageAsync(reason);
