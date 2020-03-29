@@ -127,6 +127,7 @@ namespace Namiko
             }
             catch { }
             cts.Dispose();
+            Console.WriteLine("Shutting down...");
         }
 
         // COMMANDS
