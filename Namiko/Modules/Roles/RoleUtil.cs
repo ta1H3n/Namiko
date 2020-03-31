@@ -132,17 +132,6 @@ namespace Namiko
 
             return null;
         }
-        public static SocketRole GetRoleByName(SocketGuild guild, string roleName)
-        {
-            var roles = guild.Roles;
-            var role = roles.FirstOrDefault(x => x.Name.Equals(roleName, StringComparison.OrdinalIgnoreCase));
-            if (role == null)
-            {
-                role = roles.Count(x => x.Name.Contains(roleName, StringComparison.OrdinalIgnoreCase)) == 1 ? 
-                    roles.First(x => x.Name.Contains(roleName, StringComparison.OrdinalIgnoreCase)) : null;
-            }
-            return role;
-        }
         public static bool IsTeamed(SocketGuild guild, IUser user)
         {
             if (GetMemberRole(guild, user) != null)

@@ -15,7 +15,7 @@ namespace Namiko
         [Command("Role"), Alias("r", "iam"), Summary("Adds or removes a public role from the user.\n**Usage**: `!r [name]`"), CustomBotPermission(GuildPermission.ManageRoles)]
         public async Task Role([Remainder] string name)
         {
-            var role = RoleUtil.GetRoleByName(Context.Guild, name);
+            var role = await this.SelectRole(name);
             var guildUser = Context.User as SocketGuildUser;
             if (role == null)
             {
@@ -59,7 +59,7 @@ namespace Namiko
         [Command("SetPublicRole"), Alias("spr"), Summary("Sets or unsets a role as a public role.\n**Usage**: `!spr [name]`"), CustomUserPermission(GuildPermission.ManageRoles)]
         public async Task NewRole([Remainder] string name)
         {
-            var role = RoleUtil.GetRoleByName(Context.Guild, name);
+            var role = await this.SelectRole(name);
             if (role == null)
             {
                 await Context.Channel.SendMessageAsync($"There's no role called `{name}` :bangbang:");
@@ -82,7 +82,7 @@ namespace Namiko
         [Command("ClearRole"), Alias("cr"), Summary("Removes all users from a role.\n**Usage**: `cr [name]`"), CustomUserPermission(GuildPermission.ManageRoles), CustomBotPermission(GuildPermission.ManageRoles)]
         public async Task ClearRole([Remainder] string name)
         {
-            var role = RoleUtil.GetRoleByName(Context.Guild, name);
+            var role = await this.SelectRole(name);
             if (role == null)
             {
                 await Context.Channel.SendMessageAsync($"There's no role called `{name}` :bangbang:");
@@ -138,7 +138,7 @@ namespace Namiko
         [Command("Join"), Summary("Accept an invite to a team.\n**Usage**: `!join [team_name]`"), CustomBotPermission(GuildPermission.ManageRoles)]
         public async Task Join([Remainder] string teamName)
         {
-            var role = RoleUtil.GetRoleByName(Context.Guild, teamName);
+            var role = await this.SelectRole(teamName);
 
             if (role == null)
             {
@@ -221,8 +221,8 @@ namespace Namiko
         [Command("NewTeam"), Alias("nt"), Summary("Creates a new team.\n**Usage**: `!nt [LeaderRoleName] [MemberRoleName]`\n Note: if a role has a space in it's name it has to be put in quotes. \n For example: `!nt \"Role One\" \"Role Two\"`"), CustomUserPermission(GuildPermission.ManageRoles)]
         public async Task NewTeam(string leader, string member)
         {
-            var leaderR = RoleUtil.GetRoleByName(Context.Guild, leader);
-            var memberR = RoleUtil.GetRoleByName(Context.Guild, member);
+            var leaderR = await this.SelectRole(leader);
+            var memberR = await this.SelectRole(member);
             if (leaderR == null)
             {
                 await Context.Channel.SendMessageAsync($"Leader role {leader} not found.");
@@ -241,7 +241,7 @@ namespace Namiko
         [Command("DeleteTeam"), Alias("dt"), Summary("Deletes a team.\n**Usage**: `!dt [Leader or Team RoleName]`"), CustomUserPermission(GuildPermission.ManageRoles)]
         public async Task DeleteTeam([Remainder] string teamName)
         {
-            var role = RoleUtil.GetRoleByName(Context.Guild, teamName);
+            var role = await this.SelectRole(teamName);
 
             if (role == null)
             {
@@ -286,7 +286,7 @@ namespace Namiko
         [Command("Team"), Summary("Info about a team.\n**Usage**: `!team [team_role_name]`")]
         public async Task Team([Remainder] string teamName)
         {
-            var role = RoleUtil.GetRoleByName(Context.Guild, teamName);
+            var role = await this.SelectRole(teamName);
 
             if(role == null)
             {

@@ -827,7 +827,7 @@ namespace Namiko
         [Command("SetMusicRole"), Alias("smr"), Summary("Adds or removes a role that is required for controlling music.\n**Usage**: `!smr [role_name]`"), CustomUserPermission(GuildPermission.Administrator)]
         public async Task MusicRole([Remainder]string roleName = "")
         {
-            var role = RoleUtil.GetRoleByName(Context.Guild, roleName);
+            var role = await this.SelectRole(roleName);
             if (role == null)
             {
                 await Context.Channel.SendMessageAsync($"Role **{roleName}** not found.");
