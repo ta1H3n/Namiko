@@ -43,6 +43,8 @@ namespace Model
         public DbSet<Blacklisted> Blacklist { get; set; }
         public DbSet<PermissionRole> PermissionRoles { get; set; }
         public DbSet<MalWaifu> MalWaifus { get; set; }
+        public DbSet<Banroyale> Banroyales { get; set; }
+        public DbSet<BanroyaleMessage> BanroyaleMessages { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder Options)
         {

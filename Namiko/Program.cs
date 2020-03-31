@@ -76,6 +76,7 @@ namespace Namiko
             Client.ShardReady += Client_ShardReady;
             Client.ShardDisconnected += Client_ShardDisconnected;
             Client.ReactionAdded += Client_ReactionAdded;
+            Client.ReactionAdded += BanroyaleGame.HandleBanroyaleReactionAsync;
             Client.JoinedGuild += Client_JoinedGuild;
             Client.LeftGuild += Client_LeftGuild;
             Client.MessageReceived += Client_ReadCommand;
@@ -108,6 +109,7 @@ namespace Namiko
                 .BuildServiceProvider();
 
             await Commands.AddModuleAsync(typeof(Banroulettes), Services);
+            await Commands.AddModuleAsync(typeof(Banroyales), Services);
             await Commands.AddModuleAsync(typeof(Basic), Services);
             await Commands.AddModuleAsync(typeof(Currency), Services);
             await Commands.AddModuleAsync(typeof(Images), Services);
