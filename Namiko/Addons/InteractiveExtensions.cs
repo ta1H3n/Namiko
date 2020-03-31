@@ -42,28 +42,48 @@ namespace Namiko
             return items[i - 1];
         }
 
-        public static async Task<SocketRole> SelectRole(this InteractiveBase<ShardedCommandContext> interactive, string roleName = "")
+        public static async Task<SocketRole> SelectRole(this InteractiveBase<ShardedCommandContext> interactive, IList<SocketRole> roles, IEnumerable<ulong> roleIdsFilter = null, bool respond = true, string msg = null)
         {
-            var roles = interactive.Context.Guild.Roles.ToList();
-            if (roleName != "")
-                roles = roles.Where(x => x.Name.Contains(roleName, StringComparison.OrdinalIgnoreCase)).ToList();
+            if (roleIdsFilter != null)
+            {
+                roles = roles.Where(x => roleIdsFilter.Contains(x.Id)).ToList();
+            }
 
-            if (roles.Count <= 1)
+            if (!roles.Any())
+            {
+                if (respond)
+                    await interactive.ReplyAsync($"*~ No Results ~*", Color.DarkRed.RawValue);
+                return null;
+            }
+
+            if (roles.Count == 1)
                 return roles.FirstOrDefault();
 
-            string desc = $"Enter the number of the role you wish to select... Query: `{roleName}`\n\n";
+            string desc = $"Enter the number of the role you wish to select...\n\n";
             int i = 0;
             foreach (var role in roles)
             {
                 i++;
                 desc += $"`#{i}` {role.Mention}\n";
+                if (desc.Length > 1900)
+                {
+                    desc = desc.Substring(0, 1900) + "...";
+                    break;
+                }
             }
-            var eb = new EmbedBuilderPrepared(interactive.Context.User)
-                .WithDescription(desc.Substring(0, 1900))
+            var eb = new EmbedBuilderPrepared(desc)
                 .WithFooter("Times out in 23 seconds")
-                .WithTitle("Roles");
+                .WithTitle(msg ?? "Roles Found");
 
             return await SelectItem<SocketRole>(interactive, roles, eb);
+        }
+        public static async Task<SocketRole> SelectRole(this InteractiveBase<ShardedCommandContext> interactive, string roleName, IEnumerable<ulong> roleIdsFilter = null, bool respond = true, string msg = null)
+        {
+            return await SelectRole(interactive, interactive.Context.Guild.Roles.Where(x => x.Name.Contains(roleName, StringComparison.OrdinalIgnoreCase)).ToList(), roleIdsFilter, respond, msg);
+        }
+        public static async Task<SocketRole> SelectRole(this InteractiveBase<ShardedCommandContext> interactive, IList<SocketRole> roles, string roleName, IEnumerable<ulong> roleIdsFilter = null, bool respond = true, string msg = null)
+        {
+            return await SelectRole(interactive, roles.Where(x => x.Name.Contains(roleName, StringComparison.OrdinalIgnoreCase)).ToList(), roleIdsFilter, respond, msg);
         }
 
         public static async Task<IUserMessage> ReplyAsync(this InteractiveBase<ShardedCommandContext> interactive, string msg, uint color = 0)

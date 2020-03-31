@@ -830,7 +830,6 @@ namespace Namiko
             var role = await this.SelectRole(roleName);
             if (role == null)
             {
-                await Context.Channel.SendMessageAsync($"Role **{roleName}** not found.");
                 return;
             }
 

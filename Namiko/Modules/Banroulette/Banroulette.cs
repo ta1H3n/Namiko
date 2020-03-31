@@ -28,10 +28,9 @@ namespace Namiko
             SocketRole role = null;
             if (roleName != "")
             {
-                role = RoleUtil.GetRoleByName(Context.Guild, roleName);
+                role = await this.SelectRole(roleName);
                 if (role == null)
                 {
-                    await Context.Channel.SendMessageAsync($":x: Role {roleName} not found.");
                     return;
                 }
             }
@@ -189,7 +188,7 @@ namespace Namiko
             }
         }
 
-        [Command("BRRewardPool"), Alias("brrp"), Summary("Add toasties to the Ban Roulette reward pool from your account.\n**Usage**: `!brrp [amount]`")]
+        [Command("BrRewardPool"), Alias("brrp"), Summary("Add toasties to the Ban Roulette reward pool from your account.\n**Usage**: `!brrp [amount]`")]
         public async Task BRRewardPool(string amountStr)
         {
             int amount = ToastieUtil.ParseAmount(amountStr, (SocketGuildUser)Context.User);
@@ -226,7 +225,7 @@ namespace Namiko
             await Context.Channel.SendMessageAsync($"Added {amount} to the reward pool!");
         }
 
-        [Command("SetBRRewardPool"), Alias("sbrrp"), Summary("Set the reward pool.\n**Usage**: `!sbrrp [amount]`"), CustomUserPermission(GuildPermission.Administrator)]
+        [Command("SetBrRewardPool"), Alias("sbrrp"), Summary("Set the reward pool.\n**Usage**: `!sbrrp [amount]`"), CustomUserPermission(GuildPermission.Administrator)]
         public async Task SetBRRewardPool(int amount)
         {
             var banroulette = BanrouletteDb.GetBanroulette(Context.Channel.Id);
@@ -241,7 +240,7 @@ namespace Namiko
             await Context.Channel.SendMessageAsync($"Set the reward pool to {amount}!");
         }
 
-        [Command("SetBRMinParticipants"), Alias("sbrmin"), Summary("Set minimum participants.\n**Usage**: `!sbrmin [amount]`"), CustomUserPermission(GuildPermission.BanMembers)]
+        [Command("SetBrMinParticipants"), Alias("sbrmin"), Summary("Set minimum participants.\n**Usage**: `!sbrmin [amount]`"), CustomUserPermission(GuildPermission.BanMembers)]
         public async Task SetBRMinParticipants(int amount)
         {
             var banroulette = BanrouletteDb.GetBanroulette(Context.Channel.Id);
@@ -256,7 +255,7 @@ namespace Namiko
             await Context.Channel.SendMessageAsync($"Set the minimum participants to {amount}!");
         }
 
-        [Command("SetBRMaxParticipants"), Alias("sbrmax"), Summary("Set maximum participants.\n**Usage**: `!sbrmax [amount]`"), CustomUserPermission(GuildPermission.BanMembers)]
+        [Command("SetBrMaxParticipants"), Alias("sbrmax"), Summary("Set maximum participants.\n**Usage**: `!sbrmax [amount]`"), CustomUserPermission(GuildPermission.BanMembers)]
         public async Task SetBRMaxParticipants(int amount)
         {
             var banroulette = BanrouletteDb.GetBanroulette(Context.Channel.Id);

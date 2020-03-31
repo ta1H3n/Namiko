@@ -13,21 +13,16 @@ namespace Namiko
     public class Roles : InteractiveBase<ShardedCommandContext>
     {
         [Command("Role"), Alias("r", "iam"), Summary("Adds or removes a public role from the user.\n**Usage**: `!r [name]`"), CustomBotPermission(GuildPermission.ManageRoles)]
-        public async Task Role([Remainder] string name)
+        public async Task Role([Remainder] string name = "")
         {
-            var role = await this.SelectRole(name);
-            var guildUser = Context.User as SocketGuildUser;
+            var role = await this.SelectRole(name, PublicRoleDb.GetAll(Context.Guild.Id).Select(x => x.RoleId), false);
             if (role == null)
             {
-                await Context.Channel.SendMessageAsync($"There's no role called `{name}` :bangbang:");
-                return;
-            }
-            if (!PublicRoleDb.IsPublic(role.Id))
-            {
-                await Context.Channel.SendMessageAsync($"`{role.Name}` isn't a public role. Trying something funny you?");
+                await ReplyAsync($"No public roles found. {(name == "" ? "" : $"Search: `{name}`")}\n`{Program.GetPrefix(Context)}spr` - make a role public.\n`{Program.GetPrefix(Context)}prl` - view a list of public roles.");
                 return;
             }
 
+            var guildUser = Context.User as SocketGuildUser;
             if (guildUser.Roles.Contains(role))
             {
                 try
@@ -57,12 +52,11 @@ namespace Namiko
         }
 
         [Command("SetPublicRole"), Alias("spr"), Summary("Sets or unsets a role as a public role.\n**Usage**: `!spr [name]`"), CustomUserPermission(GuildPermission.ManageRoles)]
-        public async Task NewRole([Remainder] string name)
+        public async Task NewRole([Remainder] string name = "")
         {
             var role = await this.SelectRole(name);
             if (role == null)
             {
-                await Context.Channel.SendMessageAsync($"There's no role called `{name}` :bangbang:");
                 return;
             }
             if (!PublicRoleDb.IsPublic(role.Id))
@@ -80,12 +74,11 @@ namespace Namiko
         }
 
         [Command("ClearRole"), Alias("cr"), Summary("Removes all users from a role.\n**Usage**: `cr [name]`"), CustomUserPermission(GuildPermission.ManageRoles), CustomBotPermission(GuildPermission.ManageRoles)]
-        public async Task ClearRole([Remainder] string name)
+        public async Task ClearRole([Remainder] string name = "")
         {
             var role = await this.SelectRole(name);
             if (role == null)
             {
-                await Context.Channel.SendMessageAsync($"There's no role called `{name}` :bangbang:");
                 return;
             }
 
@@ -93,11 +86,13 @@ namespace Namiko
             if (users.Count >= 3)
                 await Context.Channel.SendMessageAsync($"Clearing **{role.Name}**... This might take a while, Senpai.");
 
+            var tasks = new List<Task>();
             foreach (var user in users)
             {
-                await user.RemoveRoleAsync(role);
+                tasks.Add(user.RemoveRoleAsync(role));
             }
 
+            await Task.WhenAll(tasks);
             await Context.Channel.SendMessageAsync($"There are now **{users.Count}** less weebs in the `{role.Name}` role. Can I have them?");
         }
 
@@ -136,13 +131,13 @@ namespace Namiko
         }
 
         [Command("Join"), Summary("Accept an invite to a team.\n**Usage**: `!join [team_name]`"), CustomBotPermission(GuildPermission.ManageRoles)]
-        public async Task Join([Remainder] string teamName)
+        public async Task Join([Remainder] string teamName = "")
         {
-            var role = await this.SelectRole(teamName);
+            var role = await this.SelectRole(teamName, TeamDb.Teams(Context.Guild.Id).Select(x => x.MemberRoleId), respond: false);
 
             if (role == null)
             {
-                await Context.Channel.SendMessageAsync($"You're not invited to **{teamName}**! You sure they exist?");
+                await Context.Channel.SendMessageAsync($"*~ No teams found ~*");
                 return;
             }
 
@@ -163,7 +158,7 @@ namespace Namiko
                 await ch.SendMessageAsync($"<:TickYes:577838859107303424> `{Context.User}` joined **{role.Name}**.");
                 return;
             }
-            await Context.Channel.SendMessageAsync($"You're not invited to **{teamName}**! You sure they exist?");
+            await Context.Channel.SendMessageAsync($"You're not invited to **{role.Name}**! What a shame ^^");
         }
 
         [Command("LeaveTeam"), Alias("lt"), Summary("Leave your team.\n**Usage**: `!lt`"), CustomBotPermission(GuildPermission.ManageRoles)]
@@ -221,8 +216,8 @@ namespace Namiko
         [Command("NewTeam"), Alias("nt"), Summary("Creates a new team.\n**Usage**: `!nt [LeaderRoleName] [MemberRoleName]`\n Note: if a role has a space in it's name it has to be put in quotes. \n For example: `!nt \"Role One\" \"Role Two\"`"), CustomUserPermission(GuildPermission.ManageRoles)]
         public async Task NewTeam(string leader, string member)
         {
-            var leaderR = await this.SelectRole(leader);
-            var memberR = await this.SelectRole(member);
+            var leaderR = await this.SelectRole(leader, msg: "Select team leader role");
+            var memberR = await this.SelectRole(member, msg: "Select team member role");
             if (leaderR == null)
             {
                 await Context.Channel.SendMessageAsync($"Leader role {leader} not found.");
@@ -239,7 +234,7 @@ namespace Namiko
         }
 
         [Command("DeleteTeam"), Alias("dt"), Summary("Deletes a team.\n**Usage**: `!dt [Leader or Team RoleName]`"), CustomUserPermission(GuildPermission.ManageRoles)]
-        public async Task DeleteTeam([Remainder] string teamName)
+        public async Task DeleteTeam([Remainder] string teamName = "")
         {
             var role = await this.SelectRole(teamName);
 
@@ -284,9 +279,9 @@ namespace Namiko
         }
 
         [Command("Team"), Summary("Info about a team.\n**Usage**: `!team [team_role_name]`")]
-        public async Task Team([Remainder] string teamName)
+        public async Task Team([Remainder] string teamName = "")
         {
-            var role = await this.SelectRole(teamName);
+            var role = await this.SelectRole(teamName, TeamDb.Teams(Context.Guild.Id).Select(x => x.MemberRoleId));
 
             if(role == null)
             {
