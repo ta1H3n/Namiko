@@ -8,6 +8,19 @@ namespace Model
 {
     public static class BlacklistedChannelDb
     {
+        public static HashSet<ulong> BlacklistedChannelIds;
+
+        static BlacklistedChannelDb()
+        {
+            BlacklistedChannelIds = GetAll();
+        }
+
+        public static HashSet<ulong> GetAll()
+        {
+            using SqliteDbContext db = new SqliteDbContext();
+            return db.BlacklistedChannels.Select(x => x.ChannelId).ToHashSet();
+        }
+
         public static async Task UpdateBlacklistedChannel(BlacklistedChannel ch)
         {
             using SqliteDbContext db = new SqliteDbContext();
@@ -18,6 +31,7 @@ namespace Model
             else
                 db.Update(ch);
 
+            BlacklistedChannelIds.Add(ch.ChannelId);
             await db.SaveChangesAsync();
         }
         public static async Task DeleteBlacklistedChannel(ulong channelId)
@@ -27,13 +41,19 @@ namespace Model
             if (ch != null)
             {
                 db.Remove(ch);
+                BlacklistedChannelIds.Remove(ch.ChannelId);
                 await db.SaveChangesAsync();
             }
         }
         public static bool IsBlacklisted(ulong channelId)
         {
-            using var db = new SqliteDbContext();
-            return db.BlacklistedChannels.Any(x => x.ChannelId == channelId);
+            if (BlacklistedChannelIds == null)
+            {
+                using var db = new SqliteDbContext();
+                BlacklistedChannelIds = GetAll();
+            }
+
+            return BlacklistedChannelIds.Contains(channelId);
         }
     }
 }
