@@ -92,7 +92,7 @@ namespace Namiko
         public async Task Image(int id, [Remainder] string str = "")
         {
             var image = ImageDb.GetImage(id);
-            if (image == null)
+            if (image == null || (image.GuildId != 0 && image.GuildId != Context.Guild.Id))
             {
                 await Context.Channel.SendMessageAsync($"There is no image with id: {id}");
                 return;
