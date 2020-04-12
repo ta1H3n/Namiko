@@ -97,5 +97,10 @@ namespace Namiko
 
             return await interactive.Context.Channel.SendMessageAsync(embed: eb.Build());
         }
+
+        public static string Prefix(this InteractiveBase<ShardedCommandContext> interactive)
+        {
+            return Program.GetPrefix(interactive.Context);
+        }
     }
 }
