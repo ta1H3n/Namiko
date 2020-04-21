@@ -940,7 +940,7 @@ namespace Namiko
             var track = arg.Track;
             var reason = arg.Reason;
 
-            if (track.Url.ToString().Contains("leave") && track.Url.ToString().StartsWith("file:"))
+            if (track.Url.ToString().Contains("leave") && track.Url.ToString().Contains("VoiceLines"))
             {
                 await Task.Delay(1000);
                 await Node.LeaveAsync(player.VoiceChannel);
@@ -950,19 +950,19 @@ namespace Namiko
             if (!reason.ShouldPlayNext())
                 return;
 
-            if (player.Repeat && !track.Url.ToString().StartsWith("file:"))
+            if (player.Repeat && !track.Url.ToString().Contains("VoiceLines"))
             {
                 player.Queue.EnqueueFirst(track);
             }
 
-            else if (player.Loop && !track.Url.ToString().StartsWith("file:"))
+            else if (player.Loop && !track.Url.ToString().Contains("VoiceLines"))
             {
                 player.Queue.Enqueue(track);
             }
 
             if (!player.Queue.TryDequeue(out var nextTrack) || !(nextTrack is LavaTrack))
             {
-                if (!track.Url.ToString().StartsWith("file:"))
+                if (!track.Url.ToString().Contains("VoiceLines"))
                 {
                     await player.PlayLocal("empty");
                     await player.TextChannel.SendMessageAsync(embed: new EmbedBuilderLava(track.User)
