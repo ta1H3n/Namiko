@@ -131,7 +131,7 @@ namespace Namiko
         }
 
         [Command("Join"), Summary("Accept an invite to a team.\n**Usage**: `!join [team_name]`"), CustomBotPermission(GuildPermission.ManageRoles)]
-        public async Task Join([Remainder] string teamName = "")
+        public async Task Join([Remainder] string teamName)
         {
             var role = await this.SelectRole(teamName, TeamDb.Teams(Context.Guild.Id).Select(x => x.MemberRoleId), respond: false);
 

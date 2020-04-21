@@ -1,242 +1,273 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using Victoria.Entities;
-using Victoria.Entities.Payloads;
-using Victoria.Helpers;
-using Victoria.Queue;
+using Victoria.Enums;
+using Victoria.Interfaces;
+using Victoria.Payloads;
 
-namespace Victoria
-{
+namespace Victoria {
     /// <summary>
-    /// Represents a <see cref="IVoiceChannel"/> connection.
     /// </summary>
-    public sealed class LavaPlayer
-    {
+    public class LavaPlayer : IAsyncDisposable {
         /// <summary>
-        /// Keeps track of <see cref="PauseAsync"/> & <see cref="ResumeAsync"/>.
+        ///     Player's current voice state.
         /// </summary>
-        public bool IsPaused => _isPaused;
+        public IVoiceState VoiceState { get; internal set; }
 
         /// <summary>
-        /// Checks whether the <see cref="LavaPlayer"/> is playing or not.
+        /// Voice server this player is connected to.
         /// </summary>
-        public bool IsPlaying { get; internal set; }
+        public SocketVoiceServer VoiceServer { get; internal set; }
 
         /// <summary>
-        /// Current track that is playing.
+        ///     Player's current volume.
         /// </summary>
-        public LavaTrack CurrentTrack { get; internal set; }
+        public int Volume { get; private set; }
+
+        public bool Repeat { get; set; }
+        public bool Loop { get; set; }
 
         /// <summary>
-        /// Optional text channel.
+        ///     Current track that is playing.
         /// </summary>
-        public ITextChannel TextChannel { get; internal set; }
+        public LavaTrack Track { get; internal set; }
 
         /// <summary>
-        /// Connected voice channel.
+        ///     Player's current state.
+        /// </summary>
+        public PlayerState PlayerState { get; internal set; }
+
+        /// <summary>
+        ///     Last time player was updated.
+        /// </summary>
+        public DateTimeOffset LastUpdate { get; internal set; }
+
+        /// <summary>
+        ///     Default queue.
+        /// </summary>
+        public DefaultQueue<LavaTrack> Queue { get; private set; }
+
+        /// <summary>
+        ///     Voice channel this player is connected to.
         /// </summary>
         public IVoiceChannel VoiceChannel { get; internal set; }
 
         /// <summary>
-        /// Default queue, takes an object that implements <see cref="IQueueObject"/>.
+        ///     Channel bound to this player.
         /// </summary>
-        public LavaQueue<LavaTrack> Queue { get; private set; }
+        public ITextChannel TextChannel { get; internal set; }
 
         /// <summary>
-        /// Last time when Lavalink sent an updated.
+        /// 
         /// </summary>
-        public DateTimeOffset LastUpdate { get; internal set; }
+        public IReadOnlyCollection<EqualizerBand> Equalizer
+            => _equalizer;
 
-        public bool Loop { get; set; } = false;
-        public bool Repeat { get; set; } = false;
+        private readonly LavaSocket _lavaSocket;
+        private readonly List<EqualizerBand> _equalizer;
 
         /// <summary>
-        /// Keeps track of volume set by <see cref="SetVolumeAsync(int)"/>;
+        ///     Represents a <see cref="IGuild" /> voice connection.
         /// </summary>
-        public int CurrentVolume { get; private set; }
-
-        private bool _isPaused;
-        private readonly SocketHelper _socketHelper;
-        internal SocketVoiceState CachedState;
-
-        private const string INVALID_OP
-            = "This operation is invalid since player isn't actually playing anything.";
-
-        internal LavaPlayer(IVoiceChannel voiceChannel, ITextChannel textChannel,
-            SocketHelper socketHelper)
-        {
+        /// <param name="lavaSocket">
+        ///     <see cref="LavaSocket" />
+        /// </param>
+        /// <param name="voiceChannel">Voice channel to connect to.</param>
+        /// <param name="textChannel">Text channel this player is bound to.</param>
+        public LavaPlayer(LavaSocket lavaSocket, IVoiceChannel voiceChannel, ITextChannel textChannel) {
+            _lavaSocket = lavaSocket;
             VoiceChannel = voiceChannel;
             TextChannel = textChannel;
-            _socketHelper = socketHelper;
-            CurrentVolume = 100;
-            Queue = new LavaQueue<LavaTrack>();
+            Queue = new DefaultQueue<LavaTrack>(69);
+            _equalizer = new List<EqualizerBand>(15);
         }
 
         /// <summary>
-        /// Plays the specified <paramref name="track"/>.
+        ///     Plays the specified track.
         /// </summary>
-        /// <param name="track"><see cref="LavaTrack"/></param>
-        /// <param name="noReplace">If set to true, this operation will be ignored if a track is already playing or paused.</param>
-        public Task PlayAsync(LavaTrack track, bool noReplace = false)
-        {
-            IsPlaying = true;
-            CurrentTrack = track;
-            if (!noReplace)
-                Volatile.Write(ref _isPaused, false);
-            var payload = new PlayPayload(VoiceChannel.GuildId, track.Hash, noReplace);
-            return _socketHelper.SendPayloadAsync(payload);
+        /// <param name="track">An instance of <see cref="LavaTrack" />.</param>
+        public async Task PlayAsync(LavaTrack track) {
+            if (track == null)
+                throw new ArgumentNullException(nameof(track));
+
+            var payload = new PlayPayload(VoiceChannel.GuildId, track, false);
+            await _lavaSocket.SendAsync(payload)
+                .ConfigureAwait(false);
+
+            Track = track;
+            PlayerState = PlayerState.Playing;
         }
 
         /// <summary>
-        /// Plays the specified <paramref name="track"/>.
+        ///     Plays the specified track with a custom start and end time.
         /// </summary>
-        /// <param name="track"></param>
-        /// <param name="startTime">Optional setting that determines the number of milliseconds to offset the track by.</param>
-        /// <param name="stopTime">optional setting that determines at the number of milliseconds at which point the track should stop playing.</param>
-        /// <param name="noReplace">If set to true, this operation will be ignored if a track is already playing or paused.</param>
-        public Task PlayAsync(LavaTrack track, TimeSpan startTime, TimeSpan stopTime, bool noReplace = false)
-        {
-            if (startTime.TotalMilliseconds < 0 || stopTime.TotalMilliseconds < 0)
-                throw new InvalidOperationException("Start and stop must be greater than 0.");
+        /// <param name="track">An instance of <see cref="LavaTrack" />.</param>
+        /// <param name="startTime">Custom start time for track. Must be greater than 0.</param>
+        /// <param name="endTime">Custom end time for track. Must be less than <see cref="LavaTrack.Duration" />.</param>
+        /// <param name="noReplace">If true, this operation will be ignored if a track is already playing or paused.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Throws when start or end time are out of range.</exception>
+        /// <exception cref="InvalidOperationException">Throws when star time is bigger than end time.</exception>
+        public async Task PlayAsync(LavaTrack track, TimeSpan startTime, TimeSpan endTime, bool noReplace = false) {
+            if (track == null)
+                throw new ArgumentNullException(nameof(track));
 
-            if (startTime <= stopTime)
-                throw new InvalidOperationException("Stop time must be greater than start time.");
+            if (startTime.TotalMilliseconds < 0)
+                throw new ArgumentOutOfRangeException(nameof(startTime), "Value must be greater than 0.");
 
-            IsPlaying = true;
-            CurrentTrack = track;
-            if (!noReplace)
-                Volatile.Write(ref _isPaused, false);
-            var payload = new PlayPayload(VoiceChannel.GuildId, track.Hash, startTime, stopTime, noReplace);
-            return _socketHelper.SendPayloadAsync(payload);
+            if (endTime.TotalMilliseconds < 0)
+                throw new ArgumentOutOfRangeException(nameof(endTime), "Value must be greater than 0.");
+
+            if (startTime <= endTime)
+                throw new InvalidOperationException($"{nameof(endTime)} must be greather than {nameof(startTime)}.");
+
+            var payload = new PlayPayload(VoiceChannel.GuildId, track.Hash, startTime, endTime, noReplace);
+            await _lavaSocket.SendAsync(payload)
+                .ConfigureAwait(false);
+
+            Track = track;
+            PlayerState = PlayerState.Playing;
         }
 
         /// <summary>
-        /// Stops playing the current track and sets <see cref="IsPlaying"/> to false.
+        ///     Stops the current track if any is playing.
         /// </summary>
-        public Task StopAsync()
-        {
-            if (!IsPlaying)
-                throw new InvalidOperationException(INVALID_OP);
-
-            IsPlaying = false;
-            CurrentTrack = null;
-            Volatile.Write(ref _isPaused, false);
+        public async Task StopAsync() {
             var payload = new StopPayload(VoiceChannel.GuildId);
-            return _socketHelper.SendPayloadAsync(payload);
+            await _lavaSocket.SendAsync(payload)
+                .ConfigureAwait(false);
+
+            PlayerState = PlayerState.Stopped;
         }
 
         /// <summary>
-        /// Resumes if <see cref="IsPaused"/> is set to true.
+        ///     Pauses the current track if any is playing.
         /// </summary>
-        public Task ResumeAsync()
-        {
-            if (!IsPlaying)
-                throw new InvalidOperationException(INVALID_OP);
+        public async Task PauseAsync() {
+            if (!PlayerState.EnsureState())
+                throw new InvalidOperationException(
+                    "Player state doesn't match any of the following states: Connected, Playing, Paused.");
 
-            Volatile.Write(ref _isPaused, false);
-            var payload = new PausePayload(VoiceChannel.GuildId, IsPaused);
-            return _socketHelper.SendPayloadAsync(payload);
+            var payload = new PausePayload(VoiceChannel.GuildId, true);
+            await _lavaSocket.SendAsync(payload)
+                .ConfigureAwait(false);
+
+            PlayerState = Track is null
+                ? PlayerState.Stopped
+                : PlayerState.Paused;
         }
 
         /// <summary>
-        /// Pauses if <see cref="IsPaused"/> is set to false.
+        ///     Resumes the current track if any is playing.
         /// </summary>
-        public Task PauseAsync()
-        {
-            if (!IsPlaying)
-                throw new InvalidOperationException(INVALID_OP);
+        public async Task ResumeAsync() {
+            if (!PlayerState.EnsureState())
+                throw new InvalidOperationException(
+                    "Player state doesn't match any of the following states: Connected, Playing, Paused.");
 
-            Volatile.Write(ref _isPaused, true);
-            var payload = new PausePayload(VoiceChannel.GuildId, IsPaused);
-            return _socketHelper.SendPayloadAsync(payload);
+            var payload = new PausePayload(VoiceChannel.GuildId, false);
+            await _lavaSocket.SendAsync(payload)
+                .ConfigureAwait(false);
+
+            PlayerState = Track is null
+                ? PlayerState.Stopped
+                : PlayerState.Playing;
         }
 
         /// <summary>
-        /// Replaces the <see cref="CurrentTrack"/> with the next <see cref="LavaTrack"/> from <see cref="Queue"/>.
+        ///     Skips the current track after the specified delay.
         /// </summary>
-        /// <returns>Returns the skipped <see cref="LavaTrack"/>.</returns>
-        public async Task<LavaTrack> SkipAsync()
-        {
-            if (!Queue.TryDequeue(out var item))
-                throw new InvalidOperationException($"There are no more items in {nameof(Queue)}.");
+        /// <param name="delay">If set to null, skips instantly otherwise after the specified value.</param>
+        /// <returns>
+        ///     The next <see cref="LavaTrack" />.
+        /// </returns>
+        public async Task<LavaTrack> SkipAsync(TimeSpan? delay = default) {
+            if (!PlayerState.EnsureState())
+                throw new InvalidOperationException(
+                    "Player state doesn't match any of the following states: Connected, Playing, Paused.");
 
-            if (!(item is LavaTrack track))
-                throw new InvalidCastException($"Couldn't cast {item.GetType()} to {typeof(LavaTrack)}.");
+            if (!Queue.TryDequeue(out var queueable))
+                throw new InvalidOperationException("Can't skip to the next item in queue.");
 
-            var previousTrack = CurrentTrack;
-            await PlayAsync(track);
-            return previousTrack;
+            if (!(queueable is LavaTrack track))
+                throw new InvalidCastException($"Couldn't cast {queueable.GetType()} to {typeof(LavaTrack)}.");
+
+            await await Task.Delay(delay ?? TimeSpan.Zero)
+                .ContinueWith(_ => PlayAsync(track))
+                .ConfigureAwait(false);
+
+            return track;
         }
 
         /// <summary>
-        /// Seeks the <see cref="CurrentTrack"/> to specified <paramref name="position"/>.
+        ///     Seeks the current track to specified position.
         /// </summary>
-        /// <param name="position">Position must be less than <see cref="CurrentTrack"/>'s position.</param>
-        public Task SeekAsync(TimeSpan position)
-        {
-            if (!IsPlaying)
-                throw new InvalidOperationException(INVALID_OP);
+        /// <param name="position">Position must be less than <see cref="LavaTrack.Duration" />.</param>
+        /// <returns></returns>
+        public async Task SeekAsync(TimeSpan? position) {
+            if (position == null)
+                throw new ArgumentNullException(nameof(position));
 
-            if (position > CurrentTrack.Length)
-                throw new ArgumentOutOfRangeException($"{nameof(position)} is greater than current track's length.");
+            if (!PlayerState.EnsureState())
+                throw new InvalidOperationException(
+                    "Player state doesn't match any of the following states: Connected, Playing, Paused.");
 
-            var payload = new SeekPayload(VoiceChannel.GuildId, position);
-            return _socketHelper.SendPayloadAsync(payload);
+            if (position.Value.TotalMilliseconds > Track.Duration.TotalMilliseconds)
+                throw new ArgumentOutOfRangeException(nameof(position),
+                    $"Value must be no bigger than {Track.Duration.TotalMilliseconds}ms.");
+
+            var payload = new SeekPayload(VoiceChannel.GuildId, position.Value);
+            await _lavaSocket.SendAsync(payload)
+                .ConfigureAwait(false);
         }
 
         /// <summary>
-        /// Updates <see cref="LavaPlayer"/> volume and updates <see cref="CurrentVolume"/>.
+        ///     Changes the current volume and updates <see cref="Volume" />.
         /// </summary>
-        /// <param name="volume">Volume may range from 0 to 1000. 100 is default.</param>
-        public Task SetVolumeAsync(int volume)
-        {
-            if (volume > 1000)
-                throw new ArgumentOutOfRangeException($"{nameof(volume)} was greater than max limit which is 1000.");
-
-            CurrentVolume = volume;
+        public async Task UpdateVolumeAsync(ushort volume) {
+            Volume = volume;
             var payload = new VolumePayload(VoiceChannel.GuildId, volume);
-            return _socketHelper.SendPayloadAsync(payload);
+            await _lavaSocket.SendAsync(payload)
+                .ConfigureAwait(false);
         }
 
         /// <summary>
-        /// Change the <see cref="LavaPlayer"/>'s equalizer. There are 15 bands (0-14) that can be changed.
+        ///     Change the <see cref="LavaPlayer" />'s equalizer. There are 15 bands (0-14) that can be changed.
         /// </summary>
-        /// <param name="bands"><see cref="EqualizerBand"/></param>
-        public Task EqualizerAsync(List<EqualizerBand> bands)
-        {
-            if (!IsPlaying)
-                throw new InvalidOperationException(INVALID_OP);
+        /// <param name="bands">
+        ///     <see cref="EqualizerBand" />
+        /// </param>
+        public async Task EqualizerAsync(params EqualizerBand[] bands) {
+            if (!PlayerState.EnsureState())
+                throw new InvalidOperationException(
+                    "Player state doesn't match any of the following states: Connected, Playing, Paused.");
+
+            foreach (var band in bands) {
+                _equalizer[band.Band] = band;
+            }
 
             var payload = new EqualizerPayload(VoiceChannel.GuildId, bands);
-            return _socketHelper.SendPayloadAsync(payload);
+            await _lavaSocket.SendAsync(payload)
+                .ConfigureAwait(false);
         }
 
-        /// <summary>
-        /// Change the <see cref="LavaPlayer"/>'s equalizer. There are 15 bands (0-14) that can be changed.
-        /// </summary>
-        /// <param name="bands"><see cref="EqualizerBand"/></param>
-        public Task EqualizerAsync(params EqualizerBand[] bands)
-        {
-            if (!IsPlaying)
-                throw new InvalidOperationException(INVALID_OP);
+        /// <inheritdoc />
+        public async ValueTask DisposeAsync() {
+            await StopAsync()
+                .ConfigureAwait(false);
 
-            var payload = new EqualizerPayload(VoiceChannel.GuildId, bands);
-            return _socketHelper.SendPayloadAsync(payload);
-        }
+            var payload = new DestroyPayload(VoiceChannel.GuildId);
+            await _lavaSocket.SendAsync(payload)
+                .ConfigureAwait(false);
 
-        internal ValueTask DisposeAsync()
-        {
-            IsPlaying = false;
-            Queue.Clear();
-            Queue = null;
-            CurrentTrack = null;
             GC.SuppressFinalize(this);
 
-            return default;
+            Queue.Clear();
+            Queue = default;
+            Track = null;
+            VoiceChannel = null;
+            PlayerState = PlayerState.Disconnected;
         }
     }
 }

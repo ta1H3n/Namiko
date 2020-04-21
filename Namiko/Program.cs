@@ -104,8 +104,6 @@ namespace Namiko
             Services = new ServiceCollection()
                 .AddSingleton(Client)
                 .AddSingleton<InteractiveService>()
-                .AddSingleton<LavaShardClient>()
-                .AddSingleton<LavaRestClient>()
                 .BuildServiceProvider();
 
             await Commands.AddModuleAsync(typeof(Banroulettes), Services);
@@ -237,14 +235,14 @@ namespace Namiko
         {
             if (user.IsBot)
                 return;
-            if (Music.LavaClient == null)
+            if (Music.Node == null)
                 return;
             if (user == null || !(user is SocketGuildUser))
                 return;
             if (((SocketGuildUser)user).Guild == null)
                 return;
 
-            var player = Music.LavaClient?.GetPlayer(((SocketGuildUser)user).Guild.Id);
+            var player = Music.Node?.GetPlayer(((SocketGuildUser)user).Guild);
             if (player == null)
                 return;
 

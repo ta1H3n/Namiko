@@ -12,7 +12,7 @@ namespace Namiko
         public override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
         {
             SocketGuildUser user = (SocketGuildUser)context.User;
-            var player = Music.LavaClient.GetPlayer(context.Guild.Id);
+            var player = Music.Node.GetPlayer(context.Guild);
             var vc = user.VoiceChannel;
 
             if (player == null)

@@ -9,7 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Victoria;
-using Victoria.Entities;
+using Victoria.Enums;
 
 namespace Namiko
 {
@@ -43,12 +43,12 @@ namespace Namiko
 
             return tracks[i - 1];
         }
-        public static async Task<List<LavaTrack>> SearchAndSelect(this LavaRestClient client, string query, Music interactive, int limit = 500)
+        public static async Task<List<LavaTrack>> SearchAndSelect(this LavaNode client, string query, Music interactive, int limit = 500)
         {
             List<LavaTrack> tracks;
             if (Uri.IsWellFormedUriString(query, UriKind.Absolute))
             {
-                tracks = (await client.SearchTracksAsync(query, true)).Tracks.Take(limit).ToList();
+                tracks = (await client.SearchAsync(query)).Tracks.Take(limit).ToList();
                 return tracks;
             }
 
@@ -79,11 +79,11 @@ namespace Namiko
             if (Program.Debug == true)
                 return false;
 
-            if (player.IsPlaying)
+            if (player.PlayerState == PlayerState.Playing)
                 return false;
 
-            var tracks = await Music.RestClient.SearchTracksAsync(RandomFilePath(folder));
-            if (tracks.LoadType == LoadType.TrackLoaded)
+            var tracks = await Music.Node.SearchAsync(RandomFilePath(folder));
+            if (tracks.LoadStatus != LoadStatus.NoMatches && tracks.LoadStatus != LoadStatus.LoadFailed)
             {
                 var track = tracks.Tracks.FirstOrDefault();
                 if (track != null)
@@ -95,7 +95,6 @@ namespace Namiko
             }
             return false;
         }
-
         public static string RandomFilePath(string folder)
         {
             string root = Assembly.GetEntryAssembly().Location.Replace("Namiko.dll", "VoiceLines/");
@@ -136,7 +135,7 @@ namespace Namiko
             foreach (var track in tracks)
             {
                 i++;
-                str += $"`#{i}` [{track.Title.ShortenString(70, 65)}]({track.Uri})\n";
+                str += $"`#{i}` [{track.Title.ShortenString(70, 65)}]({track.Url})\n";
             }
 
             eb.WithAuthor($"Song Queue", author?.GetAvatarUrl(), BasicUtil._patreon);
@@ -146,31 +145,31 @@ namespace Namiko
         public async static Task<EmbedBuilder> NowPlayingEmbed(LavaPlayer player, bool next = false)
         {
             var eb = new EmbedBuilder();
-            var track = player.CurrentTrack;
+            var track = player.Track;
 
             string emote = "▷";
             if (player.Repeat)
                 emote = ":repeat_one: ▷";
 
             string desc;
-            if (player.CurrentTrack.IsStream)
+            if (player.Track.IsStream)
                 desc = $"{emote} `Live Stream`";
             else
 
-                desc = $"{emote} `{track.Position.ToString(@"mm\:ss")}`/`{track.Length.ToString(@"mm\:ss")}`";
+                desc = $"{emote} `{track.Position.ToString(@"hh\:mm\:ss")}`/`{track.Duration.ToString(@"hh\:mm\:ss")}`";
 
             if (track.User != null)
                 desc += $" - {track.User?.Mention ?? ""}";
 
-            var url = track.Uri.ToString().StartsWith("file:") ? "" : track.Uri.ToString();
+            var url = track.Url.ToString().StartsWith("file:") ? "" : track.Url.ToString();
             eb.WithAuthor(track.Title, track.User?.GetAvatarUrl(), url);
             eb.WithDescription(desc);
 
             if (next && player.Queue.Count > 0)
-                eb.AddField("Next up:", $"[{player.Queue.Peek().Title}]({player.Queue.Peek().Uri})");
+                eb.AddField("Next up:", $"[{player.Queue.Peek().Title}]({player.Queue.Peek().Url})");
 
-            eb.WithThumbnailUrl(await track.FetchThumbnailAsync());
-            eb.WithFooter($"Volume: {player.CurrentVolume} ⚬ Powered by: 🌋 Victoria - Lavalink");
+            eb.WithThumbnailUrl(await track.FetchArtworkAsync());
+            eb.WithFooter($"Volume: {player.Volume} ⚬ Powered by: 🌋 Victoria - Lavalink");
             eb.WithColor(BasicUtil.RandomColor());
             return eb;
         }

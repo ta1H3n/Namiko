@@ -1,118 +1,94 @@
-﻿using System;
+using System;
+using System.Net;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Discord;
-using Newtonsoft.Json.Linq;
-using Victoria.Entities;
-using Victoria.Helpers;
+using Victoria.Enums;
+using Victoria.Resolvers;
 
-namespace Victoria
-{
-    public static class VictoriaExtensions
-    {
-        internal static Regex Compiled(string pattern)
-        {
-            return new Regex(pattern, RegexOptions.Compiled | RegexOptions.IgnoreCase);
+namespace Victoria {
+    /// <summary>
+    /// </summary>
+    public static class VictoriaExtensions {
+        /// <summary>
+        ///     Whether the next track should be played or not.
+        /// </summary>
+        /// <param name="trackEndReason">Track end reason given by Lavalink.</param>
+        public static bool ShouldPlayNext(this TrackEndReason trackEndReason) {
+            return trackEndReason == TrackEndReason.Finished || trackEndReason == TrackEndReason.LoadFailed;
         }
 
         /// <summary>
-        /// Fetches thumbnail of the specified track.
+        /// Fetches artwork for Youtube, Twitch, SoundCloud and Vimeo.
         /// </summary>
-        /// <param name="track"><see cref="LavaTrack"/></param>
-        public static async Task<string> FetchThumbnailAsync(this LavaTrack track)
-        {
-            var url = string.Empty;
-
-            switch ($"{track.Uri}".ToLower())
-            {
-                case var yt when yt.Contains("youtube"):
-                    return $"https://img.youtube.com/vi/{track.Id}/maxresdefault.jpg";
-
-                case var twich when twich.Contains("twitch"):
-                    url = $"https://api.twitch.tv/v4/oembed?url={track.Uri}";
-                    break;
-
-                case var sc when sc.Contains("soundcloud"):
-                    url = $"https://soundcloud.com/oembed?url={track.Uri}&format=json";
-                    break;
-
-                case var vim when vim.Contains("vimeo"):
-                    url = $"https://vimeo.com/api/oembed.json?url={track.Uri}";
-                    break;
-            }
-
-            var req = await HttpHelper.Instance.GetStringAsync(url);
-            var parse = new JObject();
-            try
-            {
-                parse = JObject.Parse(req);
-            } catch { }
-            return !parse.TryGetValue("thumbnail_url", out var thumb)
-                ? "https://i.imgur.com/Iw3SsqS.png"
-                : $"{thumb}";
+        /// <param name="track"></param>
+        /// <returns></returns>
+        public static ValueTask<string> FetchArtworkAsync(this LavaTrack track) {
+            return ArtworkResolver.FetchAsync(track);
         }
 
         /// <summary>
-        /// Searches lyrics for the specified track.
+        /// Fetches lyrics from Genius.
         /// </summary>
-        /// <param name="track"><see cref="LavaTrack"/></param>
-        public static Task<string> FetchLyricsAsync(this LavaTrack track)
-        {
-            return LyricsHelper.SearchAsync(track.Author, track.Title);
+        /// <param name="track"></param>
+        /// <returns></returns>
+        public static ValueTask<string> FetchLyricsFromGeniusAsync(this LavaTrack track) {
+            return LyricsResolver.SearchGeniusAsync(track);
         }
 
         /// <summary>
-        /// Transforms a single youtube video playlist url to proper youtube url
+        /// Fetches lyrics from OVH API.
         /// </summary>
-        /// <param name="url">The youtube url to sanitize</param>
-        /// <returns>The sanitized youtube url</returns>
-        public static string SanitizeYoutubeUrl(this string url)
-        {
-            if (!url.Contains("youtu")) return url;
-
-            Regex regex = Compiled(@"(?!videoseries)[a-zA-Z0-9_-]{11,42}");
-            Match match = regex.Match(url);
-            if (match.Success && match.Value.Length == 11)
-            {
-                string identifier = match.Value;
-                return $"https://www.youtube.com/watch?v={identifier}";
-            }
-            else
-            {
-                return url;
-            }
+        /// <param name="track"></param>
+        /// <returns></returns>
+        public static ValueTask<string> FetchLyricsFromOVHAsync(this LavaTrack track) {
+            return LyricsResolver.SearchOVHAsync(track);
         }
 
-        /// <summary>
-        /// Gets the provider name for an url (example: google.com -> google)
-        /// </summary>
-        /// <param name="url">The url to get the provider from</param>
-        /// <returns>The provider name</returns>
-        public static string GetProvider(this Uri uri)
-        {
-            string[] domainParts = uri.Host.Split('.');
-            if (domainParts.Length < 2)
-                return "N/A";
-
-            return domainParts[domainParts.Length - 2];
+        internal static bool EnsureState(this PlayerState state) {
+            return state == PlayerState.Connected
+                   || state == PlayerState.Playing
+                   || state == PlayerState.Paused;
         }
 
-        /// <summary>
-        /// Checks if the <see cref="TrackEndReason"/> is Finished or LoadFailed.
-        /// </summary>
-        /// <param name="reason"><see cref="TrackEndReason"/></param>
-        public static bool ShouldPlayNext(this TrackEndReason reason)
-        {
-            return reason == TrackEndReason.Finished || reason == TrackEndReason.LoadFailed;
+        internal static string Encode(this string str) {
+            return WebUtility.UrlEncode(str);
         }
 
-        internal static void WriteLog(this Func<LogMessage, Task> log, LogSeverity severity, string message, Exception exception = null)
-        {
-            if (severity > Configuration.InternalSeverity)
-                return;
+        internal static (string Author, string Title) GetAuthorAndTitle(this LavaTrack lavaTrack) {
+            var split = lavaTrack.Title.Split('-');
 
-            var logMessage = new LogMessage(severity, nameof(Victoria), message, exception);
-            log?.Invoke(logMessage);
+            if (split.Length is 1)
+                return (lavaTrack.Author, lavaTrack.Title);
+
+            var author = split[0];
+            var title = split[1];
+            var regex = new Regex(@"(ft).\s+\w+|\(.*?\)|(lyrics)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+            while (regex.IsMatch(title))
+                title = regex.Replace(title, string.Empty);
+
+            return author switch {
+                ""                                             => (lavaTrack.Author, title),
+                null                                           => (lavaTrack.Author, title),
+                _ when string.Equals(author, lavaTrack.Author) => (lavaTrack.Author, title),
+                _                                              => (author, title)
+            };
+        }
+
+        internal static string ParseGeniusHtml(Span<byte> bytes) {
+            var start = Encoding.UTF8.GetBytes("<!--sse-->");
+            var end = Encoding.UTF8.GetBytes("<!--/sse-->");
+
+            bytes = bytes.Slice(bytes.LastIndexOf(start));
+            bytes = bytes.Slice(0, bytes.LastIndexOf(end));
+
+            var rawHtml = Encoding.UTF8.GetString(bytes);
+            if (rawHtml.Contains("Genius.ads"))
+                return string.Empty;
+
+            var htmlRegex = new Regex("<[^>]*?>", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+            return htmlRegex.Replace(rawHtml, string.Empty);
         }
     }
 }

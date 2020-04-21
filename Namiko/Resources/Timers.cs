@@ -399,7 +399,6 @@ namespace Namiko
         // DISCORBBOTLIST
         private static bool VoteLock = false;
         private static bool ReminderLock = false;
-        public static List<Stopwatch> VoteTimers = new List<Stopwatch> { new Stopwatch(), new Stopwatch(), new Stopwatch(), new Stopwatch() };
         public static void Timer_UpdateDBLGuildCount(object sender, ElapsedEventArgs e)
         {
             int amount = Program.GetClient().Guilds.Count;
@@ -413,16 +412,12 @@ namespace Namiko
             try
             {
                 VoteLock = true;
-                VoteTimers.ForEach(x => x.Restart());
                 var voters = await WebUtil.GetVotersAsync();
-                VoteTimers[0].Stop();
                 var old = await VoteDb.GetVoters(500);
-                VoteTimers[1].Stop();
                 var votersParsed = voters.Select(x => x.Id).ToList();
                 votersParsed.Reverse();
 
                 List<ulong> add = NewEntries(old, votersParsed);
-                VoteTimers[2].Stop();
 
                 if (add.Count > 500)
                 {
@@ -433,7 +428,6 @@ namespace Namiko
 
                 await VoteDb.AddVoters(add);
                 await SendRewards(add);
-                VoteTimers[3].Stop();
             }
             catch (Exception ex) 
             {
@@ -442,7 +436,6 @@ namespace Namiko
             finally
             {
                 Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} Vote Timers:");
-                VoteTimers.ForEach(x => Console.WriteLine($"{x.ElapsedMilliseconds}{(x.IsRunning ? " - running" : "")}"));
                 VoteLock = false;
             }
         }

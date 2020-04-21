@@ -267,14 +267,6 @@ namespace Namiko
             }
         }
 
-        [Command("VoteTimers"), OwnerPrecondition]
-        public async Task Test()
-        {
-            string str = "";
-            Timers.VoteTimers.ForEach(x => str += $"{x.ElapsedMilliseconds}{(x.IsRunning ? " - running" : "")}\n");
-            await Context.Channel.SendMessageAsync(str);
-        }
-
         // HELP COMMAND STUFF
 
         [Command("Help"), Alias("h"), Summary("Shows more information about a command.\n**Usage**: `!help [command/module_name]`")]
