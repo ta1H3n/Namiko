@@ -269,12 +269,12 @@ namespace Namiko
         }
         private async Task Client_ReactionAdded(Cacheable<IUserMessage, ulong> arg1, ISocketMessageChannel arg2, SocketReaction arg3)
         {
-            if(arg3.MessageId != 511188952640913408)
+            if (arg3.MessageId != 700399700196458546)
                 return;
 
             SocketTextChannel sch = arg2 as SocketTextChannel;
             var user = sch.Guild.GetUser(arg3.UserId);
-            var role = sch.Guild.GetRole(417112174926888961);
+            var role = sch.Guild.GetRole(697234413360119808);
 
             if (RoleUtil.HasRole(user, role))
                 return;
