@@ -91,6 +91,7 @@ namespace Namiko
             Client.UserBanned += Client_UserBannedLog;
 
             Commands.CommandExecuted += Commands_CommandExecuted;
+            Commands.Log += Commands_Log;
 
             await Client.LoginAsync(TokenType.Bot, Config.Token);
             await Client.StartAsync();
@@ -227,6 +228,13 @@ namespace Namiko
             // If command is found - save a log of it
             if (cmdName != null)
                 await Stats.LogCommand(cmdName, context, success);
+        }
+        public async Task Commands_Log(LogMessage logMessage)
+        {
+            if (logMessage.Exception is CommandException cmdException)
+            {
+                SentrySdk.CaptureException(cmdException);
+            }
         }
 
         // EVENTS
