@@ -527,8 +527,132 @@ namespace Namiko
                 .WithColor(BasicUtil.RandomColor())
                 .WithThumbnailUrl("https://i.imgur.com/4JQmxa6.png")
                 .WithDescription($"Congratulations! You found **{amountWon.ToString("n0")}** {ToastieUtil.RandomEmote()}!\nNow you have **{bal.ToString("n0")}** {ToastieUtil.RandomEmote()}!")
-                //.AddField($"<:toastie3:454441133876183060> {Context.User} | Lootbox", $"Congratulations! You found **{amountWon.ToString("n0")}** {ToastieUtil.RandomEmote()}!\nNow you have **{bal.ToString("n0")}** {ToastieUtil.RandomEmote()}!")
                 .Build();
+            });
+        }
+
+        [Command("BulkOpen"), Summary("Open multiple lootboxes at a time.\n**Usage**: `!open`"), RequireContext(ContextType.Guild)]
+        public async Task BulkOpen([Remainder] string str = "")
+        {
+            var boxes = await LootBoxDb.GetAll(Context.User.Id, Context.Guild.Id);
+            if (boxes.Count == 0)
+            {
+                await Context.Channel.SendMessageAsync("", false, ToastieUtil.NoBoxEmbed(Context.User).Build());
+                return;
+            }
+
+            LootBox box = null;
+            if (boxes.Count == 1)
+                box = boxes[0];
+
+            else
+            {
+                var listMsg = await Context.Channel.SendMessageAsync(embed: ToastieUtil.BoxListEmbed(boxes, Context.User)
+                    .WithFooter("Times out in 23 seconds")
+                    .WithDescription("Enter the number of the Lootbox type you wish to open.")
+                    .Build());
+                var response = await NextMessageAsync(
+                    new Criteria<IMessage>()
+                    .AddCriterion(new EnsureSourceUserCriterion())
+                    .AddCriterion(new EnsureSourceChannelCriterion())
+                    .AddCriterion(new EnsureRangeCriterion(boxes.Count, Program.GetPrefix(Context))),
+                    new TimeSpan(0, 0, 23));
+
+                _ = listMsg.DeleteAsync();
+                int i = 0;
+                try
+                {
+                    i = int.Parse(response.Content);
+                }
+                catch
+                {
+                    _ = Context.Message.DeleteAsync();
+                    return;
+                }
+                _ = response.DeleteAsync();
+
+                box = boxes[i - 1];
+            }
+
+            var type = LootboxStats.Lootboxes[box.Type];
+            var dialoague = await ReplyAsync(embed: new EmbedBuilderPrepared(Context.User).WithDescription($"How many {type.Emote} **{type.Name}** lootboxes do you wish to open?").Build());
+            var amountMsg = await NextMessageAsync(
+                new Criteria<IMessage>()
+                .AddCriterion(new EnsureSourceUserCriterion())
+                .AddCriterion(new EnsureSourceChannelCriterion())
+                .AddCriterion(new EnsureRangeCriterion(int.MaxValue, Program.GetPrefix(Context))),
+                new TimeSpan(0, 0, 23));
+            int amount;
+            try
+            {
+                amount = int.Parse(amountMsg.Content);
+            }
+            catch
+            {
+                _ = Context.Message.DeleteAsync();
+                return;
+            }
+            _ = dialoague.DeleteAsync();
+
+            try
+            {
+                await LootBoxDb.AddLootbox(Context.User.Id, box.Type, -amount, box.GuildId);
+            }
+            catch
+            {
+                await Context.Channel.SendMessageAsync("You tried.");
+                return;
+            }
+            _ = amountMsg.DeleteAsync();
+
+            var msg = await Context.Channel.SendMessageAsync("", false, ToastieUtil.BoxOpeningEmbed(Context.User).Build());
+            await ProfileDb.IncrementLootboxOpened(Context.User.Id, amount);
+            int waitms = 4200;
+
+            int toasties = 0;
+            var waifusFound = new List<Waifu>();
+            var waifus = UserInventoryDb.GetWaifus(Context.User.Id, Context.Guild.Id);
+            bool isPremium = PremiumDb.IsPremium(Context.User.Id, PremiumType.Pro);
+
+            for (int i = 0; i < amount; i++)
+            {
+                if (type.IsWaifu())
+                {
+                    var waifu = await ToastieUtil.UnboxWaifu(type, isPremium, Context.User.Id, Context.Guild.Id);
+                    while (waifu == null || waifus.Any(x => x.Name.Equals(waifu.Name)) || waifusFound.Any(x => x.Name.Equals(waifu.Name)))
+                        waifu = await ToastieUtil.UnboxWaifu(type, isPremium, Context.User.Id, Context.Guild.Id);
+
+                    waifusFound.Add(waifu);
+                    await UserInventoryDb.AddWaifu(Context.User.Id, waifu, Context.Guild.Id);
+                }
+                else
+                {
+                    toasties += type.GetRandomToasties();
+                }
+            }
+
+            await BalanceDb.AddToasties(Context.User.Id, toasties, Context.Guild.Id);
+            var bal = BalanceDb.GetToasties(Context.User.Id, Context.Guild.Id);
+
+            await Task.Delay(waitms);
+            var eb = new EmbedBuilder()
+                .WithAuthor($"{Context.User} | {box.Type.ToString()} x{amount}", Context.User.GetAvatarUrl(), BasicUtil._patreon)
+                .WithColor(BasicUtil.RandomColor())
+                .WithThumbnailUrl("https://i.imgur.com/4JQmxa6.png");
+
+            string desc = $"You found **{toasties.ToString("n0")}** {ToastieUtil.RandomEmote()}!\nNow you have **{bal.ToString("n0")}** {ToastieUtil.RandomEmote()}!\n\n";
+            if (waifusFound.Any())
+            {
+                desc += "**Waifus Found:**\n";
+                foreach (var w in waifusFound)
+                {
+                    desc += $"`T{w.Tier}` **{w.Name}** - *{(w.Source.Length > 37 ? w.Source.Substring(0, 33) + "..." : w.Source)}*\n";
+                }
+            }
+
+            eb.WithDescription(desc.Length > 2000 ? desc.Substring(0, 1970) + "\n*And more...*" : desc);
+            await msg.ModifyAsync(x => {
+                x.Embed = eb.Build();
             });
         }
 
