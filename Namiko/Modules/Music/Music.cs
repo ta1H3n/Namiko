@@ -169,7 +169,7 @@ namespace Namiko
             var player = GetPlayer();
             if (player == null)
             {
-                await ReplyAsync("I'm not in a voice channel... Type `!join` to invite me to yours!");
+                await ReplyAsync($"I'm not in a voice channel... Type `{Program.GetPrefix(Context)}join` to invite me to yours!");
                 return;
             }
 
@@ -243,7 +243,7 @@ namespace Namiko
             var player = GetPlayer();
             if (player == null)
             {
-                await ReplyAsync("I'm not in a voice channel... Type `!join` to invite me to yours!");
+                await ReplyAsync($"I'm not in a voice channel... Type `{Program.GetPrefix(Context)}join` to invite me to yours!");
                 return;
             }
 
@@ -332,7 +332,7 @@ namespace Namiko
             var player = GetPlayer();
             if (player == null)
             {
-                await ReplyAsync("I'm not in a voice channel... Type `!join` to invite me to yours!");
+                await ReplyAsync($"I'm not in a voice channel... Type `{Program.GetPrefix(Context)}join` to invite me to yours!");
                 return;
             }
 
