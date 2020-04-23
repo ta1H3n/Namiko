@@ -198,6 +198,17 @@ namespace Namiko
                 return;
             }
 
+            if (Context.Channel is SocketTextChannel ch && !ch.Guild.CurrentUser.GetPermissions(ch).Has(ChannelPermission.SendMessages))
+            {
+                var dm = await Context.User.GetOrCreateDMChannelAsync();
+                await dm.SendMessageAsync(embed: new EmbedBuilderPrepared(Context.Guild.CurrentUser)
+                    .WithDescription($"I don't have the permission to send messages in **{ch.Name}**.\n" +
+                    $"Make sure I have a role that allows me to send messages in the channels you want to use me in.")
+                    .WithImageUrl("https://i.imgur.com/BDWWdcF.png")
+                    .Build());
+                return;
+            }
+
             _ = Commands.ExecuteAsync(Context, ArgPos, Services);
         }
         private async Task Commands_CommandExecuted(Optional<CommandInfo> cmd, ICommandContext context, IResult res)
