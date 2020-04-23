@@ -428,6 +428,8 @@ namespace Namiko
 
                 await VoteDb.AddVoters(add);
                 await SendRewards(add);
+                if (add.Count > 0)
+                    Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} Shipped {add.Count} lootboxes.");
             }
             catch (Exception ex) 
             {
@@ -435,7 +437,6 @@ namespace Namiko
             }
             finally
             {
-                Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} Vote Timers:");
                 VoteLock = false;
             }
         }
