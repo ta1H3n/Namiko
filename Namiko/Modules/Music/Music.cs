@@ -54,7 +54,7 @@ namespace Namiko
             return false;
         }
 
-        [Command("Join"), Summary("Namiko joins your voice channel.\n**Usage**: `!join`"), PermissionRole(RoleType.Music)]
+        [Command("Join"), Alias("Music"), Summary("Namiko joins your voice channel.\n**Usage**: `!join`"), PermissionRole(RoleType.Music)]
         public async Task Join([Remainder]string str = "")
         {
             if (!(PremiumDb.IsPremium(Context.Guild.Id, PremiumType.GuildPlus) || PremiumDb.IsPremium(Context.Guild.Id, PremiumType.Guild)))
@@ -75,26 +75,33 @@ namespace Namiko
                 return;
             }
 
+            if (!Node.IsConnected)
+            {
+                await ReplyAsync("I'm not connected to Lavalink, please try again in a few seconds...");
+                return;
+            }
+
             var user = Context.User as SocketGuildUser;
             if (user.VoiceChannel is null)
             {
-                await ReplyAsync("You need to join a voice channel first, Senpai...");
+                await ReplyAsync("You need to join a voice channel first, Senpai!");
                 return;
             }
 
             var player = Player;
+            var current = (Context.Guild.CurrentUser as IGuildUser)?.VoiceChannel;
+
             if (player == null)
             {
-                var vc = (Context.Guild.CurrentUser as IGuildUser)?.VoiceChannel;
-                if (vc != null)
-                    await vc.DisconnectAsync();
+                if (current != null)
+                    await current.DisconnectAsync();
                 player = await Node.JoinAsync(user.VoiceChannel, Context.Channel as ITextChannel);
                 await ReplyAsync($"Hellooo~ I joined **{user.VoiceChannel.Name}** <:NekoHi:620711213826834443>");
                 await player.PlayLocal("join");
                 return;
             }
 
-            if(user.VoiceChannel == player.VoiceChannel)
+            if (user.VoiceChannel == player.VoiceChannel && user.VoiceChannel == current)
             {
                 await ReplyAsync($"I'm already in **{user.VoiceChannel.Name}**, Senpai...");
                 return;
@@ -107,47 +114,38 @@ namespace Namiko
         [Command("Leave"), Summary("Namiko leaves your voice channel.\n**Usage**: `!leave`"), PermissionRole(RoleType.Music)]
         public async Task Leave([Remainder]string str = "")
         {
-            try
+            var player = Player;
+            var current = (Context.Guild.CurrentUser as IGuildUser)?.VoiceChannel;
+
+            if (player == null && current == null)
             {
-                SocketGuildUser user = (SocketGuildUser)Context.User;
-                var player = Player;
-                var vc = user.VoiceChannel;
-
-                if (player == null)
-                {
-                    await GetVoiceChannel().DisconnectAsync();
-                    var vc2 = (Context.Guild.CurrentUser as IGuildUser)?.VoiceChannel;
-                    if (vc2 != null)
-                        await vc2.DisconnectAsync();
-                    return;
-                }
-
-                if (!(vc != null && player.VoiceChannel == vc))
-                {
-                    await ReplyAsync("You're not in my voice channel, senpai...");
-                    return;
-                }
-
-                if (player != null && player.PlayerState == PlayerState.Playing)
-                    await player.StopAsync();
-
-                var voice = await player.PlayLocal("leave");
-                await ReplyAsync($"See you next time <:NekoHi:620711213826834443>");
-                if (!voice)
-                    await Node.LeaveAsync(GetVoiceChannel());
+                await ReplyAsync($"I'm not connected to a voice channel, Senpai...");
+                return;
             }
-            catch
+
+            if (player != null && current != null && player?.VoiceChannel == current)
             {
-                var vc2 = (Context.Guild.CurrentUser as IGuildUser)?.VoiceChannel;
-                if (vc2 != null)
-                    await vc2.DisconnectAsync();
-                var vc = GetVoiceChannel();
-                await Node.LeaveAsync(vc);
-                await vc.DisconnectAsync();
+                if (await player.PlayLocal("leave"))
+                {
+                    await Context.Channel.TriggerTypingAsync();
+                    await Task.Delay(2000);
+                }
             }
+
+            if (player != null)
+            {
+                await player.DisposeAsync();
+                Node._playerCache.TryRemove(Context.Guild.Id, out _);
+            }
+
+            if (current != null)
+                await current.DisconnectAsync();
+
+            await ReplyAsync($"Bye bye! <:NekoHi:620711213826834443>");
+            return;
         }
 
-        [Command("Play"), Summary("Play a song/playlist or add it to the end of a queue.\n**Usage**: `!play [link_or_search]`"), PermissionRole(RoleType.Music)]
+        [Command("Play"), Alias("p"), Summary("Play a song/playlist or add it to the end of a queue.\n**Usage**: `!play [link_or_search]`"), PermissionRole(RoleType.Music)]
         public async Task Play([Remainder]string query)
         {
             if (!(PremiumDb.IsPremium(Context.Guild.Id, PremiumType.GuildPlus) || PremiumDb.IsPremium(Context.Guild.Id, PremiumType.Guild)))
@@ -576,8 +574,11 @@ namespace Namiko
         {
             if (!TimeSpan.TryParseExact(timeStr, @"mm\:ss", null, out var time))
             {
-                await ReplyAsync("Couldn't parse the time. Try `mm:ss` e.g. `01:30`");
-                return;
+                if (!TimeSpan.TryParseExact(timeStr, @"hh\:mm\:ss", null, out time))
+                {
+                    await ReplyAsync($"Couldn't parse the time. Try `mm:ss` or `hh:mm:ss` e.g. `{Program.GetPrefix(Context)}seek 01:30` or `{Program.GetPrefix(Context)}seek 01:15:30`");
+                    return;
+                }
             }
 
             var player = Player;
@@ -600,7 +601,8 @@ namespace Namiko
             }
 
             await player.SeekAsync(time);
-            await ReplyAsync($"Moving to {time.ToString(@"mm\:ss")}");
+            string format = time.TotalSeconds > 3600 ? @"hh\:mm\:ss" : @"mm\:ss";
+            await ReplyAsync($"Moving to {time.ToString(format)}");
         }
 
         [Command("NowPlaying"), Alias("Playing", "np"), Summary("Shows the current playing song.\n**Usage**: `!np`")]
@@ -939,13 +941,6 @@ namespace Namiko
             var player = arg.Player;
             var track = arg.Track;
             var reason = arg.Reason;
-
-            if (track.Url.ToString().Contains("leave") && track.Url.ToString().Contains("VoiceLines"))
-            {
-                await Task.Delay(1000);
-                await Node.LeaveAsync(player.VoiceChannel);
-                return;
-            }
 
             if (!reason.ShouldPlayNext())
                 return;

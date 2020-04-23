@@ -4,6 +4,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Model;
 using Newtonsoft.Json;
+using Sentry;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -167,7 +168,21 @@ namespace Namiko
         [Command("Die"), Summary("Kills Namiko"), Insider]
         public async Task Die()
         {
-            await WebhookClients.NamikoLogChannel.SendMessageAsync($"`{DateTime.Now.ToString("HH:mm:ss")}` {Context.Client.CurrentUser.Username} killed by {Context.User.Mention} :gun:");
+            var tasks = new List<Task>();
+            tasks.Add(WebhookClients.NamikoLogChannel.SendMessageAsync($"`{DateTime.Now.ToString("HH:mm:ss")}` {Context.Client.CurrentUser.Username} killed by {Context.User.Mention} :gun:"));
+
+            foreach (var player in Music.Node.Players)
+            {
+                try
+                {
+                    tasks.Add(player.TextChannel.SendMessageAsync(embed: new EmbedBuilderLava(Context.User).WithDescription("Disconnecting player due to server restart.\n" +
+                        "You can restart the player once I am back online.").Build()));
+                    tasks.Add(Music.Node.LeaveAsync(player.VoiceChannel));
+                } 
+                catch (Exception ex) { SentrySdk.CaptureException(ex); }
+            }
+
+            await Task.WhenAll(tasks);
 
             var cts = Program.GetCts();
             await Context.Client.StopAsync();

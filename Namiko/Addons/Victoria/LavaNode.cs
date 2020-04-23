@@ -89,7 +89,7 @@ namespace Victoria {
         private readonly LavaConfig _config;
         private readonly HttpClient _httpClient;
         private readonly JsonSerializerOptions _jsonOptions;
-        private readonly ConcurrentDictionary<ulong, TPlayer> _playerCache;
+        public readonly ConcurrentDictionary<ulong, TPlayer> _playerCache;
         private readonly LavaSocket _lavaSocket;
         private readonly BaseSocketClient _socketClient;
 
@@ -289,7 +289,7 @@ namespace Victoria {
                     if (!_playerCache.TryGetValue(voiceChannel.GuildId, out var player))
                         throw new InvalidOperationException($"No player was found for {voiceChannel.Guild.Name}.");
 
-                    if (player.VoiceChannel.Id == voiceChannel.Id)
+                    if (player.VoiceChannel?.Id == voiceChannel.Id)
                         throw new InvalidOperationException("Connected and new voice channel ids are the same.");
 
                     if (player.PlayerState == PlayerState.Playing)
