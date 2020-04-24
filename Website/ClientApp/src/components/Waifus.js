@@ -1,5 +1,4 @@
 ﻿import React, { Component } from 'react';
-import './Waifus.css';
 
 export class Waifus extends Component {
     static displayName = Waifus.name;
