@@ -32,13 +32,13 @@ namespace Namiko
         [Command("Pro"), Alias("Premium", "Support", "Patreon", "Paypal", "Donate"), Summary("Donation Links.")]
         public async Task Donate([Remainder] string str = "")
         {
-            await Context.Channel.SendMessageAsync("", false, BasicUtil.DonateEmbed(this.Prefix()).Build());
+            await Context.Channel.SendMessageAsync("", false, BasicUtil.DonateEmbed(Program.GetPrefix(Context)).Build());
         }
 
         [Command("InfoPro"), Summary("Donation Links.")]
         public async Task InfoPro([Remainder] string str = "")
         {
-            string prefix = this.Prefix();
+            string prefix = Program.GetPrefix(Context);
             var eb = new EmbedBuilder()
                 .WithAuthor(Program.GetClient().CurrentUser)
                 .WithDescription($"Namiko Pro Upgrades :star:\n" +
@@ -59,7 +59,7 @@ namespace Namiko
         [Command("InfoProPlus"), Summary("Donation Links.")]
         public async Task InfoProPlus([Remainder] string str = "")
         {
-            string prefix = this.Prefix();
+            string prefix = Program.GetPrefix(Context);
             var eb = new EmbedBuilder()
                 .WithAuthor(Program.GetClient().CurrentUser)
                 .WithDescription($"Namiko Pro+ Upgrades :star2:\n" +
@@ -83,7 +83,7 @@ namespace Namiko
         [Command("InfoGuild"), Summary("Donation Links.")]
         public async Task InfoGuild([Remainder] string str = "")
         {
-            string prefix = this.Prefix();
+            string prefix = Program.GetPrefix(Context);
             var eb = new EmbedBuilder()
                 .WithAuthor(Program.GetClient().CurrentUser)
                 .WithDescription($"Namiko Pro Guild Upgrades :star:\n" +
@@ -203,6 +203,8 @@ namespace Namiko
         [Command("SShipWaifu"), Summary("\n **Usage**: `!shipwaifu [waifu] [userid] [guildid_optional]`"), OwnerPrecondition]
         public async Task ShipWaifu(string name, ulong userId, ulong guildId = 0)
         {
+            Program.GetPrefix(Context);
+
             if (guildId == 0)
                 guildId = Context.Guild.Id;
 

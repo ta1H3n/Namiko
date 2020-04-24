@@ -71,7 +71,7 @@ namespace Namiko
                     $"• Look up lyrics of the playing song!\n" +
                     $"• And... I... I will talk to you in voice chat~ <:Awooo:582888496793124866>\n" +
                     $"\n" +
-                    $"Type `{this.Prefix()}pro` for more info! Get all these features and more from 5$/month!\n" +
+                    $"Type `{Program.GetPrefix(Context)}pro` for more info! Get all these features and more from 5$/month!\n" +
                     $"Or join my [Support Server](https://discord.gg/W6Ru5sM) and try!");
                 return;
             }
@@ -162,7 +162,7 @@ namespace Namiko
                     $"• Look up lyrics of the playing song!\n" +
                     $"• And... I... I will talk to you in voice chat~ <:Awooo:582888496793124866>\n" +
                     $"\n" +
-                    $"Type `{this.Prefix()}pro` for more info! Get all these features and more from 5$/month!\n" +
+                    $"Type `{Program.GetPrefix(Context)}pro` for more info! Get all these features and more from 5$/month!\n" +
                     $"Or join my [Support Server](https://discord.gg/W6Ru5sM) and try!");
                 return;
             }
@@ -236,7 +236,7 @@ namespace Namiko
                     $"• Look up lyrics of the playing song!\n" +
                     $"• And... I... I will talk to you in voice chat~ <:Awooo:582888496793124866>\n" +
                     $"\n" +
-                    $"Type `{this.Prefix()}pro` for more info! Get all these features and more from 5$/month!\n" +
+                    $"Type `{Program.GetPrefix(Context)}pro` for more info! Get all these features and more from 5$/month!\n" +
                     $"Or join my [Support Server](https://discord.gg/W6Ru5sM) and try!");
                 return;
             }
@@ -325,7 +325,7 @@ namespace Namiko
                     $"• Look up lyrics of the playing song!\n" +
                     $"• And... I... I will talk to you in voice chat~ <:Awooo:582888496793124866>\n" +
                     $"\n" +
-                    $"Type `{this.Prefix()}pro` for more info! Get all these features and more from 5$/month!\n" +
+                    $"Type `{Program.GetPrefix(Context)}pro` for more info! Get all these features and more from 5$/month!\n" +
                     $"Or join my [Support Server](https://discord.gg/W6Ru5sM) and try!");
                 return;
             }

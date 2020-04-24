@@ -333,7 +333,7 @@ namespace Namiko
             if (PremiumDb.IsPremium(Context.User.Id, PremiumType.ProPlus))
                 cap = 12;
 
-            string prefix = this.Prefix();
+            string prefix = Program.GetPrefix(Context);
             if (waifus.Count >= cap)
             {
                 await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared(Context.User)

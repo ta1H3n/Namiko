@@ -91,7 +91,7 @@ namespace Namiko
 
                 eb.WithAuthor(wife);
                 eb.WithDescription($"**{ user.Mention }** has proposed to you.");
-                eb.WithFooter($"`{this.Prefix()}marry [user]` or `{this.Prefix()}decline [user]`");
+                eb.WithFooter($"`{Program.GetPrefix(Context)}marry [user]` or `{Program.GetPrefix(Context)}decline [user]`");
                 await Context.Channel.SendMessageAsync($"", false, eb.Build());
                 return;
             }

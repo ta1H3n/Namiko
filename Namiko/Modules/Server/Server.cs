@@ -20,7 +20,7 @@ namespace Namiko
             await Context.Channel.SendMessageAsync("", false, (await ServerUtil.ServerInfo(Context.Guild)).Build());
         }
 
-        [Command("SetPrefix"), Alias("sp", "sbp", "setbotprefix"), Summary("Sets a prefix for the bot in the server.\n**Usage**: `!sp [prefix]`"), CustomUserPermission(GuildPermission.Administrator)]
+        [Command("SetPrefix"), Alias("sp", "sbp", "setbotprefix"), Summary("Sets a prefix for the bot in the server.\n**Usage**: `!sp [prefix]`"), CustomUserPermission(GuildPermission.ManageMessages)]
         public async Task SetBotPrefix(string prefix)
         {
             if (prefix.Length < 1)
@@ -32,6 +32,13 @@ namespace Namiko
             await ServerDb.UpdateServer(server);
             Program.UpdatePrefix(Context.Guild.Id, prefix);
             await Context.Channel.SendMessageAsync($"My prefix is now `{prefix}`");
+        }
+
+        [Command("Prefix"), Alias("sp", "sbp", "setbotprefix"), Summary("Sets a prefix for the bot in the server.\n**Usage**: `!sp [prefix]`")]
+        public async Task Prefix([Remainder] string str = "")
+        {
+            var prefix = Program.GetPrefix(Context);
+            await Context.Channel.SendMessageAsync($"My current prefix is `{prefix}`.\nYou can change it by typing `{prefix}sp [new_prefix]` without the brackets :fox:");
         }
 
         [Command("SetJoinLogChannel"), Alias("jch", "jlch", "sjch", "sjlch"), Summary("Sets a channel to log users joining/leaving the guild.\n**Usage**: `!jlch`"), CustomUserPermission(GuildPermission.ManageChannels)]
