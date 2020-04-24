@@ -49,7 +49,11 @@ namespace Namiko
             }
 
             SetUpConfig();
-            using (SentrySdk.Init(Config.SentryWebhook))
+            using (SentrySdk.Init(options => 
+            {
+                options.Dsn = new Dsn(Config.SentryWebhook);
+                options.Environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            }))
             {
                 SetUp();
                 new Program().MainAsync().GetAwaiter().GetResult();
