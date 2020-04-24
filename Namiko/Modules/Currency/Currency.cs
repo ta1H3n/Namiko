@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 
 namespace Namiko
 {
+    [RequireGuild]
     public class Currency : InteractiveBase<ShardedCommandContext>
     {
         [Command("Blackjack"), Alias("bj"), Summary("Starts a game of blackjack.\n**Usage**: `!bj [amount]`")]
@@ -443,7 +444,7 @@ namespace Namiko
             await Context.Channel.SendMessageAsync("Fine. Just leave me alone.", false, ToastieUtil.GiveEmbed(Context.Client.CurrentUser, Context.User, amount).Build());
         }
 
-        [Command("Open"), Alias("OpenLootbox", "Lootbox", "Lootwox"), Summary("Open a lootbox if you have one.\n**Usage**: `!open`"), RequireContext(ContextType.Guild)]
+        [Command("Open"), Alias("OpenLootbox", "Lootbox", "Lootwox"), Summary("Open a lootbox if you have one.\n**Usage**: `!open`"), RequireGuild]
         public async Task Open([Remainder] string str = "")
         {
             var boxes = await LootBoxDb.GetAll(Context.User.Id, Context.Guild.Id);
@@ -531,7 +532,7 @@ namespace Namiko
             });
         }
 
-        [Command("BulkOpen"), Summary("Open multiple lootboxes at a time.\n**Usage**: `!open`"), RequireContext(ContextType.Guild)]
+        [Command("BulkOpen"), Summary("Open multiple lootboxes at a time.\n**Usage**: `!open`"), RequireGuild]
         public async Task BulkOpen([Remainder] string str = "")
         {
             var boxes = await LootBoxDb.GetAll(Context.User.Id, Context.Guild.Id);

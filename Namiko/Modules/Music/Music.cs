@@ -16,6 +16,7 @@ using Victoria.Resolvers;
 
 namespace Namiko
 {
+    [RequireGuild]
     public class Music : InteractiveBase<ShardedCommandContext>
     {
         public static readonly LavaNode Node;

@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 
 namespace Namiko
 {
+    [RequireGuild]
     [Name("Server")]
     public class ServerModule : InteractiveBase<ShardedCommandContext>
     {

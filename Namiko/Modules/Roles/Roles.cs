@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 
 namespace Namiko
 {
+    [RequireGuild]
     public class Roles : InteractiveBase<ShardedCommandContext>
     {
         [Command("Role"), Alias("r", "iam"), Summary("Adds or removes a public role from the user.\n**Usage**: `!r [name]`"), CustomBotPermission(GuildPermission.ManageRoles)]

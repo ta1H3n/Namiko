@@ -9,10 +9,11 @@ using System.Threading.Tasks;
 
 namespace Namiko
 {
+    [RequireGuild]
     public class Banroyales : InteractiveBase<ShardedCommandContext>
     {
         [Command("NewBanroyale"), Alias("nbrl"), Summary("Starts a new game of Ban Royale, where participants play a reaction game until last one standing. Losers can get optionally kicked/banned and winners can get toasties as a reward.\n" +
-            "**Usage**: `!nbrl [entry_fee-default_0] [required_role_name-optional]`\n"), CustomBotPermission(GuildPermission.ManageRoles), CustomUserPermission(GuildPermission.ManageMessages), RequireContext(ContextType.Guild)]
+            "**Usage**: `!nbrl [entry_fee-default_0] [required_role_name-optional]`\n"), CustomBotPermission(GuildPermission.ManageRoles), CustomUserPermission(GuildPermission.ManageMessages), RequireGuild]
         public async Task NewBanroyale([Remainder] string roleName = "")
         {
             var banroyale = await BanroyaleDb.GetBanroyale(Context.Channel.Id);

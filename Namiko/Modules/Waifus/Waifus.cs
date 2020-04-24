@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 
 namespace Namiko
 {
+    [RequireGuild]
     public class Waifus : InteractiveBase<ShardedCommandContext>
     {
         private static readonly Dictionary<ulong, Object> slideLock = new Dictionary<ulong, Object>();

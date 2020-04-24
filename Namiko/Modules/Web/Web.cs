@@ -192,8 +192,9 @@ namespace Namiko
 
             await Context.Channel.SendMessageAsync(embed: eb.Build());
         }
-        
-        [Command("Subreddit"), Alias("sub"), Summary("Set a subreddit for Namiko to post hot posts from.\n**Usage**: `!sub [subreddit_name] [min_upvotes]`"), CustomUserPermission(GuildPermission.ManageChannels), RequireContext(ContextType.Guild)]
+
+        [RequireGuild]
+        [Command("Subreddit"), Alias("sub"), Summary("Set a subreddit for Namiko to post hot posts from.\n**Usage**: `!sub [subreddit_name] [min_upvotes]`"), CustomUserPermission(GuildPermission.ManageChannels)]
         public async Task Subreddit(string name, int upvotes)
         {
             var subs = SpecialChannelDb.GetChannelsByGuild(Context.Guild.Id, Model.ChannelType.Reddit);
@@ -250,6 +251,7 @@ namespace Namiko
             await Context.Channel.SendMessageAsync(embed: WebUtil.SubredditSubscribedEmbed(sub, upvotes).Build());
         }
 
+        [RequireGuild]
         [Command("Unsubscribe"), Alias("unsub"), Summary("Unsubscribe from a subreddit.\n**Usage**: `!unsub [subreddit_name]`"), CustomUserPermission(GuildPermission.ManageChannels)]
         public async Task Subreddit(string name)
         {
@@ -274,6 +276,7 @@ namespace Namiko
             }
         }
 
+        [RequireGuild]
         [Command("SubList"), Summary("Subreddits you are subscribed to.\n**Usage**: `!sublist`")]
         public async Task SubList()
         {

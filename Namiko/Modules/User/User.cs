@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 
 namespace Namiko
 {
+    [RequireGuild]
     public class User : InteractiveBase<ShardedCommandContext> {
 
         [Command("Profile"), Summary("Showsa a users profile.\n**Usage**: `!profile [user_optional]`")]
