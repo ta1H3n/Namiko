@@ -15,7 +15,7 @@ namespace Website.Controllers
         [HttpGet]
         public async Task<IEnumerable<Waifu>> Get()
         {
-            var waifus = WaifuDb.SearchWaifus("azur");
+            var waifus = await WaifuDb.SearchWaifus("azur");
             return waifus;
         }
     }
