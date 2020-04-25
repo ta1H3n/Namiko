@@ -289,9 +289,6 @@ namespace Victoria {
                     if (!_playerCache.TryGetValue(voiceChannel.GuildId, out var player))
                         throw new InvalidOperationException($"No player was found for {voiceChannel.Guild.Name}.");
 
-                    if (player.VoiceChannel?.Id == voiceChannel.Id)
-                        throw new InvalidOperationException("Connected and new voice channel ids are the same.");
-
                     if (player.PlayerState == PlayerState.Playing)
                         await player.PauseAsync()
                             .ConfigureAwait(false);

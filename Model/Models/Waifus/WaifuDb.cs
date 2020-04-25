@@ -25,7 +25,7 @@ namespace Model
             DbContext.Update(waifu);
             return await DbContext.SaveChangesAsync();
         }
-        public static List<Waifu> SearchWaifus(string query, bool primaryName = false, IEnumerable<Waifu> from = null, bool includeMAL = false)
+        public static async Task<List<Waifu>> SearchWaifus(string query, bool primaryName = false, IEnumerable<Waifu> from = null, bool includeMAL = false)
         {
             using var DbContext = new SqliteDbContext();
             List<Waifu> waifus = new List<Waifu>();
@@ -54,7 +54,7 @@ namespace Model
                     (x.Source == null ? false : x.Source.ToUpper().Contains(word.ToUpper())));
             }
 
-            waifus = waifuQuery.ToList();
+            waifus = await waifuQuery.ToListAsync();
 
             return waifus;
 
