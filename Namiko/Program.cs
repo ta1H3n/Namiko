@@ -249,7 +249,10 @@ namespace Namiko
         {
             if (logMessage.Exception is CommandException cmdException)
             {
-                SentrySdk.CaptureException(cmdException);
+                if (cmdException.InnerException != null)
+                    SentrySdk.CaptureException(cmdException.InnerException);
+                else
+                    SentrySdk.CaptureException(cmdException);
             }
         }
 
