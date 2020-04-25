@@ -208,7 +208,7 @@ namespace Namiko
             if (guildId == 0)
                 guildId = Context.Guild.Id;
 
-            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(name), this);
+            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(await WaifuDb.SearchWaifus(name), this);
             if (waifu == null)
                 return;
 

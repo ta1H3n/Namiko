@@ -101,7 +101,7 @@ namespace Namiko
             if (modshop != null)
                 shopwaifus.AddRange(modshop.ShopWaifus);
 
-            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(str, false, shopwaifus.Select(x => x.Waifu)), this);
+            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(await WaifuDb.SearchWaifus(str, false, shopwaifus.Select(x => x.Waifu)), this);
 
             if (waifu == null)
             {
@@ -153,7 +153,7 @@ namespace Namiko
 
         [Command("SellWaifu"), Alias("sw"), Summary("Sells a waifu you already own for a discounted price.\n**Usage**: `!sw [name]`")]
         public async Task SellWaifu([Remainder] string str = "") {
-            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(str, false, UserInventoryDb.GetWaifus(Context.User.Id, Context.Guild.Id)), this);
+            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(await WaifuDb.SearchWaifus(str, false, UserInventoryDb.GetWaifus(Context.User.Id, Context.Guild.Id)), this);
 
             //waifus existance
             if (waifu == null) {
@@ -204,7 +204,7 @@ namespace Namiko
         [Command("GiveWaifu"), Alias("gw"), Summary("Transfers waifu to another user.\n**Usage**: `!gw [user] [waifu_name]`")]
         public async Task GiveWaifu(IUser recipient, [Remainder] string str = "")
         {
-            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(str, false, UserInventoryDb.GetWaifus(Context.User.Id, Context.Guild.Id)), this);
+            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(await WaifuDb.SearchWaifus(str, false, UserInventoryDb.GetWaifus(Context.User.Id, Context.Guild.Id)), this);
 
             if (waifu == null)
             {
@@ -231,7 +231,7 @@ namespace Namiko
         [Command("Waifu"), Alias("Husbando", "Trap", "w"), Summary("Shows waifu details.\n**Usage**: `!waifu [search]`")]
         public async Task ShowWaifu([Remainder] string name)
         {
-            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(name), this);
+            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(await WaifuDb.SearchWaifus(name), this);
             if (waifu == null)
             {
                 //await Context.Channel.SendMessageAsync($"Can't find '{name}'. I know they are not real, but this one *really is* just your imagination >_>");
@@ -322,7 +322,7 @@ namespace Namiko
         public async Task WishWaifu([Remainder] string str = "")
         {
             var user = Context.User;
-            Waifu waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(str), this);
+            Waifu waifu = await WaifuUtil.ProcessWaifuListAndRespond(await WaifuDb.SearchWaifus(str), this);
             if (waifu == null)
             {
                 return;
@@ -375,7 +375,7 @@ namespace Namiko
         public async Task RemoveWaifuWish([Remainder] string str = "")
         {
             var user = Context.User;
-            Waifu waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(str, false, await WaifuWishlistDb.GetWishlist(Context.User.Id, Context.Guild.Id)), this);
+            Waifu waifu = await WaifuUtil.ProcessWaifuListAndRespond(await WaifuDb.SearchWaifus(str, false, await WaifuWishlistDb.GetWishlist(Context.User.Id, Context.Guild.Id)), this);
             if (waifu == null)
             {
                 return;
@@ -419,7 +419,7 @@ namespace Namiko
             }
             var waifus = shop.ShopWaifus.Select(x => x.Waifu);
 
-            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(name), this);
+            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(await WaifuDb.SearchWaifus(name), this);
             if (waifu == null)
                 return;
 
@@ -463,7 +463,7 @@ namespace Namiko
             var shop = await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Mod);
             var waifus = shop.ShopWaifus.Select(x => x.Waifu);
 
-            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(name, false, waifus), this);
+            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(await WaifuDb.SearchWaifus(name, false, waifus), this);
             if (waifu == null)
                 return;
 
@@ -478,7 +478,7 @@ namespace Namiko
         [Command("ShipWaifu"), Summary("Gives any waifu to a user.\n**Usage**: `!shipwaifu [user] [waifu_search]`"), HomeOrT1GuildPrecondition, CustomUserPermission(GuildPermission.Administrator)]
         public async Task ShipWaifu(IUser user, [Remainder] string name)
         {
-            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(name), this);
+            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(await WaifuDb.SearchWaifus(name), this);
             if (waifu == null)
                 return;
 
@@ -556,7 +556,7 @@ namespace Namiko
         [Command("WaifuFullName"), Alias("wfn"), Summary("Changes the full name of a waifu.\n**Usage**: `!wfn [name] [fullname]`"), Insider]
         public async Task WaifuFullName(string name, [Remainder] string fullname = null)
         {
-            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(name, true), this);
+            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(await WaifuDb.SearchWaifus(name, true), this);
             if (waifu == null)
             {
                 return;
@@ -574,7 +574,7 @@ namespace Namiko
         public async Task WaifuDescription(string name, [Remainder] string description = null)
         {
 
-            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(name, true), this);
+            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(await WaifuDb.SearchWaifus(name, true), this);
             if (waifu == null)
             {
                 return;
@@ -591,7 +591,7 @@ namespace Namiko
         [Command("WaifuSource"), Alias("wsrc"), Summary("Changes the source of a waifu.\n**Usage**: `!ws [name] [source]`"), Insider]
         public async Task WaifuSource(string name, [Remainder] string source = null)
         {
-            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(name, true), this);
+            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(await WaifuDb.SearchWaifus(name, true), this);
             if (waifu == null)
             {
                 return;
@@ -608,7 +608,7 @@ namespace Namiko
         [Command("WaifuTier"), Alias("wt"), Summary("Changes the tier of a waifu.\n**Usage**: `!wt [name] [tier(1-3)]`"), Insider]
         public async Task WaifuTier(string name, int tier)
         {
-            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(name, true), this);
+            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(await WaifuDb.SearchWaifus(name, true), this);
             if (waifu == null)
             {
                 return;
@@ -625,7 +625,7 @@ namespace Namiko
         [Command("WaifuImage"), Alias("wi"), Summary("Changes the image of a waifu.\n**Usage**: `!wi [name] [image_url]`"), Insider]
         public async Task WaifuImage(string name, string url = null)
         {
-            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(name, true), this);
+            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(await WaifuDb.SearchWaifus(name, true), this);
             if (waifu == null)
             {
                 return;
@@ -807,7 +807,7 @@ namespace Namiko
         [Command("WaifuMal"), Alias("wm"), Summary("Sets waifus MAL Id.\n**Usage**: `!wm [name] [MAL_ID]`"), Insider]
         public async Task WaifuMal(string name, long malId)
         {
-            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(WaifuDb.SearchWaifus(name, true, includeMAL: true), this);
+            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(await WaifuDb.SearchWaifus(name, true, includeMAL: true), this);
             if (waifu == null)
             {
                 return;
