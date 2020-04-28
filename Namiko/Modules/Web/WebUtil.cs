@@ -164,12 +164,13 @@ namespace Namiko
             eb.WithAuthor($"{anime.Title} ({anime.TitleJapanese})", MalIconUrl, anime.LinkCanonical);
             eb.WithFooter($"Results of anime search");
             eb.WithCurrentTimestamp(); //automatically put in footer
-            eb.WithDescription("**Type:** " + anime.Type +
+            string desc = "**Type:** " + anime.Type +
                 "\n**Anime score:** " + anime.Score +
                 "\n**Rated:** " + anime.Rating +
                 "\n**Episodes:** " + anime.Episodes +
                 "\n**Genres:** " + string.Join('/', anime.Genres) + "\n" + "\n" +
-                anime.Synopsis);
+                anime.Synopsis;
+            eb.WithDescription(desc.Length > 2040 ? desc.Substring(0, 2030) + "..." : desc);
             eb.ThumbnailUrl = anime.ImageURL;
             return eb;
         }
@@ -213,12 +214,13 @@ namespace Namiko
             eb.WithAuthor($"{manga.Title} ({manga.TitleJapanese})", MalIconUrl, manga.LinkCanonical);
             eb.WithFooter($"Results of manga search");
             eb.WithCurrentTimestamp();
-            eb.WithDescription("**Type:** " + manga.Type +
+            string desc = "**Type:** " + manga.Type +
                 "\n**Manga score:** " + manga.Score +
                 "\n**Status:** " + manga.Status +
                 "\n**Chapters:** " + MangaState +
                 "\n**Genres:** " + string.Join('/', manga.Genres) + "\n" + "\n" +
-                manga.Synopsis);
+                manga.Synopsis;
+            eb.WithDescription(desc.Length > 2040 ? desc.Substring(0, 2030) + "..." : desc);
             eb.ThumbnailUrl = manga.ImageURL;
             return eb;
         }
