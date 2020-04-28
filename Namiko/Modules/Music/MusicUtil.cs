@@ -115,7 +115,7 @@ namespace Namiko
             foreach (var track in tracks)
             {
                 i++;
-                str += $"`#{i}` {track.Title.ShortenString(66, 61)}\n";
+                str += $"`#{i}` {track.Title.ShortenString(60, 55)}\n";
             }
 
             eb.AddField($"Search Results :musical_note:", str);
