@@ -54,7 +54,7 @@ namespace Model
                     (x.Source == null ? false : x.Source.ToUpper().Contains(word.ToUpper())));
             }
 
-            waifus = await waifuQuery.ToListAsync();
+            waifus = from == null ? await waifuQuery.ToListAsync() : waifuQuery.ToList();
 
             return waifus;
 
