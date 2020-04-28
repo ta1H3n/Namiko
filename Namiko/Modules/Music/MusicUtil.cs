@@ -155,8 +155,10 @@ namespace Namiko
             if (player.Track.IsStream)
                 desc = $"{emote} `Live Stream`";
             else
-
-                desc = $"{emote} `{track.Position.ToString(@"hh\:mm\:ss")}`/`{track.Duration.ToString(@"hh\:mm\:ss")}`";
+            {
+                string format = track.Duration.TotalSeconds >= 3600 ? @"hh\:mm\:ss" : @"mm\:ss";
+                desc = $"{emote} `{track.Position.ToString(format)}`/`{track.Duration.ToString(format)}`";
+            }
 
             if (track.User != null)
                 desc += $" - {track.User?.Mention ?? ""}";

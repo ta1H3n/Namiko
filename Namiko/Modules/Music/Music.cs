@@ -3,10 +3,12 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Model;
+using Sentry;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Timers;
 using Victoria;
 using Victoria.Decoder;
 using Victoria.Enums;
@@ -42,7 +44,7 @@ namespace Namiko
             Node.OnTrackStuck += TrackStuck;
             Node.OnTrackEnded += TrackEnded;
             //Node.OnStatsReceived += StatsReceived;
-            //Node.OnWebSocketClosed += WebSocketClosed;
+            Node.OnWebSocketClosed += WebSocketClosed;
         }
 
         public static async Task<bool> Initialize(DiscordShardedClient client)
@@ -448,7 +450,7 @@ namespace Namiko
         public async Task Pause([Remainder]string str = "")
         {
             var player = Player;
-            if (player is null || player.PlayerState != PlayerState.Playing)
+            if (player is null)
             {
                 await ReplyAsync("There is nothing to pause.");
                 return;
@@ -472,7 +474,7 @@ namespace Namiko
         public async Task Resume([Remainder]string str = "")
         {
             var player = Player;
-            if (player is null || player.PlayerState != PlayerState.Playing)
+            if (player is null)
             {
                 await ReplyAsync("There is nothing to resume.");
                 return;
@@ -909,14 +911,30 @@ namespace Namiko
 
             await WebhookClients.LavalinkChannel.SendMessageAsync(message);
         }
-
         private static async Task WebSocketClosed(WebSocketClosedEventArgs arg)
         {
-            string message = $"`🌋` `{DateTime.Now.ToString("HH:mm:ss")}` - `Lavalink died. Try restarting?` {Program.GetClient().GetUser(Config.OwnerId).Mention}";
-            Console.WriteLine(message);
-            await WebhookClients.LavalinkChannel.SendMessageAsync(message);
-        }
+            try
+            {
+                var ch = await Program.GetClient().GetUser(Config.OwnerId).GetOrCreateDMChannelAsync();
+                await ch.SendMessageAsync($"Websocket closed.\n" +
+                    $"By remote: **{arg.ByRemote}**\n" +
+                    $"GuildId: **{arg.GuildId}**\n" +
+                    $"Reason: **{arg.Reason}**\n" +
+                    $"Code: **{arg.Code}**");
 
+                if (arg.Code == 4014)
+                {
+                    var guild = Program.GetClient().GetGuild(arg.GuildId);
+                    await RejoinPlayer(Node.GetPlayer(guild),
+                        new TimeSpan(0, 0, 10),
+                        guild.CurrentUser,
+                        3);
+                }
+            } catch (Exception ex)
+            {
+                SentrySdk.CaptureException(ex);
+            }
+        }
         private static async Task StatsReceived(StatsEventArgs arg)
         {
             if (DateTime.Now.Minute % 10 != 0)
@@ -936,7 +954,6 @@ namespace Namiko
 
             await WebhookClients.LavalinkChannel.SendMessageAsync(embeds: new List<Embed> { eb.Build() });
         }
-
         private static async Task TrackEnded(TrackEndedEventArgs arg)
         {
             var player = arg.Player;
@@ -971,7 +988,6 @@ namespace Namiko
             await player.PlayAsync(nextTrack as LavaTrack);
             await player.TextChannel.SendMessageAsync(embed: (await MusicUtil.NowPlayingEmbed(player)).Build());
         }
-
         private static async Task TrackStuck(TrackStuckEventArgs arg)
         {
             var player = arg.Player;
@@ -983,7 +999,6 @@ namespace Namiko
                 await player.TextChannel.SendMessageAsync($"Track `{track.Title}` is stuck for `{arg.Threshold}ms`. Skipping...", embed: (await MusicUtil.NowPlayingEmbed(player)).Build());
             }
         }
-
         private static async Task TrackException(TrackExceptionEventArgs arg)
         {
             var player = arg.Player;
@@ -996,6 +1011,64 @@ namespace Namiko
                     await player.TextChannel.SendMessageAsync("Gomen, Senpai... *Coughs blood* ... The player broke! Try starting a new one?\n" +
                         $"Error: `{arg.ErrorMessage}`");
                     await player.DisposeAsync();
+                }
+            }
+        }
+
+
+        private static async Task RejoinPlayer(LavaPlayer player, TimeSpan wait, IGuildUser bot, int tries = 1)
+        {
+            if (tries <= 0)
+            {
+                return;
+            }
+            tries--;
+
+            var current = bot?.VoiceChannel;
+
+            if (player == null)
+            {
+                await player.TextChannel.SendMessageAsync(embed: new EmbedBuilderLava()
+                        .WithDescription("Player was destroyed. Use the join command to reinvite me to a voice channel.")
+                        .Build());
+                return;
+            }
+            if (player.VoiceChannel == current)
+            {
+                return;
+            }
+
+            try
+            {
+                if (current == null)
+                {
+                    await Node.MoveChannelAsync(player.VoiceChannel);
+                    await player.TextChannel.SendMessageAsync(embed: new EmbedBuilderLava()
+                        .WithDescription($"Reconnected player to **{player.VoiceChannel.Name}**")
+                        .Build());
+                    return;
+                }
+                if (player.VoiceChannel != current)
+                {
+                    await Node.MoveChannelAsync(player.VoiceChannel);
+                    await player.TextChannel.SendMessageAsync(embed: new EmbedBuilderLava()
+                        .WithDescription($"Reconnected player to **{player.VoiceChannel.Name}**")
+                        .Build());
+                    return;
+                }
+            } catch
+            {
+                if (tries > 0)
+                {
+                    await Task.Delay(wait);
+                    await RejoinPlayer(player, wait, bot, tries);
+                }
+                else
+                {
+                    await player.TextChannel.SendMessageAsync(embed: new EmbedBuilderLava()
+                        .WithDescription($"Player reconnect to  **{player.VoiceChannel.Name}** failed. This was the last attempt.\n" +
+                        $"Use the join command to reinvite me to a voice channel.")
+                        .Build());
                 }
             }
         }

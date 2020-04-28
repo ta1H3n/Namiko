@@ -175,8 +175,8 @@ namespace Namiko
             {
                 try
                 {
-                    tasks.Add(player.TextChannel.SendMessageAsync(embed: new EmbedBuilderLava(Context.User).WithDescription("Disconnecting player due to server restart.\n" +
-                        "You can restart the player once I am back online.").Build()));
+                    tasks.Add(player.TextChannel.SendMessageAsync(embed: new EmbedBuilderLava().WithDescription("Gomen, Senpai. I have to Disconnect the player due to server restart.\n" +
+                        "You can restart the player once I am back online in a few minutes.").Build()));
                     tasks.Add(Music.Node.LeaveAsync(player.VoiceChannel));
                 } 
                 catch (Exception ex) { SentrySdk.CaptureException(ex); }
