@@ -37,13 +37,13 @@ namespace Namiko
             field += $"Total waifu value: **{waifus.Sum(x => Convert.ToInt64(WaifuUtil.GetPrice(x.Waifu.Tier, 0))).ToString("n0")}**\n";
             var groupedwaifus = waifus.GroupBy(x => x.UserId).OrderByDescending(x => x.Count());
             var most = groupedwaifus.FirstOrDefault();
-            user = guild.GetUser(most.Key);
+            user = most == null ? null : guild.GetUser(most.Key);
             if (most != null && user != null)
             {
                 field += $"Most waifus: {user.Mention} - **{most.Count().ToString("n0")}**\n";
             }
             most = groupedwaifus.OrderByDescending(x => x.Sum(y => WaifuUtil.GetPrice(y.Waifu.Tier, 0))).FirstOrDefault();
-            user = guild.GetUser(most.Key);
+            user = most == null ? null : guild.GetUser(most.Key);
             if (most != null && user != null)
             {
                 field += $"Highest value: {user.Mention} - **{most.Sum(y => WaifuUtil.GetPrice(y.Waifu.Tier, 0)).ToString("n0")}**\n";
