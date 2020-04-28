@@ -41,10 +41,17 @@ namespace Model
                     UserId = userId,
                     GuildId = guildId
                 };
-            bal.Amount += amount;
+            try
+            {
+                bal.Amount = checked(bal.Amount + amount);
+            } catch
+            {
+                bal.Amount = int.MaxValue;
+            }
 
             if (bal.Amount < 0)
                 throw new Exception("You don't have enough toasties... qq");
+
             else
             {
                 db.Toasties.Update(bal);
