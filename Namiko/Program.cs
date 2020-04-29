@@ -245,7 +245,7 @@ namespace Namiko
             if (cmdName != null)
                 await Stats.LogCommand(cmdName, context, success);
         }
-        public async Task Commands_Log(LogMessage logMessage)
+        private async Task Commands_Log(LogMessage logMessage)
         {
             if (logMessage.Exception is CommandException cmdException)
             {

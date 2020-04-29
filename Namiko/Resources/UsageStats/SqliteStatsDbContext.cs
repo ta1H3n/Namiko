@@ -7,9 +7,6 @@ namespace Namiko
 {
     public class SqliteStatsDbContext : DbContext
     {
-        public DbSet<ServerStat> ServerStats { get; set; }
-        public DbSet<CommandStat> CommandStats { get; set; }
-        public DbSet<UsageStat> UsageStats { get; set; }
         public DbSet<CommandLog> CommandLogs { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder Options)
