@@ -75,14 +75,13 @@ namespace Namiko
         [Command("Anime"), Alias("AnimeSearch", "SearchAnime"), Summary("Searchs MAL for an anime and the following details.\n**Usage**: `!Anime [anime_title]`")]
         public async Task AnimeSearch([Remainder]string Query)
         {
-            var searchmsg = await Context.Channel.SendMessageAsync("`I'll humour your request...`");        //Informs the user it is being searched
-            var animeSearch = await WebUtil.AnimeSearch(Query);                                             //mangaSearch becomes the result of Query (will hold a list of searched results)
-            await searchmsg.DeleteAsync();
+            await Context.Channel.TriggerTypingAsync();
+            var animeSearch = await WebUtil.AnimeSearch(Query);
 
             //Quick If to see if manga had results
-            if (animeSearch == null)
+            if (animeSearch == null || animeSearch.Results == null || animeSearch.Results.Count <= 0)
             {
-                await Context.Channel.SendMessageAsync($"No results. Try harder.");
+                await Context.Channel.SendMessageAsync($"Gomen, Senpai... No results.");
                 return;
             }
 
@@ -127,14 +126,13 @@ namespace Namiko
         [Command("Manga"), Alias("MangaSearch", "SearchManga"), Summary("Searchs MAL for an manga and the following details.\n**Usage**: `!Manga [manga_title]`")]
         public async Task MangaSearch([Remainder]string Query)
         {
-            var searchmsg = await Context.Channel.SendMessageAsync("`I'll humour your request...`");        //Informs the user it is being searched
-            var mangaSearch = await WebUtil.MangaSearch(Query);                                             //mangaSearch becomes the result of Query (will hold a list of searched results)
-            await searchmsg.DeleteAsync();
+            await Context.Channel.TriggerTypingAsync();
+            var mangaSearch = await WebUtil.MangaSearch(Query);
 
             //Quick If to see if manga had results
-            if (mangaSearch == null)
+            if (mangaSearch == null || mangaSearch.Results == null || mangaSearch.Results.Count <= 0)
             {
-                await Context.Channel.SendMessageAsync($"No results. Try harder.");
+                await Context.Channel.SendMessageAsync($"Gomen, Senpai... No results.");
                 return;
             }
 
