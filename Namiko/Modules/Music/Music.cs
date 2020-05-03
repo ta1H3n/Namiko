@@ -1020,7 +1020,10 @@ namespace Namiko
                 {
                     var guild = arg.Guilds.FirstOrDefault(x => x.Id == player.GuildId);
                     if (guild == null)
+                    {
+                        Console.WriteLine($"[LAVALINK] [{DateTime.Now.ToString("HH:mm:ss")}] Guild mismatch: {player.GuildId} not in shard {arg.ShardId}.");
                         break;
+                    }
 
                     if (player == null || player.VoiceChannel == null)
                     {
