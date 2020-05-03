@@ -22,6 +22,7 @@ namespace Namiko
     public class Music : InteractiveBase<ShardedCommandContext>
     {
         public static readonly LavaNode Node;
+        public static readonly HashSet<LavaPlayer> ReconnectPlayer;
         private static DiscordShardedClient Client { get { return Program.GetClient(); } }
 
         private LavaPlayer Player { get => Node.GetPlayer(Context.Guild); }
@@ -39,6 +40,9 @@ namespace Namiko
                 EnableResume = true
             });
 
+            ReconnectPlayer = new HashSet<LavaPlayer>();
+
+            Program.GetClient().ShardConnected += Shard_ReconnectPlayer;
             Node.OnLog += LavaClient_Log;
             Node.OnTrackException += TrackException;
             Node.OnTrackStuck += TrackStuck;
@@ -915,20 +919,12 @@ namespace Namiko
         {
             try
             {
-                var ch = await Program.GetClient().GetUser(Config.OwnerId).GetOrCreateDMChannelAsync();
-                await ch.SendMessageAsync($"Websocket closed.\n" +
-                    $"By remote: **{arg.ByRemote}**\n" +
-                    $"GuildId: **{arg.GuildId}**\n" +
-                    $"Reason: **{arg.Reason}**\n" +
-                    $"Code: **{arg.Code}**");
+                var player = Node.GetPlayer(arg.GuildId);
 
-                if (arg.Code == 4014)
+                if (arg.Code == 4014 && player != null && !ReconnectPlayer.Contains(player))
                 {
-                    var guild = Program.GetClient().GetGuild(arg.GuildId);
-                    await RejoinPlayer(Node.GetPlayer(guild),
-                        new TimeSpan(0, 0, 10),
-                        guild.CurrentUser,
-                        3);
+                    ReconnectPlayer.Add(player);
+                    await WebhookClients.LavalinkChannel.SendMessageAsync($"`🌋` `{DateTime.Now.ToString("HH:mm:ss")}` -  Lost connection to `{arg.GuildId}`, queueing reconnect.");
                 }
             } catch (Exception ex)
             {
@@ -1015,60 +1011,49 @@ namespace Namiko
             }
         }
 
-
-        private static async Task RejoinPlayer(LavaPlayer player, TimeSpan wait, IGuildUser bot, int tries = 1)
+        private static async Task Shard_ReconnectPlayer(DiscordSocketClient arg)
         {
-            if (tries <= 0)
+            var players = new List<LavaPlayer>(ReconnectPlayer);
+            foreach (var player in players)
             {
-                return;
-            }
-            tries--;
+                try
+                {
+                    var guild = arg.Guilds.FirstOrDefault(x => x.Id == player.GuildId);
+                    if (guild == null)
+                        break;
 
-            var current = bot?.VoiceChannel;
+                    if (player == null || player.VoiceChannel == null)
+                    {
+                        if (ReconnectPlayer.Contains(player))
+                            ReconnectPlayer.Remove(player);
 
-            if (player == null)
-            {
-                await player.TextChannel.SendMessageAsync(embed: new EmbedBuilderLava()
-                        .WithDescription("Player was destroyed. Use the join command to reinvite me to a voice channel.")
-                        .Build());
-                return;
-            }
-            if (player.VoiceChannel == current)
-            {
-                return;
-            }
+                        await WebhookClients.LavalinkChannel.SendMessageAsync($"`🌋` `{DateTime.Now.ToString("HH:mm:ss")}` -  Reconnect `{guild.Id}` failed, cancelling...");
+                        await player.TextChannel.SendMessageAsync(embed: new EmbedBuilderLava()
+                                .WithDescription("Gomen, Senpai... Failed to reconnect to voice channel. Use the join command to reinvite me.")
+                                .Build());
+                        break;
+                    }
 
-            try
-            {
-                if (current == null)
+                    var current = guild.CurrentUser.VoiceChannel;
+                    if (current == null || player.VoiceChannel != current)
+                    {
+                        if (ReconnectPlayer.Contains(player))
+                            ReconnectPlayer.Remove(player);
+
+                        await Node.MoveChannelAsync(player.VoiceChannel);
+                        await WebhookClients.LavalinkChannel.SendMessageAsync($"`🌋` `{DateTime.Now.ToString("HH:mm:ss")}` -  Succesfully reconnected to `{guild.Id}`");
+                        await player.TextChannel.SendMessageAsync(embed: new EmbedBuilderLava()
+                            .WithDescription($"Reconnected player to **{player.VoiceChannel.Name}**")
+                            .Build());
+                        break;
+                    }
+                } catch (Exception ex)
                 {
-                    await Node.MoveChannelAsync(player.VoiceChannel);
-                    await player.TextChannel.SendMessageAsync(embed: new EmbedBuilderLava()
-                        .WithDescription($"Reconnected player to **{player.VoiceChannel.Name}**")
-                        .Build());
-                    return;
-                }
-                if (player.VoiceChannel != current)
-                {
-                    await Node.MoveChannelAsync(player.VoiceChannel);
-                    await player.TextChannel.SendMessageAsync(embed: new EmbedBuilderLava()
-                        .WithDescription($"Reconnected player to **{player.VoiceChannel.Name}**")
-                        .Build());
-                    return;
-                }
-            } catch
-            {
-                if (tries > 0)
-                {
-                    await Task.Delay(wait);
-                    await RejoinPlayer(player, wait, bot, tries);
-                }
-                else
-                {
-                    await player.TextChannel.SendMessageAsync(embed: new EmbedBuilderLava()
-                        .WithDescription($"Player reconnect to  **{player.VoiceChannel.Name}** failed. This was the last attempt.\n" +
-                        $"Use the join command to reinvite me to a voice channel.")
-                        .Build());
+                    SentrySdk.CaptureException(ex);
+                    if (ReconnectPlayer.Contains(player))
+                        ReconnectPlayer.Remove(player);
+
+                    await WebhookClients.LavalinkChannel.SendMessageAsync($"`🌋` `{DateTime.Now.ToString("HH:mm:ss")}` -  Reconnect `{player.GuildId}` threw an exception.");
                 }
             }
         }
