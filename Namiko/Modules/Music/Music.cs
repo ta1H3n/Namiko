@@ -1047,6 +1047,15 @@ namespace Namiko
                             .Build());
                         break;
                     }
+
+                    else
+                    {
+                        if (ReconnectPlayer.Contains(player))
+                            ReconnectPlayer.Remove(player);
+
+                        await WebhookClients.LavalinkChannel.SendMessageAsync($"`🌋` `{DateTime.Now.ToString("HH:mm:ss")}` -  Already reconnected `{guild.Id}`, cancelling...");
+                        break;
+                    }
                 } catch (Exception ex)
                 {
                     SentrySdk.CaptureException(ex);
