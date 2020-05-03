@@ -432,7 +432,6 @@ namespace Namiko
             try
             {
                 ReadyCount++;
-                string name = Client.CurrentUser.Username;
                 Console.WriteLine($"{DateTime.Now} - Shard {arg.ShardId} Ready");
                 _ = WebhookClients.NamikoLogChannel.SendMessageAsync($":european_castle: `{DateTime.Now.ToString("HH:mm:ss")}` - `Shard {arg.ShardId} Ready`");
 
@@ -441,7 +440,7 @@ namespace Namiko
                 if (res > 0)
                 {
                     Console.WriteLine($"{DateTime.Now} - Joined {res} Guilds.");
-                    _ = WebhookClients.NamikoLogChannel.SendMessageAsync($"`{DateTime.Now.ToString("HH:mm:ss")}` <:TickYes:577838859107303424> {name} joined **{res}** Guilds.");
+                    _ = WebhookClients.NamikoLogChannel.SendMessageAsync($"`{DateTime.Now.ToString("HH:mm:ss")}` <:TickYes:577838859107303424> Joined **{res}** Guilds.");
                 }
 
                 if (WaitingForAllGuildsReady && ReadyCount >= ShardCount)
@@ -451,7 +450,7 @@ namespace Namiko
                     if (res > 0)
                     {
                         Console.WriteLine($"{DateTime.Now} - Left {res} Guilds.");
-                        _ = WebhookClients.NamikoLogChannel.SendMessageAsync($"`{DateTime.Now.ToString("HH:mm:ss")}` <:TickNo:577838859077943306> {name} left {res} Guilds.`");
+                        _ = WebhookClients.NamikoLogChannel.SendMessageAsync($"`{DateTime.Now.ToString("HH:mm:ss")}` <:TickNo:577838859077943306> Left {res} Guilds.`");
                     }
                 }
             } catch (Exception ex)
@@ -461,12 +460,12 @@ namespace Namiko
         }
         private async Task Client_ShardConnected(DiscordSocketClient arg)
         {
-            try 
-            { 
-                Console.WriteLine($"{DateTime.Now} - Shard {arg.ShardId} Connected");
-                _ = WebhookClients.NamikoLogChannel.SendMessageAsync($"<:TickYes:577838859107303424> `{DateTime.Now.ToString("HH:mm:ss")}` - `Shard {arg.ShardId} Connected`");
+            Console.WriteLine($"{DateTime.Now} - Shard {arg.ShardId} Connected");
+            _ = WebhookClients.NamikoLogChannel.SendMessageAsync($"<:TickYes:577838859107303424> `{DateTime.Now.ToString("HH:mm:ss")}` - `Shard {arg.ShardId} Connected`");
 
-                if (Startup)
+            if (Startup)
+            {
+                try
                 {
                     Startup = false;
                     WebUtil.SetUpDbl(arg.CurrentUser.Id);
@@ -475,10 +474,11 @@ namespace Namiko
                         await Music.Initialize(Client);
                     await Client.SetActivityAsync(new Game($"Chinese Cartoons. Try @{arg.CurrentUser.Username} help", ActivityType.Watching));
                 }
-            }
-            catch (Exception ex)
-            {
-                SentrySdk.CaptureException(ex);
+                catch (Exception ex)
+                {
+                    Startup = true;
+                    SentrySdk.CaptureException(ex);
+                }
             }
         }
         private async Task Client_ShardDisconnected(Exception arg1, DiscordSocketClient arg2)
@@ -695,6 +695,9 @@ namespace Namiko
                 await message.Channel.SendMessageAsync(msgs[new Random().Next(msgs.Count)]);
                 return;
             }
+
+            if (Client?.CurrentUser == null)
+                return;
 
             string msg = message.Content.Replace("!", "");
             string mention = Client.CurrentUser.Mention.Replace("!", "");
