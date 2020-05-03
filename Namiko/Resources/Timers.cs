@@ -186,7 +186,7 @@ namespace Namiko
             using (var db = new SqliteDbContext())
             {
                 var date = new DateTime(0);
-                var ids = db.Servers.Where(x => x.LeaveDate != date && x.LeaveDate.AddDays(3) < DateTime.Now).Select(x => x.GuildId).ToHashSet();
+                var ids = db.Servers.Where(x => x.LeaveDate != date && x.LeaveDate.AddDays(3) < DateTime.Now).Select(x => x.GuildId).Take(100).ToHashSet();
                 s = ids.Count;
 
                 db.RemoveRange(db.Teams.Where(x => ids.Contains(x.GuildId)));
@@ -209,7 +209,11 @@ namespace Namiko
             }
 
             watch.Stop();
-            Console.WriteLine($"[TIMER] Namiko cleared {s} servers. {r} rows affected. It took her {watch.ElapsedMilliseconds} ms.");
+            if (s > 0 || r > 0)
+            {
+                Console.WriteLine($"[TIMER] Namiko cleared {s} servers. {r} rows affected. It took her {watch.ElapsedMilliseconds} ms.");
+                await WebhookClients.NamikoLogChannel.SendMessageAsync($"[TIMER] Namiko cleared {s} servers. {r} rows affected. It took her {watch.ElapsedMilliseconds} ms.");
+            }
         }
         private static async void Timer_ExpireTeamInvites(object sender, ElapsedEventArgs e)
         {
