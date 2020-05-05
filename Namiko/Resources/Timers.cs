@@ -176,43 +176,59 @@ namespace Namiko
             watch.Stop();
             Console.WriteLine($"[TIMER] Namiko robbed {s} servers. {r} rows affected. It took her {watch.ElapsedMilliseconds} ms.");
         }
+        private static int CleanAmount = 100;
         public static async void Timer_CleanData(object sender, ElapsedEventArgs e)
         {
-            var watch = new Stopwatch();
-            watch.Start();
-
-            int s = 0;
-            int r;
-            using (var db = new SqliteDbContext())
+            try
             {
-                var date = new DateTime(0);
-                var ids = db.Servers.Where(x => x.LeaveDate != date && x.LeaveDate.AddDays(3) < DateTime.Now).Select(x => x.GuildId).Take(100).ToHashSet();
-                s = ids.Count;
+                var watch = new Stopwatch();
+                watch.Start();
 
-                db.RemoveRange(db.Teams.Where(x => ids.Contains(x.GuildId)));
-                db.RemoveRange(db.Dailies.Where(x => ids.Contains(x.GuildId)));
-                db.RemoveRange(db.Servers.Where(x => ids.Contains(x.GuildId)));
-                db.RemoveRange(db.Weeklies.Where(x => ids.Contains(x.GuildId)));
-                db.RemoveRange(db.Toasties.Where(x => ids.Contains(x.GuildId)));
-                db.RemoveRange(db.Marriages.Where(x => ids.Contains(x.GuildId)));
-                db.RemoveRange(db.PublicRoles.Where(x => ids.Contains(x.GuildId)));
-                db.RemoveRange(db.WaifuWishlist.Where(x => ids.Contains(x.GuildId)));
-                db.RemoveRange(db.FeaturedWaifus.Where(x => ids.Contains(x.GuildId)));
-                db.RemoveRange(db.UserInventories.Where(x => ids.Contains(x.GuildId)));
-                db.RemoveRange(db.SpecialChannels.Where(x => ids.Contains(x.GuildId)));
+                int s = 0;
+                int r;
+                using (var db = new SqliteDbContext())
+                {
+                    var date = new DateTime(0);
+                    var ids = db.Servers.Where(x => x.LeaveDate != date && x.LeaveDate.AddDays(3) < DateTime.Now).Select(x => x.GuildId).Take(CleanAmount).ToHashSet();
+                    s = ids.Count;
 
-                var shops = db.WaifuShops.Where(x => ids.Contains(x.GuildId));
-                db.ShopWaifus.RemoveRange(db.ShopWaifus.Where(x => shops.Any(y => y.Id == x.WaifuShop.Id)));
-                db.WaifuShops.RemoveRange(shops);
+                    db.RemoveRange(db.Teams.Where(x => ids.Contains(x.GuildId)));
+                    db.RemoveRange(db.Dailies.Where(x => ids.Contains(x.GuildId)));
+                    db.RemoveRange(db.Servers.Where(x => ids.Contains(x.GuildId)));
+                    db.RemoveRange(db.Weeklies.Where(x => ids.Contains(x.GuildId)));
+                    db.RemoveRange(db.Toasties.Where(x => ids.Contains(x.GuildId)));
+                    db.RemoveRange(db.Marriages.Where(x => ids.Contains(x.GuildId)));
+                    db.RemoveRange(db.PublicRoles.Where(x => ids.Contains(x.GuildId)));
+                    db.RemoveRange(db.WaifuWishlist.Where(x => ids.Contains(x.GuildId)));
+                    db.RemoveRange(db.FeaturedWaifus.Where(x => ids.Contains(x.GuildId)));
+                    db.RemoveRange(db.UserInventories.Where(x => ids.Contains(x.GuildId)));
+                    db.RemoveRange(db.SpecialChannels.Where(x => ids.Contains(x.GuildId)));
 
-                r = await db.SaveChangesAsync();
-            }
+                    var shops = db.WaifuShops.Where(x => ids.Contains(x.GuildId));
+                    db.ShopWaifus.RemoveRange(db.ShopWaifus.Where(x => shops.Any(y => y.Id == x.WaifuShop.Id)));
+                    db.WaifuShops.RemoveRange(shops);
 
-            watch.Stop();
-            if (s > 0 || r > 0)
+                    r = await db.SaveChangesAsync();
+                }
+
+                watch.Stop();
+                if (s > 0 || r > 0)
+                {
+                    Console.WriteLine($"[TIMER] Namiko cleared {s} servers. {r} rows affected. It took her {watch.ElapsedMilliseconds} ms.");
+                    await WebhookClients.NamikoLogChannel.SendMessageAsync($"[TIMER] Namiko cleared {s} servers. {r} rows affected. It took her {watch.ElapsedMilliseconds} ms.");
+                }
+                CleanAmount = 100;
+                if (!(sender is bool))
+                {
+                    await Task.Delay(TimeSpan.FromMinutes(20));
+                    Timer_CleanData(false, null);
+                    await Task.Delay(TimeSpan.FromMinutes(20));
+                    Timer_CleanData(false, null);
+                }
+            } catch (Exception ex)
             {
-                Console.WriteLine($"[TIMER] Namiko cleared {s} servers. {r} rows affected. It took her {watch.ElapsedMilliseconds} ms.");
-                await WebhookClients.NamikoLogChannel.SendMessageAsync($"[TIMER] Namiko cleared {s} servers. {r} rows affected. It took her {watch.ElapsedMilliseconds} ms.");
+                CleanAmount = CleanAmount / 2;
+                SentrySdk.CaptureException(ex);
             }
         }
         private static async void Timer_ExpireTeamInvites(object sender, ElapsedEventArgs e)
