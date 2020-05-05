@@ -176,7 +176,8 @@ namespace Namiko
             watch.Stop();
             Console.WriteLine($"[TIMER] Namiko robbed {s} servers. {r} rows affected. It took her {watch.ElapsedMilliseconds} ms.");
         }
-        private static int CleanAmount = 100;
+        private static int CleanTake = 100;
+        private static int CleanSkip = 0;
         public static async void Timer_CleanData(object sender, ElapsedEventArgs e)
         {
             try
@@ -189,7 +190,7 @@ namespace Namiko
                 using (var db = new SqliteDbContext())
                 {
                     var date = new DateTime(0);
-                    var ids = db.Servers.Where(x => x.LeaveDate != date && x.LeaveDate.AddDays(3) < DateTime.Now).Select(x => x.GuildId).Take(CleanAmount).ToHashSet();
+                    var ids = db.Servers.Where(x => x.LeaveDate != date && x.LeaveDate.AddDays(3) < DateTime.Now).Select(x => x.GuildId).Skip(CleanSkip).Take(CleanTake).ToHashSet();
                     s = ids.Count;
 
                     db.RemoveRange(db.Teams.Where(x => ids.Contains(x.GuildId)));
@@ -217,7 +218,7 @@ namespace Namiko
                     Console.WriteLine($"[TIMER] Namiko cleared {s} servers. {r} rows affected. It took her {watch.ElapsedMilliseconds} ms.");
                     await WebhookClients.NamikoLogChannel.SendMessageAsync($"[TIMER] Namiko cleared {s} servers. {r} rows affected. It took her {watch.ElapsedMilliseconds} ms.");
                 }
-                CleanAmount = 100;
+                CleanTake = 100;
                 if (!(sender is bool))
                 {
                     await Task.Delay(TimeSpan.FromMinutes(20));
@@ -227,8 +228,22 @@ namespace Namiko
                 }
             } catch (Exception ex)
             {
-                CleanAmount = CleanAmount / 2;
                 SentrySdk.CaptureException(ex);
+
+                if (CleanTake > 1)
+                {
+                    CleanTake /= 2;
+                }
+                else
+                {
+                    CleanSkip++;
+                    using (var db = new SqliteDbContext())
+                    {
+                        var date = new DateTime(0);
+                        var id = db.Servers.Where(x => x.LeaveDate != date && x.LeaveDate.AddDays(3) < DateTime.Now).Select(x => x.GuildId).FirstOrDefault();
+                        await WebhookClients.NamikoLogChannel.SendMessageAsync($"[TIMER] Skipping clean of guild {id}.");
+                    }
+                }
             }
         }
         private static async void Timer_ExpireTeamInvites(object sender, ElapsedEventArgs e)
