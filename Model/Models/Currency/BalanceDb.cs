@@ -64,14 +64,14 @@ namespace Model
         {
             using var db = new SqliteDbContext();
             return await db.Toasties
-.Where(x => x.Amount > 0 && x.GuildId == guildId)
-.Select(x => new LeaderboardEntryId
-{
-Id = x.UserId,
-Count = x.Amount
-})
-.OrderByDescending(x => x.Count)
-.ToListAsync();
+                .Where(x => x.Amount > 0 && x.GuildId == guildId)
+                .Select(x => new LeaderboardEntryId
+                {
+                    Id = x.UserId,
+                    Count = x.Amount
+                })
+                .OrderByDescending(x => x.Count)
+                .ToListAsync();
         }
         public static async Task<List<Balance>> GetAllToastiesRaw(ulong guildId)
         {
