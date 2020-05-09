@@ -249,7 +249,7 @@ namespace Namiko
         {
             if (logMessage.Exception is CommandException cmdException)
             {
-                var ex = new Exception($"{cmdException.Command.Name} - {cmdException.InnerException.Message}", cmdException);
+                var ex = new Exception($"{cmdException.Command.Name} - {cmdException.InnerException.Message}", cmdException.InnerException);
                 SentrySdk.CaptureException(ex);
             }
         }
