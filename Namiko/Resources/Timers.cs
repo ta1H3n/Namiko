@@ -190,7 +190,13 @@ namespace Namiko
                 using (var db = new SqliteDbContext())
                 {
                     var date = new DateTime(0);
-                    var ids = db.Servers.Where(x => x.LeaveDate != date && x.LeaveDate.AddDays(3) < DateTime.Now).Select(x => x.GuildId).Skip(CleanSkip).Take(CleanTake).ToHashSet();
+                    var ids = db.Servers
+                        .Where(x => x.LeaveDate != date && x.LeaveDate.AddDays(3) < DateTime.Now)
+                        .OrderBy(x => x.LeaveDate)
+                        .Select(x => x.GuildId)
+                        .Skip(CleanSkip)
+                        .Take(CleanTake)
+                        .ToHashSet();
                     s = ids.Count;
 
                     db.RemoveRange(db.Teams.Where(x => ids.Contains(x.GuildId)));
