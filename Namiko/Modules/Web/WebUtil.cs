@@ -148,7 +148,7 @@ namespace Namiko
             var eb = new EmbedBuilder();
             eb.WithColor(BasicUtil.RandomColor());
             eb.WithAuthor("Anime search results. Select by typing 1-7", MalIconUrl);
-            eb.WithFooter("Type `x` to cancel search.");
+            eb.WithFooter("Times out in 23 seconds");
             eb.WithDescription(listboo);
             eb.WithThumbnailUrl(animeSearch.Results.First().ImageURL);
             return eb;
@@ -195,7 +195,7 @@ namespace Namiko
             var eb = new EmbedBuilder();
             eb.WithColor(BasicUtil.RandomColor());
             eb.WithAuthor("Manga search results. Select by typing 1-7", MalIconUrl);
-            eb.WithFooter("Type `x` to cancel search.");
+            eb.WithFooter("Times out in 23 seconds");
             eb.WithDescription(listboo);
             eb.WithThumbnailUrl(mangaSearch.Results.First().ImageURL);
             return eb;
