@@ -30,7 +30,7 @@ namespace Namiko
 
         public async static Task SaveCommandLog(CommandLog log)
         {
-            using (var db = new SqliteStatsDbContext())
+            using (var db = new StatsDbContext())
             {
                 db.CommandLogs.Add(log);
                 await db.SaveChangesAsync();

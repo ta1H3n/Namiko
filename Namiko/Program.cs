@@ -537,7 +537,7 @@ namespace Namiko
                     _ = ImgurAPI.ImgurSetup();
                     break;
             }
-            SqliteDbContext.ConnectionString = $"Data Source={Locations.SqliteDb}Database.sqlite";
+            NamikoDbContext.ConnectionString = $"Data Source={Locations.SqliteDb}Database.sqlite";
             _ = LootboxStats.Reload(Locations.LootboxStatsJSON);
             Prefixes = ServerDb.GetPrefixes();
             Images.ReactionImageCommands = ImageDb.GetReactionImageCommandHashSet();
@@ -572,7 +572,7 @@ namespace Namiko
             HashSet<ulong> existingIds = new HashSet<ulong>(guilds.Select(x => x.Id));
             int left = 0;
 
-            using (var db = new SqliteDbContext())
+            using (var db = new NamikoDbContext())
             {
                 var zerotime = new DateTime(0);
                 var now = DateTime.Now;

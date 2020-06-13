@@ -8,14 +8,14 @@ namespace Model
     {
         public static async Task AddParam(Param param)
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             db.Params.Add(param);
             await db.SaveChangesAsync();
         }
 
         public static List<Param> GetParam(int id = 0, string name = "")
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             var res = db.Params.Where(x => x.Id == id && x.Name == name).ToList();
             if (!res.Any())
             {
@@ -27,7 +27,7 @@ namespace Model
 
         public static async Task UpdateParam(Param param)
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             if (!db.Params.Any(x => x.Id == param.Id))
                 db.Params.Add(param);
 

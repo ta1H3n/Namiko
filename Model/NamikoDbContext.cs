@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Model
 {
-    public class SqliteDbContext : DbContext
+    public class NamikoDbContext : DbContext
     {
         public static string ConnectionString { get; set; }
 
@@ -48,12 +48,13 @@ namespace Model
 
         protected override void OnConfiguring(DbContextOptionsBuilder Options)
         {
-            Options.UseSqlite(ConnectionString);
+            Options.UseNpgsql("Server=157.245.26.12;Port=5432;Database=NamikoDev;User Id=postHen;Password=ta1gres;");
+            //Options.UseSqlite(ConnectionString);
         }
 
         public async static Task<int> ExecuteSQL(string query)
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             return await db.Database.ExecuteSqlRawAsync(query);
         }
     }

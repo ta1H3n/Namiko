@@ -11,7 +11,7 @@ namespace Model
 
         public static async Task AddVoters(IEnumerable<Voter> voters)
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             db.Voters.AddRange(voters);
             await db.SaveChangesAsync();
         }
@@ -25,14 +25,14 @@ namespace Model
         }
         public static async Task AddVoter(Voter voter)
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             db.Voters.Add(voter);
             await db.SaveChangesAsync();
         }
 
         public static async Task DeleteLast(ulong UserId)
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             var delete = db.Voters.Where(x => x.UserId == UserId).FirstOrDefault();
 
             if (delete == null)
@@ -43,27 +43,27 @@ namespace Model
         }
         public static List<Voter> GetVoters()
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             return db.Voters.ToList();
         }
         public static async Task<List<ulong>> GetVoters(int amount)
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             return await db.Voters.Skip(await db.Voters.CountAsync() - amount).Take(amount).Select(x => x.UserId).ToListAsync();
         }
         public static async Task<List<ulong>> GetVoters(DateTime dateFrom, DateTime dateTo)
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             return await db.Voters.Where(x => x.Date > dateFrom && x.Date < dateTo).Select(x => x.UserId).ToListAsync();
         }
         public static async Task<int> VoteCount(ulong userId)
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             return await db.Voters.CountAsync(x => x.UserId == userId);
         }
         public static async Task<List<KeyValuePair<ulong, int>>> GetAllVotes()
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             return await db.Voters
 .GroupBy(x => x.UserId)
 .Select(x => new KeyValuePair<ulong, int>(x.Key, x.Count()))

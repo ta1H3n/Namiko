@@ -146,7 +146,7 @@ namespace Namiko
 
             int s = 0;
             int r;
-            using (var db = new SqliteDbContext())
+            using (var db = new NamikoDbContext())
             {
                 var client = Program.GetClient();
                 var nid = client.CurrentUser.Id;
@@ -187,7 +187,7 @@ namespace Namiko
 
                 int s = 0;
                 int r;
-                using (var db = new SqliteDbContext())
+                using (var db = new NamikoDbContext())
                 {
                     var date = new DateTime(0);
                     var ids = db.Servers
@@ -243,7 +243,7 @@ namespace Namiko
                 else
                 {
                     CleanSkip++;
-                    using (var db = new SqliteDbContext())
+                    using (var db = new NamikoDbContext())
                     {
                         var date = new DateTime(0);
                         var id = db.Servers.Where(x => x.LeaveDate != date && x.LeaveDate.AddDays(3) < DateTime.Now).Select(x => x.GuildId).FirstOrDefault();

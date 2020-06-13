@@ -10,7 +10,7 @@ namespace Model
     {
         public static async Task AddImage(string name, string url, ulong guildId = 0, int id = -1)
         {
-            using var DbContext = new SqliteDbContext();
+            using var DbContext = new NamikoDbContext();
             if (id == -1)
                 DbContext.Add(new ReactionImage { Name = name.ToLowerInvariant(), Url = url, GuildId = guildId });
             else
@@ -20,7 +20,7 @@ namespace Model
 
         public static async Task<List<ReactionImage>> GetImages(string name = null, ulong guildId = 0)
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             if (name == null)
                 return await db.Images.Where(x => x.GuildId == guildId).ToListAsync();
             return await db.Images.Where(x => x.Name == name && x.GuildId == guildId).ToListAsync();
@@ -29,7 +29,7 @@ namespace Model
 
         public static async Task DeleteImage(int id)
         {
-            using var DbContext = new SqliteDbContext();
+            using var DbContext = new NamikoDbContext();
             ReactionImage image = DbContext.Images.Where(x => x.Id == id).FirstOrDefault();
             DbContext.Images.Remove(image);
             await DbContext.SaveChangesAsync();
@@ -37,14 +37,14 @@ namespace Model
 
         public static ReactionImage GetImage(int id)
         {
-            using var DbContext = new SqliteDbContext();
+            using var DbContext = new NamikoDbContext();
             ReactionImage message = DbContext.Images.Where(x => x.Id == id).FirstOrDefault();
             return message;
         }
 
         public static ReactionImage GetRandomImage(string name, ulong guildId = 0)
         {
-            using var DbContext = new SqliteDbContext();
+            using var DbContext = new NamikoDbContext();
             int count = DbContext.Images.Where(x => x.Name.ToUpper().Equals(name.ToUpper()) && x.GuildId == guildId).Count();
             if (count < 1)
             {
@@ -60,14 +60,14 @@ namespace Model
 
         public static ReactionImage GetLastImage()
         {
-            using var DbContext = new SqliteDbContext();
+            using var DbContext = new NamikoDbContext();
             ReactionImage message = DbContext.Images.OrderByDescending(x => x.Id).FirstOrDefault();
             return message;
         }
 
         public static HashSet<string> GetReactionImageCommandHashSet()
         {
-            using (var db = new SqliteDbContext())
+            using (var db = new NamikoDbContext())
             {
                 return db.Images.Select(x => x.Name).Distinct().ToHashSet(StringComparer.OrdinalIgnoreCase);
             }
@@ -75,7 +75,7 @@ namespace Model
 
         public static async Task ToLower()
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             var images = db.Images;
             foreach (var x in images)
             {
@@ -87,27 +87,27 @@ namespace Model
 
         public static bool AlbumExists(string name)
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             bool res = db.ImgurAlbums.Any(x => x.Name.ToUpper().Equals(name.ToUpper()));
             return res;
         }
 
         public static async Task UpdateImage(ReactionImage image)
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             db.Images.Update(image);
             await db.SaveChangesAsync();
         }
 
         public static ImgurAlbumLink GetAlbum(string name)
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             return db.ImgurAlbums.FirstOrDefault(x => x.Name.ToUpper().Equals(name.ToUpper()));
         }
 
         public static async Task CreateAlbum(string name, string albumId)
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             db.Add(new ImgurAlbumLink { AlbumId = albumId, Name = name.ToLowerInvariant() });
             await db.SaveChangesAsync();
         }

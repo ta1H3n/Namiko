@@ -12,7 +12,7 @@ namespace Model
         //Methods: hex code check (also gets hex colour)
         public static bool GetHex(out string color, ulong UserId)
         {
-            using var DbContext = new SqliteDbContext();
+            using var DbContext = new NamikoDbContext();
             var profileColour = DbContext.Profiles.Where(x => x.UserId == UserId).Select(x => x.ColorHex).FirstOrDefault();
             if (profileColour == null)
                 color = "";
@@ -22,7 +22,7 @@ namespace Model
         }
         public static async Task SetHex(Color color, ulong UserId)
         {
-            using var DbContext = new SqliteDbContext();
+            using var DbContext = new NamikoDbContext();
             var profile = DbContext.Profiles.Where(x => x.UserId == UserId).FirstOrDefault();
 
             //checking hex validity (makes sure hex colour.len ALWAYS = 6)
@@ -46,7 +46,7 @@ namespace Model
         }
         public static async Task HexDefault(ulong UserId)
         {
-            using var DbContext = new SqliteDbContext();
+            using var DbContext = new NamikoDbContext();
             var profile = DbContext.Profiles.Where(x => x.UserId == UserId).FirstOrDefault();
 
             //if this user is not in the database
@@ -67,13 +67,13 @@ namespace Model
         //colour stack
         public static string GetHexStack(ulong UserId)
         {
-            using var DbContext = new SqliteDbContext();
+            using var DbContext = new NamikoDbContext();
             var profile = DbContext.Profiles.Where(x => x.UserId == UserId).FirstOrDefault();
             return profile.PriorColorHexStack;
         }
         public static async Task PopStack(ulong UserId)
         {
-            using var DbContext = new SqliteDbContext();
+            using var DbContext = new NamikoDbContext();
             var profile = DbContext.Profiles.Where(x => x.UserId == UserId).FirstOrDefault();
             string stack = profile.PriorColorHexStack;
             string popped_colour;
@@ -108,13 +108,13 @@ namespace Model
         //Methods: quotes
         public static string GetQuote(ulong UserId)
         {
-            using var DbContext = new SqliteDbContext();
+            using var DbContext = new NamikoDbContext();
             string quote = DbContext.Profiles.Where(x => x.UserId == UserId).Select(x => x.Quote).FirstOrDefault();
             return String.IsNullOrEmpty(quote) ? null : quote;
         }
         public static async Task SetQuote(ulong UserId, string quote)
         {
-            using var DbContext = new SqliteDbContext();
+            using var DbContext = new NamikoDbContext();
             var profile = DbContext.Profiles.Where(x => x.UserId == UserId).FirstOrDefault();
 
             //if user does not exist
@@ -134,13 +134,13 @@ namespace Model
         //Methods: Images
         public static string GetImage(ulong userId)
         {
-            using var DbContext = new SqliteDbContext();
+            using var DbContext = new NamikoDbContext();
             string image = DbContext.Profiles.Where(x => x.UserId == userId).Select(x => x.Image).FirstOrDefault();
             return String.IsNullOrEmpty(image) ? null : image;
         }
         public static async Task SetImage(ulong UserId, string image)
         {
-            using var DbContext = new SqliteDbContext();
+            using var DbContext = new NamikoDbContext();
             var profile = DbContext.Profiles.Where(x => x.UserId == UserId).FirstOrDefault();
 
             //if user does not exist
@@ -160,7 +160,7 @@ namespace Model
         //Lootboxes
         public static int GetLootboxOpenedAmount(ulong userId)
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             var user = db.Profiles.FirstOrDefault(x => x.UserId == userId);
             if (user == null)
                 return 0;
@@ -169,7 +169,7 @@ namespace Model
         }
         public static async Task<List<KeyValuePair<ulong, int>>> GetAllLootboxOpenedAmount()
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             return await db.Profiles
 .Where(x => x.LootboxesOpened > 0)
 .Select(x => new KeyValuePair<ulong, int>(x.UserId, x.LootboxesOpened))
@@ -177,7 +177,7 @@ namespace Model
         }
         public static async Task IncrementLootboxOpened(ulong userId, int amount = 1)
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             var user = db.Profiles.FirstOrDefault(x => x.UserId == userId);
             if (user == null)
             {
@@ -195,7 +195,7 @@ namespace Model
         //Reputation
         public static int GetRepAmount(ulong userId)
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             var user = db.Profiles.FirstOrDefault(x => x.UserId == userId);
             if (user == null)
                 return 0;
@@ -204,7 +204,7 @@ namespace Model
         }
         public static async Task<int> IncrementRep(ulong userId, int amount = 1)
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             var user = db.Profiles.FirstOrDefault(x => x.UserId == userId);
             if (user == null)
             {
@@ -221,7 +221,7 @@ namespace Model
         }
         public static async Task<List<KeyValuePair<ulong, int>>> GetAllRep()
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             return await db.Profiles
 .Where(x => x.Rep > 0)
 .Select(x => new KeyValuePair<ulong, int>(x.UserId, x.Rep))
@@ -231,7 +231,7 @@ namespace Model
         //Profile
         public static async Task<Profile> GetProfile(ulong userId)
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             var profile = db.Profiles.FirstOrDefault(x => x.UserId == userId);
             if (profile == null)
             {
@@ -244,7 +244,7 @@ namespace Model
         }
         public static async Task UpdateProfile(Profile profile)
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             db.Profiles.Update(profile);
             await db.SaveChangesAsync();
         }
