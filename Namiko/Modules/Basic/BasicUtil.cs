@@ -62,6 +62,9 @@ namespace Namiko
         }
         public static string ShortenString(this string str, int max = 33, int cut = 28, string suffix = "...")
         {
+            if (str.DefaultIfEmpty() == null)
+                return "";
+
             return str.Length > max ? (str.Substring(0, cut) + suffix) : str;
         }
         public static EmbedBuilder InfoEmbed()
