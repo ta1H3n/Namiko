@@ -48,8 +48,7 @@ namespace Model
 
         protected override void OnConfiguring(DbContextOptionsBuilder Options)
         {
-            Options.UseNpgsql("Server=157.245.26.12;Port=5432;Database=NamikoDev;User Id=postHen;Password=ta1gres;");
-            //Options.UseSqlite(ConnectionString);
+            Options.UseNpgsql(ConnectionString);
         }
 
         public async static Task<int> ExecuteSQL(string query)

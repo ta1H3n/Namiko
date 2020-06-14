@@ -537,7 +537,7 @@ namespace Namiko
                     _ = ImgurAPI.ImgurSetup();
                     break;
             }
-            NamikoDbContext.ConnectionString = $"Data Source={Locations.SqliteDb}Database.sqlite";
+            NamikoDbContext.ConnectionString = Config.ConnectionString;
             _ = LootboxStats.Reload(Locations.LootboxStatsJSON);
             Prefixes = ServerDb.GetPrefixes();
             Images.ReactionImageCommands = ImageDb.GetReactionImageCommandHashSet();

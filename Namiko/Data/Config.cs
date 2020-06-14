@@ -25,6 +25,9 @@ namespace Namiko
         [JsonProperty("sentryWebhook")]
         public static string SentryWebhook { get; set; }
 
+        [JsonProperty("connectionString")]
+        public static string ConnectionString { get; set; }
+
 
 
         [JsonProperty("logWebhook")]

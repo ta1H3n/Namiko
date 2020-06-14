@@ -71,7 +71,7 @@ namespace Namiko
             HourAgain = new Timer(1000 * 60 * 60);
             HourAgain.AutoReset = true;
             HourAgain.Enabled = true;
-            HourAgain.Elapsed += Timer_BackupData;
+            //HourAgain.Elapsed += Timer_BackupData;
             HourAgain.Elapsed += Timer_CleanData;
         }
 
@@ -264,18 +264,6 @@ namespace Namiko
             {
                 await Blackjack.GameTimeout(x.Key, x.Value);
             }
-        }
-        private static void Timer_BackupData(object sender, ElapsedEventArgs e)
-        {
-            try
-            {
-                string backupLocation = Assembly.GetEntryAssembly().Location.Replace(@"Namiko.dll", @"backups/");
-                string date = DateTime.Now.ToString("yyyy-MM-dd");
-
-                File.Copy(Locations.SqliteDb + "Database.sqlite", Locations.SqliteDb + "backups/Database" + date + ".sqlite");
-                Console.WriteLine("Backups made.");
-            }
-            catch { }
         }
         private static async void Timer_Unban(object sender, ElapsedEventArgs e)
         {
