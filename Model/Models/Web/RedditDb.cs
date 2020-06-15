@@ -7,12 +7,12 @@ namespace Model
     {
         public static bool Exists(string permalink, int upvotes = 0)
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             return db.RedditPosts.Any(x => x.PermaLink == permalink && x.Upvotes > upvotes);
         }
         public static async Task AddPost(string permalink, int upvotes)
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             var post = db.RedditPosts.FirstOrDefault(x => x.PermaLink == permalink);
 
             if (post == null)
@@ -28,7 +28,7 @@ namespace Model
         }
         public static int GetUpvotes(string permalink)
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             var res = db.RedditPosts.FirstOrDefault(x => x.PermaLink == permalink);
             if (res == null)
                 return 0;

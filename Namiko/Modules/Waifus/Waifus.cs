@@ -297,7 +297,7 @@ namespace Namiko
                 var user = Context.Guild.GetUser(x.UserId);
                 if (user != null)
                     if (!users.ContainsKey(user))
-                        users.Add(user, WaifuUtil.WaifuValue(UserInventoryDb.GetWaifus(user.Id, Context.Guild.Id)));
+                        users.Add(user, WaifuUtil.WaifuValue(AllWaifus.Where(x => x.UserId == user.Id).Select(x => x.Waifu)));
             }
 
             var ordUsers = users.OrderByDescending(x => x.Value);

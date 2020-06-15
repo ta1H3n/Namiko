@@ -3,10 +3,12 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Model;
+using Sentry;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Timers;
 using Victoria;
 using Victoria.Decoder;
 using Victoria.Enums;
@@ -20,6 +22,7 @@ namespace Namiko
     public class Music : InteractiveBase<ShardedCommandContext>
     {
         public static readonly LavaNode Node;
+        public static readonly HashSet<LavaPlayer> ReconnectPlayer;
         private static DiscordShardedClient Client { get { return Program.GetClient(); } }
 
         private LavaPlayer Player { get => Node.GetPlayer(Context.Guild); }
@@ -37,12 +40,15 @@ namespace Namiko
                 EnableResume = true
             });
 
+            ReconnectPlayer = new HashSet<LavaPlayer>();
+
+            Program.GetClient().ShardConnected += Shard_ReconnectPlayer;
             Node.OnLog += LavaClient_Log;
             Node.OnTrackException += TrackException;
             Node.OnTrackStuck += TrackStuck;
             Node.OnTrackEnded += TrackEnded;
             //Node.OnStatsReceived += StatsReceived;
-            //Node.OnWebSocketClosed += WebSocketClosed;
+            Node.OnWebSocketClosed += WebSocketClosed;
         }
 
         public static async Task<bool> Initialize(DiscordShardedClient client)
@@ -448,7 +454,7 @@ namespace Namiko
         public async Task Pause([Remainder]string str = "")
         {
             var player = Player;
-            if (player is null || player.PlayerState != PlayerState.Playing)
+            if (player is null)
             {
                 await ReplyAsync("There is nothing to pause.");
                 return;
@@ -472,7 +478,7 @@ namespace Namiko
         public async Task Resume([Remainder]string str = "")
         {
             var player = Player;
-            if (player is null || player.PlayerState != PlayerState.Playing)
+            if (player is null)
             {
                 await ReplyAsync("There is nothing to resume.");
                 return;
@@ -909,14 +915,22 @@ namespace Namiko
 
             await WebhookClients.LavalinkChannel.SendMessageAsync(message);
         }
-
         private static async Task WebSocketClosed(WebSocketClosedEventArgs arg)
         {
-            string message = $"`🌋` `{DateTime.Now.ToString("HH:mm:ss")}` - `Lavalink died. Try restarting?` {Program.GetClient().GetUser(Config.OwnerId).Mention}";
-            Console.WriteLine(message);
-            await WebhookClients.LavalinkChannel.SendMessageAsync(message);
-        }
+            try
+            {
+                var player = Node.GetPlayer(arg.GuildId);
 
+                if (arg.Code == 4014 && player != null && !ReconnectPlayer.Contains(player))
+                {
+                    ReconnectPlayer.Add(player);
+                    await WebhookClients.LavalinkChannel.SendMessageAsync($"`🌋` `{DateTime.Now.ToString("HH:mm:ss")}` -  Lost connection to `{arg.GuildId}`, queueing reconnect.");
+                }
+            } catch (Exception ex)
+            {
+                SentrySdk.CaptureException(ex);
+            }
+        }
         private static async Task StatsReceived(StatsEventArgs arg)
         {
             if (DateTime.Now.Minute % 10 != 0)
@@ -936,7 +950,6 @@ namespace Namiko
 
             await WebhookClients.LavalinkChannel.SendMessageAsync(embeds: new List<Embed> { eb.Build() });
         }
-
         private static async Task TrackEnded(TrackEndedEventArgs arg)
         {
             var player = arg.Player;
@@ -971,7 +984,6 @@ namespace Namiko
             await player.PlayAsync(nextTrack as LavaTrack);
             await player.TextChannel.SendMessageAsync(embed: (await MusicUtil.NowPlayingEmbed(player)).Build());
         }
-
         private static async Task TrackStuck(TrackStuckEventArgs arg)
         {
             var player = arg.Player;
@@ -983,7 +995,6 @@ namespace Namiko
                 await player.TextChannel.SendMessageAsync($"Track `{track.Title}` is stuck for `{arg.Threshold}ms`. Skipping...", embed: (await MusicUtil.NowPlayingEmbed(player)).Build());
             }
         }
-
         private static async Task TrackException(TrackExceptionEventArgs arg)
         {
             var player = arg.Player;
@@ -996,6 +1007,65 @@ namespace Namiko
                     await player.TextChannel.SendMessageAsync("Gomen, Senpai... *Coughs blood* ... The player broke! Try starting a new one?\n" +
                         $"Error: `{arg.ErrorMessage}`");
                     await player.DisposeAsync();
+                }
+            }
+        }
+
+        private static async Task Shard_ReconnectPlayer(DiscordSocketClient arg)
+        {
+            var players = new List<LavaPlayer>(ReconnectPlayer);
+            foreach (var player in players)
+            {
+                try
+                {
+                    var guild = arg.Guilds.FirstOrDefault(x => x.Id == player.GuildId);
+                    if (guild == null)
+                    {
+                        Console.WriteLine($"[LAVALINK] [{DateTime.Now.ToString("HH:mm:ss")}] Guild mismatch: {player.GuildId} not in shard {arg.ShardId}.");
+                        break;
+                    }
+
+                    if (player == null || player.VoiceChannel == null)
+                    {
+                        if (ReconnectPlayer.Contains(player))
+                            ReconnectPlayer.Remove(player);
+
+                        await WebhookClients.LavalinkChannel.SendMessageAsync($"`🌋` `{DateTime.Now.ToString("HH:mm:ss")}` -  Reconnect `{guild.Id}` failed, cancelling...");
+                        await player.TextChannel.SendMessageAsync(embed: new EmbedBuilderLava()
+                                .WithDescription("Gomen, Senpai... Failed to reconnect to voice channel. Use the join command to reinvite me.")
+                                .Build());
+                        break;
+                    }
+
+                    var current = guild.CurrentUser.VoiceChannel;
+                    if (current == null || player.VoiceChannel != current)
+                    {
+                        if (ReconnectPlayer.Contains(player))
+                            ReconnectPlayer.Remove(player);
+
+                        await Node.MoveChannelAsync(player.VoiceChannel);
+                        await WebhookClients.LavalinkChannel.SendMessageAsync($"`🌋` `{DateTime.Now.ToString("HH:mm:ss")}` -  Succesfully reconnected to `{guild.Id}`");
+                        await player.TextChannel.SendMessageAsync(embed: new EmbedBuilderLava()
+                            .WithDescription($"Reconnected player to **{player.VoiceChannel.Name}**")
+                            .Build());
+                        break;
+                    }
+
+                    else
+                    {
+                        if (ReconnectPlayer.Contains(player))
+                            ReconnectPlayer.Remove(player);
+
+                        await WebhookClients.LavalinkChannel.SendMessageAsync($"`🌋` `{DateTime.Now.ToString("HH:mm:ss")}` -  Already reconnected `{guild.Id}`, cancelling...");
+                        break;
+                    }
+                } catch (Exception ex)
+                {
+                    SentrySdk.CaptureException(ex);
+                    if (ReconnectPlayer.Contains(player))
+                        ReconnectPlayer.Remove(player);
+
+                    await WebhookClients.LavalinkChannel.SendMessageAsync($"`🌋` `{DateTime.Now.ToString("HH:mm:ss")}` -  Reconnect `{player.GuildId}` threw an exception.");
                 }
             }
         }

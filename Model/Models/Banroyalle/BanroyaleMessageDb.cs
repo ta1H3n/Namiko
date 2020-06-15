@@ -7,18 +7,18 @@ namespace Model
     {
         public static async Task AddMessage(BanroyaleMessage banroyaleMessage)
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             db.BanroyaleMessages.Add(banroyaleMessage);
             await db.SaveChangesAsync();
         }
         public static BanroyaleMessage GetLastActiveMessage(int banroyaleId)
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             return db.BanroyaleMessages.OrderByDescending(x => x.Id).FirstOrDefault(x => x.BanroyaleId == banroyaleId && x.Active);
         }
         public static async Task EndMessage(int banroyaleMessageId)
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             var br = db.BanroyaleMessages.FirstOrDefault(x => x.Id == banroyaleMessageId);
             if (br == null)
                 return;
@@ -28,7 +28,7 @@ namespace Model
         }
         public static async Task UpdateMessage(BanroyaleMessage banroyaleMessage)
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             db.BanroyaleMessages.Update(banroyaleMessage);
             await db.SaveChangesAsync();
         }

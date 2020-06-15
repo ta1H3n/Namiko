@@ -160,18 +160,6 @@ namespace Namiko
             await PagedReplyAsync(msg);
         }
 
-        [Command("HourlyTest"), OwnerPrecondition]
-        public async Task HourlyTest()
-        {
-            Timers.Timer_HourlyStats(null, null);
-        }
-
-        [Command("DailyTest"), OwnerPrecondition]
-        public async Task DailyTest()
-        {
-            Timers.Timer_DailyStats(null, null);
-        }
-
         [Command("MarkdownCommands"), OwnerPrecondition]
         public async Task MarkdownCommands()
         {

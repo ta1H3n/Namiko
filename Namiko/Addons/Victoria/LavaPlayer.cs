@@ -28,6 +28,7 @@ namespace Victoria {
 
         public bool Repeat { get; set; }
         public bool Loop { get; set; }
+        public ulong GuildId { get; set; }
 
         /// <summary>
         ///     Current track that is playing.

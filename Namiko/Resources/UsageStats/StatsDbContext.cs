@@ -5,11 +5,8 @@ using System.Threading.Tasks;
 
 namespace Namiko
 {
-    public class SqliteStatsDbContext : DbContext
+    public class StatsDbContext : DbContext
     {
-        public DbSet<ServerStat> ServerStats { get; set; }
-        public DbSet<CommandStat> CommandStats { get; set; }
-        public DbSet<UsageStat> UsageStats { get; set; }
         public DbSet<CommandLog> CommandLogs { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder Options)
@@ -20,7 +17,7 @@ namespace Namiko
 
         public async static Task<int> ExecuteSQL(string query)
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             return await db.Database.ExecuteSqlRawAsync(query);
         }
     }

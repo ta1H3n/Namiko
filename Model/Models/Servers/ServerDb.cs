@@ -10,19 +10,19 @@ namespace Model
     {
         public static Server GetServer(ulong GuildId)
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             return db.Servers.Where(x => x.GuildId == GuildId).FirstOrDefault();
         }
         public static Dictionary<ulong, string> GetPrefixes()
         {
-            using (var db = new SqliteDbContext())
+            using (var db = new NamikoDbContext())
             {
                 return db.Servers.ToDictionary(x => x.GuildId, x => x.Prefix);
             }
         }
         public static async Task UpdateServer(Server server)
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             if (!db.Servers.Any(x => x.GuildId == server.GuildId))
                 db.Add(server);
 
@@ -33,7 +33,7 @@ namespace Model
         }
         public static async Task DeleteServer(ulong GuildId)
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             var server = db.Servers.Where(x => x.GuildId == GuildId).FirstOrDefault();
             if (server != null)
             {
@@ -43,7 +43,7 @@ namespace Model
         }
         public static async Task<int> AddNewServers(IEnumerable<ulong> guildsIds, string prefix)
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             db.Servers.RemoveRange(db.Servers.Where(x => guildsIds.Contains(x.GuildId)));
 
             var zerotime = new DateTime(0);
@@ -60,24 +60,24 @@ namespace Model
         }
         public static List<Server> GetAll()
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             return db.Servers.ToList();
         }
         public static List<Server> GetLeft()
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             var time = new DateTime(0);
             return db.Servers.Where(x => x.LeaveDate > time).ToList();
         }
         public static HashSet<ulong> GetNotLeft()
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             var zerotime = new DateTime(0);
             return db.Servers.Where(x => x.LeaveDate == zerotime).Select(x => x.GuildId).ToHashSet();
         }
         public static List<Server> GetOld()
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             var date = new DateTime(0);
             return db.Servers.Where(x => x.LeaveDate != date && x.LeaveDate.AddDays(3) < DateTime.Now).ToList();
         }

@@ -209,6 +209,7 @@ namespace Victoria {
                 .ConfigureAwait(false);
 
             player = (TPlayer) Activator.CreateInstance(typeof(TPlayer), _lavaSocket, voiceChannel, textChannel);
+            player.GuildId = voiceChannel.GuildId;
             _playerCache.TryAdd(voiceChannel.GuildId, player);
             await player.UpdateVolumeAsync(_lavaSocket.DefaultVolume);
             return player;
@@ -255,6 +256,15 @@ namespace Victoria {
         /// </returns>
         public TPlayer GetPlayer(IGuild guild) {
             if (_playerCache.TryGetValue(guild.Id, out TPlayer player))
+            {
+                return player;
+            }
+            return null;
+        }
+
+        public TPlayer GetPlayer(ulong guildId)
+        {
+            if (_playerCache.TryGetValue(guildId, out TPlayer player))
             {
                 return player;
             }

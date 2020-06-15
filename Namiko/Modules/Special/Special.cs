@@ -71,7 +71,7 @@ namespace Namiko
         {
             try
             {
-                int res = await SqliteDbContext.ExecuteSQL(str);
+                int res = await NamikoDbContext.ExecuteSQL(str);
                 await Context.Channel.SendMessageAsync($"{res} rows affected.");
             } catch (Exception ex)
             {
@@ -87,7 +87,7 @@ namespace Namiko
         {
             try
             {
-                int res = await SqliteStatsDbContext.ExecuteSQL(str);
+                int res = await StatsDbContext.ExecuteSQL(str);
                 await Context.Channel.SendMessageAsync($"{res} rows affected.");
             }
             catch (Exception ex)
@@ -104,7 +104,7 @@ namespace Namiko
         {
             try
             {
-                using var db = new SqliteDbContext();
+                using var db = new NamikoDbContext();
                 var list = db.DynamicListFromSql(str, new Dictionary<string, object>());
 
                 string text = $"Results: {list.Count()}\n";
@@ -137,7 +137,7 @@ namespace Namiko
         {
             try
             {
-                using var db = new SqliteStatsDbContext();
+                using var db = new StatsDbContext();
                 var list = db.DynamicListFromSql(str, new Dictionary<string, object>());
 
                 string text = $"Results: {list.Count()}\n";
@@ -175,8 +175,8 @@ namespace Namiko
             {
                 try
                 {
-                    tasks.Add(player.TextChannel.SendMessageAsync(embed: new EmbedBuilderLava(Context.User).WithDescription("Disconnecting player due to server restart.\n" +
-                        "You can restart the player once I am back online.").Build()));
+                    tasks.Add(player.TextChannel.SendMessageAsync(embed: new EmbedBuilderLava().WithDescription("Gomen, Senpai. I have to Disconnect the player due to server restart.\n" +
+                        "You can restart the player once I am back online in a few minutes.").Build()));
                     tasks.Add(Music.Node.LeaveAsync(player.VoiceChannel));
                 } 
                 catch (Exception ex) { SentrySdk.CaptureException(ex); }
@@ -362,7 +362,7 @@ namespace Namiko
         {
             var eb = await JsonHelper.ReadJson<EmbedBuilder>(Assembly.GetEntryAssembly().Location.Replace(@"Namiko.dll", $@"embeds/{name}"));
             eb.WithColor(BasicUtil.RandomColor());
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             var voters = db.Voters.Where(x => x.Date > DateTime.Now.AddDays(-days)).Select(x => x.UserId).ToHashSet();
             int votes = db.Voters.Where(x => x.Date > DateTime.Now.AddDays(-days)).Count();
             await ReplyAsync($"Sending this to {voters.Count} users. Votes - {votes}");
@@ -374,7 +374,7 @@ namespace Namiko
         {
             var eb = await JsonHelper.ReadJson<EmbedBuilder>(Assembly.GetEntryAssembly().Location.Replace(@"Namiko.dll", $@"embeds/{name}"));
             eb.WithColor(BasicUtil.RandomColor());
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             var voters = db.Voters.Where(x => x.Date > DateTime.Now.AddDays(-days)).Select(x => x.UserId).ToHashSet();
             int votes = db.Voters.Where(x => x.Date > DateTime.Now.AddDays(-days)).Count();
             await ReplyAsync($"Sending this to {voters.Count} users. Votes - {votes}");

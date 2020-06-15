@@ -17,13 +17,13 @@ namespace Model
 
         public static HashSet<ulong> GetAll()
         {
-            using SqliteDbContext db = new SqliteDbContext();
+            using NamikoDbContext db = new NamikoDbContext();
             return db.BlacklistedChannels.Select(x => x.ChannelId).ToHashSet();
         }
 
         public static async Task UpdateBlacklistedChannel(BlacklistedChannel ch)
         {
-            using SqliteDbContext db = new SqliteDbContext();
+            using NamikoDbContext db = new NamikoDbContext();
             var res = db.BlacklistedChannels.Where(x => x.ChannelId == ch.ChannelId).FirstOrDefault();
             if (res == null)
                 db.Add(ch);
@@ -36,7 +36,7 @@ namespace Model
         }
         public static async Task DeleteBlacklistedChannel(ulong channelId)
         {
-            using SqliteDbContext db = new SqliteDbContext();
+            using NamikoDbContext db = new NamikoDbContext();
             var ch = db.BlacklistedChannels.Where(x => x.ChannelId == channelId).FirstOrDefault();
             if (ch != null)
             {
@@ -49,7 +49,7 @@ namespace Model
         {
             if (BlacklistedChannelIds == null)
             {
-                using var db = new SqliteDbContext();
+                using var db = new NamikoDbContext();
                 BlacklistedChannelIds = GetAll();
             }
 

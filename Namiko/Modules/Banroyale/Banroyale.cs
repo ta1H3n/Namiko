@@ -105,7 +105,7 @@ namespace Namiko
             await Context.Channel.SendMessageAsync(embed: BanroyaleUtil.BanroyaleDetailsEmbed(banroyale, Context.Guild.GetRole(banroyale.ParticipantRoleId), Context.Guild.GetRole(banroyale.RoleReqId), users.Count).Build());
         }
 
-        [Command("JoinBanroyale"), Alias("jbrl"), Summary("Join the current Ban Royale. Must be in the same channel.\n**Usage**: `!jbrl`")]
+        [Command("JoinBanroyale"), Alias("jbrl"), Summary("Join the current Ban Royale. Must be in the same channel.\n**Usage**: `!jbrl`"), CustomBotPermission(GuildPermission.ManageRoles)]
         public async Task JoinBanroyale([Remainder] string str = "")
         {
             var user = Context.User as SocketGuildUser;
@@ -150,7 +150,7 @@ namespace Namiko
             await Context.Channel.SendMessageAsync(response);
         }
 
-        [Command("LeaveBanroyale"), Alias("lbrl"), Summary("Leave the current Ban Royale. Must be in the same channel.\n**Usage**: `!lbrl`")]
+        [Command("LeaveBanroyale"), Alias("lbrl"), Summary("Leave the current Ban Royale. Must be in the same channel.\n**Usage**: `!lbrl`"), CustomBotPermission(GuildPermission.ManageRoles)]
         public async Task LeaveBanroyale([Remainder] string str = "")
         {
             var user = Context.User as SocketGuildUser;

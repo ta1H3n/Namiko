@@ -83,7 +83,10 @@ namespace Namiko
                 albums += $"\n<{ImgurAPI.ParseAlbumLink(album2.AlbumId)}>";
 
             if (albums == "")
+            {
                 await Context.Channel.SendMessageAsync($"Album **{name}** doesn't exist.");
+                return;
+            }
 
             await Context.Channel.SendMessageAsync(albums);
         }

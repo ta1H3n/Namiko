@@ -71,7 +71,7 @@ namespace Namiko
             HourAgain = new Timer(1000 * 60 * 60);
             HourAgain.AutoReset = true;
             HourAgain.Enabled = true;
-            HourAgain.Elapsed += Timer_BackupData;
+            //HourAgain.Elapsed += Timer_BackupData;
             HourAgain.Elapsed += Timer_CleanData;
         }
 
@@ -146,7 +146,7 @@ namespace Namiko
 
             int s = 0;
             int r;
-            using (var db = new SqliteDbContext())
+            using (var db = new NamikoDbContext())
             {
                 var client = Program.GetClient();
                 var nid = client.CurrentUser.Id;
@@ -176,40 +176,81 @@ namespace Namiko
             watch.Stop();
             Console.WriteLine($"[TIMER] Namiko robbed {s} servers. {r} rows affected. It took her {watch.ElapsedMilliseconds} ms.");
         }
+        private static int CleanTake = 100;
+        private static int CleanSkip = 0;
         public static async void Timer_CleanData(object sender, ElapsedEventArgs e)
         {
-            var watch = new Stopwatch();
-            watch.Start();
-
-            int s = 0;
-            int r;
-            using (var db = new SqliteDbContext())
+            try
             {
-                var date = new DateTime(0);
-                var ids = db.Servers.Where(x => x.LeaveDate != date && x.LeaveDate.AddDays(3) < DateTime.Now).Select(x => x.GuildId).ToHashSet();
-                s = ids.Count;
+                var watch = new Stopwatch();
+                watch.Start();
 
-                db.RemoveRange(db.Teams.Where(x => ids.Contains(x.GuildId)));
-                db.RemoveRange(db.Dailies.Where(x => ids.Contains(x.GuildId)));
-                db.RemoveRange(db.Servers.Where(x => ids.Contains(x.GuildId)));
-                db.RemoveRange(db.Weeklies.Where(x => ids.Contains(x.GuildId)));
-                db.RemoveRange(db.Toasties.Where(x => ids.Contains(x.GuildId)));
-                db.RemoveRange(db.Marriages.Where(x => ids.Contains(x.GuildId)));
-                db.RemoveRange(db.PublicRoles.Where(x => ids.Contains(x.GuildId)));
-                db.RemoveRange(db.WaifuWishlist.Where(x => ids.Contains(x.GuildId)));
-                db.RemoveRange(db.FeaturedWaifus.Where(x => ids.Contains(x.GuildId)));
-                db.RemoveRange(db.UserInventories.Where(x => ids.Contains(x.GuildId)));
-                db.RemoveRange(db.SpecialChannels.Where(x => ids.Contains(x.GuildId)));
+                int s = 0;
+                int r;
+                using (var db = new NamikoDbContext())
+                {
+                    var date = new DateTime(0);
+                    var ids = db.Servers
+                        .Where(x => x.LeaveDate != date && x.LeaveDate.AddDays(3) < DateTime.Now)
+                        .OrderBy(x => x.LeaveDate)
+                        .Select(x => x.GuildId)
+                        .Skip(CleanSkip)
+                        .Take(CleanTake)
+                        .ToHashSet();
+                    s = ids.Count;
 
-                var shops = db.WaifuShops.Where(x => ids.Contains(x.GuildId));
-                db.ShopWaifus.RemoveRange(db.ShopWaifus.Where(x => shops.Any(y => y.Id == x.WaifuShop.Id)));
-                db.WaifuShops.RemoveRange(shops);
+                    db.RemoveRange(db.Teams.Where(x => ids.Contains(x.GuildId)));
+                    db.RemoveRange(db.Dailies.Where(x => ids.Contains(x.GuildId)));
+                    db.RemoveRange(db.Servers.Where(x => ids.Contains(x.GuildId)));
+                    db.RemoveRange(db.Weeklies.Where(x => ids.Contains(x.GuildId)));
+                    db.RemoveRange(db.Toasties.Where(x => ids.Contains(x.GuildId)));
+                    db.RemoveRange(db.Marriages.Where(x => ids.Contains(x.GuildId)));
+                    db.RemoveRange(db.PublicRoles.Where(x => ids.Contains(x.GuildId)));
+                    db.RemoveRange(db.WaifuWishlist.Where(x => ids.Contains(x.GuildId)));
+                    db.RemoveRange(db.FeaturedWaifus.Where(x => ids.Contains(x.GuildId)));
+                    db.RemoveRange(db.UserInventories.Where(x => ids.Contains(x.GuildId)));
+                    db.RemoveRange(db.SpecialChannels.Where(x => ids.Contains(x.GuildId)));
 
-                r = await db.SaveChangesAsync();
+                    var shops = db.WaifuShops.Where(x => ids.Contains(x.GuildId));
+                    db.ShopWaifus.RemoveRange(db.ShopWaifus.Where(x => shops.Any(y => y.Id == x.WaifuShop.Id)));
+                    db.WaifuShops.RemoveRange(shops);
+
+                    r = await db.SaveChangesAsync();
+                }
+
+                watch.Stop();
+                if (s > 0 || r > 0)
+                {
+                    Console.WriteLine($"[TIMER] Namiko cleared {s} servers. {r} rows affected. It took her {watch.ElapsedMilliseconds} ms.");
+                    await WebhookClients.NamikoLogChannel.SendMessageAsync($"[TIMER] Namiko cleared {s} servers. {r} rows affected. It took her {watch.ElapsedMilliseconds} ms.");
+                }
+                CleanTake = 100;
+                if (!(sender is bool))
+                {
+                    await Task.Delay(TimeSpan.FromMinutes(20));
+                    Timer_CleanData(false, null);
+                    await Task.Delay(TimeSpan.FromMinutes(20));
+                    Timer_CleanData(false, null);
+                }
+            } catch (Exception ex)
+            {
+                SentrySdk.CaptureException(ex);
+
+                if (CleanTake > 1)
+                {
+                    CleanTake /= 2;
+                }
+                else
+                {
+                    CleanSkip++;
+                    using (var db = new NamikoDbContext())
+                    {
+                        var date = new DateTime(0);
+                        var id = db.Servers.Where(x => x.LeaveDate != date && x.LeaveDate.AddDays(3) < DateTime.Now).Select(x => x.GuildId).FirstOrDefault();
+                        await WebhookClients.NamikoLogChannel.SendMessageAsync($"[TIMER] Skipping clean of guild {id}.");
+                    }
+                }
             }
-
-            watch.Stop();
-            Console.WriteLine($"[TIMER] Namiko cleared {s} servers. {r} rows affected. It took her {watch.ElapsedMilliseconds} ms.");
         }
         private static async void Timer_ExpireTeamInvites(object sender, ElapsedEventArgs e)
         {
@@ -223,18 +264,6 @@ namespace Namiko
             {
                 await Blackjack.GameTimeout(x.Key, x.Value);
             }
-        }
-        private static void Timer_BackupData(object sender, ElapsedEventArgs e)
-        {
-            try
-            {
-                string backupLocation = Assembly.GetEntryAssembly().Location.Replace(@"Namiko.dll", @"backups/");
-                string date = DateTime.Now.ToString("yyyy-MM-dd");
-
-                File.Copy(Locations.SqliteDb + "Database.sqlite", Locations.SqliteDb + "backups/Database" + date + ".sqlite");
-                Console.WriteLine("Backups made.");
-            }
-            catch { }
         }
         private static async void Timer_Unban(object sender, ElapsedEventArgs e)
         {
@@ -252,139 +281,6 @@ namespace Namiko
         }
 
 
-        // STATS
-        public static async void Timer_DailyStats(object sender, ElapsedEventArgs e)
-        {
-            if (Program.GetClient().CurrentUser.Id != 418823684459855882)
-                return;
-
-            var date = System.DateTime.Now;
-            List<ServerStat> servers = null;
-            List<CommandStat> commands = null;
-
-            using SqliteStatsDbContext db = new SqliteStatsDbContext();
-            var sample = db.ServerStats.OrderByDescending(x => x.Id).FirstOrDefault();
-            if (sample == null || sample.Date.Date < date.Date)
-            {
-                servers = Stats.ParseServerStats();
-                commands = Stats.ParseCommandStats();
-
-                db.ServerStats.AddRange(servers);
-                db.CommandStats.AddRange(commands);
-
-                await db.SaveChangesAsync();
-
-                List<UsageStat> usage = db.UsageStats.Where(x => x.Date > date.AddDays(-1) && x.Date < date).ToList();
-                await UsageReport(servers, commands, usage);
-                Stats.CommandCalls.Clear();
-                Stats.ServerCommandCalls.Clear();
-            }
-        }
-        public static async void Timer_HourlyStats(object sender, ElapsedEventArgs e)
-        {
-            var date = System.DateTime.Now;
-
-            using SqliteStatsDbContext db = new SqliteStatsDbContext();
-            var sample = db.UsageStats.OrderByDescending(x => x.Date).FirstOrDefault();
-            if (sample == null || sample.Date.AddHours(2) < date)
-            {
-                db.UsageStats.Add(new UsageStat { Date = date.AddHours(-1).AddMinutes(-date.Minute).AddSeconds(-date.Second), Count = Stats.TotalCalls });
-
-                await db.SaveChangesAsync();
-                Stats.TotalCalls = 0;
-            }
-        }
-
-        private static async Task UsageReport(List<ServerStat> servers, List<CommandStat> commands, List<UsageStat> usage)
-        {
-            servers = servers.OrderByDescending(x => x.Count).ToList();
-            commands = commands.OrderByDescending(x => x.Count).ToList();
-            usage = usage.OrderByDescending(x => x.Count).ToList();
-            string small = SmallReport(servers, commands, usage);
-            string big = BigReport(servers, commands, usage).Replace("*", "").Replace("`", "");
-
-            using var ch = new DiscordWebhookClient(Config.UsageReportWebhook);
-            using var stream = GenerateStreamFromString(big);
-            await ch.SendFileAsync(stream, System.DateTime.Now.AddDays(-1).Date.ToString("yyyy-MM-dd") + "_Namiko.txt", small);
-        }
-        private static string SmallReport(List<ServerStat> servers, List<CommandStat> commands, List<UsageStat> usage)
-        {
-            string text = System.DateTime.Now.Date.ToString() + "\n\n";
-
-            text += "   Servers most used in:\n";
-            for(int i = 0; i<3; i++)
-            {
-                try
-                {
-                    text += ToString(servers[i]) + "\n";
-                } catch { break; }
-            }
-            
-            text += "\n   Most used commands:\n";
-            for (int i = 0; i < 3; i++)
-            {
-                try
-                {
-                    text += ToString(commands[i]) + "\n";
-                } catch { break; }
-            }
-
-            text += "\n   Peak usage:\n";
-            for (int i = 0; i < 3; i++)
-            {
-                try
-                {
-                    text += ToString(usage[i]) + "\n";
-                } catch { break; }
-            }
-
-            text += $"\n Total command calls: **{usage.Sum(x => x.Count)}**";
-
-            return text;
-        }
-        private static string BigReport(List<ServerStat> servers, List<CommandStat> commands, List<UsageStat> usage)
-        {
-            string text = System.DateTime.Now.Date.ToString() + "\n\n";
-
-            text += "   Servers usage:\n";
-            foreach(var x in servers)
-            {
-                text += ToString(x) + "\n";
-            }
-
-            text += "\n   Command usage:\n";
-            foreach (var x in commands)
-            {
-                text += ToString(x) + "\n";
-            }
-
-            text += "\n   Command usage:\n";
-            foreach (var x in usage)
-            {
-                text += ToString(x) + "\n";
-            }
-
-            return text;
-        }
-
-        private static string ToString(ServerStat serverStat)
-        {
-            string guildName = "";
-            try
-            {
-                guildName = Program.GetClient().GetGuild(serverStat.GuildId).Name;
-            } catch { }
-
-            return $"`{serverStat.GuildId}` - **{serverStat.Count}** - *{guildName}*";
-        }
-        private static string ToString(CommandStat commandStat)
-        {
-            return $"`{commandStat.Name}` - **{commandStat.Count}**";
-        }
-        private static string ToString(UsageStat usageStat)
-        {
-            return $"`{usageStat.Date.ToString("hhtt")}` - **{usageStat.Count}**";
-        }
         public static Stream GenerateStreamFromString(string s)
         {
             var stream = new MemoryStream();

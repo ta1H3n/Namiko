@@ -10,24 +10,24 @@ namespace Model
     {
         public static Waifu GetWaifu(string name)
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             return db.Waifus.FirstOrDefault(x => x.Name == name);
         }
         public static async Task<int> AddWaifu(Waifu waifu)
         {
-            using var DbContext = new SqliteDbContext();
+            using var DbContext = new NamikoDbContext();
             DbContext.Add(waifu);
             return await DbContext.SaveChangesAsync();
         }
         public static async Task<int> UpdateWaifu(Waifu waifu)
         {
-            using var DbContext = new SqliteDbContext();
+            using var DbContext = new NamikoDbContext();
             DbContext.Update(waifu);
             return await DbContext.SaveChangesAsync();
         }
         public static async Task<List<Waifu>> SearchWaifus(string query, bool primaryName = false, IEnumerable<Waifu> from = null, bool includeMAL = false)
         {
-            using var DbContext = new SqliteDbContext();
+            using var DbContext = new NamikoDbContext();
             List<Waifu> waifus = new List<Waifu>();
 
             var waifuQuery = from == null ? DbContext.Waifus : from.AsQueryable();
@@ -54,20 +54,20 @@ namespace Model
                     (x.Source == null ? false : x.Source.ToUpper().Contains(word.ToUpper())));
             }
 
-            waifus = await waifuQuery.ToListAsync();
+            waifus = from == null ? await waifuQuery.ToListAsync() : waifuQuery.ToList();
 
             return waifus;
 
         }
         public static async Task<List<Waifu>> AllWaifus()
         {
-            using var DbContext = new SqliteDbContext();
+            using var DbContext = new NamikoDbContext();
             return await DbContext.Waifus.ToListAsync();
 
         }
         public static async Task<int> DeleteWaifu(string name)
         {
-            using var DbContext = new SqliteDbContext();
+            using var DbContext = new NamikoDbContext();
             Waifu waifu = DbContext.Waifus.Where(x => x.Name == name).FirstOrDefault();
             if (waifu == null)
                 return 0;
@@ -79,12 +79,12 @@ namespace Model
         }
         public static async Task<List<Waifu>> GetWaifusByTier(int tier)
         {
-            using var DbContext = new SqliteDbContext();
+            using var DbContext = new NamikoDbContext();
             return await DbContext.Waifus.Where(x => x.Tier == tier).ToListAsync();
         }
         public static async Task<List<Waifu>> RandomWaifus(int tier, int amount, List<string> includeSource = null, List<string> excludeSource = null)
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             return (await db.Waifus.Where(x => x.Tier == tier &&
 (includeSource == null || includeSource.Contains(x.Source)) &&
 (excludeSource == null || !excludeSource.Contains(x.Source)))
@@ -94,7 +94,7 @@ namespace Model
         }
         public static async Task<int> RenameWaifu(string oldName, string newName)
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             var inv = db.UserInventories.Where(x => x.Waifu.Name == oldName);
             var wish = db.WaifuWishlist.Where(x => x.Waifu.Name == oldName);
             var store = db.ShopWaifus.Where(x => x.Waifu.Name == oldName);
@@ -140,24 +140,24 @@ namespace Model
 
         public static async Task<int> AddMalWaifu(MalWaifu waifu)
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             db.MalWaifus.Add(waifu);
             return await db.SaveChangesAsync();
         }
         public static async Task<int> UpdateMalWaifu(MalWaifu waifu)
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             db.MalWaifus.Update(waifu);
             return await db.SaveChangesAsync();
         }
         public static async Task<MalWaifu> GetMalWaifu(string waifuName)
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             return await db.MalWaifus.Include(x => x.Waifu).FirstOrDefaultAsync(x => x.WaifuName == waifuName);
         }
         public static async Task<MalWaifu> GetMalWaifu(long malId)
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             return await db.MalWaifus.Include(x => x.Waifu).FirstOrDefaultAsync(x => x.MalId == malId);
         }
     }

@@ -10,12 +10,12 @@ namespace Model
     {
         public static int GetAmount(ulong UserId, LootBoxType type, ulong GuildId = 0)
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             return db.LootBoxes.Where(x => x.UserId == UserId && x.Type == type && x.GuildId == GuildId).Select(x => x.Amount).FirstOrDefault();
         }
         public static async Task AddLootbox(ulong UserId, LootBoxType type, int amount, ulong GuildId = 0)
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             var box = db.LootBoxes.Where(x => x.UserId == UserId && x.Type == type && x.GuildId == GuildId).FirstOrDefault();
 
             if (box == null)
@@ -40,7 +40,7 @@ namespace Model
         }
         public static async Task<List<LootBox>> GetAll(ulong UserId, ulong GuildId)
         {
-            using var db = new SqliteDbContext();
+            using var db = new NamikoDbContext();
             var box = await db.LootBoxes.Where(x => x.UserId == UserId && (x.GuildId == GuildId || x.GuildId == 0) && x.Amount > 0).ToListAsync();
 
             return box;
