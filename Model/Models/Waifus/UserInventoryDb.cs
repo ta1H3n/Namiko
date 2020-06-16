@@ -73,26 +73,31 @@ namespace Model
             using var db = new NamikoDbContext();
             return db.UserInventories.Any(x => x.Waifu == waifu && x.UserId == userId && x.GuildId == guildId);
         }
-        public static async Task<Dictionary<string, int>> CountWaifus(ulong guildId = 0)
+        public static async Task<Dictionary<string, int>> CountWaifus(ulong guildId = 0, string[] filter = null)
         {
-            using var cmd = new NamikoDbContext().Database.GetDbConnection().CreateCommand();
-            string where = "";
-            if (guildId != 0)
-                where = $" where \"GuildId\" = {guildId} ";
-            cmd.CommandText = $"select \"WaifuName\", count(*) from \"UserInventories\" {where} Group By \"WaifuName\" order by count(*) desc";
-            if (cmd.Connection.State != ConnectionState.Open) { cmd.Connection.Open(); }
+            using var db = new NamikoDbContext();
 
-            var res = new Dictionary<string, int>();
-            using (var reader = await cmd.ExecuteReaderAsync())
+            var query = db.UserInventories.AsQueryable();
+
+            if (guildId != 0)
+                query = query.Where(x => x.GuildId == guildId);
+
+            if (filter.DefaultIfEmpty() != null)
             {
-                if (reader.HasRows)
+                foreach (var word in filter)
                 {
-                    while (reader.Read())
-                    {
-                        res.Add(reader.GetString(0), reader.GetInt32(1));
-                    }
+                    query = query.Where(x =>
+                        x.Waifu.Name.ToUpper().Contains(word.ToUpper()) ||
+                        (x.Waifu.LongName == null ? false : x.Waifu.LongName.ToUpper().Contains(word.ToUpper())) ||
+                        (x.Waifu.Source == null ? false : x.Waifu.Source.ToUpper().Contains(word.ToUpper())));
                 }
             }
+
+            var res = await query
+                .GroupBy(x => x.WaifuName)
+                .Select(x => new { Name = x.Key, Count = x.Count() })
+                .OrderByDescending(x => x.Count)
+                .ToDictionaryAsync(x => x.Name, x => x.Count);
             return res;
         }
     }

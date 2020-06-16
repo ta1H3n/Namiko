@@ -247,7 +247,7 @@ namespace Namiko
         [Command("TopWaifus"), Alias("tw"), Summary("Shows most popular waifus.\n**Usage**: `!tw`")]
         public async Task TopWaifus([Remainder] string str = "")
         {
-            var waifus = await UserInventoryDb.CountWaifus();
+            var waifus = await UserInventoryDb.CountWaifus(0, str.Split(' '));
             var msg = new CustomPaginatedMessage();
 
             msg.Title = ":two_hearts: Waifu Leaderboards";
@@ -268,7 +268,7 @@ namespace Namiko
         [Command("ServerTopWaifus"), Alias("stw"), Summary("Shows most popular waifus in the server.\n**Usage**: `!stw`")]
         public async Task ServerTopWaifus([Remainder] string str = "")
         {
-            var waifus = await UserInventoryDb.CountWaifus(Context.Guild.Id);
+            var waifus = await UserInventoryDb.CountWaifus(Context.Guild.Id, str.Split(' '));
             var msg = new CustomPaginatedMessage();
 
             msg.Title = ":two_hearts: Waifu Leaderboards";
