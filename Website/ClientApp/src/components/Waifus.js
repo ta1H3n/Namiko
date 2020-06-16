@@ -20,6 +20,7 @@ export class Waifus extends Component {
                         <th>Waifu</th>
                         <th>Source</th>
                         <th>Description</th>
+                        <th>Image</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -28,6 +29,7 @@ export class Waifus extends Component {
                             <td>{w.longName}</td>
                             <td>{w.source}</td>
                             <td>{w.description}</td>
+                            <td><img src={w.imageUrl} alt="sample"/></td>
                         </tr>
                     )}
                 </tbody>

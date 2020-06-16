@@ -16,6 +16,7 @@ namespace Website.Controllers
         public async Task<IEnumerable<Waifu>> Get()
         {
             var waifus = await WaifuDb.SearchWaifus("azur");
+            waifus.ForEach(x => x.ImageUrl = "images/sample.gif");
             return waifus;
         }
     }
