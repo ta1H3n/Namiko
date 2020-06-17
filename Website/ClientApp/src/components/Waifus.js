@@ -6,82 +6,60 @@ export class Waifus extends Component {
 
     constructor(props) {
         super(props);
-        this.state = { waifus: [], loading: true };
-    }
+        this.state = {
+            waifus: [],
+            waiting: true,
+            loading: false
+        };
 
-    componentDidMount() {
-        this.populateWaifus();
+        this.onKeyDown = this.onKeyDown.bind(this);
     }
-
-    //static renderWaifuTable(waifus) {
-    //    return (
-    //        <table className='table table-striped' aria-labelledby="tabelLabel">
-    //            <thead>
-    //                <tr>
-    //                    <th>Waifu</th>
-    //                    <th>Source</th>
-    //                    <th>Description</th>
-    //                    <th>Image</th>
-    //                </tr>
-    //            </thead>
-    //            <tbody>
-    //                {waifus.map(w =>
-    //                    <tr key={w.name}>
-    //                        <td>{w.longName}</td>
-    //                        <td>{w.source}</td>
-    //                        <td>{w.description}</td>
-    //                        <td><img src={w.imageUrl} alt="sample"/></td>
-    //                    </tr>
-    //                )}
-    //            </tbody>
-    //        </table>
-    //    );
-    //}
 
     static renderWaifuTable(waifus) {
         return (
-            <div className="container">
-                <div className="row">
-                    {waifus.map(w =>
-                        <div className="col-sm-3"> {w.name} </div>)}
-                </div>
+            <div className="card-columns" >
+                {waifus.map(waifu =>
+                    <Card waifu={waifu} />
+                )}
             </div>
         );
     }
 
     render() {
-        
         let contents = this.state.loading
-            ? <p><em>Loading...</em></p>
+            ? <h4 className="text-muted text-center align-middle"><em>Loading...</em></h4>
+            : this.state.waiting
+            ? <h4 className="text-muted text-center align-middle"><em>Waiting...</em></h4>
             : Waifus.renderWaifuTable(this.state.waifus);
 
         return (
-            <div className="content">
-                <h1 id="tabelLabel" >Blood for the Blood God</h1>
-                <h2>Skulls for the Skull Throne</h2>
-
-                <div className="row">
-                    <div className="col-sm-8">col-sm-8</div>
-                    <div className="col-sm-4">col-sm-4</div>
+            <div>
+                <div>
+                    <input type="text" className="form-control" placeholder="Search for waifus..." onKeyDown={this.onKeyDown} />
                 </div>
-                <div className="row">
-                    <div className="col-sm">col-sm</div>
-                    <div className="col-sm">col-sm</div>
-                    <div className="col-sm">col-sm</div>
-                </div>
-
-                <p>Search results.</p>
+                <ol/>
                 {contents}
-                
             </div>
-            
-            
         );
     }
 
-    async populateWaifus() {
-        const response = await fetch('api/waifu');
+    async populateWaifus(s) {
+        var query = "api/waifu";
+        if (s) {
+            query = query + "?search=";
+            query = query + encodeURIComponent(s);
+        }
+        const response = await fetch(query);
         const data = await response.json();
         this.setState({ waifus: data, loading: false });
+    }
+
+    async onKeyDown(e) {
+        if (e.key === 'Enter') {
+            if (e.target.value !== "") {
+                this.setState({ waiting: false, loading: true });
+                await this.populateWaifus(e.target.value);
+            }
+        }
     }
 }
