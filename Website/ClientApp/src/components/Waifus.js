@@ -40,38 +40,42 @@ export class Waifus extends Component {
 
     static renderWaifuTable(waifus) {
         return (
-            <div class="container">
-                <div class="row">
+            <div className="container">
+                <div className="row">
                     {waifus.map(w =>
-                        <div class="col-sm-3"> {w.name} </div>)}
+                        <div className="col-sm-3"> {w.name} </div>)}
                 </div>
             </div>
         );
     }
 
     render() {
+        
         let contents = this.state.loading
             ? <p><em>Loading...</em></p>
             : Waifus.renderWaifuTable(this.state.waifus);
 
         return (
-            <div>
+            <div className="content">
                 <h1 id="tabelLabel" >Blood for the Blood God</h1>
                 <h2>Skulls for the Skull Throne</h2>
 
-                <div class="row">
-                    <div class="col-sm-8">col-sm-8</div>
-                    <div class="col-sm-4">col-sm-4</div>
+                <div className="row">
+                    <div className="col-sm-8">col-sm-8</div>
+                    <div className="col-sm-4">col-sm-4</div>
                 </div>
-                <div class="row">
-                    <div class="col-sm">col-sm</div>
-                    <div class="col-sm">col-sm</div>
-                    <div class="col-sm">col-sm</div>
+                <div className="row">
+                    <div className="col-sm">col-sm</div>
+                    <div className="col-sm">col-sm</div>
+                    <div className="col-sm">col-sm</div>
                 </div>
 
                 <p>Search results.</p>
                 {contents}
+                
             </div>
+            
+            
         );
     }
 

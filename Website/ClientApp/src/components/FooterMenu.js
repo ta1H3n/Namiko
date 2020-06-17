@@ -12,8 +12,7 @@ export class FooterMenu extends Component {
 
     render() {
         return (
-            <footer class="main_footer">
-                <div class="container">
+            <footer>
                     <Navbar className="navbar-expand-sm navbar-toggleable-sm ng-white border-top mb-3" light>
                         <Container>
                             <NavbarBrand tag={Link} to="/">Privacy</NavbarBrand>
@@ -28,7 +27,6 @@ export class FooterMenu extends Component {
                             </ul>
                         </Container>
                     </Navbar>
-                </div>
             </footer>
         );
     }

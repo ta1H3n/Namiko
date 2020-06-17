@@ -6,6 +6,7 @@
 
 html {
   font-size: 14px;
+  
 }
 @media (min-width: 768px) {
   html {
@@ -15,15 +16,4 @@ html {
 
 .box-shadow {
   box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
-}
-
-body {
-    position: relative;
-    min-height: 100vh;
-}
-
-.main_footer {
-    margin-top: 200px;
-    position: absolute;
-    bottom: 0;
 }
