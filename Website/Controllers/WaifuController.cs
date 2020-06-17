@@ -16,7 +16,9 @@ namespace Website.Controllers
         public async Task<IEnumerable<Waifu>> Get([FromQuery] string search = "")
         {
             var waifus = await WaifuDb.SearchWaifus(search, perPage: 50);
-            waifus.ForEach(x => x.ImageUrl = "images/sample.gif");
+            string[] images = { "sample0.gif", "sample1.jpg", "sample2.gif", "sample3.gif" };
+            var rnd = new Random();
+            waifus.ForEach(x => x.ImageUrl = "images/" + images[rnd.Next(4)]);
             return waifus;
         }
     }
