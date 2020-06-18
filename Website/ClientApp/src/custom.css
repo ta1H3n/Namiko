@@ -37,3 +37,25 @@ footer {
   width:100%; 
   height:40px; 
 }
+
+.img_container img {
+    width: 100%;
+}
+
+@media (min-width: 400px) {
+    .card-columns {
+        column-count: 2;
+    }
+}
+
+@media (min-width: 768px) {
+    .card-columns {
+        column-count: 3;
+    }
+}
+
+@media (min-width: 1200px) {
+    .card-columns {
+        column-count: 4;
+    }
+}

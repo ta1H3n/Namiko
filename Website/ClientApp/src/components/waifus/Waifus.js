@@ -1,5 +1,5 @@
 ﻿import React, { Component } from 'react';
-import { Card } from './waifus/Card'
+import { Card } from './Card'
 
 export class Waifus extends Component {
     static displayName = Waifus.name;
@@ -59,6 +59,9 @@ export class Waifus extends Component {
             if (e.target.value !== "") {
                 this.setState({ waiting: false, loading: true });
                 await this.populateWaifus(e.target.value);
+            }
+            else {
+                this.setState({ waiting: true, loading: false })
             }
         }
     }

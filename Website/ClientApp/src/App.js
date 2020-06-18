@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Route } from 'react-router';
 import { Layout } from './components/Layout';
 import { Home } from './components/Home';
-import { Waifus } from './components/Waifus'
+import { Waifus } from './components/waifus/Waifus'
 
 import './custom.css'
 
