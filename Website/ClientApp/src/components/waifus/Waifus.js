@@ -1,5 +1,5 @@
 ﻿import React, { Component } from 'react';
-import { Card } from './Card'
+import { Table } from './Table'
 
 export class Waifus extends Component {
     static displayName = Waifus.name;
@@ -15,22 +15,14 @@ export class Waifus extends Component {
         this.onKeyDown = this.onKeyDown.bind(this);
     }
 
-    static renderWaifuTable(waifus) {
-        return (
-            <div className="card-columns" >
-                {waifus.map(waifu =>
-                    <Card waifu={waifu} />
-                )}
-            </div>
-        );
-    }
-
     render() {
         let contents = this.state.loading
             ? <h4 className="text-muted text-center align-middle"><em>Loading...</em></h4>
             : this.state.waiting
-            ? <h4 className="text-muted text-center align-middle"><em>Waiting...</em></h4>
-            : Waifus.renderWaifuTable(this.state.waifus);
+            ? Waifus.waitingInfo()
+            : this.state.waifus.length === 0
+            ? Waifus.waitingInfo("No results...")
+            : <Table waifus={this.state.waifus} />
 
         return (
             <div>
@@ -64,5 +56,29 @@ export class Waifus extends Component {
                 this.setState({ waiting: true, loading: false })
             }
         }
+    }
+
+    static waitingInfo(pretext) {
+        return (
+            <div className="text-muted text-center align-middle">
+                <em>
+                    <h3>{pretext}</h3>
+                    <p>Search for waifus by typing a part of their name or source...</p>
+                    <p>
+                        Examples:<br/>
+                        <code>re zero</code> - search by source<br/>
+                        <code>emilia</code> - search by name<br/>
+                        <code>emilia re zero</code> - both name and source<br/>
+                    </p>
+                    <p>
+                        ✔ <code>emil zero</code> - partial name<br />
+                        ✔ <code>shingeki no kyojin</code> - japanese anime title<br />
+                        ❌ <code>attack on titan</code> - english anime title (might work sometimes, try both)<br />
+                        ❌ <code>emila</code> - typo<br />
+                        ❌ <code>emilia megumin</code> - two different characters<br />
+                    </p>
+                </em>
+            </div>
+        );
     }
 }

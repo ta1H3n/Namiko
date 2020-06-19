@@ -1,7 +1,7 @@
 ﻿import React from 'react';
 import { Modal } from 'react-bootstrap';
 
-export function Clicklable(props) {
+export function Clickable(props) {
     const [show, setShow] = React.useState(false);
 
     const handleClose = () => setShow(false);
