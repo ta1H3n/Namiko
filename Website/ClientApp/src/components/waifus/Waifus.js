@@ -43,7 +43,7 @@ export class Waifus extends Component {
         }
         const response = await fetch(query);
         const data = await response.json();
-        this.setState({ waifus: data, loading: false });
+        this.setState({ waifus: data, loading: false, waiting: false });
     }
 
     async onKeyDown(e) {
