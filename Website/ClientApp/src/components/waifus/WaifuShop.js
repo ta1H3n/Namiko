@@ -55,9 +55,25 @@ export class WaifuShop extends Component {
     static tieredList(waifus, tier) {
         return (
             <div>
-                <h2 className="text-center"><span class="badge badge-secondary col-md-12">Tier {tier}</span></h2>
+                <h2>
+                    <span className="badge badge-secondary col-lg-9 col-md-8 col-sm-7 col-xs-6">Tier {tier}</span>
+                    <span className="badge badge-primary col-lg-3 col-md-4 col-sm-5 col-xs-6">{priceFromTier(tier)} Toasties</span>
+                </h2>
                 <Table waifus={waifus} />
             </div>
         );
     }
+}
+
+function priceFromTier(tier) {
+    let price = tier === 0
+        ? '100,000'
+        : tier === 1
+            ? '20,000'
+            : tier === 2
+                ? '10,000'
+                : tier === 3
+                    ? '5,000'
+                    : '0';
+    return price;
 }

@@ -19,6 +19,7 @@ namespace Website.Controllers
             string[] images = { "sample0.gif", "sample1.jpg", "sample2.gif", "sample3.gif" };
             var rnd = new Random();
             waifus.ForEach(x => x.ImageUrl = "images/" + images[rnd.Next(4)]);
+            waifus = waifus.OrderByDescending(x => x.Bought).ToList();
             return waifus;
         }
     }
