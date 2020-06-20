@@ -482,6 +482,55 @@ namespace Namiko
             Console.WriteLine("Total: " + total);
         }
 
+        [Command("CreateCommandSchema"), Summary("Copies command info to the database")]
+        public async Task CreateCommandSchema([Remainder] string str = "")
+        {
+            var cmds = Program.GetCommands();
+
+            var modules = new List<Model.Module>();
+
+            foreach (var module in cmds.Modules)
+            {
+                var m = new Model.Module
+                {
+                    Name = module.Name,
+                    Commands = new List<Command>()
+                };
+
+                foreach (var command in module.Commands)
+                {
+                    var cmd = new Model.Command();
+                    var split = command.Summary == null ? null : command.Summary.Split(new string[] { "\n**Usage**:" }, StringSplitOptions.None);
+
+                    cmd.ModuleName = module.Name;
+                    cmd.Name = command.Name;
+                    cmd.Aliases = command.Aliases.Aggregate((x, y) => x + ',' + y);
+
+                    if (split != null && split.Count() > 0)
+                    {
+                        cmd.Description = split[0];
+                        if (split.Count() > 1)
+                        {
+                            cmd.Example = split[1].Replace("`", "");
+                        }
+                    }
+
+                    m.Commands.Add(cmd);
+                }
+
+                modules.Add(m);
+            }
+
+            using var db = new NamikoDbContext();
+
+            db.Modules.RemoveRange(db.Modules);
+            db.Modules.AddRange(modules);
+
+            var res = await db.SaveChangesAsync();
+
+            await ReplyAsync($"Updated db command list. {res} rows affected.");
+        }
+
         public bool DownloadFile(string url, string path)
         {
             if (File.Exists(path))
