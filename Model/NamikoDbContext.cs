@@ -45,6 +45,8 @@ namespace Model
         public DbSet<MalWaifu> MalWaifus { get; set; }
         public DbSet<Banroyale> Banroyales { get; set; }
         public DbSet<BanroyaleMessage> BanroyaleMessages { get; set; }
+        public DbSet<Module> Modules { get; set; }
+        public DbSet<Command> Commands { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder Options)
         {
