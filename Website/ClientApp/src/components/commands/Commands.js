@@ -27,9 +27,9 @@ export class Commands extends Component {
 
         return (
             <div>
-                <button className="btn btn-primary" onClick={() => this.filterModules("All")}>Show all</button>
+                <button className="btn btn-primary mr-1" onClick={() => this.filterModules("All")}>Show all</button>
                 {this.state.modules.map(module =>
-                    <button className="btn btn-primary" onClick={() => this.filterModules(module.name)}>{module.name}</button>
+                    <button className="btn btn-primary mr-1" onClick={() => this.filterModules(module.name)}>{module.name}</button>
                 )}
                 {contents}
             </div>

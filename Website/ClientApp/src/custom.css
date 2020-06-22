@@ -18,11 +18,14 @@ html{
 }
 
 body{ 
-  min-height:100%; 
-  padding:0;
+   min-height:100%; 
+   padding:0;
    margin:0; 
    position:relative;
-}
+   
+   background: #131b21ee;
+   color: #fff;
+  }
 
 body::after{ 
   content:''; 
@@ -36,6 +39,82 @@ footer {
   bottom:0; 
   width:100%; 
   height:40px; 
+}
+
+.color1 { 
+  background-color: #190061;
+}
+
+.color2 {
+  background-color: #240090;
+}
+
+
+.color3 {
+  background-color: #3500D3;
+}
+
+
+.color4 {
+  background-color: #0C0032;
+}
+
+.color5{ 
+  background-color: #6a50ff;
+}
+
+hr {
+  border-top: 1px solid #fff;
+}
+
+.card-custom {
+  border-radius:2rem!important;
+  background-color: rgba(19, 27, 33);
+  transition: all 220ms ease-out;
+  
+}
+
+.card-custom:hover {
+  transform: scale(1.1);
+  background-color: #6a50ff;
+  box-shadow: 0 4px 8px 0 rgba(97, 218, 255, 0.2), 0 6px 20px 0 rgba(97, 218, 255, 0.19);
+}
+
+a.colorless-link {
+  color: #fff;
+  font-weight: bold;
+}
+
+a.colorless-link:hover {
+  color: #fff;
+  text-decoration: none;
+  
+}
+
+.border {
+  border-radius:2.1rem!important;
+  border: 2px solid #6a50ff!important;
+}
+
+.round {
+    padding: 10px 30px 10px 30px;
+    border-radius:2rem!important
+}
+
+.full-size { 
+  max-width: 100%;
+}
+
+.bg {
+  background-image: url("/images/banner.png");
+  width: 100vw;
+  height: inherit;
+  margin-top: -20px;
+
+  background-position: center;
+  background-repeat: no-repeat;
+
+  background-size:cover ;
 }
 
 .img_container img {
