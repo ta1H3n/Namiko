@@ -1,5 +1,6 @@
 ﻿import React, { Component, Button } from 'react';
 import { Modules } from './Modules'
+import { Container } from 'reactstrap';
 
 export class Commands extends Component {
     static displayName = Commands.name;
@@ -26,13 +27,15 @@ export class Commands extends Component {
                 : <Modules modules={this.state.display} />
 
         return (
-            <div>
-                <button className="btn btn-primary mr-1" onClick={() => this.filterModules("All")}>Show all</button>
-                {this.state.modules.map(module =>
-                    <button className="btn btn-primary mr-1" onClick={() => this.filterModules(module.name)}>{module.name}</button>
-                )}
-                {contents}
-            </div>
+            <Container>
+                <div>
+                    <button className="btn color1 mr-1 mt-1" onClick={() => this.filterModules("All")}>Show all</button>
+                    {this.state.modules.map(module =>
+                        <button className="btn color1 mr-1 mt-1" onClick={() => this.filterModules(module.name)}>{module.name}</button>
+                    )}
+                    {contents}
+                </div>
+            </Container>
         );
     }
 

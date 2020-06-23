@@ -1,5 +1,6 @@
 ﻿import React, { Component } from 'react';
 import { Table } from './Table'
+import { Container } from 'reactstrap';
 
 export class Waifus extends Component {
     static displayName = Waifus.name;
@@ -25,13 +26,15 @@ export class Waifus extends Component {
             : <Table waifus={this.state.waifus} />
 
         return (
-            <div>
+            <Container>
                 <div>
-                    <input type="text" className="form-control" placeholder="Search for waifus..." onKeyDown={this.onKeyDown} />
+                    <div>
+                        <input type="text" className="form-control" placeholder="Search for waifus..." onKeyDown={this.onKeyDown} />
+                    </div>
+                    <ol/>
+                    {contents}
                 </div>
-                <ol/>
-                {contents}
-            </div>
+            </Container>
         );
     }
 

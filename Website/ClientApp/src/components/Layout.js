@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { Container } from 'reactstrap';
 import { NavMenu } from './NavMenu';
 import { EarlyBuildBar } from './EarlyBuildBar';
 import { FooterMenu } from './FooterMenu';
@@ -12,9 +11,7 @@ export class Layout extends Component {
             <div>
                 <EarlyBuildBar />
                 <NavMenu />
-                <Container>
-                    {this.props.children}
-                </Container>
+                {this.props.children}
                 <FooterMenu />
             </div>
         );

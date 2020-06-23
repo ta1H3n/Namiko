@@ -1,5 +1,6 @@
 ﻿import React, { Component } from 'react';
 import { Table } from './Table'
+import { Container } from 'reactstrap';
 
 export class WaifuShop extends Component {
     static displayName = WaifuShop.name;
@@ -25,9 +26,11 @@ export class WaifuShop extends Component {
                 : WaifuShop.showWaifus(this.state.waifus)
 
         return (
-            <div>
-                {contents}
-            </div>
+            <Container>
+                <div>
+                    {contents}
+                </div>
+            </Container>
         );
     }
 
@@ -56,8 +59,8 @@ export class WaifuShop extends Component {
         return (
             <div>
                 <h2>
-                    <span className="badge badge-secondary col-lg-9 col-md-8 col-sm-7 col-xs-6">Tier {tier}</span>
-                    <span className="badge badge-primary col-lg-3 col-md-4 col-sm-5 col-xs-6">{priceFromTier(tier)} Toasties</span>
+                    <span className="badge color1 col-lg-9 col-md-8 col-sm-7 col-xs-6">Tier {tier}</span>
+                    <span className="badge color3 col-lg-3 col-md-4 col-sm-5 col-xs-6">{priceFromTier(tier)} Toasties</span>
                 </h2>
                 <Table waifus={waifus} />
             </div>

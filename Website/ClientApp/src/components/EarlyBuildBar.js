@@ -9,7 +9,7 @@ export class EarlyBuildBar extends Component {
 
     render() {
         return (
-            <div className="alert alert-info" role="alert">
+            <div className="alert alert-info mb-0" role="alert">
                 <h5 className="text-center">This is a very early preview build of Namiko Moe - anything might and will change!</h5>
             </div>
         );

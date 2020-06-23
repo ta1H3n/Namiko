@@ -9,7 +9,7 @@ export class Modules extends Component {
             <div>
                 {this.props.modules.map(module =>
                     <>
-                        <h2><span className="badge badge-secondary col-lg-12">{module.name}</span></h2>
+                        <h2><span className="badge color3 col-lg-12">{module.name}</span></h2>
                         <Table commands={module.commands} />
                     </>
                 )}
