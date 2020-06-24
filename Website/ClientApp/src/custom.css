@@ -92,6 +92,10 @@ footer {
     color: #fff;
 }
 
+.color1-text {
+    color: #d7385e;
+}
+
 .color1-hover:hover {
     background-color: #be274b;
     color: #fff;
@@ -107,6 +111,10 @@ footer {
     color: #fff;
 }
 
+.color3-text {
+    color: #522d5b;
+}
+
 .color3-hover:hover {
     background-color: #884498;
     color: #fff;
@@ -114,7 +122,6 @@ footer {
 
 .color4 {
     background-color: #e7d39f;
-    color: #fff;
 }
 
 .color5 {
@@ -180,8 +187,8 @@ a.colorless-link:hover {
 }
 
 .round {
-    padding: 10px 30px 10px 30px;
-    border-radius: 1.5rem !important;
+    padding: 10px 20px 0px 20px;
+    border-radius: 1.2rem !important;
 }
 
 .round-sm {

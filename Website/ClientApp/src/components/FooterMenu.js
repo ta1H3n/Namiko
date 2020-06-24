@@ -13,7 +13,7 @@ export class FooterMenu extends Component {
     render() {
         return (
             <footer>
-                    <Navbar className="navbar-expand-sm navbar-toggleable-sm ng-white border-top mb-3" light>
+                    <Navbar className="navbar-expand-sm navbar-toggleable-sm ng-white border-top mt-3" light>
                         <Container>
                             <NavbarBrand tag={Link} to="/">Privacy</NavbarBrand>
                             <NavbarToggler onClick={this.toggleNavbar} className="mr-2" />

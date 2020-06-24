@@ -34,7 +34,7 @@ namespace Namiko
             await Context.Channel.SendMessageAsync($"My prefix is now `{prefix}`");
         }
 
-        [Command("Prefix"), Alias("sp", "sbp", "setbotprefix"), Summary("Sets a prefix for the bot in the server.\n**Usage**: `!sp [prefix]`")]
+        [Command("Prefix"), Alias("sp", "sbp", "setbotprefix"), Summary("View the current prefix.\n**Usage**: `!sp [prefix]`")]
         public async Task Prefix([Remainder] string str = "")
         {
             var prefix = Program.GetPrefix(Context);
