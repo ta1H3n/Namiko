@@ -11,20 +11,33 @@ export class Home extends Component {
                     <img src="/images/banner.png" className="img-banner" alt="Snow"/>
                     <div class="centered">
                         <h1 className="text-center title-text"><strong>Namiko</strong></h1>
-                        <h3 className="text-center title-text">Anime Powered Community Bot</h3>
+                        <h3 className="text-center title-text">Anime Powered Discord Bot</h3>
+                        <div className="btn-group color-discord round-sm mt-2" role="group">
+                            <div className="btn btn-static color-discord small-padding">
+                                <img src="/images/Discord-Logo-White.png" className="img" />
+                            </div>
+                            <a href="https://discordapp.com/oauth2/authorize?client_id=418823684459855882&scope=bot&permissions=268707844" type="button" className="btn color-discord color-discord-hover">Invite&nbsp;Namiko</a>
+                            <a href="https://discord.gg/W6Ru5sM" type="button" className="btn color-discord color-discord-hover">Join&nbsp;Server</a>
+                        </div>
                     </div>
                 </div>
                 <Container>
                     <div className="full-size">
                         <div className="container mt-2">
                             <div className="row">
-                                <div className="col">
-                                    <h1 className="text-center"><strong>Namiko</strong></h1>
-                                    <h3 className="text-center">Anime Powered Community Bot</h3>
+                                <div className="text-center">
+                                    <a href="#waifus" className="btn color6 color6-hover mr-1 mt-1">Waifus</a>
+                                    <a href="#banroulette" className="btn color6 color6-hover mr-1 mt-1">Banroulette</a>
+                                    <a href="#user-profile" className="btn color6 color6-hover mr-1 mt-1">User Profile</a>
+                                    <a href="#music" className="btn color6 color6-hover mr-1 mt-1">Music</a>
+                                    <a href="#currency-and-gambling" className="btn color6 color6-hover mr-1 mt-1">Currency & Gambling</a>
+                                    <a href="#reaction-images" className="btn color6 color6-hover mr-1 mt-1">Reaction Images</a>
+                                    <a href="#teams" className="btn color6 color6-hover mr-1 mt-1">Teams</a>
+                                    <a href="#server-settings" className="btn color6 color6-hover mr-1 mt-1">Server Settings</a>
+                                    <a href="#web-commands" className="btn color6 color6-hover mr-1 mt-1">Web Commands</a>
                                 </div>
                             </div>
                         </div>
-                        <hr className="color6-text"/>
                         <div className="container mt-5">
                             <div className="row">
                                 <div className="col-md-5 col-sm-12 color1 round">
@@ -112,15 +125,14 @@ export class Home extends Component {
                             </div>
                         </div>
 
-
                         <div className="container mt-5">
                             <div className="row">
-                                <div className="col-md-4 col-sm-12 color1 round">
+                                <div className="col-md-5 col-sm-12 color1 round">
                                     <h2 id="user-profile">User Profile</h2>
                                     <p>Full profile customization. You can set an image, quote and a color for yourself. You can also display your favorite waifu on your profile, it&#39;s the last you bought by default. The quote, color and image is shared across all servers, but the waifu is not.  </p>
 
                                 </div>
-                                <div className="col-md-8 col-sm-12">
+                                <div className="col-md-7 col-sm-12">
                                     <table className="command-table-right">
                                         <tr>
                                             <td className="text-right">View yours or someone&#39;s profile</td>
@@ -167,25 +179,98 @@ export class Home extends Component {
                             </div>
                         </div>
 
-                        <div className="container color5 round mt-5">
+                        <div className="container mt-5">
                             <div className="row">
-                                <div className="col-md-5 col-sm-12">
-                                    <h2 id="currency-and-gambling">Currency and Gambling</h2>
-                                    <p>The currency is Toasties, and is server exclusive. Toasties can be used to buy waifus, or trade with other users. Toasties can be gambled, and Namiko&#39;s balance acts as the casino balance - meaning that if you gamble, you win or lose toasties from Namiko&#39;s balance. Namiko starts off with a balance of 1 million. This stops absurd of amounts of toasties being won - preventing ruining of the game experience. Namiko gains a small amount of your dailies and weeklies, based on how much you have, how much she has, and the whole net amount in the server.  </p>
+                                <div className="col-md-6 col-sm-12">
+                                    <table>
+                                        <tr>
+                                            <td className="text-right"><span className="badge badge-pill color3">!play</span></td>
+                                            <td className="command-table-space"> - </td>
+                                            <td>Play a song. Supports links or a search</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="text-right"><span className="badge badge-pill color3">!quickplay</span></td>
+                                            <td className="command-table-space"> - </td>
+                                            <td>Automatically picks the first result of search</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="text-right"><span className="badge badge-pill color3">!playnext</span></td>
+                                            <td className="command-table-space"> - </td>
+                                            <td>Same as play but puts the song in front of the queue</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="text-right"><span className="badge badge-pill color3">!skip</span></td>
+                                            <td className="command-table-space"> - </td>
+                                            <td>Skip a song</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="text-right"><span className="badge badge-pill color3">!loop</span></td>
+                                            <td className="command-table-space"> - </td>
+                                            <td>Loop the queue</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="text-right"><span className="badge badge-pill color3">!saveplaylist</span></td>
+                                            <td className="command-table-space"> - </td>
+                                            <td>Saves the current queue as a playlist</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="text-right"><span className="badge badge-pill color3">!loadplaylist</span></td>
+                                            <td className="command-table-space"> - </td>
+                                            <td>Load a saved playlist into the queue</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="text-right"><span className="badge badge-pill color3">!volume</span></td>
+                                            <td className="command-table-space"> - </td>
+                                            <td>Control music volume</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div className="col-md-6 col-sm-12 color3 round">
+                                    <h2 id="music">Music</h2>
+                                    <p>High quality music from many sources including Youtube, Soundcloud and Mixer. Unlimited song length and up to 500 song queue length. Volume control, repeat, loop and shuffle. Possibility to limit music controls to a role. Create and save your own playlists. And Namiko will talk to you in voice chat ^^</p>
+                                </div>
+                            </div>
+                        </div>
 
+                        <div className="container mt-5">
+                            <div className="row">
+                                <div className="col-md-5 col-sm-12 color1 round">
+                                    <h2 id="user-profile">Currency & Gambling</h2>
+                                    <p>The currency is Toasties, and is server exclusive. Toasties can be used to buy waifus, or trade with other users. Toasties can be gambled, and Namiko&#39;s balance acts as the casino balance - meaning that if you gamble, you win or lose toasties from Namiko&#39;s balance. Namiko starts off with a balance of 1 million. This stops absurd of amounts of toasties being won - preventing ruining of the game experience. Namiko gains a small amount of your dailies and weeklies, based on how much you have, how much she has, and the whole net amount in the server.</p>
                                 </div>
                                 <div className="col-md-7 col-sm-12">
-                                    <p className="mt-4">Useful commands:</p>
-
-                                    <span className="badge badge-pill color1">!bal</span> - view a users balance.<br />
-                                    <span className="badge badge-pill color1">!daily</span> - claim a daily toastie reward. The value is randomized and increases with your streak. <br />
-                                    <span className="badge badge-pill color1">!weekly</span> - claim a weekly reward. The weekly is like a daily of the person with the highest streak in the server, +15 days.<br />
-                                    <span className="badge badge-pill color1">!flip</span> - flip a coin for a 50/50 chance to win or lose toasties.<br />
-                                    <span className="badge badge-pill color1">!blackjack</span> - play blackjack with a bet of toasties.<br />
-                                    <span className="badge badge-pill color1">!give</span> - give toasties to someone else.<br />
-
-                                    <p>If Namiko has less than 200,000 toasties, every hour she has a 1/5 chance to steal 1% of toasties from every user.</p>
-
+                                    <table className="command-table-right">
+                                        <tr>
+                                            <td className="text-right">View a users balance</td>
+                                            <td className="command-table-space"> - </td>
+                                            <td><span className="badge badge-pill color1">!bal</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td className="text-right">Claim a daily toastie reward. The value is randomized and increases with your streak</td>
+                                            <td className="command-table-space"> - </td>
+                                            <td><span className="badge badge-pill color1">!daily</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td className="text-right">Claim a weekly reward. The weekly is like a daily of the person with the highest streak in the server, +15 days</td>
+                                            <td className="command-table-space"> - </td>
+                                            <td><span className="badge badge-pill color1">!weekly</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td className="text-right">Flip a coin for a 50/50 chance to win or lose toasties</td>
+                                            <td className="command-table-space"> - </td>
+                                            <td><span className="badge badge-pill color1">!flip</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td className="text-right">Play blackjack with a bet of toasties</td>
+                                            <td className="command-table-space"> - </td>
+                                            <td><span className="badge badge-pill color1">!blackjack</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td className="text-right">Give toasties to someone else</td>
+                                            <td className="command-table-space"> - </td>
+                                            <td><span className="badge badge-pill color1">!give</span></td>
+                                        </tr>
+                                    </table>
                                 </div>
                             </div>
                         </div>
