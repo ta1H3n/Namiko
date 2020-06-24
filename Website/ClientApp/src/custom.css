@@ -111,6 +111,15 @@ footer {
     background-color: #fff9ea;
 }
 
+.color6 {
+    background-color: #076f94;
+    color: #fff;
+}
+
+.color6-text {
+    color: #076f94;
+}
+
 hr {
   border-top: 1px solid #fff;
 }
@@ -170,6 +179,61 @@ a.colorless-link:hover {
 
 .front-page-cover {
     margin-top: -16px
+}
+
+.title-text {
+    color: #fff;
+    text-shadow: 2px 2px 2px #000000;
+}
+
+.img-banner {
+    min-height: 250px;
+    max-width: 100vw;
+    min-width: 0vw;
+    object-fit: cover;
+    height: auto;
+}
+
+/* Container holding the image and the text */
+.container-image {
+    position: relative;
+    text-align: center;
+}
+
+/* Bottom left text */
+.bottom-left {
+    position: absolute;
+    bottom: 8px;
+    left: 16px;
+}
+
+/* Top left text */
+.top-left {
+    position: absolute;
+    top: 8px;
+    left: 16px;
+}
+
+/* Top right text */
+.top-right {
+    position: absolute;
+    top: 8px;
+    right: 16px;
+}
+
+/* Bottom right text */
+.bottom-right {
+    position: absolute;
+    bottom: 8px;
+    right: 16px;
+}
+
+/* Centered text */
+.centered {
+    position: absolute;
+    top: 50%;
+    left: 60%;
+    transform: translate(-50%, -50%);
 }
 
 @media (min-width: 400px) {

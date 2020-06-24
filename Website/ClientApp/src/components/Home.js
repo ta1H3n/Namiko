@@ -7,29 +7,24 @@ export class Home extends Component {
     render() {
         return (
             <>
-                <img src="/images/banner.png" className="img-fluid front-page-cover" />
+                <div class="container-image front-page-cover">
+                    <img src="/images/banner.png" className="img-banner" alt="Snow"/>
+                    <div class="centered">
+                        <h1 className="text-center title-text"><strong>Namiko</strong></h1>
+                        <h3 className="text-center title-text">Anime Powered Community Bot</h3>
+                    </div>
+                </div>
                 <Container>
                     <div className="full-size">
-                        <div className="container">
-                        </div>
-                        <div className="container-fluid w-100">
-                            <div className="row">
-                                <div className="col text-center mt-1">
-                                    <h1 id="namiko">Namiko</h1>
-                                </div>
-                            </div>
-
+                        <div className="container mt-2">
                             <div className="row">
                                 <div className="col">
-                                    <p><a href="https://discordapp.com/oauth2/authorize?client_id=418823684459855882&amp;scope=bot&amp;permissions=268707844">Invite Namiko to your server</a>  </p>
-                                    <p>Namiko&#39;s prefix can be changed by using the <code>!sp [new_prefix]</code> command and replacing <code>[new_prefix]</code> with your desired prefix. The default is <code>!</code> and it will be used in this wiki. Mentioning Namiko can also be used as a prefix e.g. <code>@Namiko sp [new_prefix]</code>.  </p>
-                                    <p>Type <code>!help</code> or <code>!help [command]</code> in a server with Namiko for a list of commands and command usage instructions.</p>
-                                    <h3 id="premium">Premium</h3>
-                                    <p>Namiko now has premium upgrades! Both for users and for servers! You can find them <a href="https://www.patreon.com/taiHen">on Patreon</a>.  </p>
+                                    <h1 className="text-center"><strong>Namiko</strong></h1>
+                                    <h3 className="text-center">Anime Powered Community Bot</h3>
                                 </div>
                             </div>
                         </div>
-                        <hr />
+                        <hr className="color6-text"/>
                         <div className="container mt-5">
                             <div className="row">
                                 <div className="col-md-5 col-sm-12 color1 round">
@@ -41,32 +36,32 @@ export class Home extends Component {
                                         <tr>
                                             <td>Search for waifus</td>
                                             <td className="command-table-space">  -  </td>
-                                            <td className="text-left"><span class="badge badge-pill color1">!waifu</span></td>
+                                            <td className="text-left"><span className="badge badge-pill color1">!waifu</span></td>
                                         </tr>
                                         <tr>
                                             <td>View a list of waifus currently for sale</td>
                                             <td className="command-table-space">  -  </td>
-                                            <td className="text-left"><span class="badge badge-pill color1">!waifushop</span></td>
+                                            <td className="text-left"><span className="badge badge-pill color1">!waifushop</span></td>
                                         </tr>
                                         <tr>
                                             <td>Trade waifus with other users</td>
                                             <td className="command-table-space"> - </td>
-                                            <td className="text-left"><span class="badge badge-pill color1">!givewaifu</span></td>
+                                            <td className="text-left"><span className="badge badge-pill color1">!givewaifu</span></td>
                                         </tr>
                                         <tr>
                                             <td>View a list of waifus you have</td>
                                             <td className="command-table-space"> - </td>
-                                            <td className="text-left"><span class="badge badge-pill color1">!waifus</span></td>
+                                            <td className="text-left"><span className="badge badge-pill color1">!waifus</span></td>
                                         </tr>
                                         <tr>
                                             <td>Add a waifu to your wishlist</td>
                                             <td className="command-table-space"> - </td>
-                                            <td className="text-left"><span class="badge badge-pill color1">!aww</span></td>
+                                            <td className="text-left"><span className="badge badge-pill color1">!aww</span></td>
                                         </tr>
                                         <tr>
                                             <td>View your waifu wishlist</td>
                                             <td className="command-table-space"> - </td>
-                                            <td className="text-left"><span class="badge badge-pill color1">!wwl</span></td>
+                                            <td className="text-left"><span className="badge badge-pill color1">!wwl</span></td>
                                         </tr>
                                     </table>
                                 </div>
@@ -78,27 +73,27 @@ export class Home extends Component {
                                 <div className="col-md-4 col-sm-12">
                                     <table>
                                         <tr>
-                                            <td className="text-right"><span class="badge badge-pill color3">!nbr</span></td>
+                                            <td className="text-right"><span className="badge badge-pill color3">!nbr</span></td>
                                             <td className="command-table-space"> - </td>
                                             <td>Start a new banroulette</td>
                                         </tr>
                                         <tr>
-                                            <td className="text-right"><span class="badge badge-pill color3">!jbr</span></td>
+                                            <td className="text-right"><span className="badge badge-pill color3">!jbr</span></td>
                                             <td className="command-table-space"> - </td>
                                             <td>Join the banroulette</td>
                                         </tr>
                                         <tr>
-                                            <td className="text-right"><span class="badge badge-pill color3">!br</span></td>
+                                            <td className="text-right"><span className="badge badge-pill color3">!br</span></td>
                                             <td className="command-table-space"> - </td>
                                             <td>View the details</td>
                                         </tr>
                                         <tr>
-                                            <td className="text-right"><span class="badge badge-pill color3">!ebr</span></td>
+                                            <td className="text-right"><span className="badge badge-pill color3">!ebr</span></td>
                                             <td className="command-table-space"> - </td>
                                             <td>End the banroulette</td>
                                         </tr>
                                         <tr>
-                                            <td className="text-right"><span class="badge badge-pill color3">!cbr</span></td>
+                                            <td className="text-right"><span className="badge badge-pill color3">!cbr</span></td>
                                             <td className="command-table-space"> - </td>
                                             <td>Cancel the banroulette</td>
                                         </tr>
@@ -130,42 +125,42 @@ export class Home extends Component {
                                         <tr>
                                             <td className="text-right">View yours or someone&#39;s profile</td>
                                             <td className="command-table-space"> - </td>
-                                            <td><span class="badge badge-pill color1">!profile</span></td>
+                                            <td><span className="badge badge-pill color1">!profile</span></td>
                                         </tr>
                                         <tr>
                                             <td className="text-right">View yours or someone&#39;s unique quote and image</td>
                                             <td className="command-table-space"> - </td>
-                                            <td><span class="badge badge-pill color1">!quote</span></td>
+                                            <td><span className="badge badge-pill color1">!quote</span></td>
                                         </tr>
                                         <tr>
                                             <td className="text-right">Set image</td>
                                             <td className="command-table-space"> - </td>
-                                            <td><span class="badge badge-pill color1">!si</span></td>
+                                            <td><span className="badge badge-pill color1">!si</span></td>
                                         </tr>
                                         <tr>
                                             <td className="text-right">Set quote</td>
                                             <td className="command-table-space"> - </td>
-                                            <td><span class="badge badge-pill color1">!sq</span></td>
+                                            <td><span className="badge badge-pill color1">!sq</span></td>
                                         </tr>
                                         <tr>
                                             <td className="text-right">Set color</td>
                                             <td className="command-table-space"> - </td>
-                                            <td><span class="badge badge-pill color1">!sc</span></td>
+                                            <td><span className="badge badge-pill color1">!sc</span></td>
                                         </tr>
                                         <tr>
                                             <td className="text-right">Set your featured waifu on your profile</td>
                                             <td className="command-table-space"> - </td>
-                                            <td><span class="badge badge-pill color1">!sfw</span></td>
+                                            <td><span className="badge badge-pill color1">!sfw</span></td>
                                         </tr>
                                         <tr>
                                             <td className="text-right">View yours or someone&#39;s waifus</td>
                                             <td className="command-table-space"> - </td>
-                                            <td><span class="badge badge-pill color1">!waifus</span></td>
+                                            <td><span className="badge badge-pill color1">!waifus</span></td>
                                         </tr>
                                         <tr>
                                             <td className="text-right">Marry another user</td>
                                             <td className="command-table-space"> - </td>
-                                            <td><span class="badge badge-pill color1">!marry</span></td>
+                                            <td><span className="badge badge-pill color1">!marry</span></td>
                                         </tr>
                                     </table>
                                 </div>
@@ -182,12 +177,12 @@ export class Home extends Component {
                                 <div className="col-md-7 col-sm-12">
                                     <p className="mt-4">Useful commands:</p>
 
-                                    <span class="badge badge-pill color1">!bal</span> - view a users balance.<br />
-                                    <span class="badge badge-pill color1">!daily</span> - claim a daily toastie reward. The value is randomized and increases with your streak. <br />
-                                    <span class="badge badge-pill color1">!weekly</span> - claim a weekly reward. The weekly is like a daily of the person with the highest streak in the server, +15 days.<br />
-                                    <span class="badge badge-pill color1">!flip</span> - flip a coin for a 50/50 chance to win or lose toasties.<br />
-                                    <span class="badge badge-pill color1">!blackjack</span> - play blackjack with a bet of toasties.<br />
-                                    <span class="badge badge-pill color1">!give</span> - give toasties to someone else.<br />
+                                    <span className="badge badge-pill color1">!bal</span> - view a users balance.<br />
+                                    <span className="badge badge-pill color1">!daily</span> - claim a daily toastie reward. The value is randomized and increases with your streak. <br />
+                                    <span className="badge badge-pill color1">!weekly</span> - claim a weekly reward. The weekly is like a daily of the person with the highest streak in the server, +15 days.<br />
+                                    <span className="badge badge-pill color1">!flip</span> - flip a coin for a 50/50 chance to win or lose toasties.<br />
+                                    <span className="badge badge-pill color1">!blackjack</span> - play blackjack with a bet of toasties.<br />
+                                    <span className="badge badge-pill color1">!give</span> - give toasties to someone else.<br />
 
                                     <p>If Namiko has less than 200,000 toasties, every hour she has a 1/5 chance to steal 1% of toasties from every user.</p>
 
@@ -205,11 +200,11 @@ export class Home extends Component {
                                 <div className="col-md-7 col-sm-12">
                                     <p className="mt-4">Useful commands:</p>
 
-                                    <span class="badge badge-pill color1">![image_name]</span> - sends a random image from all the images under the name.<br />
-                                    <span class="badge badge-pill color1">!listall</span> - lists all the image commands Namiko currently has.<br />
-                                    <span class="badge badge-pill color1">!all [image_name]</span> - gives a link to an imgur album with all the images in the command, and their IDs.<br />
-                                    <span class="badge badge-pill color1">!image</span> - sends a specific image by it&#39;s ID.<br />
-                                    <span class="badge badge-pill color1">!newimage</span> - add a server exclusive reaction image. (Requires T1 Server Premium)<br />
+                                    <span className="badge badge-pill color1">![image_name]</span> - sends a random image from all the images under the name.<br />
+                                    <span className="badge badge-pill color1">!listall</span> - lists all the image commands Namiko currently has.<br />
+                                    <span className="badge badge-pill color1">!all [image_name]</span> - gives a link to an imgur album with all the images in the command, and their IDs.<br />
+                                    <span className="badge badge-pill color1">!image</span> - sends a specific image by it&#39;s ID.<br />
+                                    <span className="badge badge-pill color1">!newimage</span> - add a server exclusive reaction image. (Requires T1 Server Premium)<br />
 
                                 </div>
                             </div>
@@ -225,12 +220,12 @@ export class Home extends Component {
                                 <div className="col-md-8 col-sm-12">
                                     <p className="mt-4">Useful commands:</p>
 
-                                    <span class="badge badge-pill color1">!nt</span> - creates a new team with selected roles.<br />
-                                    <span class="badge badge-pill color1">!invite</span> - invite a user to your team. <span class="badge badge-pill color1">Team Leader only.</span><br />
-                                    <span class="badge badge-pill color1">!join</span> - accept an invitation.<br />
-                                    <span class="badge badge-pill color1">!leaveteam</span> - leave your team.<br />
-                                    <span class="badge badge-pill color1">!kick</span> - kick a user from your team. <span class="badge badge-pill color1">Team Leader only.</span><br />
-                                    <span class="badge badge-pill color1">!team</span> - view details about a team.<br />
+                                    <span className="badge badge-pill color1">!nt</span> - creates a new team with selected roles.<br />
+                                    <span className="badge badge-pill color1">!invite</span> - invite a user to your team. <span className="badge badge-pill color1">Team Leader only.</span><br />
+                                    <span className="badge badge-pill color1">!join</span> - accept an invitation.<br />
+                                    <span className="badge badge-pill color1">!leaveteam</span> - leave your team.<br />
+                                    <span className="badge badge-pill color1">!kick</span> - kick a user from your team. <span className="badge badge-pill color1">Team Leader only.</span><br />
+                                    <span className="badge badge-pill color1">!team</span> - view details about a team.<br />
 
                                 </div>
                             </div>
@@ -246,13 +241,13 @@ export class Home extends Component {
                                 <div className="col-md-8 col-sm-12">
                                     <p className="mt-4">Useful commands:</p>
 
-                                    <span class="badge badge-pill color1">!spr</span> - sets a role as public, where anyone can gain the role by typing: <code>!role [role_name]</code>.<br />
-                                    <span class="badge badge-pill color1">!role</span> - gives or removes a public role from you.<br />
-                                    <span class="badge badge-pill color1">!prl</span> - lists the public roles.<br />
-                                    <span class="badge badge-pill color1">!wch</span> - sets a <span class="badge badge-pill color1">Welcome Channel</span>.<br />
-                                    <span class="badge badge-pill color1">!blch</span> - blacklists a channel, disabling Namiko commands in that channel.<br />
-                                    <span class="badge badge-pill color1">!jch</span> - sets a <span class="badge badge-pill color1">Server Join Log</span> channel.<br />
-                                    <span class="badge badge-pill color1">!tch</span> - sets a <span class="badge badge-pill color1">Team Join Log</span> channel.<br />
+                                    <span className="badge badge-pill color1">!spr</span> - sets a role as public, where anyone can gain the role by typing: <code>!role [role_name]</code>.<br />
+                                    <span className="badge badge-pill color1">!role</span> - gives or removes a public role from you.<br />
+                                    <span className="badge badge-pill color1">!prl</span> - lists the public roles.<br />
+                                    <span className="badge badge-pill color1">!wch</span> - sets a <span className="badge badge-pill color1">Welcome Channel</span>.<br />
+                                    <span className="badge badge-pill color1">!blch</span> - blacklists a channel, disabling Namiko commands in that channel.<br />
+                                    <span className="badge badge-pill color1">!jch</span> - sets a <span className="badge badge-pill color1">Server Join Log</span> channel.<br />
+                                    <span className="badge badge-pill color1">!tch</span> - sets a <span className="badge badge-pill color1">Team Join Log</span> channel.<br />
 
                                 </div>
                             </div>
@@ -268,11 +263,11 @@ export class Home extends Component {
                                 <div className="col-md-8 col-sm-12">
                                     <p className="mt-4">Useful commands:</p>
 
-                                    <span class="badge badge-pill color1">!source</span> - tries to find the source of an image using SauceNao.<br />
-                                    <span class="badge badge-pill color1">!iqdb</span> - tries to find the source of an image using IQDB.<br />
-                                    <span class="badge badge-pill color1">!anime</span> - looks up an anime on MAL.<br />
-                                    <span class="badge badge-pill color1">!manga</span> - looks up a manga on MAL.<br />
-                                    <span class="badge badge-pill color1">!subreddit</span> - subscribe to hop posts from a subreddit that reach a certain upvote limit.<br />
+                                    <span className="badge badge-pill color1">!source</span> - tries to find the source of an image using SauceNao.<br />
+                                    <span className="badge badge-pill color1">!iqdb</span> - tries to find the source of an image using IQDB.<br />
+                                    <span className="badge badge-pill color1">!anime</span> - looks up an anime on MAL.<br />
+                                    <span className="badge badge-pill color1">!manga</span> - looks up a manga on MAL.<br />
+                                    <span className="badge badge-pill color1">!subreddit</span> - subscribe to hop posts from a subreddit that reach a certain upvote limit.<br />
 
                                 </div>
                             </div>
