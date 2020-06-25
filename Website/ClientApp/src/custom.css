@@ -187,7 +187,7 @@ a.colorless-link:hover {
 }
 
 .round {
-    padding: 10px 20px 0px 20px;
+    padding: 10px 20px 10px 20px;
     border-radius: 1.2rem !important;
 }
 
@@ -230,6 +230,47 @@ a.colorless-link:hover {
     object-fit: cover;
     height: auto;
     transform: scaleX(-1);
+}
+
+.img-module {
+    min-height: 0px;
+    max-height: 300px;
+    max-width: 100%;
+    min-width: 0%;
+    object-fit: cover;
+    height: auto;
+    transition: transform .4s;
+}
+
+.img-module:hover {
+    transform: scale(1.5);
+}
+
+.img-right {
+    float: none;
+}
+
+.img-left {
+    float: left;
+}
+
+.horizontal-center {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.module {
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%);
+}
+
+.module-row {
+    min-height: 300px;
+    max-height: 600px;
 }
 
 /* Container holding the image and the text */
@@ -297,6 +338,16 @@ a.colorless-link:hover {
 @media (min-width: 400px) {
     .card-columns {
         column-count: 2;
+    }
+}
+
+@media (max-width: 767px) {
+    .module {
+        margin: 16px;
+        position: unset;
+        top: unset;
+        -ms-transform: unset;
+        transform: unset;
     }
 }
 
