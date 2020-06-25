@@ -11,18 +11,35 @@ import './custom.css'
 export default class App extends Component {
     static displayName = App.name;
 
-    render () {
+    render() {
         return (
-            <Layout>
-                <Switch>
-                    <Route exact path='/' component={Home} />
-                    <Route path='/waifus' component={Waifus} />
-                    <Route path='/commands' component={Commands} />
-                    <Route path='/waifushop/:handle' component={WaifuShop} />
+            <>
+                <script async src="https://www.googletagmanager.com/gtag/js?id=UA-142170725-2" />
+                <script>{injectGA()}</script>
+                <Layout>
+                    <Switch>
+                        <Route exact path='/' component={Home} />
+                        <Route path='/waifus' component={Waifus} />
+                        <Route path='/commands' component={Commands} />
+                        <Route path='/waifushop/:handle' component={WaifuShop} />
 
-                    <Redirect to='/' />
-                </Switch>
-            </Layout>
+                        <Redirect to='/' />
+                    </Switch>
+                </Layout>
+            </>
         );
     }
 }
+
+const injectGA = () => {
+    if (typeof window == 'undefined') {
+        return;
+    }
+    window.dataLayer = window.dataLayer || [];
+    function gtag() {
+        window.dataLayer.push(arguments);
+    }
+    gtag('js', new Date());
+
+    gtag('config', 'UA-142170725-2');
+};
