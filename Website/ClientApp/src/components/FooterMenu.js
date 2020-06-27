@@ -13,20 +13,7 @@ export class FooterMenu extends Component {
     render() {
         return (
             <footer>
-                    <Navbar className="navbar-expand-sm navbar-toggleable-sm ng-white border-top mt-3" light>
-                        <Container>
-                            <NavbarBrand tag={Link} to="/">Privacy</NavbarBrand>
-                            <NavbarToggler onClick={this.toggleNavbar} className="mr-2" />
-                            <ul className="navbar-nav flex-grow">
-                                <NavItem>
-                                    <NavLink tag={Link} className="text-dark" to="/">Home</NavLink>
-                                </NavItem>
-                                <NavItem>
-                                    <NavLink tag={Link} className="text-dark" to="/waifus">Waifus</NavLink>
-                                </NavItem>
-                            </ul>
-                        </Container>
-                    </Navbar>
+
             </footer>
         );
     }

@@ -13,7 +13,7 @@ code {
   border-color: #1861ac;
 }
 
-html{ 
+html { 
     height:100%;
 }
 
@@ -23,8 +23,8 @@ body {
     padding: 0;
     margin: 0;
     position: relative;
-    background-image: linear-gradient(112.5deg, rgba(232, 232, 232, 0.03) 0%, rgba(232, 232, 232, 0.03) 2%,rgba(231, 231, 231, 0.03) 2%, rgba(231, 231, 231, 0.03) 4%,rgba(231, 231, 231, 0.03) 4%, rgba(231, 231, 231, 0.03) 11%,rgba(2, 2, 2, 0.03) 11%, rgba(2, 2, 2, 0.03) 67%,rgba(231, 231, 231, 0.03) 67%, rgba(231, 231, 231, 0.03) 90%,rgba(111, 111, 111, 0.03) 90%, rgba(111, 111, 111, 0.03) 100%),linear-gradient(157.5deg, rgba(210, 210, 210, 0.03) 0%, rgba(210, 210, 210, 0.03) 17%,rgba(254, 254, 254, 0.03) 17%, rgba(254, 254, 254, 0.03) 18%, rgba(96, 96, 96, 0.03) 18%, rgba(96, 96, 96, 0.03) 44%, rgba(159, 159, 159, 0.03) 44%, rgba(159, 159, 159, 0.03) 70%, rgba(24, 24, 24, 0.03) 70%, rgba(24, 24, 24, 0.03) 82%, rgba(16, 16, 16, 0.03) 82%, rgba(16, 16, 16, 0.03) 100%), linear-gradient(22.5deg, rgba(47, 47, 47, 0.03) 0%, rgba(47, 47, 47, 0.03) 32%,rgba(124, 124, 124, 0.03) 32%, rgba(124, 124, 124, 0.03) 40%,rgba(200, 200, 200, 0.03) 40%, rgba(200, 200, 200, 0.03) 42%,rgba(16, 16, 16, 0.03) 42%, rgba(16, 16, 16, 0.03) 64%,rgba(243, 243, 243, 0.03) 64%, rgba(243, 243, 243, 0.03) 94%,rgba(93, 93, 93, 0.03) 94%, rgba(93, 93, 93, 0.03) 100%),linear-gradient(90deg, #ffffff,#ffffff);
-    /*background-image: linear-gradient(216deg, rgba(77, 77, 77,0.05) 0%, rgba(77, 77, 77,0.05) 25%,rgba(42, 42, 42,0.05) 25%, rgba(42, 42, 42,0.05) 38%,rgba(223, 223, 223,0.05) 38%, rgba(223, 223, 223,0.05) 75%,rgba(36, 36, 36,0.05) 75%, rgba(36, 36, 36,0.05) 100%),linear-gradient(44deg, rgba(128, 128, 128,0.05) 0%, rgba(128, 128, 128,0.05) 34%,rgba(212, 212, 212,0.05) 34%, rgba(212, 212, 212,0.05) 57%,rgba(25, 25, 25,0.05) 57%, rgba(25, 25, 25,0.05) 89%,rgba(135, 135, 135,0.05) 89%, rgba(135, 135, 135,0.05) 100%),linear-gradient(241deg, rgba(55, 55, 55,0.05) 0%, rgba(55, 55, 55,0.05) 14%,rgba(209, 209, 209,0.05) 14%, rgba(209, 209, 209,0.05) 60%,rgba(245, 245, 245,0.05) 60%, rgba(245, 245, 245,0.05) 69%,rgba(164, 164, 164,0.05) 69%, rgba(164, 164, 164,0.05) 100%),linear-gradient(249deg, rgba(248, 248, 248,0.05) 0%, rgba(248, 248, 248,0.05) 32%,rgba(148, 148, 148,0.05) 32%, rgba(148, 148, 148,0.05) 35%,rgba(202, 202, 202,0.05) 35%, rgba(202, 202, 202,0.05) 51%,rgba(181, 181, 181,0.05) 51%, rgba(181, 181, 181,0.05) 100%),linear-gradient(92deg, hsl(214,0%,11%),hsl(214,0%,11%));*/
+    /*background-image: linear-gradient(112.5deg, rgba(232, 232, 232, 0.03) 0%, rgba(232, 232, 232, 0.03) 2%,rgba(231, 231, 231, 0.03) 2%, rgba(231, 231, 231, 0.03) 4%,rgba(231, 231, 231, 0.03) 4%, rgba(231, 231, 231, 0.03) 11%,rgba(2, 2, 2, 0.03) 11%, rgba(2, 2, 2, 0.03) 67%,rgba(231, 231, 231, 0.03) 67%, rgba(231, 231, 231, 0.03) 90%,rgba(111, 111, 111, 0.03) 90%, rgba(111, 111, 111, 0.03) 100%),linear-gradient(157.5deg, rgba(210, 210, 210, 0.03) 0%, rgba(210, 210, 210, 0.03) 17%,rgba(254, 254, 254, 0.03) 17%, rgba(254, 254, 254, 0.03) 18%, rgba(96, 96, 96, 0.03) 18%, rgba(96, 96, 96, 0.03) 44%, rgba(159, 159, 159, 0.03) 44%, rgba(159, 159, 159, 0.03) 70%, rgba(24, 24, 24, 0.03) 70%, rgba(24, 24, 24, 0.03) 82%, rgba(16, 16, 16, 0.03) 82%, rgba(16, 16, 16, 0.03) 100%), linear-gradient(22.5deg, rgba(47, 47, 47, 0.03) 0%, rgba(47, 47, 47, 0.03) 32%,rgba(124, 124, 124, 0.03) 32%, rgba(124, 124, 124, 0.03) 40%,rgba(200, 200, 200, 0.03) 40%, rgba(200, 200, 200, 0.03) 42%,rgba(16, 16, 16, 0.03) 42%, rgba(16, 16, 16, 0.03) 64%,rgba(243, 243, 243, 0.03) 64%, rgba(243, 243, 243, 0.03) 94%,rgba(93, 93, 93, 0.03) 94%, rgba(93, 93, 93, 0.03) 100%),linear-gradient(90deg, #ffffff,#ffffff);*/
+    background-image: linear-gradient(216deg, rgba(77, 77, 77,0.05) 0%, rgba(77, 77, 77,0.05) 25%,rgba(42, 42, 42,0.05) 25%, rgba(42, 42, 42,0.05) 38%,rgba(223, 223, 223,0.05) 38%, rgba(223, 223, 223,0.05) 75%,rgba(36, 36, 36,0.05) 75%, rgba(36, 36, 36,0.05) 100%),linear-gradient(44deg, rgba(128, 128, 128,0.05) 0%, rgba(128, 128, 128,0.05) 34%,rgba(212, 212, 212,0.05) 34%, rgba(212, 212, 212,0.05) 57%,rgba(25, 25, 25,0.05) 57%, rgba(25, 25, 25,0.05) 89%,rgba(135, 135, 135,0.05) 89%, rgba(135, 135, 135,0.05) 100%),linear-gradient(241deg, rgba(55, 55, 55,0.05) 0%, rgba(55, 55, 55,0.05) 14%,rgba(209, 209, 209,0.05) 14%, rgba(209, 209, 209,0.05) 60%,rgba(245, 245, 245,0.05) 60%, rgba(245, 245, 245,0.05) 69%,rgba(164, 164, 164,0.05) 69%, rgba(164, 164, 164,0.05) 100%),linear-gradient(249deg, rgba(248, 248, 248,0.05) 0%, rgba(248, 248, 248,0.05) 32%,rgba(148, 148, 148,0.05) 32%, rgba(148, 148, 148,0.05) 35%,rgba(202, 202, 202,0.05) 35%, rgba(202, 202, 202,0.05) 51%,rgba(181, 181, 181,0.05) 51%, rgba(181, 181, 181,0.05) 100%),linear-gradient(92deg, hsl(214,0%,11%),hsl(214,0%,11%));
     /*background-image: linear-gradient(45deg, rgba(106, 140, 231,0.2) 0%, rgba(106, 140, 231,0.2) 14.286%,rgba(90, 125, 212,0.2) 14.286%, rgba(90, 125, 212,0.2) 28.572%,rgba(42, 81, 156,0.2) 28.572%, rgba(42, 81, 156,0.2) 42.858%,rgba(26, 67, 138,0.2) 42.858%, rgba(26, 67, 138,0.2) 57.144%,rgba(10, 52, 119,0.2) 57.144%, rgba(10, 52, 119,0.2) 71.43%,rgba(74, 111, 194,0.2) 71.43%, rgba(74, 111, 194,0.2) 85.716%,rgba(58, 96, 175,0.2) 85.716%, rgba(58, 96, 175,0.2) 100.002%),linear-gradient(45deg, rgba(106, 140, 231,0.2) 0%, rgba(106, 140, 231,0.2) 14.286%,rgba(90, 125, 212,0.2) 14.286%, rgba(90, 125, 212,0.2) 28.572%,rgba(42, 81, 156,0.2) 28.572%, rgba(42, 81, 156,0.2) 42.858%,rgba(26, 67, 138,0.2) 42.858%, rgba(26, 67, 138,0.2) 57.144%,rgba(10, 52, 119,0.2) 57.144%, rgba(10, 52, 119,0.2) 71.43%,rgba(74, 111, 194,0.2) 71.43%, rgba(74, 111, 194,0.2) 85.716%,rgba(58, 96, 175,0.2) 85.716%, rgba(58, 96, 175,0.2) 100.002%),linear-gradient(135deg, rgba(106, 140, 231,0.2) 0%, rgba(106, 140, 231,0.2) 14.286%,rgba(90, 125, 212,0.2) 14.286%, rgba(90, 125, 212,0.2) 28.572%,rgba(42, 81, 156,0.2) 28.572%, rgba(42, 81, 156,0.2) 42.858%,rgba(26, 67, 138,0.2) 42.858%, rgba(26, 67, 138,0.2) 57.144%,rgba(10, 52, 119,0.2) 57.144%, rgba(10, 52, 119,0.2) 71.43%,rgba(74, 111, 194,0.2) 71.43%, rgba(74, 111, 194,0.2) 85.716%,rgba(58, 96, 175,0.2) 85.716%, rgba(58, 96, 175,0.2) 100.002%),linear-gradient(90deg, rgb(9, 9, 9),rgb(180, 180, 180));*/
     /*background-image: linear-gradient(78deg, rgba(96, 96, 96, 0.04) 0%, rgba(96, 96, 96, 0.04) 35%,rgba(220, 220, 220, 0.04) 35%, rgba(220, 220, 220, 0.04) 100%),linear-gradient(150deg, rgba(83, 83, 83, 0.04) 0%, rgba(83, 83, 83, 0.04) 71%,rgba(6, 6, 6, 0.04) 71%, rgba(6, 6, 6, 0.04) 100%),linear-gradient(311deg, rgba(203, 203, 203, 0.04) 0%, rgba(203, 203, 203, 0.04) 58%,rgba(3, 3, 3, 0.04) 58%, rgba(3, 3, 3, 0.04) 100%),linear-gradient(137deg, rgba(110, 110, 110, 0.04) 0%, rgba(110, 110, 110, 0.04) 11%,rgba(226, 226, 226, 0.04) 11%, rgba(226, 226, 226, 0.04) 100%),linear-gradient(90deg, rgb(215, 19, 84),rgb(234, 119, 123));*/
     /*background-image: linear-gradient(45deg, rgba(235, 235, 235, 0.05) 0%, rgba(235, 235, 235, 0.05) 47%,rgba(69, 69, 69, 0.05) 47%, rgba(69, 69, 69, 0.05) 100%),linear-gradient(45deg, rgba(231, 231, 231, 0.07) 0%, rgba(231, 231, 231, 0.07) 35%,rgba(63, 63, 63, 0.07) 35%, rgba(63, 63, 63, 0.07) 100%),linear-gradient(135deg, rgba(34, 34, 34, 0.03) 0%, rgba(34, 34, 34, 0.03) 21%,rgba(104, 104, 104, 0.03) 21%, rgba(104, 104, 104, 0.03) 100%),linear-gradient(45deg, rgba(231, 231, 231, 0.02) 0%, rgba(231, 231, 231, 0.02) 59%,rgba(136, 136, 136, 0.02) 59%, rgba(136, 136, 136, 0.02) 100%),linear-gradient(90deg, rgba(142, 142, 142, 0.08) 0%, rgba(142, 142, 142, 0.08) 99%,rgba(105, 105, 105, 0.08) 99%, rgba(105, 105, 105, 0.08) 100%),linear-gradient(135deg, rgba(137, 137, 137, 0.05) 0%, rgba(137, 137, 137, 0.05) 57%,rgba(49, 49, 49, 0.05) 57%, rgba(49, 49, 49, 0.05) 100%),linear-gradient(45deg, rgba(38, 38, 38, 0.06) 0%, rgba(38, 38, 38, 0.06) 48%,rgba(89, 89, 89, 0.06) 48%, rgba(89, 89, 89, 0.06) 100%),linear-gradient(90deg, hsl(255,4%,63%),hsl(255,4%,63%));*/
@@ -50,7 +50,8 @@ footer {
 }
 
 .color1, .module-left, .module-left:before {
-    background-color: #d7385e;
+    /*background-color: #d7385e;*/
+    background-color: rgba(35, 39, 42, 1);
     color: #fff;
 }
 
@@ -69,7 +70,8 @@ footer {
 }
 
 .color3, .module-right, .module-right:before {
-    background-color: #522d5b;
+    /*background-color: #522d5b;*/
+    background-color: rgba(35, 39, 42, 1);
     color: #fff;
 }
 
@@ -111,6 +113,16 @@ footer {
 
 .color-discord-hover:hover {
     background-color: #6074b7;
+    color: #fff;
+}
+
+.color-patreon {
+    background-color: #f96854;
+    color: #fff;
+}
+
+.color-patreon-hover:hover {
+    background-color: #e6523e;
     color: #fff;
 }
 
@@ -177,12 +189,22 @@ a.colorless-link:hover {
 }
 
 .front-page-cover {
+    background-color: #23272A;
     margin-top: -16px
 }
 
 .title-text {
     color: #fff;
     text-shadow: 2px 2px 5px rgba(0, 0, 0, 1);
+}
+
+.video-banner {
+    filter: blur(5px);
+    max-height: 400px;
+    min-height: 250px;
+    max-width: 100%;
+    height: auto;
+    object-fit: cover;
 }
 
 .img-banner {
@@ -257,7 +279,6 @@ a.colorless-link:hover {
 
 .home-footer {
     background-color: rgba(0, 0, 0, 0.2);
-    margin-bottom: -16px;
     padding-bottom: 16px;
     padding-top: 16px;
     min-height: 300px;
@@ -268,6 +289,7 @@ a.colorless-link:hover {
 .container-image {
     position: relative;
     text-align: center;
+    min-height: 250px;
 }
 
 /* Bottom left text */
@@ -317,6 +339,17 @@ a.colorless-link:hover {
     box-shadow: inset 0 0 0px white;
 }
 
+.btn-blank {
+    background-color: rgba(0, 0, 0, 0.4);
+    color: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.4);
+}
+
+.btn-blank:hover {
+    background-color: rgba(255, 255, 255, 0.9);
+    color: #000000;
+}
+
 .img {
     height: 36px;
     width: 36px;
@@ -340,16 +373,22 @@ a.colorless-link:hover {
         -ms-transform: unset;
         transform: unset;
     }
-        .module-right:before, .module-left:before {
-            content: unset;
-            position: unset;
-            height: unset;
-            bottom: unset;
-            right: unset;
-            left: unset;
-            z-index: unset;
-            visibility: hidden;
-        }
+    .module-right:before, .module-left:before {
+        content: unset;
+        position: unset;
+        height: unset;
+        bottom: unset;
+        right: unset;
+        left: unset;
+        z-index: unset;
+        visibility: hidden;
+    }
+    .centered-left {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
 }
 
 @media (min-width: 768px) {

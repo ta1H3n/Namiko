@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Container } from 'reactstrap';
+import { Link } from 'react-router-dom';
 
 export class Home extends Component {
     static displayName = Home.name;
@@ -7,8 +8,12 @@ export class Home extends Component {
     render() {
         return (
             <>
-                <div class="container-image front-page-cover">
-                    <img src="/images/banner.jpg" className="img-banner" alt="banner" />
+                <div className="container-image front-page-cover">
+                    <video className="video-banner" muted autoPlay loop id="vid">
+                        <source src="images/video.webm" type="video/webm" />
+                        <source src="images/video.mp4" type="video/mp4" />
+                        Sorry, your browser does not support html5 video.
+                    </video>
                     <div className="centered-left">
                         <h1 className="text-center title-text"><strong>Namiko</strong></h1>
                         <h3 className="text-center title-text">Anime Powered Discord Bot</h3>
@@ -27,13 +32,13 @@ export class Home extends Component {
                         <div className="container mt-2">
                             <div className="row">
                                 <div className="text-center horizontal-center">
-                                    <a href="#waifus" className="btn color6 color6-hover mr-1 mt-1">Waifus</a>
-                                    <a href="#banroulette" className="btn color6 color6-hover mr-1 mt-1">Banroulette</a>
-                                    <a href="#user-profile" className="btn color6 color6-hover mr-1 mt-1">User Profile</a>
-                                    <a href="#music" className="btn color6 color6-hover mr-1 mt-1">Music</a>
-                                    <a href="#currency-and-gambling" className="btn color6 color6-hover mr-1 mt-1">Currency & Gambling</a>
-                                    <a href="#reaction-images" className="btn color6 color6-hover mr-1 mt-1">Reaction Images</a>
-                                    <a href="#web-commands" className="btn color6 color6-hover mr-1 mt-1">Web Commands</a>
+                                    <a href="#waifus" className="btn btn-blank mr-1 mt-1">Waifus</a>
+                                    <a href="#banroulette" className="btn btn-blank mr-1 mt-1">Banroulette</a>
+                                    <a href="#user-profile" className="btn btn-blank mr-1 mt-1">User Profile</a>
+                                    <a href="#music" className="btn btn-blank mr-1 mt-1">Music</a>
+                                    <a href="#currency-and-gambling" className="btn btn-blank mr-1 mt-1">Currency & Gambling</a>
+                                    <a href="#reaction-images" className="btn btn-blank mr-1 mt-1">Reaction Images</a>
+                                    <a href="#web-commands" className="btn btn-blank mr-1 mt-1">Web Commands</a>
                                 </div>
                             </div>
                         </div>
@@ -145,26 +150,20 @@ export class Home extends Component {
                         </div>
                         <div className="container row mt-2 mr-0 ml-0">
                             <div className="horizontal-center">
-                                <div className="btn-group color6 round-sm mt-2 mr-2" role="group">
-                                    <div className="btn btn-static color6 small-padding">
+                                <div className="btn-group color-discord color-discord-hover round-sm mt-2 mr-2" role="group">
+                                    <div className="btn btn-static color-discord color-discord-hover small-padding">
                                         <img src="/images/Discord-Logo-White.png" className="img" />
                                     </div>
-                                    <a href="https://discordapp.com/oauth2/authorize?client_id=418823684459855882&scope=bot&permissions=268707844" type="button" className="btn color6 color6-hover">Invite&nbsp;Namiko</a>
-                                    <a href="https://discord.gg/W6Ru5sM" type="button" className="btn color6 color6-hover">Join&nbsp;Server</a>
+                                    <a href="https://discordapp.com/oauth2/authorize?client_id=418823684459855882&scope=bot&permissions=268707844" type="button" className="btn color-discord color-discord-hover">Invite&nbsp;Namiko</a>
                                 </div>
                             </div>
                         </div>
                         <div className="container row mt-2 mr-0 ml-0">
                             <div className="horizontal-center">
-                                <div className="btn-group color6 round-sm mt-2 mr-2" role="group">
-                                    <a href="/Commands" type="button" className="btn color6 color6-hover">Commands</a>
-                                </div>
-                                <div className="btn-group color6 round-sm mt-2 mr-2" role="group">
-                                    <a href="/Pro" type="button" className="btn color6 color6-hover">Get Pro</a>
-                                </div>
-                                <div className="btn-group color6 round-sm mt-2 mr-2" role="group">
-                                    <a href="/WaifuShop/418900885079588884" type="button" className="btn color6 color6-hover">Web dashboard</a>
-                                </div>
+                                <Link type="button" className="btn btn-blank mr-2 mt-2" to="/Commands">Commands</Link>
+                                <a href="https://www.patreon.com/taiHen" className="btn btn-blank mr-2 mt-2">Get&nbsp;Pro</a>
+                                <Link type="button" className="btn btn-blank mr-2 mt-2" to="/WaifuShop/418900885079588884">Web&nbsp;dashboard</Link>
+                                <Link type="button" className="btn btn-blank mr-2 mt-2" to="/Waifus">Waifus</Link>
                             </div>
                         </div>
                     </Container>

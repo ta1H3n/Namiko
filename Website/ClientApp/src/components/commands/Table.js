@@ -6,7 +6,7 @@ export class Table extends Component {
     render() {
         return (
             <div>
-                <table className='table table-striped' aria-labelledby="tabelLabel">
+                <table className='table table-striped text-light' aria-labelledby="tabelLabel">
                     <thead>
                         <tr>
                             <th>Command</th>
