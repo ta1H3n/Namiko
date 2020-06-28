@@ -28,13 +28,15 @@ export class Commands extends Component {
 
         return (
             <div className="container-commands-list">
-                <div>
-                    <button className="btn btn-blank mr-1 mt-1" onClick={() => this.filterModules("All")}>Show all</button>
-                    {this.state.modules.map(module =>
-                        <button className="btn btn-blank mr-1 mt-1" onClick={() => this.filterModules(module.name)}>{module.name}</button>
-                    )}
-                    {contents}
+                <div className="row">
+                    <div className="text-center horizontal-center">
+                        <button className="btn btn-blank mr-1 mt-1" onClick={() => this.filterModules("All")}>Show all</button>
+                        {this.state.modules.map(module =>
+                            <button className="btn btn-blank mr-1 mt-1" onClick={() => this.filterModules(module.name)}>{module.name}</button>
+                        )}
+                    </div>
                 </div>
+                {contents}
             </div>
         );
     }

@@ -7,12 +7,14 @@ export class Modules extends Component {
     render() {
         return (
             <div>
-                {this.props.modules.map(module =>
-                    <>
-                        <h2><span className="badge color3 col-lg-12">{module.name}</span></h2>
-                        <Table commands={module.commands} />
-                    </>
-                )}
+                <div className="commands">
+                    {this.props.modules.map(module =>
+                        <>
+                            <div className="commands-title col-lg-12">{module.name}</div>
+                            <Table commands={module.commands} />
+                        </>
+                    )}
+                </div>
             </div>
         );
     }
