@@ -298,7 +298,7 @@ namespace Namiko
             var track = tracks.First();
             track.User = Context.User;
 
-            if (player.PlayerState == PlayerState.Playing)
+            if (player.PlayerState == PlayerState.Playing || player.PlayerState == PlayerState.Paused)
             {
                 player.Queue.EnqueueFirst(track);
                 await ReplyAsync(embed: new EmbedBuilderLava(Context.User)
@@ -1074,7 +1074,7 @@ namespace Namiko
 
         public async Task AddTrack(LavaTrack track, LavaPlayer player)
         {
-            if (player.PlayerState == PlayerState.Playing)
+            if (player.PlayerState == PlayerState.Playing || player.PlayerState == PlayerState.Paused)
             {
                 player.Queue.Enqueue(track);
                 await ReplyAsync(embed: new EmbedBuilderLava(Context.User)

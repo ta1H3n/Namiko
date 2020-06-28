@@ -319,7 +319,7 @@ namespace Namiko
         }
 
         [Command("Quote"), Alias("q"), Summary("Allows user to see their personal quote and Image.\n**Usage**: `!q [user(s)_optional]`")]
-        public async Task DisplayPersonalQuote([Remainder] IUser user = null)
+        public async Task DisplayPersonalQuote(IUser user = null, [Remainder] string str = "")
         {
             //variables
             EmbedBuilder embed;

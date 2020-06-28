@@ -2,6 +2,7 @@
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
+using Microsoft.EntityFrameworkCore;
 using Model;
 using Newtonsoft.Json;
 using Sentry;
@@ -505,6 +506,7 @@ namespace Namiko
                     cmd.ModuleName = module.Name;
                     cmd.Name = command.Name;
                     cmd.Aliases = command.Aliases.Aggregate((x, y) => x + ',' + y);
+                    cmd.Conditions = "";
 
                     if (split != null && split.Count() > 0)
                     {
@@ -515,6 +517,24 @@ namespace Namiko
                         }
                     }
 
+                    foreach (var x in command.Preconditions)
+                    {
+                        if (x is RequireUserPermissionAttribute)
+                        {
+                            var prec = x as RequireUserPermissionAttribute;
+                            cmd.Conditions += prec.ChannelPermission != null ? $"{prec.ChannelPermission}," : "";
+                            cmd.Conditions += prec.GuildPermission != null ? $"{prec.GuildPermission}," : "";
+                        }
+
+                        else if (x is CustomPrecondition)
+                        {
+                            var prec = x as CustomPrecondition;
+                            cmd.Conditions += $"{prec.GetName()},";
+                        }
+                    }
+
+                    cmd.Conditions = cmd.Conditions.Trim(',');
+
                     m.Commands.Add(cmd);
                 }
 
@@ -523,10 +543,11 @@ namespace Namiko
 
             using var db = new NamikoDbContext();
 
-            db.Modules.RemoveRange(db.Modules);
-            db.Modules.AddRange(modules);
-
+            db.Modules.RemoveRange(db.Modules.Include(x => x.Commands));
             var res = await db.SaveChangesAsync();
+
+            db.Modules.AddRange(modules);
+            res += await db.SaveChangesAsync();
 
             await ReplyAsync($"Updated db command list. {res} rows affected.");
         }
