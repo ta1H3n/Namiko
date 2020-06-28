@@ -505,7 +505,7 @@ namespace Namiko
                     var split = command.Summary == null ? null : command.Summary.Split(new string[] { "\n**Usage**:" }, StringSplitOptions.None);
 
                     cmd.ModuleName = module.Name;
-                    cmd.Name = Regex.Replace(command.Name, "[a-z][A-Z]", m => $"{m.Value[0]} {char.ToLower(m.Value[1])}"); ;
+                    cmd.Name = Regex.Replace(command.Name, "[a-z][A-Z]", m => $"{m.Value[0]} {m.Value[1]}"); ;
                     cmd.Aliases = command.Aliases.Aggregate((x, y) => x + ',' + y);
                     cmd.Conditions = "";
 
