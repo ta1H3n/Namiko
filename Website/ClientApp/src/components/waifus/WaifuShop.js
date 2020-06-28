@@ -1,6 +1,7 @@
 ﻿import React, { Component } from 'react';
 import { Table } from './Table'
 import { Container } from 'reactstrap';
+import './Waifus.css';
 
 export class WaifuShop extends Component {
     static displayName = WaifuShop.name;

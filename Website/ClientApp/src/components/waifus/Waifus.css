@@ -1,0 +1,45 @@
+﻿
+.container-waifus {
+    margin: 0 auto;
+    max-width: 1920px;
+    padding: 60px;
+    padding-top: 0px;
+}
+
+.search-bar {
+    max-width: 1110px;
+}
+
+.text-muted2 {
+    color: rgba(200, 200, 200, 0.90);
+}
+
+@media (min-width: 400px) {
+    .card-columns {
+        column-count: 2;
+    }
+}
+
+@media (max-width: 767px) {
+    .container-waifus {
+        padding: 20px;
+    }
+}
+
+@media (min-width: 768px) {
+    .card-columns {
+        column-count: 3;
+    }
+}
+
+@media (min-width: 1200px) {
+    .card-columns {
+        column-count: 4;
+    }
+}
+
+@media (min-width: 1600px) {
+    .card-columns {
+        column-count: 5;
+    }
+}

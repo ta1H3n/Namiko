@@ -8,13 +8,13 @@ export class Home extends Component {
     render() {
         return (
             <>
-                <div className="container-image front-page-cover">
+                <div className="container-header">
                     <video className="video-banner" muted autoPlay loop id="vid">
                         <source src="images/video.webm" type="video/webm" />
                         <source src="images/video.mp4" type="video/mp4" />
                         Sorry, your browser does not support html5 video.
                     </video>
-                    <div className="centered-left">
+                    <div className="centered">
                         <h1 className="text-center title-text"><strong>Namiko</strong></h1>
                         <h3 className="text-center title-text">Anime Powered Discord Bot</h3>
                         <div className="btn-group color-discord round-sm mt-2" role="group">
@@ -28,7 +28,6 @@ export class Home extends Component {
                 </div>
 
                 <Container>
-                    <div className="full-size">
                         <div className="container mt-2">
                             <div className="row">
                                 <div className="text-center horizontal-center">
@@ -139,7 +138,6 @@ export class Home extends Component {
                                 </div>
                             </div>
                         </div>
-                    </div>
                 </Container>
                 <div className="mt-5 home-footer">
                     <Container>

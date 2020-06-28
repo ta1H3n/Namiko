@@ -1,6 +1,7 @@
 ﻿import React, { Component } from 'react';
 import { Table } from './Table'
 import { Container } from 'reactstrap';
+import './Waifus.css';
 
 export class Waifus extends Component {
     static displayName = Waifus.name;
@@ -26,15 +27,13 @@ export class Waifus extends Component {
             : <Table waifus={this.state.waifus} />
 
         return (
-            <Container>
-                <div>
-                    <div>
-                        <input type="text" className="form-control" placeholder="Search for waifus..." onKeyDown={this.onKeyDown} />
-                    </div>
-                    <ol/>
-                    {contents}
+            <div className="container-waifus">
+                <div className="search-bar horizontal-center">
+                    <input type="text" className="form-control" placeholder="Search for waifus..." onKeyDown={this.onKeyDown} />
                 </div>
-            </Container>
+                <ol/>
+                {contents}
+            </div>
         );
     }
 
@@ -63,7 +62,7 @@ export class Waifus extends Component {
 
     static waitingInfo(pretext) {
         return (
-            <div className="text-muted text-center align-middle">
+            <div className="text-center align-middle text-muted2">
                 <em>
                     <h3>{pretext}</h3>
                     <p>Search for waifus by typing a part of their name or source...</p>
