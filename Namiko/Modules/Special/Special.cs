@@ -12,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
@@ -504,7 +505,7 @@ namespace Namiko
                     var split = command.Summary == null ? null : command.Summary.Split(new string[] { "\n**Usage**:" }, StringSplitOptions.None);
 
                     cmd.ModuleName = module.Name;
-                    cmd.Name = command.Name;
+                    cmd.Name = Regex.Replace(command.Name, "[a-z][A-Z]", m => $"{m.Value[0]} {char.ToLower(m.Value[1])}"); ;
                     cmd.Aliases = command.Aliases.Aggregate((x, y) => x + ',' + y);
                     cmd.Conditions = "";
 
