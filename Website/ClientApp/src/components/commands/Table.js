@@ -6,26 +6,27 @@ export class Table extends Component {
     render() {
         return (
             <div>
-                <table className='table table-striped text-light' aria-labelledby="tabelLabel">
-                    <thead>
-                        <tr>
-                            <th>Command</th>
-                            <th>Description</th>
-                            <th>Aliases</th>
-                            <th>Example</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {this.props.commands.map(c =>
-                            <tr key={c.id}>
-                                <td>{c.name}</td>
-                                <td>{c.description}</td>
-                                <td>{c.aliases}</td>
-                                <td>{c.example}</td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
+                <div className="commands-header">
+                    <p>Command</p>
+                    <p>Description</p>
+                    <p>Example</p>
+                </div>
+                {this.props.commands.map(c =>
+                    <div className="command">
+                        <div>
+                            <section className="command-name">
+                                <span>{c.name}</span>
+                            </section>
+                            <section className="command-aliases">
+                                {c.aliasesArray.map(val =>
+                                    <span>!{val}</span>
+                                )}
+                            </section>
+                        </div>
+                        <div className="command-description">{c.description}</div>
+                        <div className="command-example">{c.example}</div>
+                    </div>
+                )}
             </div>
         );
     }

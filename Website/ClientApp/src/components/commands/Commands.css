@@ -1,0 +1,132 @@
+﻿.container-commands-list {
+    margin: 0 auto;
+    max-width: 1920px;
+    padding: 60px;
+}
+
+.commands-header, .command {
+    display: grid;
+    grid-template-columns: 25% 40% 35%;
+}
+
+.commands-header {
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 700;
+    margin-top: 20px;
+    padding: 1rem 0;
+}
+
+    .commands-header p {
+        padding-left: 20px;
+        margin: 0;
+    }
+
+.command {
+    color: #ddd;
+}
+
+    .command div {
+        color: #fff;
+        padding: 20px;
+        background: rgba(0, 0, 0, 0.4);
+    }
+
+        .command div:nth-child(odd) {
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+    .command span {
+        display: block;
+    }
+
+    .command:nth-child(odd) {
+        background: rgba(0, 0, 0, 0.2);
+    }
+
+.command-name {
+    color: #fff !important;
+    font-weight: 700;
+}
+
+.command-aliases {
+    color: #ccc !important;
+    font-weight: unset;
+}
+
+.command-description, .command-example {
+    color: #ccc !important;
+}
+
+
+@media (max-width: 767px) {
+    .container-commands-list {
+        padding: 20px;
+    }
+    .commands-header, .command {
+        display: grid;
+        grid-template-columns: 100%;
+    }
+
+    .commands {
+        margin-top: 20px;
+        background: #1a1a1a;
+        padding: 15px;
+    }
+
+    .commands-header {
+        display: none;
+    }
+
+    .commands-list-notice > div {
+        display: inline-block;
+        width: 90%;
+    }
+
+    .commands-list-notice .v3button {
+        margin-top: 4px;
+    }
+
+    .command {
+        display: block;
+        font-size: 13px;
+        margin-bottom: 20px;
+    }
+
+        .command div {
+            padding: 10px;
+        }
+
+            .command div:first-child, .command div:nth-child(2) {
+                background: #333;
+            }
+
+            .command div:last-child {
+                background: #2b2b2b;
+            }
+
+    .command-name {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .module {
+        margin-top: 0;
+    }
+
+    .usage {
+        align-items: baseline;
+        display: flex;
+    }
+
+        .usage:before {
+            content: 'Usage';
+            font-family: 'NotoSans', sans-serif;
+            color: #fff;
+            font-size: 0.8125rem;
+            font-weight: 700;
+            margin-right: 10px;
+            text-transform: uppercase;
+        }
+}

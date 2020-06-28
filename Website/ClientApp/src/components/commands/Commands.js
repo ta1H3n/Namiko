@@ -1,6 +1,6 @@
 ﻿import React, { Component, Button } from 'react';
 import { Modules } from './Modules'
-import { Container } from 'reactstrap';
+import './Commands.css';
 
 export class Commands extends Component {
     static displayName = Commands.name;
@@ -27,7 +27,7 @@ export class Commands extends Component {
                 : <Modules modules={this.state.display} />
 
         return (
-            <Container>
+            <div className="container-commands-list">
                 <div>
                     <button className="btn btn-blank mr-1 mt-1" onClick={() => this.filterModules("All")}>Show all</button>
                     {this.state.modules.map(module =>
@@ -35,7 +35,7 @@ export class Commands extends Component {
                     )}
                     {contents}
                 </div>
-            </Container>
+            </div>
         );
     }
 
