@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 namespace Namiko
 {
     [RequireGuild]
+    [Name("Currency & Gambling")]
     public class Currency : InteractiveBase<ShardedCommandContext>
     {
         [Command("Blackjack"), Alias("bj"), Summary("Starts a game of blackjack.\n**Usage**: `!bj [amount]`")]

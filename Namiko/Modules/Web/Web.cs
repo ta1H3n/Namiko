@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 
 namespace Namiko
 {
+    [Name("Web Services")]
     public class Web : InteractiveBase<ShardedCommandContext>
     {
         [Command("IQDB"), Summary("Finds the source of an image in iqdb.\n**Usage**: `!iqdb [image_url]` or `!iqdb` with attached image.")]
@@ -72,7 +73,7 @@ namespace Namiko
             await Context.Channel.SendMessageAsync("", false, WebUtil.SauceEmbed(sauce, url).Build());
         }
 
-        [Command("Anime"), Alias("AnimeSearch", "SearchAnime"), Summary("Searchs MAL for an anime and the following details.\n**Usage**: `!Anime [anime_title]`")]
+        [Command("Anime"), Alias("AnimeSearch", "SearchAnime"), Summary("Searches MAL for an anime and the following details.\n**Usage**: `!Anime [anime_title]`")]
         public async Task AnimeSearch([Remainder]string Query)
         {
             await Context.Channel.TriggerTypingAsync();
@@ -117,7 +118,7 @@ namespace Namiko
             }
         }
 
-        [Command("Manga"), Alias("MangaSearch", "SearchManga"), Summary("Searchs MAL for an manga and the following details.\n**Usage**: `!Manga [manga_title]`")]
+        [Command("Manga"), Alias("MangaSearch", "SearchManga"), Summary("Searches MAL for an manga and the following details.\n**Usage**: `!Manga [manga_title]`")]
         public async Task MangaSearch([Remainder]string Query)
         {
             await Context.Channel.TriggerTypingAsync();

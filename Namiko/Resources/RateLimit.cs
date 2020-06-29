@@ -8,8 +8,8 @@ namespace Namiko
 {
     public class RateLimit
     {
-        public static readonly uint InvokeLimit = 4;
-        public static readonly TimeSpan InvokeLimitPeriod = new TimeSpan(0, 0, 10);
+        public static readonly uint InvokeLimit = 3;
+        public static readonly TimeSpan InvokeLimitPeriod = new TimeSpan(0, 0, 5);
         public static readonly TimeSpan InvokeLockoutPeriod = new TimeSpan(0, 0, 10);
         private static readonly Dictionary<ulong, CommandTimeout> InvokeTracker = new Dictionary<ulong, CommandTimeout>();
         public static readonly Dictionary<ulong, DateTime> InvokeLockout = new Dictionary<ulong, DateTime>();

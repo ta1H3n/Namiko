@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 namespace Namiko
 {
     [RequireGuild]
+    [Name("Banroulette")]
     public class Banroulettes : InteractiveBase<ShardedCommandContext>
     {
         [Command("NewBanroulette"), Alias("nbr"), Summary("Starts a new game of ban roulette, where one participant is randomly banned from the server. Winners split toasties from the reward pool.\n" +
