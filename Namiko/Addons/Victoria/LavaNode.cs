@@ -339,8 +339,13 @@ namespace Victoria {
         /// <returns>
         ///     <see cref="SearchResponse" />
         /// </returns>
-        public Task<SearchResponse> SearchYouTubeAsync(string query) {
-            return SearchAsync($"ytsearch:{query}");
+        public async Task<SearchResponse> SearchYouTubeAsync(string query, bool retryOnSoundCloudIfNoResults = true) {
+            var res = await SearchAsync($"ytsearch:{query}");
+            if (res.Tracks.Count <= 0 && retryOnSoundCloudIfNoResults)
+            {
+                res = await SearchSoundCloudAsync(query);
+            }
+            return res;
         }
 
         /// <summary>
