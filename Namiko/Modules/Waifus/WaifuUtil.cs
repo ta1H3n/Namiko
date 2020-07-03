@@ -7,6 +7,7 @@ using Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 
@@ -809,6 +810,24 @@ namespace Namiko
             }
             
             return null;
+        }
+
+
+        public static async Task DownloadWaifuImageToServer(Waifu waifu)
+        {
+            if (waifu.ImageUrl == null || waifu.ImageUrl == "")
+                return;
+
+            using WebClient client = new WebClient();
+
+            string filetype = waifu.ImageUrl.Split('.').Last();
+            string imgurId = waifu.ImageUrl.Split('/').Last().Split('.').First();
+            string domain = "https://i.imgur.com/";
+            string largeUrl = domain + imgurId + "l." + filetype;
+            string mediumUrl = domain + imgurId + "m." + filetype;
+            await client.DownloadFileTaskAsync(new Uri(waifu.ImageUrl), @$"{Config.ImagePath}{waifu.Name}+{imgurId}.{filetype}");
+            await client.DownloadFileTaskAsync(new Uri(largeUrl), @$"{Config.ImagePath}{waifu.Name}+{imgurId}l.{filetype}");
+            await client.DownloadFileTaskAsync(new Uri(mediumUrl), @$"{Config.ImagePath}{waifu.Name}+{imgurId}m.{filetype}");
         }
     }
 }
