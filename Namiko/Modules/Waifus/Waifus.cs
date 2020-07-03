@@ -688,6 +688,49 @@ namespace Namiko
             }
         }
 
+        [Command("WaifuImageSource"), Alias("wis"), Summary("Set waifu image source.\n**Usage**: `!wi [name] [image_url]`"), Insider]
+        public async Task WaifuImageSource(string name, string url = null)
+        {
+            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(await WaifuDb.SearchWaifus(name, true), this);
+            if (waifu == null)
+            {
+                return;
+            }
+
+            waifu.ImageSource = url;
+
+            if (await WaifuDb.UpdateWaifu(waifu) > 0)
+                await Context.Channel.SendMessageAsync($":white_check_mark: {waifu.Name} updated.");
+            else
+                await Context.Channel.SendMessageAsync($":x: Failed to update {name}");
+        }
+
+        [Command("GetWaifu"), Alias("wis"), Summary("Set waifu image source.\n**Usage**: `!wi [name] [image_url]`"), Insider]
+        public async Task WaifuImageSource([Remainder] string name)
+        {
+            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(await WaifuDb.SearchWaifus(name, true, null, true), this);
+            if (waifu == null)
+            {
+                return;
+            }
+
+            string str = "```yaml\n";
+
+            str += $"Name: {waifu.Name}\n";
+            str += $"FullName: {waifu.LongName}\n";
+            str += $"Source: {waifu.Source}\n";
+            str += $"Description: {waifu.Description}\n";
+            str += $"ImageUrl: {waifu.ImageUrl}\n";
+            str += $"ImageSource: {waifu.ImageSource}\n";
+            str += $"Tier: {waifu.Tier}\n";
+            str += $"MalId: {waifu.Mal?.MalId}\n";
+
+            str += "```";
+
+            await Context.Channel.SendMessageAsync(str);
+        }
+
+
         [Command("RenameWaifu"), Alias("rw"), Summary("Change a waifu's primary name.\n**Usage**: `!rw [oldName] [newName]`"), Insider]
         public async Task RenameWaifu(string oldName, string newName)
         {

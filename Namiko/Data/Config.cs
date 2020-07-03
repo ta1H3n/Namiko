@@ -47,5 +47,8 @@ namespace Namiko
 
         [JsonProperty("lavalinkWebhook")]
         public static string LavalinkWebhook { get; set; }
+
+        [JsonProperty("sauceWebhook")]
+        public static string SauceWebhook { get; set; }
     }
 }
