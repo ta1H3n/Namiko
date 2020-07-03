@@ -823,11 +823,9 @@ namespace Namiko
             string filetype = waifu.ImageUrl.Split('.').Last();
             string imgurId = waifu.ImageUrl.Split('/').Last().Split('.').First();
             string domain = "https://i.imgur.com/";
-            string largeUrl = domain + imgurId + "l." + filetype;
-            string mediumUrl = domain + imgurId + "m." + filetype;
-            await client.DownloadFileTaskAsync(new Uri(waifu.ImageUrl), @$"{Config.ImagePath}{waifu.Name}+{imgurId}.{filetype}");
-            await client.DownloadFileTaskAsync(new Uri(largeUrl), @$"{Config.ImagePath}{waifu.Name}+{imgurId}l.{filetype}");
-            await client.DownloadFileTaskAsync(new Uri(mediumUrl), @$"{Config.ImagePath}{waifu.Name}+{imgurId}m.{filetype}");
+            await client.DownloadFileTaskAsync(new Uri(domain + waifu.ImageRaw), $"{Config.ImagePath}{waifu.ImageRaw}");
+            await client.DownloadFileTaskAsync(new Uri(domain + waifu.ImageLarge), $"{Config.ImagePath}{waifu.ImageLarge}");
+            await client.DownloadFileTaskAsync(new Uri(domain + waifu.ImageMedium), $"{Config.ImagePath}{waifu.ImageMedium}");
         }
     }
 }
