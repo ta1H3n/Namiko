@@ -18,9 +18,9 @@ namespace Model
         public virtual MalWaifu Mal { get; set; }
 
         [NotMapped]
-        private string ImgurId { get { return ImageUrl.Split('/').Last().Split('.').First(); } }
+        private string ImgurId { get { return ImageUrl?.Split('/').Last().Split('.').First(); } }
         [NotMapped]
-        private string ImageFileType { get { return ImageUrl.Split('.').Last(); } }
+        private string ImageFileType { get { return ImageUrl?.Split('.').Last(); } }
         [NotMapped]
         public string ImageMedium { get { return Name + "+" + ImgurId + "m." + ImageFileType; } }
         [NotMapped]

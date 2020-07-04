@@ -249,8 +249,20 @@ namespace Namiko
         {
             if (logMessage.Exception is CommandException cmdException)
             {
-                var ex = new Exception($"{cmdException.Command.Name} - {cmdException.InnerException.Message}", cmdException.InnerException);
-                SentrySdk.CaptureException(ex);
+                SentrySdk.ConfigureScope(scope =>
+                {
+                    scope.SetTag("Command", cmdException.Command.Name);
+                    scope.SetExtra("GuildId", cmdException.Context.Guild.Id);
+                    scope.SetExtra("Guild", cmdException.Context.Guild.Name);
+                    scope.SetExtra("GuildOwnerId", cmdException.Context.Guild.OwnerId);
+                    scope.SetExtra("ChannelId", cmdException.Context.Channel.Id);
+                    scope.SetExtra("Channel", cmdException.Context.Channel.Name);
+                    scope.SetExtra("UserId", cmdException.Context.User.Id);
+                    scope.SetExtra("User", cmdException.Context.User.Username);
+                    scope.SetExtra("MessageId", cmdException.Context.Message.Id);
+                    scope.SetExtra("Message", cmdException.Context.Message.Content);
+                });
+                SentrySdk.CaptureException(cmdException.InnerException);
             }
         }
 
