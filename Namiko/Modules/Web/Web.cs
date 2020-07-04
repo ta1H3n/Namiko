@@ -40,6 +40,9 @@ namespace Namiko
         [Command("Source"), Alias("SauceNao", "Sauce"), Summary("Finds the source of an image with SauceNao.\n**Usage**: `!source [image_url]` or `!source` with attached image.")]
         public async Task SaceNao(string url = null, [Remainder] string str = "")
         {
+            await Context.Channel.SendMessageAsync($"SauceNao is unavailable at the moment, Senpai... Please use `{Program.GetPrefix(Context)}iqdb` instead.");
+            return;
+
             await Context.Channel.TriggerTypingAsync();
 
             url ??= Context.Message.Attachments.FirstOrDefault()?.Url;
