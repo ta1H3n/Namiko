@@ -543,14 +543,7 @@ namespace Namiko
             else
                 await Context.Channel.SendMessageAsync($"Failed to add {name}");
 
-            try
-            {
-                await WaifuUtil.DownloadWaifuImageToServer(waifu);
-            }
-            catch
-            {
-                await Context.Channel.SendMessageAsync($"{Context.Client.GetUser(Config.OwnerId).Mention} Error while downloading waifu image variants to server.");
-            }
+            await WaifuUtil.DownloadWaifuImageToServer(waifu, Context.Channel);
         }
 
         [Command("DeleteWaifu"), Alias("dw"), Summary("Removes a waifu from the database.\n**Usage**: `!dw [name]`"), OwnerPrecondition]
@@ -678,14 +671,7 @@ namespace Namiko
             else
                 await Context.Channel.SendMessageAsync($":x: Failed to update {name}");
 
-            try
-            {
-                await WaifuUtil.DownloadWaifuImageToServer(waifu);
-            }
-            catch
-            {
-                await Context.Channel.SendMessageAsync($"{Context.Client.GetUser(Config.OwnerId).Mention} Error while downloading waifu image variants to server.");
-            }
+            await WaifuUtil.DownloadWaifuImageToServer(waifu, Context.Channel);
         }
 
         [Command("WaifuImageSource"), Alias("wis"), Summary("Set waifu image source.\n**Usage**: `!wi [name] [image_url]`"), Insider]
@@ -864,15 +850,7 @@ namespace Namiko
                 await Context.Channel.SendMessageAsync("Rip");
             }
 
-
-            try
-            {
-                await WaifuUtil.DownloadWaifuImageToServer(waifu);
-            }
-            catch
-            {
-                await Context.Channel.SendMessageAsync($"{Context.Client.GetUser(Config.OwnerId).Mention} Error while downloading waifu image variants to server.");
-            }
+            await WaifuUtil.DownloadWaifuImageToServer(waifu, Context.Channel);
         }
 
         [Command("WaifuMal"), Alias("wm"), Summary("Sets waifus MAL Id.\n**Usage**: `!wm [name] [MAL_ID]`"), Insider]
