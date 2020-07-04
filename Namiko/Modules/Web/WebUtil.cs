@@ -87,7 +87,7 @@ namespace Namiko
 
         public static async Task<SauceNET.Model.Sauce> SauceNETSearchAsync(string url)
         {
-            SauceNETClient client = new SauceNETClient("ea858ed6c91d925cc7d0af7ca7cfe6651fd9fb94");
+            SauceNETClient client = new SauceNETClient(Config.SauceNaoApi);
             return await client.GetSauceAsync(url);
         }
         public static EmbedBuilder SauceEmbed(SauceNET.Model.Sauce sauce, string requestUrl)
