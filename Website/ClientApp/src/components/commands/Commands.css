@@ -1,4 +1,45 @@
 ﻿
+/*GUIDE STYLE*/
+
+.container-guide {
+    color: #ddd;
+    margin: 0 auto;
+    max-width: 1280px;
+    padding: 30px;
+    padding-top: 20px;
+    margin-bottom: 40px;
+    background-color: rgba(0, 0, 0, 0.20);
+}
+
+.guide-module-title {
+    margin-top: 0px;
+    background-color: rgba(150, 13, 46, 0.80);
+}
+
+.guide-module-button {
+    padding: 0px 16px;
+}
+
+.guide-module-header {
+    margin-top: 2rem;
+    background-color: rgba(88, 30, 101, 0.80);
+}
+
+.guide-module {
+    padding: 8px 16px;
+    margin: 0px 0px 16px 0px;
+}
+
+    .guide-module:nth-child(even) {
+        background-color: rgba(0, 0, 0, 0.4);
+    }
+
+    .guide-module:nth-child(odd) {
+        background-color: rgba(0, 0, 0, 0.3);
+    }
+
+/*COMMANDS PAGE STYLE*/
+
 .container-commands-list {
     margin: 0 auto;
     max-width: 1920px;
@@ -6,8 +47,7 @@
     padding-top: 0px;
 }
 
-.commands-title {
-    background-color: rgba(150, 13, 46, 0.80);
+.commands-title, .guide-module-header, .guide-module-title {
     color: #fff;
     display: grid;
     grid-template-columns: 100%;
@@ -17,7 +57,11 @@
     text-transform: uppercase;
     font-size: 1.5rem;
     font-weight: 700;
+}
+
+.commands-title {
     margin-top: 2rem;
+    background-color: rgba(150, 13, 46, 0.80);
 }
 
 .commands-header, .command {
@@ -96,6 +140,10 @@
 }
 
 @media (max-width: 767px) {
+    .container-guide {
+        padding: 20px;
+    }
+
     .container-commands-list {
         padding: 20px;
     }
