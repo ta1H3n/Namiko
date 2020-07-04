@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Route, Redirect, Switch } from 'react-router';
+import GaTracker from './GaTracker';
 import { Layout } from './components/Layout';
 import { Home } from './components/Home';
 import { Waifus } from './components/waifus/Waifus'
@@ -14,14 +15,12 @@ export default class App extends Component {
     render() {
         return (
             <>
-                <script async src="https://www.googletagmanager.com/gtag/js?id=UA-142170725-2" />
-                <script>{injectGA()}</script>
                 <Layout>
                     <Switch>
-                        <Route exact path='/' component={Home} />
-                        <Route path='/waifus' component={Waifus} />
-                        <Route path='/commands' component={Commands} />
-                        <Route path='/waifushop/:handle' component={WaifuShop} />
+                        <Route exact path='/' component={GaTracker(Home)} />
+                        <Route path='/waifus' component={GaTracker(Waifus)} />
+                        <Route path='/commands' component={GaTracker(Commands)} />
+                        <Route path='/waifushop/:handle' component={GaTracker(WaifuShop)} />
 
                         <Redirect to='/' />
                     </Switch>
@@ -30,16 +29,3 @@ export default class App extends Component {
         );
     }
 }
-
-const injectGA = () => {
-    if (typeof window == 'undefined') {
-        return;
-    }
-    window.dataLayer = window.dataLayer || [];
-    function gtag() {
-        window.dataLayer.push(arguments);
-    }
-    gtag('js', new Date());
-
-    gtag('config', 'UA-142170725-2');
-};
