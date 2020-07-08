@@ -316,7 +316,11 @@ namespace Namiko
                 }
 
                 var res = await WebUtil.SauceNETSearchAsync(waifu.ImageUrl);
-                foreach (var result in res.Results)
+                if (res.Message.Contains("limit exceeded", StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
+                foreach (var result in res.Results.OrderByDescending(x => Double.Parse(x.Similarity)))
                 {
                     if ((result.DatabaseName == "Pixiv" ||
                         result.DatabaseName == "Danbooru" ||
@@ -326,7 +330,26 @@ namespace Namiko
                         Double.Parse(result.Similarity) > 80)
                     {
                         waifu.ImageSource = result.SourceURL;
-                        await WebhookClients.SauceChannel.SendMessageAsync($"<:TickYes:577838859107303424> **{waifu.Name}** - {result.DatabaseName} ({result.SourceURL})");
+                        await WebhookClients.SauceChannel.SendMessageAsync($"<:TickYes:577838859107303424> **{waifu.Name}** - {result.DatabaseName} {result.Similarity}% ({result.SourceURL})");
+                        break;
+                    }
+                    else if ((result.DatabaseName == "Pixiv" ||
+                        result.DatabaseName == "Danbooru" ||
+                        result.DatabaseName == "Gelbooru" ||
+                        result.DatabaseName == "AniDb" ||
+                        result.DatabaseName == "Twitter") &&
+                        Double.Parse(result.Similarity) > 60)
+                    {
+                        waifu.ImageSource = result.SourceURL;
+                        await WebhookClients.SauceChannel.SendMessageAsync($":question: **{waifu.Name}** - {result.DatabaseName} {result.Similarity}% ({result.SourceURL})\n" +
+                            $"Verify: *{waifu.Source}* ({waifu.ImageUrl})");
+                        break;
+                    }
+                    else if (result.DatabaseName == "AniDb" && Double.Parse(result.Similarity) > 40)
+                    {
+                        waifu.ImageSource = result.SourceURL;
+                        await WebhookClients.SauceChannel.SendMessageAsync($":question: **{waifu.Name}** - {result.DatabaseName} {result.Similarity}% ({result.SourceURL})\n" +
+                            $"Verify: *{waifu.Source}* ({waifu.ImageUrl})");
                         break;
                     }
                 }
