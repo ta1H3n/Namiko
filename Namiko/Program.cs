@@ -37,6 +37,7 @@ namespace Namiko
         private static bool Diag = false;
         private static bool Pause = false;
         private static bool Startup = true;
+        public static bool GuildLeaveEvent = true;
         private static int ShardCount;
 
         static void Main(string[] args)
@@ -385,6 +386,9 @@ namespace Namiko
         }
         private async Task Client_LeftGuild(SocketGuild arg)
         {
+            if (!GuildLeaveEvent)
+                return;
+
             var server = ServerDb.GetServer(arg.Id);
             server.LeaveDate = DateTime.Now;
             await ServerDb.UpdateServer(server);
