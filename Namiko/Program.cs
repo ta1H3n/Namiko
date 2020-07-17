@@ -202,7 +202,8 @@ namespace Namiko
                 return;
             }
 
-            if (Context.Channel is SocketTextChannel ch 
+            if (cmds.IsSuccess 
+                && Context.Channel is SocketTextChannel ch 
                 && (!ch.Guild.CurrentUser.GetPermissions(ch).Has(ChannelPermission.SendMessages) || !ch.Guild.CurrentUser.GetPermissions(ch).Has(ChannelPermission.EmbedLinks)))
             {
                 var dm = await Context.User.GetOrCreateDMChannelAsync();
