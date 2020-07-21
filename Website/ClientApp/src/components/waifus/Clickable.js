@@ -9,9 +9,9 @@ export function Clickable(props) {
 
     return (
         <>
-            <a href={window.location.pathname + "#" + props.waifu.name} className="stretched-link" onClick={handleShow} />
+            <a className="stretched-link" onClick={handleShow} />
             <Modal show={show} onHide={handleClose} size="md" aria-labelbody="contained-modal-title-vcenter">
-                <Modal.Header closeButton>
+                <Modal.Header className={"t" + ParseTier(props.waifu.tier)} closeButton>
                     <Modal.Title>{props.waifu.longName}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
@@ -24,4 +24,13 @@ export function Clickable(props) {
             </Modal>
         </>
     );
+}
+
+export function ParseTier(tier) {
+    let t = tier < 1
+        ? 0
+        : tier > 3
+            ? 0
+            : tier;
+    return t;
 }

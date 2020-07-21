@@ -29,7 +29,7 @@ export class Waifus extends Component {
         return (
             <div className="container-waifus">
                 <div className="search-bar horizontal-center">
-                    <input type="text" className="form-control" placeholder="Search for waifus..." onKeyDown={this.onKeyDown} />
+                    <input type="text" className="form-control search-bar" placeholder="Search for waifus..." onKeyDown={this.onKeyDown} />
                 </div>
                 <ol/>
                 {contents}

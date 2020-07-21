@@ -1,5 +1,5 @@
 ﻿import React, { Component } from 'react';
-import { Clickable } from './Clickable';
+import { Clickable, ParseTier } from './Clickable';
 
 export class Card extends Component {
     static displayName = Card.name;
@@ -10,12 +10,12 @@ export class Card extends Component {
 
     render() {
         return (
-            <div>   
-                <div className="card">
+            <div>
+                <div className={"card card-t" + ParseTier(this.props.waifu.tier)}>
                     <img className="card-img-top" src={this.props.waifu.imageUrl} alt="Card image cap"/>
                     <div className="card-body">
-                        <h5 className="card-title">{this.props.waifu.longName.split('(')[0]}</h5>
-                        <h6 className="card-subtitle mb-2">{this.props.waifu.source}</h6>
+                        <h5 className="card-title text-center">{this.props.waifu.longName.split('(')[0]}</h5>
+                        <h6 className="card-subtitle text-center mb-1">{this.props.waifu.source}</h6>
                         <Clickable waifu={this.props.waifu} />
                     </div>
                 </div>

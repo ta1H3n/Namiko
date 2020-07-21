@@ -6,6 +6,69 @@
     padding-top: 0px;
 }
 
+.search-bar, .search-bar:focus {
+    border-color: rgba(0, 0, 0, 1);
+}
+
+.color-main, .modal-body, .modal-footer, .modal-content, .modal-header, .search-bar, .search-bar:focus {
+    background-color: rgba(43, 43, 43, 1);
+    color: rgb(230, 230, 230);
+}
+
+    .color-primary {
+        background-color: rgba(150, 13, 46, 0.70);
+        color: rgb(230, 230, 230);
+    }
+
+    .color-secondary {
+        background-color: rgba(88, 30, 101, 0.70);
+        color: rgb(230, 230, 230);
+    }
+
+.modal-content {
+    border-radius: 6px;
+    -webkit-border-radius: 6px;
+    -moz-border-radius: 6px;
+    background-color: transparent;
+}
+
+.modal-body {
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+    -webkit-border-bottom-left-radius: 6px;
+    -webkit-border-bottom-right-radius: 6px;
+    -moz-border-radius-bottomleft: 6px;
+    -moz-border-radius-bottomright: 6px;
+}
+
+.modal-header {
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    -webkit-border-top-left-radius: 6px;
+    -webkit-border-top-right-radius: 6px;
+    -moz-border-radius-topleft: 6px;
+    -moz-border-radius-topright: 6px;
+    border-bottom: 0px;
+}
+
+.t1, .card-t1:hover {
+    background-color: rgb(150, 13, 46);
+}
+
+.t2, .card-t2:hover {
+    background-color: rgb(81, 42, 92);
+}
+
+.t3, .card-t3:hover {
+    background-color: rgb(23, 66, 100);
+}
+
+.t0, .card-t0:hover {
+    background-color: rgb(255, 170, 22);
+    color: rgb(30, 30, 30);
+}
+
+
 .search-bar {
     max-width: 1110px;
 }
@@ -13,6 +76,16 @@
 .text-muted2 {
     color: rgba(200, 200, 200, 0.90);
 }
+
+.card {
+    background-color: rgba(0, 0, 0, 0.50);
+    color: rgb(230, 230, 230);
+    transition: background-color 0.2s ease;
+}
+
+    .card:hover {
+        cursor: pointer;
+    }
 
 @media (min-width: 400px) {
     .card-columns {
