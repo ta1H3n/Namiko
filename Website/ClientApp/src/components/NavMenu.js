@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { Collapse, Container, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink } from 'reactstrap';
+import { Container } from 'reactstrap';
+import { Navbar, Nav } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import './NavMenu.css';
 
@@ -24,23 +25,24 @@ export class NavMenu extends Component {
     render() {
         return (
             <header>
-                <Navbar className="navbar-expand-sm navbar-toggleable-sm ng-white border-bottom box-shadow mb-3" light>
+                <Navbar className="mb-3 namiko-navbar" variant="dark">
                     <Container>
-                        <NavbarBrand tag={Link} className="text-light" to="/">Namiko Moe</NavbarBrand>
-                        <NavbarToggler onClick={this.toggleNavbar} className="mr-2" />
-                        <Collapse className="d-sm-inline-flex flex-sm-row-reverse" isOpen={!this.state.collapsed} navbar>
-                            <ul className="navbar-nav flex-grow">
-                                <NavItem>
-                                    <NavLink tag={Link} className="text-light" to="/Guide">Guide</NavLink>
-                                </NavItem>
-                                <NavItem>
-                                    <NavLink tag={Link} className="text-light" to="/Commands">Commands</NavLink>
-                                </NavItem>
-                                <NavItem>
-                                    <NavLink tag={Link} className="text-light" to="/Waifus">Waifus</NavLink>
-                                </NavItem>
-                            </ul>
-                        </Collapse>
+                        <Navbar.Brand as={Link} to="/">
+                            <img
+                            src="/images/NamikoMoe.png"
+                            width="auto"
+                            height="30"
+                            className="d-inline-block align-top"
+                            alt="Namiko Moe logo"
+                            />
+                        </Navbar.Brand>
+                        <Navbar.Collapse isOpen={!this.state.collapsed}>
+                            <Nav className="mr-auto">
+                                <Nav.Link as={Link} to="/Guide">Guide</Nav.Link>
+                                <Nav.Link as={Link} to="/Commands">Commands</Nav.Link>
+                                <Nav.Link as={Link} to="/Waifus">Waifus</Nav.Link>
+                            </Nav>
+                        </Navbar.Collapse>
                     </Container>
                 </Navbar>
             </header>

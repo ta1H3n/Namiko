@@ -9,7 +9,6 @@ export class Layout extends Component {
     render() {
         return (
             <div>
-                <EarlyBuildBar />
                 <NavMenu />
                 {this.props.children}
                 <FooterMenu />
