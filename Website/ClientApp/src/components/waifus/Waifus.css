@@ -87,6 +87,29 @@
         cursor: pointer;
     }
 
+.waifu-image {
+    position: relative;
+}
+
+    .waifu-image img {
+        width: 100%;
+        height: auto;
+    }
+
+.waifu-image-btn {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background-color: rgba(59, 59, 59, 0.1);
+    color: rgba(230, 230, 230, 0.2);
+    padding: 0px 4px;
+}
+
+    .waifu-image-btn:hover {
+        background-color: rgba(59, 59, 59, 0.6);
+        color: rgb(230, 230, 230);
+    }
+
 @media (min-width: 400px) {
     .card-columns {
         column-count: 2;

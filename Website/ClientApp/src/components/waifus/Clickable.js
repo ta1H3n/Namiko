@@ -1,5 +1,5 @@
 ﻿import React from 'react';
-import { Modal } from 'react-bootstrap';
+import { Modal, OverlayTrigger, Tooltip } from 'react-bootstrap';
 
 export function Clickable(props) {
     const [show, setShow] = React.useState(false);
@@ -18,7 +18,10 @@ export function Clickable(props) {
                     <div className="img_container">
                         <h5>{props.waifu.source}</h5>
                         <p>{props.waifu.description}</p>
-                        <img src={props.waifu.imageUrl} className="img-fluid" />
+                        <div class="waifu-image">
+                            <img src={props.waifu.imageRaw} alt={props.waifu.name} className="img-fluid" />
+                            {SourcePop(props.waifu.imageSource)}
+                        </div>
                     </div>
                 </Modal.Body>
             </Modal>
@@ -33,4 +36,15 @@ export function ParseTier(tier) {
             ? 0
             : tier;
     return t;
+}
+
+function SourcePop(source) {
+    if (source === null || source === "retry" || source === "missing") {
+        return (
+            <OverlayTrigger overlay={<Tooltip id="source">Source missing! :(</Tooltip>}>
+                <a class="btn waifu-image-btn">Source</a>
+            </OverlayTrigger>);
+    }
+
+    return (<a href={source} target="_blank" class="btn waifu-image-btn">Source</a>);
 }
