@@ -125,13 +125,13 @@ namespace Namiko
             }
 
             await InviteDb.NewInvite(team.MemberRoleId, user.Id);
-            await channel.SendMessageAsync($"{user.Mention} You're invited to join **{teamRole.Name}**! Type `{Program.GetPrefix(Context)}join {teamRole.Name}`");
+            await channel.SendMessageAsync($"{user.Mention} You're invited to join **{teamRole.Name}**! Type `{Program.GetPrefix(Context)}jointeam {teamRole.Name}`");
 
             ISocketMessageChannel ch = (ISocketMessageChannel) Context.Client.GetChannel(ServerDb.GetServer(Context.Guild.Id).TeamLogChannelId);
             await ch.SendMessageAsync($"<:KannaHype:571690048001671238> `{Context.User}` invited `{user}` to **{teamRole.Name}**.");
         }
 
-        [Command("Join"), Summary("Accept an invite to a team.\n**Usage**: `!join [team_name]`"), CustomBotPermission(GuildPermission.ManageRoles)]
+        [Command("JoinTeam"), Summary("Accept an invite to a team.\n**Usage**: `!jointeam [team_name]`"), CustomBotPermission(GuildPermission.ManageRoles)]
         public async Task Join([Remainder] string teamName)
         {
             var role = await this.SelectRole(teamName, TeamDb.Teams(Context.Guild.Id).Select(x => x.MemberRoleId), respond: false);

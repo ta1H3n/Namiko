@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 namespace Namiko
 {
     [RequireGuild]
+    [Name("Ban Royale - Alpha")]
     public class Banroyales : InteractiveBase<ShardedCommandContext>
     {
         [Command("NewBanroyale"), Alias("nbrl"), Summary("Starts a new game of Ban Royale, where participants play a reaction game until last one standing. Losers can get optionally kicked/banned and winners can get toasties as a reward.\n" +

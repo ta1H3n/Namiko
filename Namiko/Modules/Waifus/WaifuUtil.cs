@@ -4,9 +4,11 @@ using Discord.Commands;
 using Discord.Rest;
 using Discord.WebSocket;
 using Model;
+using Sentry;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 
@@ -809,6 +811,34 @@ namespace Namiko
             }
             
             return null;
+        }
+
+
+        public static async Task DownloadWaifuImageToServer(Waifu waifu, ISocketMessageChannel ch)
+        {
+            try
+            {
+                if (waifu.ImageUrl == null || waifu.ImageUrl == "")
+                    return;
+
+                using WebClient client = new WebClient();
+
+                string filetype = waifu.ImageUrl.Split('.').Last();
+                string imgurId = waifu.ImageUrl.Split('/').Last().Split('.').First();
+                string domain = "https://i.imgur.com/";
+                await client.DownloadFileTaskAsync(new Uri(domain + imgurId + "." + filetype), $"{Config.ImagePath}{waifu.ImageRaw}");
+                await client.DownloadFileTaskAsync(new Uri(domain + imgurId + "l." + filetype), $"{Config.ImagePath}{waifu.ImageLarge}");
+                await client.DownloadFileTaskAsync(new Uri(domain + imgurId + "m." + filetype), $"{Config.ImagePath}{waifu.ImageMedium}");
+            }
+            catch (Exception ex)
+            {
+                await ch.SendMessageAsync($"{Program.GetClient().GetUser(Config.OwnerId).Mention} Error while downloading waifu image variants to server.");
+                SentrySdk.ConfigureScope(scope =>
+                {
+                    scope.SetExtras(waifu.GetProperties());
+                });
+                SentrySdk.CaptureException(ex);
+            }
         }
     }
 }

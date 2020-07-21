@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace Namiko
 {
+    [Name("Reaction Images")]
     public class Images : InteractiveBase<ShardedCommandContext>
     {
         public static HashSet<string> ReactionImageCommands { get; set; }

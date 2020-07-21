@@ -11,6 +11,7 @@ namespace Namiko
         public static DiscordWebhookClient GuildJoinLogChannel { get; }
         public static DiscordWebhookClient ErrorLogChannel { get; }
         public static DiscordWebhookClient LavalinkChannel { get; }
+        public static DiscordWebhookClient SauceChannel { get; }
 
         static WebhookClients()
         {
@@ -18,6 +19,7 @@ namespace Namiko
             GuildJoinLogChannel = new DiscordWebhookClient(Config.GuildJoinWebhook);
             ErrorLogChannel = new DiscordWebhookClient(Config.ErrorLogWebhook);
             LavalinkChannel = new DiscordWebhookClient(Config.LavalinkWebhook);
+            SauceChannel = new DiscordWebhookClient(Config.SauceWebhook);
         }
     }
 }

@@ -1,7 +1,4 @@
 ﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Namiko
 {
@@ -28,6 +25,11 @@ namespace Namiko
         [JsonProperty("connectionString")]
         public static string ConnectionString { get; set; }
 
+        [JsonProperty("imagePath")]
+        public static string ImagePath { get; set; }
+
+        [JsonProperty("sauceNaoApi")]
+        public static string SauceNaoApi { get; set; }
 
 
         [JsonProperty("logWebhook")]
@@ -47,5 +49,8 @@ namespace Namiko
 
         [JsonProperty("lavalinkWebhook")]
         public static string LavalinkWebhook { get; set; }
+
+        [JsonProperty("sauceWebhook")]
+        public static string SauceWebhook { get; set; }
     }
 }

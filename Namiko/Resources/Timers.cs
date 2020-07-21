@@ -22,6 +22,7 @@ namespace Namiko
         private static Timer Minute;
         private static Timer MinuteVoters;
         private static Timer Minute5;
+        private static Timer Minute5Sauce;
         private static Timer MinuteReminders;
         private static Timer Hour;
         private static Timer HourAgain;
@@ -73,6 +74,12 @@ namespace Namiko
             HourAgain.Enabled = true;
             //HourAgain.Elapsed += Timer_BackupData;
             HourAgain.Elapsed += Timer_CleanData;
+
+            await Task.Delay(30000);
+            Minute5Sauce = new Timer(1000 * 60 * 5);
+            Minute5Sauce.AutoReset = true;
+            Minute5Sauce.Enabled = true;
+            Minute5Sauce.Elapsed += Timer_GetSauce;
         }
 
         private static async void Timer_PlayingStatus(object sender, ElapsedEventArgs e)
@@ -280,6 +287,91 @@ namespace Namiko
             }
         }
 
+        private static bool NullSource = true;
+        private static bool RetrySource = true;
+        private static async void Timer_GetSauce(object sender, ElapsedEventArgs e)
+        {
+            if (!NullSource && !RetrySource)
+                return;
+
+            try
+            {
+                using var db = new NamikoDbContext();
+
+                Waifu waifu = null;
+                if (NullSource)
+                {
+                    waifu = await db.Waifus.FirstOrDefaultAsync(x => x.ImageSource == null);
+                }
+                if (RetrySource && waifu == null)
+                {
+                    NullSource = false;
+                    waifu = await db.Waifus.FirstOrDefaultAsync(x => x.ImageSource.Equals("retry"));
+                }
+                if (waifu == null)
+                {
+                    RetrySource = false;
+                    await WebhookClients.SauceChannel.SendMessageAsync("`No missing sauces. Idling...`");
+                    return;
+                }
+
+                var res = await WebUtil.SauceNETSearchAsync(waifu.ImageUrl);
+                if (res.Message.Contains("limit exceeded", StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
+                foreach (var result in res.Results.OrderByDescending(x => Double.Parse(x.Similarity)))
+                {
+                    if ((result.DatabaseName == "Pixiv" ||
+                        result.DatabaseName == "Danbooru" ||
+                        result.DatabaseName == "Gelbooru" ||
+                        result.DatabaseName == "AniDb" ||
+                        result.DatabaseName == "Twitter") &&
+                        Double.Parse(result.Similarity) > 80)
+                    {
+                        waifu.ImageSource = result.SourceURL;
+                        await WebhookClients.SauceChannel.SendMessageAsync($"<:TickYes:577838859107303424> **{waifu.Name}** - {result.DatabaseName} {result.Similarity}% ({result.SourceURL})");
+                        break;
+                    }
+                    else if ((result.DatabaseName == "Pixiv" ||
+                        result.DatabaseName == "Danbooru" ||
+                        result.DatabaseName == "Gelbooru" ||
+                        result.DatabaseName == "AniDb" ||
+                        result.DatabaseName == "Twitter") &&
+                        Double.Parse(result.Similarity) > 60)
+                    {
+                        waifu.ImageSource = result.SourceURL;
+                        await WebhookClients.SauceChannel.SendMessageAsync($":question: **{waifu.Name}** - {result.DatabaseName} {result.Similarity}% ({result.SourceURL})\n" +
+                            $"Verify: *{waifu.Source}* ({waifu.ImageUrl})");
+                        break;
+                    }
+                    else if (result.DatabaseName == "AniDb" && Double.Parse(result.Similarity) > 40)
+                    {
+                        waifu.ImageSource = result.SourceURL;
+                        await WebhookClients.SauceChannel.SendMessageAsync($":question: **{waifu.Name}** - {result.DatabaseName} {result.Similarity}% ({result.SourceURL})\n" +
+                            $"Verify: *{waifu.Source}* ({waifu.ImageUrl})");
+                        break;
+                    }
+                }
+
+                if (waifu.ImageSource == null || waifu.ImageSource == "")
+                {
+                    waifu.ImageSource = "retry";
+                }
+                else if (waifu.ImageSource == "retry")
+                {
+                    waifu.ImageSource = "missing";
+                    await WebhookClients.SauceChannel.SendMessageAsync($"<:TickNo:577838859077943306> **{waifu.Name}** - missing sauce.");
+                }
+
+                db.Waifus.Update(waifu);
+                await db.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                SentrySdk.CaptureException(ex);
+            }
+        }
 
         public static Stream GenerateStreamFromString(string s)
         {
