@@ -13,7 +13,7 @@
 
 .guide-module-title {
     margin-top: 0px;
-    background-color: rgba(150, 13, 46, 0.80);
+    background-color: rgba(150, 13, 46, 0.9);
 }
 
 .guide-module-button {
@@ -22,8 +22,16 @@
 
 .guide-module-header {
     margin-top: 2rem;
-    background-color: rgba(88, 30, 101, 0.80);
+    background-color: rgba(150, 13, 46, 0.9);
 }
+
+    .guide-module-header:nth-child(3n+2) {
+        background-color: rgba(23, 66, 100, 0.9);
+    }
+
+    .guide-module-header:nth-child(3n+3) {
+        background-color: rgba(81, 42, 92, 0.9);
+    }
 
 .guide-module {
     padding: 8px 16px;

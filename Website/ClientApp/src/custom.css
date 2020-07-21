@@ -194,14 +194,25 @@ body {
 
 .btn-blank {
     background-color: rgba(0, 0, 0, 0.4);
-    color: #fff;
+    color: #eee;
     border: 1px solid rgba(0, 0, 0, 0.4);
 }
 
     .btn-blank:hover {
-        background-color: rgba(255, 255, 255, 0.9);
-        color: #000000;
+        background-color: rgba(23, 66, 100, 0.7);
+        border-color: rgb(26, 105, 167);
+        color: #fff;
     }
+        .btn-blank:hover:nth-child(3n+1) {
+            background-color: rgba(131, 35, 58, 0.7);
+            border-color: rgb(168, 34, 66);
+            color: #fff;
+        }
+        .btn-blank:hover:nth-child(3n+2) {
+            background-color: rgba(81, 42, 92, 0.7);
+            border-color: rgb(119, 50, 138);
+            color: #fff;
+        }
 
 .img {
     height: 36px;

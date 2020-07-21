@@ -28,20 +28,7 @@ export class Home extends Component {
                 </div>
 
                 <Container>
-                        <div className="container mt-2">
-                            <div className="row">
-                                <div className="text-center horizontal-center">
-                                    <a href="#waifus" className="btn btn-blank mr-1 mt-1">Waifus</a>
-                                    <a href="#banroulette" className="btn btn-blank mr-1 mt-1">Banroulette</a>
-                                    <a href="#user-profile" className="btn btn-blank mr-1 mt-1">User Profile</a>
-                                    <a href="#music" className="btn btn-blank mr-1 mt-1">Music</a>
-                                    <a href="#currency-and-gambling" className="btn btn-blank mr-1 mt-1">Currency & Gambling</a>
-                                    <a href="#reaction-images" className="btn btn-blank mr-1 mt-1">Reaction Images</a>
-                                    <a href="#web-commands" className="btn btn-blank mr-1 mt-1">Web Commands</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="container mt-5">
+                        <div className="container mt-4">
                             <div className="row module-row">
                                 <div className="col-md-5 col-sm-12">
                                     <div className="color1 round module-left">
