@@ -94,10 +94,40 @@ namespace Namiko
         {
             var eb = new EmbedBuilder();
 
-            string desc = "**Results:**";
+            string desc = "**Results:**\n";
             foreach(var x in sauce.Results)
             {
-                desc += $"\n{x.Similarity}% - [{x.DatabaseName}]({x.SourceURL})";
+                desc += $"• {x.Similarity}% - [{x.DatabaseName}]({x.SourceURL ?? x.InnerSource})";
+
+                if (x.InnerSource != null && x.SourceURL != null) 
+                {
+                    if (IsValidUrl(x.InnerSource))
+                    {
+                        desc += $" -> [{GetDomainFromUrl(x.InnerSource)}]({x.InnerSource})\n";
+                    }
+                    else
+                    {
+                        desc += $" -> {x.InnerSource}\n";
+                    }
+                }
+
+                if (!desc.EndsWith("\n"))
+                    desc += "\n";
+
+                x.ExtUrls.Remove(x.InnerSource);
+                x.ExtUrls.Remove(x.SourceURL);
+                if (x.ExtUrls.Count > 0)
+                {
+                    desc += $"Extra: ";
+                    foreach (var url in x.ExtUrls)
+                    {
+                        if (IsValidUrl(url))
+                        {
+                            desc += $"[{GetDomainFromUrl(url)}]({url}) ";
+                        }
+                    }
+                    desc += "\n";
+                }
             }
 
             eb.WithDescription(desc);
@@ -108,6 +138,16 @@ namespace Namiko
         }
 
         // GLOBAL
+
+        public static string GetDomainFromUrl(string url)
+        {
+            Uri myUri = new Uri(url);
+            string host = myUri.Host;
+            host = host.Replace("www.", "");
+            host = host.Replace(".com", "");
+            host = host.Replace(".net", "");
+            return host;
+        }
 
         public static bool IsImageUrl(string url)
         {
