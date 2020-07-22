@@ -86,12 +86,12 @@ namespace Namiko
 
         // SAUCENAO
 
-        public static async Task<SauceNET.Model.Sauce> SauceNETSearchAsync(string url)
+        public static async Task<Sauce> SauceNETSearchAsync(string url)
         {
             SauceNETClient client = new SauceNETClient(Config.SauceNaoApi);
             return await client.GetSauceAsync(url);
         }
-        public static EmbedBuilder SauceEmbed(SauceNET.Model.Sauce sauce, string requestUrl)
+        public static EmbedBuilder SauceEmbed(Sauce sauce, string requestUrl)
         {
             var eb = new EmbedBuilder();
 
@@ -113,7 +113,9 @@ namespace Namiko
                 }
 
                 if (!desc.EndsWith("\n"))
+                {
                     desc += "\n";
+                }
 
                 x.ExtUrls.Remove(x.InnerSource);
                 x.ExtUrls.Remove(x.SourceURL);
