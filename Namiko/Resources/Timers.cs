@@ -76,7 +76,7 @@ namespace Namiko
             HourAgain.Elapsed += Timer_CleanData;
 
             await Task.Delay(30000);
-            Minute5Sauce = new Timer(1000 * 60 * 5);
+            Minute5Sauce = new Timer(1000 * 60 * 1);
             Minute5Sauce.AutoReset = true;
             Minute5Sauce.Enabled = true;
             Minute5Sauce.Elapsed += Timer_GetSauce;
@@ -302,11 +302,13 @@ namespace Namiko
                 if (NullSource)
                 {
                     waifu = await db.Waifus.FirstOrDefaultAsync(x => x.ImageSource == null);
+                    Console.WriteLine(DateTime.Now +  " New sauce - " + waifu?.Name);
                 }
                 if (RetrySource && waifu == null)
                 {
                     NullSource = false;
                     waifu = await db.Waifus.FirstOrDefaultAsync(x => x.ImageSource.Equals("retry"));
+                    Console.WriteLine(DateTime.Now + " Retrying - " + waifu?.Name);
                 }
                 if (waifu == null)
                 {
@@ -318,16 +320,12 @@ namespace Namiko
                 var res = await WebUtil.SauceNETSearchAsync(waifu.ImageUrl);
                 if (res.Message.Contains("limit exceeded", StringComparison.OrdinalIgnoreCase))
                 {
+                    Console.WriteLine("Sauce limit exceeded");
                     return;
                 }
                 foreach (var result in res.Results.OrderByDescending(x => Double.Parse(x.Similarity)))
                 {
-                    if ((result.DatabaseName == "Pixiv" ||
-                        result.DatabaseName == "Danbooru" ||
-                        result.DatabaseName == "Gelbooru" ||
-                        result.DatabaseName == "AniDb" ||
-                        result.DatabaseName == "Twitter") &&
-                        Double.Parse(result.Similarity) > 80)
+                    if (Double.Parse(result.Similarity) > 80)
                     {
                         waifu.ImageSource = result.SourceURL;
                         await WebhookClients.SauceChannel.SendMessageAsync($"<:TickYes:577838859107303424> **{waifu.Name}** - {result.DatabaseName} {result.Similarity}% ({result.SourceURL})");
