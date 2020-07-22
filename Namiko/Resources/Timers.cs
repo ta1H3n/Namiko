@@ -3,7 +3,6 @@ using Discord.Webhook;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Model;
-using Namiko.Data;
 using Reddit.Controllers;
 using Sentry;
 using System;
@@ -11,7 +10,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using System.Timers;
 
@@ -340,14 +338,16 @@ namespace Namiko
                     {
                         waifu.ImageSource = result.SourceURL;
                         await WebhookClients.SauceChannel.SendMessageAsync($":question: **{waifu.Name}** - {result.DatabaseName} {result.Similarity}% ({result.SourceURL})\n" +
-                            $"Verify: *{waifu.Source}* ({waifu.ImageUrl})");
+                            $"Verify: *{waifu.Source}* ({waifu.ImageUrl})",
+                            embeds: new List<Embed> { WebUtil.SauceEmbed(res, waifu.ImageUrl).Build() });
                         break;
                     }
                     else if (result.DatabaseName == "AniDb" && Double.Parse(result.Similarity) > 40)
                     {
                         waifu.ImageSource = result.SourceURL;
                         await WebhookClients.SauceChannel.SendMessageAsync($":question: **{waifu.Name}** - {result.DatabaseName} {result.Similarity}% ({result.SourceURL})\n" +
-                            $"Verify: *{waifu.Source}* ({waifu.ImageUrl})");
+                            $"Verify: *{waifu.Source}* ({waifu.ImageUrl})",
+                            embeds: new List<Embed> { WebUtil.SauceEmbed(res, waifu.ImageUrl).Build() });
                         break;
                     }
                 }
