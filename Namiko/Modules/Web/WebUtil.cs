@@ -117,19 +117,22 @@ namespace Namiko
                     desc += "\n";
                 }
 
-                x.ExtUrls.Remove(x.InnerSource);
-                x.ExtUrls.Remove(x.SourceURL);
-                if (x.ExtUrls.Count > 0)
+                if (x.ExtUrls != null)
                 {
-                    desc += $"Extra: ";
-                    foreach (var url in x.ExtUrls)
+                    x.ExtUrls.Remove(x.InnerSource);
+                    x.ExtUrls.Remove(x.SourceURL);
+                    if (x.ExtUrls.Count > 0)
                     {
-                        if (IsValidUrl(url))
+                        desc += $"Extra: ";
+                        foreach (var url in x.ExtUrls)
                         {
-                            desc += $"[{GetDomainFromUrl(url)}]({url}) ";
+                            if (IsValidUrl(url))
+                            {
+                                desc += $"[{GetDomainFromUrl(url)}]({url}) ";
+                            }
                         }
+                        desc += "\n";
                     }
-                    desc += "\n";
                 }
             }
 
