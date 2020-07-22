@@ -544,6 +544,7 @@ namespace Namiko
                 await Context.Channel.SendMessageAsync($"Failed to add {name}");
 
             await WaifuUtil.DownloadWaifuImageToServer(waifu, Context.Channel);
+            await WaifuUtil.FindAndUpdateWaifuImageSource(waifu, Context.Channel);
         }
 
         [Command("DeleteWaifu"), Alias("dw"), Summary("Removes a waifu from the database.\n**Usage**: `!dw [name]`"), OwnerPrecondition]
@@ -672,6 +673,7 @@ namespace Namiko
                 await Context.Channel.SendMessageAsync($":x: Failed to update {name}");
 
             await WaifuUtil.DownloadWaifuImageToServer(waifu, Context.Channel);
+            await WaifuUtil.FindAndUpdateWaifuImageSource(waifu, Context.Channel);
         }
 
         [Command("WaifuImageSource"), Alias("wis"), Summary("Set waifu image source.\n**Usage**: `!wi [name] [image_url]`"), Insider]
@@ -851,6 +853,7 @@ namespace Namiko
             }
 
             await WaifuUtil.DownloadWaifuImageToServer(waifu, Context.Channel);
+            await WaifuUtil.FindAndUpdateWaifuImageSource(waifu, Context.Channel);
         }
 
         [Command("WaifuMal"), Alias("wm"), Summary("Sets waifus MAL Id.\n**Usage**: `!wm [name] [MAL_ID]`"), Insider]

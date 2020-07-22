@@ -8,6 +8,7 @@ using Model;
 using Namiko.Data;
 using Reddit.Controllers;
 using SauceNET;
+using SauceNET.Model;
 using Sentry;
 using System;
 using System.Collections.Generic;
@@ -36,13 +37,13 @@ namespace Namiko
             IIqdbClient api = new IqdbClient();
             return await api.SearchFile(file);
         }
-        
+
         public static EmbedBuilder IqdbSourceResultEmbed(SearchResult result, string searchedUrl)
         {
             var eb = new EmbedBuilder();
             string desc = "";
 
-            if(result.Matches[0].MatchType == IqdbApi.Enums.MatchType.Best)
+            if (result.Matches[0].MatchType == IqdbApi.Enums.MatchType.Best)
             {
                 desc += $"**Best Match:**\n{IqdbListingLine(result.Matches[0])}";
             }
@@ -52,7 +53,7 @@ namespace Namiko
                 desc += $"**Additional Matches:**\n";
                 foreach (var x in result.Matches.Where(x => x.MatchType == IqdbApi.Enums.MatchType.Additional))
                 {
-                    if(!x.Tags.Any(y => y.Contains("loli") || y.Contains("shota")) || x.Rating == IqdbApi.Enums.Rating.Safe)
+                    if (!x.Tags.Any(y => y.Contains("loli") || y.Contains("shota")) || x.Rating == IqdbApi.Enums.Rating.Safe)
                         desc += IqdbListingLine(x);
                 }
             }
@@ -70,7 +71,7 @@ namespace Namiko
             eb.WithDescription(desc);
             eb.WithThumbnailUrl(searchedUrl);
             eb.WithAuthor("IQDB", "https://i.imgur.com/lX13yov.png", "https://iqdb.org/");
-            eb.WithFooter($"Images searched: {result.SearchedImagesCount} | Took {result.SearchedInSeconds*1000}ms");
+            eb.WithFooter($"Images searched: {result.SearchedImagesCount} | Took {result.SearchedInSeconds * 1000}ms");
             eb.WithColor(BasicUtil.RandomColor());
             return eb;
         }
@@ -95,11 +96,11 @@ namespace Namiko
             var eb = new EmbedBuilder();
 
             string desc = "**Results:**\n";
-            foreach(var x in sauce.Results)
+            foreach (var x in sauce.Results)
             {
                 desc += $"• {x.Similarity}% - [{x.DatabaseName}]({x.SourceURL ?? x.InnerSource})";
 
-                if (x.InnerSource != null && x.SourceURL != null) 
+                if (x.InnerSource != null && x.SourceURL != null)
                 {
                     if (IsValidUrl(x.InnerSource))
                     {
