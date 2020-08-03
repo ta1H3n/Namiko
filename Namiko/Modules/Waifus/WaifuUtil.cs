@@ -511,7 +511,7 @@ namespace Namiko
         }
 
         //Random embeds
-        public static EmbedBuilder WaifuEmbedBuilder(Waifu waifu, bool guildDetails = false, SocketCommandContext context = null)
+        public static EmbedBuilder WaifuEmbedBuilder(Waifu waifu, SocketCommandContext context = null)
         {
             EmbedBuilder eb = new EmbedBuilder();
             eb.WithAuthor(waifu.Name, null, BasicUtil._patreon);
@@ -539,11 +539,10 @@ namespace Namiko
             if (waifu.ImageUrl != null)
                 eb.WithImageUrl(waifu.ImageUrl);
 
-            if (guildDetails)
+            string footer = $"Tier: {waifu.Tier}";
+            if (context != null)
             {
-                string footer = $"Tier: {waifu.Tier}";
                 footer += WaifuOwnerString(waifu, context);
-                eb.WithFooter(footer);
 
                 var wishes = WaifuWishlistDb.GetWishlist(context.Guild.Id, waifu.Name);
                 if (wishes.Any())
@@ -555,6 +554,7 @@ namespace Namiko
                     catch { }
                 }
             }
+            eb.WithFooter(footer);
 
 
             eb.Color = BasicUtil.RandomColor();
@@ -839,11 +839,11 @@ namespace Namiko
             catch (Exception ex)
             {
                 await ch.SendMessageAsync($"{Program.GetClient().GetUser(Config.OwnerId).Mention} Error while downloading waifu image variants to server.");
-                SentrySdk.ConfigureScope(scope =>
+                SentrySdk.WithScope(scope =>
                 {
                     scope.SetExtras(waifu.GetProperties());
+                    SentrySdk.CaptureException(ex);
                 });
-                SentrySdk.CaptureException(ex);
             }
         }
         public static async Task FindAndUpdateWaifuImageSource(Waifu waifu, ISocketMessageChannel ch)
@@ -914,11 +914,11 @@ namespace Namiko
                     $"`!getwaifu {waifu.Name}` - check waifu details.\n" +
                     $"`!wis {waifu.Name} [correct_source]` - change waifu image source.\n" +
                     $"If you can't find the correct source, set waifu image source to `missing`.");
-                SentrySdk.ConfigureScope(scope =>
+                SentrySdk.WithScope(scope =>
                 {
                     scope.SetExtras(waifu.GetProperties());
+                    SentrySdk.CaptureException(ex);
                 });
-                SentrySdk.CaptureException(ex);
             }
         }
     }

@@ -238,7 +238,7 @@ namespace Namiko
                 return;
             }
 
-            var eb = WaifuUtil.WaifuEmbedBuilder(waifu, true, Context);
+            var eb = WaifuUtil.WaifuEmbedBuilder(waifu, Context);
 
             await Context.Channel.SendMessageAsync("", false, eb.Build());
 
@@ -672,8 +672,9 @@ namespace Namiko
             else
                 await Context.Channel.SendMessageAsync($":x: Failed to update {name}");
 
-            await WaifuUtil.DownloadWaifuImageToServer(waifu, Context.Channel);
+            await Context.Channel.TriggerTypingAsync();
             await WaifuUtil.FindAndUpdateWaifuImageSource(waifu, Context.Channel);
+            await WaifuUtil.DownloadWaifuImageToServer(waifu, Context.Channel);
         }
 
         [Command("WaifuImageSource"), Alias("wis"), Summary("Set waifu image source.\n**Usage**: `!wi [name] [image_url]`"), Insider]
@@ -688,9 +689,17 @@ namespace Namiko
             waifu.ImageSource = url;
 
             if (await WaifuDb.UpdateWaifu(waifu) > 0)
+            {
                 await Context.Channel.SendMessageAsync($":white_check_mark: {waifu.Name} updated.");
+            }
             else
+            {
                 await Context.Channel.SendMessageAsync($":x: Failed to update {name}");
+                return;
+            }
+
+            // Request for another sauce
+            Timers.Timer_RequestSauce(waifu, null);
         }
 
         [Command("GetWaifu"), Alias("wis"), Summary("Set waifu image source.\n**Usage**: `!wi [name] [image_url]`"), Insider]
@@ -769,7 +778,7 @@ namespace Namiko
             waifu.Source = mal.Animeography.FirstOrDefault() == null ? "" : mal.Animeography.FirstOrDefault().Name;
 
             await WaifuDb.UpdateWaifu(waifu);
-            await Context.Channel.SendMessageAsync($"Autocompleted **{waifu.Name}**. Has **{mal.MemberFavorites}** favorites.", false, WaifuUtil.WaifuEmbedBuilder(waifu, true, Context).Build());
+            await Context.Channel.SendMessageAsync($"Autocompleted **{waifu.Name}**. Has **{mal.MemberFavorites}** favorites.", false, WaifuUtil.WaifuEmbedBuilder(waifu, Context).Build());
         }
 
         [Command("NewWaifuAutocomplete"), Alias("nwac"), Summary("Creates a new waifu and auto completes using MAL.\n**Usage**: `!acw [name] [MAL_ID] [image_url_optional]`"), Insider]
@@ -836,7 +845,7 @@ namespace Namiko
                 await Context.Channel.SendMessageAsync
                 (
                     $"Autocompleted **{waifu.Name}**. Has **{mal.MemberFavorites}** favorites.",
-                    embed: WaifuUtil.WaifuEmbedBuilder(waifu, true, Context).Build()
+                    embed: WaifuUtil.WaifuEmbedBuilder(waifu, Context).Build()
                 );
 
                 await WaifuDb.AddMalWaifu(new MalWaifu

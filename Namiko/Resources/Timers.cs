@@ -20,7 +20,8 @@ namespace Namiko
         private static Timer Minute;
         private static Timer MinuteVoters;
         private static Timer Minute5;
-        private static Timer Minute5Sauce;
+        private static Timer Sauce;
+        private static Timer SauceRequest;
         private static Timer MinuteReminders;
         private static Timer Hour;
         private static Timer HourAgain;
@@ -74,10 +75,16 @@ namespace Namiko
             HourAgain.Elapsed += Timer_CleanData;
 
             await Task.Delay(30000);
-            Minute5Sauce = new Timer(1000 * 60 * 1);
-            Minute5Sauce.AutoReset = true;
-            Minute5Sauce.Enabled = true;
-            Minute5Sauce.Elapsed += Timer_GetSauce;
+            Sauce = new Timer(1000 * 60 * 1);
+            Sauce.AutoReset = true;
+            Sauce.Enabled = true;
+            Sauce.Elapsed += Timer_GetSauce;
+
+            await Task.Delay(20000);
+            SauceRequest = new Timer(1000 * 60 * 10);
+            SauceRequest.AutoReset = true;
+            SauceRequest.Enabled = true;
+            SauceRequest.Elapsed += Timer_RequestSauce;
         }
 
         private static async void Timer_PlayingStatus(object sender, ElapsedEventArgs e)
@@ -285,6 +292,8 @@ namespace Namiko
             }
         }
 
+
+        // IMAGE SAUCING
         private static bool NullSource = true;
         private static bool RetrySource = true;
         private static async void Timer_GetSauce(object sender, ElapsedEventArgs e)
@@ -292,11 +301,12 @@ namespace Namiko
             if (!NullSource && !RetrySource)
                 return;
 
+            Waifu waifu = null;
+
             try
             {
                 using var db = new NamikoDbContext();
 
-                Waifu waifu = null;
                 if (NullSource)
                 {
                     waifu = await db.Waifus.FirstOrDefaultAsync(x => x.ImageSource == null);
@@ -367,7 +377,79 @@ namespace Namiko
             }
             catch (Exception ex)
             {
-                SentrySdk.CaptureException(ex);
+                SentrySdk.WithScope(scope =>
+                {
+                    if (waifu != null)
+                        scope.SetExtras(waifu.GetProperties());
+                    SentrySdk.CaptureException(ex);
+                });
+            }
+        }
+        public static async void Timer_RequestSauce(object sender, ElapsedEventArgs e)
+        {
+            Waifu waifu = null;
+            List<Embed> embeds = new List<Embed>();
+
+            if (sender != null && sender is Waifu)
+            {
+                waifu = sender as Waifu;
+            }
+
+            try
+            {
+                using var db = new NamikoDbContext();
+                if (waifu != null)
+                {
+                    waifu = await db.Waifus.FirstOrDefaultAsync(x => x.Source.Equals(waifu.Source) && x.ImageSource.Equals("missing"));
+                }
+                if (waifu == null)
+                {
+                    waifu = await db.Waifus.FirstOrDefaultAsync(x => x.ImageSource.Equals("missing"));
+                    if (waifu == null)
+                    {
+                        await WebhookClients.SauceRequestChannel.SendMessageAsync("`No missing sauces. Idling...`");
+                        return;
+                    }
+                }
+                embeds.Add(WaifuUtil.WaifuEmbedBuilder(waifu).Build());
+
+                var res = await WebUtil.SauceNETSearchAsync(waifu.ImageUrl);
+                if (res.Message.Contains("limit exceeded", StringComparison.OrdinalIgnoreCase))
+                {
+                    Console.WriteLine("Sauce limit exceeded");
+                }
+                else
+                {
+                    embeds.Add(WebUtil.SauceEmbed(res, waifu.ImageUrl).Build());
+                }
+
+                var family = await db.Waifus.Where(x => x.Source.Equals(waifu.Source) &&
+                    !(x.ImageSource == null || x.ImageSource.Equals("retry") || x.ImageSource.Equals("missing"))).ToListAsync();
+                family = family.DistinctBy(x => x.ImageSource).ToList();
+
+                string familySauces = "";
+                foreach(var w in family)
+                {
+                    familySauces += $"**{w.Name}** - {w.ImageSource}\n";
+                }
+                if (familySauces != "")
+                {
+                    var eb = new EmbedBuilderPrepared();
+                    eb.WithTitle("Possible sauces");
+                    eb.WithDescription($"Image sauces of waifus from **{waifu.Source}**:\n\n + {familySauces}");
+                    embeds.Add(eb.Build());
+                }
+
+                await WebhookClients.SauceRequestChannel.SendMessageAsync("Missing waifu image sauce", embeds: embeds);
+            }
+            catch (Exception ex)
+            {
+                SentrySdk.WithScope(scope =>
+                {
+                    if (waifu != null)
+                        scope.SetExtras(waifu.GetProperties());
+                    SentrySdk.CaptureException(ex);
+                });
             }
         }
 
