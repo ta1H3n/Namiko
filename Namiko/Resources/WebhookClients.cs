@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Discord.Webhook;
+﻿using Discord.Webhook;
 
 namespace Namiko
 {

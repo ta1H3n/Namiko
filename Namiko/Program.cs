@@ -264,6 +264,11 @@ namespace Namiko
                     scope.SetExtra("Message", cmdException.Context.Message.Content);
                 });
                 SentrySdk.CaptureException(cmdException.InnerException);
+
+                if (cmdException.Command.Module.Name.Equals(nameof(WaifuEditing)))
+                {
+                    await cmdException.Context.Channel.SendMessageAsync(cmdException.InnerException.Message);
+                }
             }
         }
 
