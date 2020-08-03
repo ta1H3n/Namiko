@@ -677,7 +677,7 @@ namespace Namiko
             await WaifuUtil.DownloadWaifuImageToServer(waifu, Context.Channel);
         }
 
-        [Command("WaifuImageSource"), Alias("wis"), Summary("Set waifu image source.\n**Usage**: `!wi [name] [image_url]`"), Insider]
+        [Command("WaifuImageSource"), Alias("wis"), Summary("Set waifu image source.\n**Usage**: `!wis [name] [image_sauce]`"), Insider]
         public async Task WaifuImageSource(string name, string url = null)
         {
             var waifu = await WaifuUtil.ProcessWaifuListAndRespond(await WaifuDb.SearchWaifus(name, true), this);
@@ -699,7 +699,21 @@ namespace Namiko
             }
 
             // Request for another sauce
-            Timers.Timer_RequestSauce(waifu, null);
+            Timers.Timer_RequestSauce(new SauceRequest
+            {
+                Channel = Context.Channel,
+                Waifu = waifu
+            }, null);
+        }
+
+        [Command("ImageSourceRequest"), Alias("isr"), Summary("Get an image source request.\n**Usage**: `!isr`"), Insider]
+        public async Task ImageSourceRequest([Remainder] string url = null)
+        {
+            // Request for another sauce
+            Timers.Timer_RequestSauce(new SauceRequest
+            {
+                Channel = Context.Channel
+            }, null);
         }
 
         [Command("GetWaifu"), Alias("wis"), Summary("Set waifu image source.\n**Usage**: `!wi [name] [image_url]`"), Insider]

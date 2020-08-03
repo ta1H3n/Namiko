@@ -389,10 +389,12 @@ namespace Namiko
         {
             Waifu waifu = null;
             List<Embed> embeds = new List<Embed>();
+            SauceRequest req = null;
 
-            if (sender != null && sender is Waifu)
+            if (sender != null && sender is SauceRequest)
             {
-                waifu = sender as Waifu;
+                req = sender as SauceRequest;
+                waifu = req.Waifu;
             }
 
             try
@@ -430,7 +432,11 @@ namespace Namiko
                 string familySauces = "";
                 foreach(var w in family)
                 {
-                    familySauces += $"**{w.Name}** - {w.ImageSource}\n";
+                    string add = $"**{w.Name}** - {w.ImageSource}\n";
+                    if ((familySauces + add).Length < 1900)
+                    {
+                        familySauces += add;
+                    }
                 }
                 if (familySauces != "")
                 {
@@ -440,7 +446,17 @@ namespace Namiko
                     embeds.Add(eb.Build());
                 }
 
-                await WebhookClients.SauceRequestChannel.SendMessageAsync("Missing waifu image sauce", embeds: embeds);
+                if (req == null || req.Channel == null)
+                {
+                    await WebhookClients.SauceRequestChannel.SendMessageAsync("Missing waifu image sauce", embeds: embeds);
+                }
+                else
+                {
+                    foreach(var embed in embeds)
+                    {
+                        await req.Channel.SendMessageAsync(embed: embed);
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -450,6 +466,14 @@ namespace Namiko
                         scope.SetExtras(waifu.GetProperties());
                     SentrySdk.CaptureException(ex);
                 });
+                if (req == null || req.Channel == null)
+                {
+                    await WebhookClients.SauceRequestChannel.SendMessageAsync($"Broke on **{waifu.Name}** - please find source manually.");
+                }
+                else
+                {
+                    await req.Channel.SendMessageAsync($"Broke on **{waifu.Name}** - please find source manually.");
+                }
             }
         }
 
@@ -722,5 +746,11 @@ namespace Namiko
         public string Subreddit { get; set; }
         public SocketTextChannel Channel { get; set; }
         public int Upvotes { get; set; }
+    }
+
+    public class SauceRequest
+    {
+        public Waifu Waifu { get; set; }
+        public ISocketMessageChannel Channel { get; set; }
     }
 }
