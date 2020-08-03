@@ -402,11 +402,11 @@ namespace Namiko
                 using var db = new NamikoDbContext();
                 if (waifu != null)
                 {
-                    waifu = await db.Waifus.OrderBy(x => Guid.NewGuid()).FirstOrDefaultAsync(x => x.Source.Equals(waifu.Source) && x.ImageSource.Equals("missing"));
+                    waifu = await db.Waifus.FirstOrDefaultAsync(x => x.Source.Equals(waifu.Source) && x.ImageSource.Equals("missing"));
                 }
                 if (waifu == null)
                 {
-                    waifu = await db.Waifus.FirstOrDefaultAsync(x => x.ImageSource.Equals("missing"));
+                    waifu = await db.Waifus.OrderBy(x => Guid.NewGuid()).FirstOrDefaultAsync(x => x.ImageSource.Equals("missing"));
                     if (waifu == null)
                     {
                         await WebhookClients.SauceRequestChannel.SendMessageAsync("`No missing sauces. Idling...`");
