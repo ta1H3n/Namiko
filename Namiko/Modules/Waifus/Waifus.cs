@@ -2,6 +2,7 @@
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
+using Microsoft.EntityFrameworkCore;
 using Model;
 using System;
 using System.Collections.Generic;
@@ -699,6 +700,7 @@ namespace Namiko
             }
 
             // Request for another sauce
+            await Context.Channel.TriggerTypingAsync();
             Timers.Timer_RequestSauce(new SauceRequest
             {
                 Channel = Context.Channel,
@@ -710,10 +712,20 @@ namespace Namiko
         public async Task ImageSourceRequest([Remainder] string url = null)
         {
             // Request for another sauce
+            await Context.Channel.TriggerTypingAsync();
             Timers.Timer_RequestSauce(new SauceRequest
             {
                 Channel = Context.Channel
             }, null);
+        }
+
+        [Command("MissingSauceList"), Alias("msl"), Summary("List of missing waifu sauce.\n**Usage**: `!isr`"), Insider]
+        public async Task MissingSauceList([Remainder] string url = null)
+        {
+            using var db = new NamikoDbContext();
+            var waifus = await db.Waifus.Where(x => x.ImageSource.Equals("missing")).OrderBy(x => x.Name).Select(x => x.Name).ToListAsync();
+
+            await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared(String.Join("\n", waifus).Substring(2000)).Build());
         }
 
         [Command("GetWaifu"), Alias("wis"), Summary("Set waifu image source.\n**Usage**: `!wi [name] [image_url]`"), Insider]
