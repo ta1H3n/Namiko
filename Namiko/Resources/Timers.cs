@@ -436,7 +436,7 @@ namespace Namiko
                 {
                     var eb = new EmbedBuilderPrepared();
                     eb.WithTitle("Possible sauces");
-                    eb.WithDescription($"Image sauces of waifus from **{waifu.Source}**:\n\n + {familySauces}");
+                    eb.WithDescription($"Image sauces of waifus from **{waifu.Source}**:\n{familySauces}");
                     embeds.Add(eb.Build());
                 }
 
