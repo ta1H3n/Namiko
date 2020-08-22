@@ -12,7 +12,7 @@ export class Card extends Component {
         return (
             <div>
                 <div className={"card card-t" + ParseTier(this.props.waifu.tier)}>
-                    <img className="card-img-top" src={this.props.waifu.imageMedium} alt={this.props.waifu.name} />
+                    <img className="card-img-top" src={this.props.waifu.imageLarge} alt={this.props.waifu.name} />
                     <div className="card-body">
                         <h5 className="card-title text-center">{this.props.waifu.longName.split('(')[0]}</h5>
                         <h6 className="card-subtitle text-center mb-1">{this.props.waifu.source}</h6>
