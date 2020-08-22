@@ -1,0 +1,200 @@
+﻿
+/*GUIDE STYLE*/
+
+.container-guide {
+    color: #ddd;
+    margin: 0 auto;
+    max-width: 1280px;
+    padding: 30px;
+    padding-top: 20px;
+    margin-bottom: 40px;
+    background-color: rgba(0, 0, 0, 0.20);
+}
+
+.guide-module-title {
+    margin-top: 0px;
+    background-color: rgba(150, 13, 46, 0.9);
+}
+
+.guide-module-button {
+    padding: 0px 16px;
+}
+
+.guide-module-header {
+    margin-top: 2rem;
+    background-color: rgba(150, 13, 46, 0.9);
+}
+
+    .guide-module-header:nth-child(3n+2) {
+        background-color: rgba(23, 66, 100, 0.9);
+    }
+
+    .guide-module-header:nth-child(3n+3) {
+        background-color: rgba(81, 42, 92, 0.9);
+    }
+
+.guide-module {
+    padding: 8px 16px;
+    margin: 0px 0px 16px 0px;
+}
+
+    .guide-module:nth-child(even) {
+        background-color: rgba(0, 0, 0, 0.4);
+    }
+
+    .guide-module:nth-child(odd) {
+        background-color: rgba(0, 0, 0, 0.3);
+    }
+
+/*COMMANDS PAGE STYLE*/
+
+.container-commands-list {
+    margin: 0 auto;
+    max-width: 1920px;
+    padding: 60px;
+    padding-top: 0px;
+}
+
+.commands-title, .guide-module-header, .guide-module-title {
+    color: #fff;
+    display: grid;
+    grid-template-columns: 100%;
+    padding: 0.2rem 0;
+    text-align: center;
+    text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.5);
+    text-transform: uppercase;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.commands-title {
+    margin-top: 2rem;
+    background-color: rgba(150, 13, 46, 0.80);
+}
+
+.commands-header, .command {
+    display: grid;
+    grid-template-columns: 25% 40% 35%;
+}
+
+.commands-header {
+    background-color: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 1rem 0;
+}
+
+    .commands-header p {
+        padding-left: 20px;
+        margin: 0;
+    }
+
+.command {
+    color: #ddd;
+}
+
+    .command div {
+        color: #fff;
+        padding: 20px;
+        background-color: rgba(0, 0, 0, 0.4);
+    }
+
+        .command div:nth-child(odd) {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+    .command span:not(.condition) {
+        display: block;
+    }
+
+    .command:nth-child(odd) {
+        background: rgba(0, 0, 0, 0.2);
+    }
+
+.command-name {
+    color: #fff !important;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+.command-aliases {
+    color: #ccc !important;
+    font-weight: unset;
+}
+
+.command-description, .command-example {
+    color: #ccc !important;
+}
+
+.command-requires {
+    color: #fff !important;
+    text-transform: uppercase;
+    font-weight: 500;
+    font-size: 0.8rem;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.condition {
+    background-color: rgba(88, 30, 101, 0.80);
+    color: #eee;
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.5);
+    padding: 5px 7px;
+    margin-right: 0.5rem;
+}
+
+@media (max-width: 767px) {
+    .container-guide {
+        padding: 20px;
+    }
+
+    .container-commands-list {
+        padding: 20px;
+    }
+
+    .commands {
+        background-color: rgba(0, 0, 0, 0.6);
+        padding: 15px;
+        margin-top: 2rem;
+    }
+
+    .commands-title {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+    }
+
+        .commands-title div:first-child {
+            margin-top: 0;
+        }
+
+    .commands-header, .command {
+        display: grid;
+        grid-template-columns: 100%;
+    }
+
+    .commands-header {
+        display: none;
+    }
+
+    .command {
+        display: block;
+        font-size: 13px;
+        margin-bottom: 20px;
+    }
+
+        .command div {
+            padding: 10px;
+        }
+
+            .command div:first-child, .command div:nth-child(2) {
+                background-color: rgb(56, 59, 61);
+            }
+
+            .command div:last-child {
+                background-color: rgb(37, 39, 40);
+            }
+}

@@ -25,7 +25,7 @@ namespace Model
             DbContext.Update(waifu);
             return await DbContext.SaveChangesAsync();
         }
-        public static async Task<List<Waifu>> SearchWaifus(string query, bool primaryName = false, IEnumerable<Waifu> from = null, bool includeMAL = false)
+        public static async Task<List<Waifu>> SearchWaifus(string query, bool primaryName = false, IEnumerable<Waifu> from = null, bool includeMAL = false, int perPage = 0, int page = 0)
         {
             using var DbContext = new NamikoDbContext();
             List<Waifu> waifus = new List<Waifu>();
@@ -52,6 +52,11 @@ namespace Model
                     x.Name.ToUpper().Contains(word.ToUpper()) ||
                     (x.LongName == null ? false : x.LongName.ToUpper().Contains(word.ToUpper())) ||
                     (x.Source == null ? false : x.Source.ToUpper().Contains(word.ToUpper())));
+            }
+
+            if (perPage > 0)
+            {
+                waifuQuery = waifuQuery.Skip(perPage * page).Take(perPage);
             }
 
             waifus = from == null ? await waifuQuery.ToListAsync() : waifuQuery.ToList();

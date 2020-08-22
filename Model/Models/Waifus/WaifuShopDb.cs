@@ -47,6 +47,12 @@ namespace Model
             var shop = await db.WaifuShops.OrderByDescending(x => x.Id).Include(x => x.ShopWaifus).ThenInclude(x => x.Waifu).FirstOrDefaultAsync(x => x.GuildId == guildId && x.Type == type);
             return shop;
         }
+        public static async Task<List<Waifu>> GetWaifus(ulong guildId)
+        {
+            using var db = new NamikoDbContext();
+            var waifus = await db.WaifuShops.Where(x => x.GuildId == guildId).OrderByDescending(x => x.Id).SelectMany(x => x.ShopWaifus.Select(x => x.Waifu)).ToListAsync();
+            return waifus;
+        }
         public static async Task UpdateShopWaifu(ShopWaifu shopWaifu)
         {
             using var dbContext = new NamikoDbContext();
