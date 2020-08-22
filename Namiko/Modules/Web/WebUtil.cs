@@ -8,6 +8,7 @@ using Model;
 using Namiko.Data;
 using Reddit.Controllers;
 using SauceNET;
+using SauceNET.Model;
 using Sentry;
 using System;
 using System.Collections.Generic;
@@ -36,13 +37,13 @@ namespace Namiko
             IIqdbClient api = new IqdbClient();
             return await api.SearchFile(file);
         }
-        
+
         public static EmbedBuilder IqdbSourceResultEmbed(SearchResult result, string searchedUrl)
         {
             var eb = new EmbedBuilder();
             string desc = "";
 
-            if(result.Matches[0].MatchType == IqdbApi.Enums.MatchType.Best)
+            if (result.Matches[0].MatchType == IqdbApi.Enums.MatchType.Best)
             {
                 desc += $"**Best Match:**\n{IqdbListingLine(result.Matches[0])}";
             }
@@ -52,7 +53,7 @@ namespace Namiko
                 desc += $"**Additional Matches:**\n";
                 foreach (var x in result.Matches.Where(x => x.MatchType == IqdbApi.Enums.MatchType.Additional))
                 {
-                    if(!x.Tags.Any(y => y.Contains("loli") || y.Contains("shota")) || x.Rating == IqdbApi.Enums.Rating.Safe)
+                    if (!x.Tags.Any(y => y.Contains("loli") || y.Contains("shota")) || x.Rating == IqdbApi.Enums.Rating.Safe)
                         desc += IqdbListingLine(x);
                 }
             }
@@ -70,7 +71,7 @@ namespace Namiko
             eb.WithDescription(desc);
             eb.WithThumbnailUrl(searchedUrl);
             eb.WithAuthor("IQDB", "https://i.imgur.com/lX13yov.png", "https://iqdb.org/");
-            eb.WithFooter($"Images searched: {result.SearchedImagesCount} | Took {result.SearchedInSeconds*1000}ms");
+            eb.WithFooter($"Images searched: {result.SearchedImagesCount} | Took {result.SearchedInSeconds * 1000}ms");
             eb.WithColor(BasicUtil.RandomColor());
             return eb;
         }
@@ -85,19 +86,54 @@ namespace Namiko
 
         // SAUCENAO
 
-        public static async Task<SauceNET.Model.Sauce> SauceNETSearchAsync(string url)
+        public static async Task<Sauce> SauceNETSearchAsync(string url)
         {
             SauceNETClient client = new SauceNETClient(Config.SauceNaoApi);
             return await client.GetSauceAsync(url);
         }
-        public static EmbedBuilder SauceEmbed(SauceNET.Model.Sauce sauce, string requestUrl)
+        public static EmbedBuilder SauceEmbed(Sauce sauce, string requestUrl)
         {
             var eb = new EmbedBuilder();
 
-            string desc = "**Results:**";
-            foreach(var x in sauce.Results)
+            string desc = "**Results:**\n";
+            foreach (var x in sauce.Results)
             {
-                desc += $"\n{x.Similarity}% - [{x.DatabaseName}]({x.SourceURL})";
+                desc += $"• {x.Similarity}% - [{x.DatabaseName}]({x.SourceURL ?? x.InnerSource})";
+
+                if (x.InnerSource != null && x.SourceURL != null)
+                {
+                    if (IsValidUrl(x.InnerSource))
+                    {
+                        desc += $" -> [{GetDomainFromUrl(x.InnerSource)}]({x.InnerSource})\n";
+                    }
+                    else
+                    {
+                        desc += $" -> {x.InnerSource}\n";
+                    }
+                }
+
+                if (!desc.EndsWith("\n"))
+                {
+                    desc += "\n";
+                }
+
+                if (x.ExtUrls != null)
+                {
+                    x.ExtUrls.Remove(x.InnerSource);
+                    x.ExtUrls.Remove(x.SourceURL);
+                    if (x.ExtUrls.Count > 0)
+                    {
+                        desc += $"Extra: ";
+                        foreach (var url in x.ExtUrls)
+                        {
+                            if (IsValidUrl(url))
+                            {
+                                desc += $"[{GetDomainFromUrl(url)}]({url}) ";
+                            }
+                        }
+                        desc += "\n";
+                    }
+                }
             }
 
             eb.WithDescription(desc);
@@ -108,6 +144,16 @@ namespace Namiko
         }
 
         // GLOBAL
+
+        public static string GetDomainFromUrl(string url)
+        {
+            Uri myUri = new Uri(url);
+            string host = myUri.Host;
+            host = host.Replace("www.", "");
+            host = host.Replace(".com", "");
+            host = host.Replace(".net", "");
+            return host;
+        }
 
         public static bool IsImageUrl(string url)
         {

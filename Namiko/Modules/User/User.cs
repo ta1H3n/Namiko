@@ -393,7 +393,7 @@ namespace Namiko
                 return;
 
             }
-            await Context.Channel.SendMessageAsync((isMe ? $"You have { waifu.Name } as your" : $"{ user.Username } has { waifu.Name } as his") + " Featured waifu!", false, WaifuUtil.WaifuEmbedBuilder(waifu, true, Context).Build());
+            await Context.Channel.SendMessageAsync((isMe ? $"You have { waifu.Name } as your" : $"{ user.Username } has { waifu.Name } as his") + " Featured waifu!", false, WaifuUtil.WaifuEmbedBuilder(waifu, Context).Build());
         }
 
         [Command("UndoColour"), Alias("uc", "UndoColor"), Summary("Switch back to a previous color.\n**Usage**: `!scp`")]

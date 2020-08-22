@@ -23,7 +23,8 @@ namespace Namiko
             try
             {
                 shop = await WaifuShopDb.GetWaifuShop(guildId, type);
-            } catch { }
+            }
+            catch { }
 
             if (type == ShopType.Mod)
                 return shop;
@@ -92,17 +93,18 @@ namespace Namiko
             wishlists.RemoveAll(x => gachaSource.Contains(x.Waifu.Source));
             var ids = wishlists.Select(x => x.UserId).Distinct().ToArray();
             var guild = Program.GetClient().GetGuild(guildId);
-            foreach(var id in ids)
+            foreach (var id in ids)
             {
                 SocketGuildUser user = null;
                 try
                 {
                     user = guild.GetUser(id);
-                } catch
+                }
+                catch
                 {
                     wishlists.RemoveAll(x => x.UserId == id);
                 }
-                if(user == null)
+                if (user == null)
                     wishlists.RemoveAll(x => x.UserId == id);
             }
 
@@ -121,7 +123,7 @@ namespace Namiko
                 for (int i = 0; i < limitedamount; i++)
                 {
                     r = rnd.Next(0, tier1.Count);
-                    item = new ShopWaifu { Waifu = tier1.ElementAt(r), Discount = GenerateDiscount(), Limited = 1, BoughtBy = 0};
+                    item = new ShopWaifu { Waifu = tier1.ElementAt(r), Discount = GenerateDiscount(), Limited = 1, BoughtBy = 0 };
                     waifus.Add(item);
                     tier1.RemoveAll(x => x.Name.Equals(tier1[r].Name));
                 }
@@ -133,13 +135,13 @@ namespace Namiko
 
                     if (r < tier1.Count)
                     {
-                        item = new ShopWaifu { Waifu = tier1.ElementAt(r), Limited = -1, BoughtBy = 0};
+                        item = new ShopWaifu { Waifu = tier1.ElementAt(r), Limited = -1, BoughtBy = 0 };
                         tier1.RemoveAll(x => x.Name.Equals(tier1[r].Name));
                     }
                     else
                     {
                         r -= tier1.Count;
-                        item = new ShopWaifu { Waifu = tier0[r], Limited = -1, BoughtBy = 0};
+                        item = new ShopWaifu { Waifu = tier0[r], Limited = -1, BoughtBy = 0 };
                         tier0.RemoveAll(x => x.Name.Equals(tier0[r].Name));
                     }
 
@@ -150,7 +152,7 @@ namespace Namiko
                 for (int i = 0; i < t2amount; i++)
                 {
                     r = rnd.Next(0, tier2.Count);
-                    item = new ShopWaifu { Waifu = tier2.ElementAt(r),Limited = -1, BoughtBy = 0};
+                    item = new ShopWaifu { Waifu = tier2.ElementAt(r), Limited = -1, BoughtBy = 0 };
                     waifus.Add(item);
                     tier2.RemoveAll(x => x.Name.Equals(tier2[r].Name));
                 }
@@ -159,7 +161,7 @@ namespace Namiko
                 for (int i = 0; i < t3amount; i++)
                 {
                     r = rnd.Next(0, tier3.Count);
-                    item = new ShopWaifu { Waifu = tier3.ElementAt(r),Limited = -1, BoughtBy = 0};
+                    item = new ShopWaifu { Waifu = tier3.ElementAt(r), Limited = -1, BoughtBy = 0 };
                     waifus.Add(item);
                     tier3.RemoveAll(x => x.Name.Equals(tier3[r].Name));
                 }
@@ -209,7 +211,7 @@ namespace Namiko
             var rnd = new Random();
             int r = 0;
 
-            for (int k = 0; k < Constants.gachatotal*pages; k++)
+            for (int k = 0; k < Constants.gachatotal * pages; k++)
             {
                 r = rnd.Next(0, waifus.Count);
                 item = new ShopWaifu { Waifu = waifus.ElementAt(r), Limited = -1, BoughtBy = 0 };
@@ -256,9 +258,9 @@ namespace Namiko
         public static async Task NotifyWishlist(IEnumerable<Waifu> waifus, ulong guildId)
         {
             var wishes = await WaifuWishlistDb.GetWishlist(guildId);
-            foreach(var wish in wishes)
+            foreach (var wish in wishes)
             {
-                if(waifus.Any(x => x.Name == wish.Waifu.Name))
+                if (waifus.Any(x => x.Name == wish.Waifu.Name))
                 {
                     try
                     {
@@ -346,8 +348,8 @@ namespace Namiko
 
             if (type == ShopType.Gacha)
                 eb.WithAuthor("Gacha Shop", client.CurrentUser.GetAvatarUrl(), BasicUtil._patreon);
-            else 
-            if(type == ShopType.Mod)
+            else
+            if (type == ShopType.Mod)
             {
                 eb.WithAuthor("Mod Shop", client.CurrentUser.GetAvatarUrl(), BasicUtil._patreon);
                 eb.WithDescription($"A waifu shop controlled by server moderators.\n`{prefix}MsAddWaifu` | `{prefix}MsRemoveWaifu` - requires Namiko Pro Guild+.");
@@ -365,8 +367,8 @@ namespace Namiko
             list = list.Any() ? list : "~ Shop Empty ~";
             eb.AddField("<:MiaHug:536580304018735135> Waifus", list, false);
             //eb.WithThumbnailUrl(waifus[0].Waifu.ImageUrl);
-            if(type != ShopType.Mod)
-                eb.WithFooter($"Resets in {11 - DateTime.Now.Hour%12} Hours {60 - DateTime.Now.Minute} Minutes");
+            if (type != ShopType.Mod)
+                eb.WithFooter($"Resets in {11 - DateTime.Now.Hour % 12} Hours {60 - DateTime.Now.Minute} Minutes");
             eb.Color = BasicUtil.RandomColor();
             return eb;
         }
@@ -467,7 +469,7 @@ namespace Namiko
                 return GetPrice(tier).ToString("n0");
 
             else
-               // return $"~~{GetPrice(tier).ToString("n0")}~~ {GetPrice(tier, discount).ToString("n0")} (-{discount}%)";
+                // return $"~~{GetPrice(tier).ToString("n0")}~~ {GetPrice(tier, discount).ToString("n0")} (-{discount}%)";
                 return $"{GetPrice(tier, discount).ToString("n0")} (-{discount}%)";
         }
         public static int GetPrice(int tier, int discount = 0)
@@ -475,8 +477,8 @@ namespace Namiko
             int price = tier == 1 ? Constants.tier1 :
                         tier == 2 ? Constants.tier2 :
                         tier == 3 ? Constants.tier3 :
-                        tier == 0 ? Constants.tier0 : 
-                        
+                        tier == 0 ? Constants.tier0 :
+
                         //default
                         0;
 
@@ -485,10 +487,10 @@ namespace Namiko
 
             return price;
         }
-        public static int GetSalePrice(int tier) 
+        public static int GetSalePrice(int tier)
         {
-            int worth = (int)(GetPrice(tier) *  ((tier == 3)? 0.70 :   //70%
-                                                (tier == 2)? 0.60 :    //60%
+            int worth = (int)(GetPrice(tier) * ((tier == 3) ? 0.70 :   //70%
+                                                (tier == 2) ? 0.60 :    //60%
 
                                                 //default, also 55%
                                                 0.55));
@@ -509,7 +511,7 @@ namespace Namiko
         }
 
         //Random embeds
-        public static EmbedBuilder WaifuEmbedBuilder(Waifu waifu, bool guildDetails = false, SocketCommandContext context = null)
+        public static EmbedBuilder WaifuEmbedBuilder(Waifu waifu, SocketCommandContext context = null)
         {
             EmbedBuilder eb = new EmbedBuilder();
             eb.WithAuthor(waifu.Name, null, BasicUtil._patreon);
@@ -537,22 +539,23 @@ namespace Namiko
             if (waifu.ImageUrl != null)
                 eb.WithImageUrl(waifu.ImageUrl);
 
-            if (guildDetails)
+            string footer = $"Tier: {waifu.Tier}";
+            if (context != null)
             {
-                string footer = $"Tier: {waifu.Tier}";
                 footer += WaifuOwnerString(waifu, context);
-                eb.WithFooter(footer);
 
                 var wishes = WaifuWishlistDb.GetWishlist(context.Guild.Id, waifu.Name);
-                if(wishes.Any())
+                if (wishes.Any())
                 {
                     try
                     {
                         eb.AddField("Wanted By", WaifuWantedString(wishes, context));
-                    } catch { }
+                    }
+                    catch { }
                 }
             }
-            
+            eb.WithFooter(footer);
+
 
             eb.Color = BasicUtil.RandomColor();
             return eb;
@@ -570,7 +573,8 @@ namespace Namiko
                     {
                         var mention = context.Guild.GetUser(id).Username;
                         str += $"`{mention}` ";
-                    }catch { }
+                    }
+                    catch { }
                 }
             }
             return str;
@@ -601,7 +605,7 @@ namespace Namiko
                     waifus = waifus.OrderBy(x => x.Name).ToList();
                     foreach (Waifu x in waifus)
                         field += "`" + x.Name + "` ";
-                    if(field != "")
+                    if (field != "")
                         eb.AddField("Tier " + i, field);
                 }
             }
@@ -624,14 +628,14 @@ namespace Namiko
             var grouped = waifus.GroupBy(x => x.Source);
 
             string text = "```json\nWAIFUS FOUND:\n\n";
-           // foreach (var x in waifus)
-           // {
-           //     text += String.Format("{0, 11} - {1}- {2}\n", x.Name, BasicUtil.ShortenString(x.Source, 35, 35, ""), BasicUtil.ShortenString(x.LongName, 35, 34, "-"));
-           // }
+            // foreach (var x in waifus)
+            // {
+            //     text += String.Format("{0, 11} - {1}- {2}\n", x.Name, BasicUtil.ShortenString(x.Source, 35, 35, ""), BasicUtil.ShortenString(x.LongName, 35, 34, "-"));
+            // }
             foreach (var x in grouped)
             {
                 text += String.Format("\"{0}\"\n", x.Key);
-                foreach(var waifu in x)
+                foreach (var waifu in x)
                 {
                     text += String.Format("{0, 11} - {1}\n", waifu.Name, BasicUtil.ShortenString(waifu.LongName, 35, 34, "-"));
                 }
@@ -663,7 +667,7 @@ namespace Namiko
                             catch { }
                             list += $"**{waifu.Name}** - *{BasicUtil.ShortenString(waifu.LongName, 28, 27, "-")}*\n";
                         }
-                        eb.AddField(x.Key + "#" + (y.Key+1), list);
+                        eb.AddField(x.Key + "#" + (y.Key + 1), list);
                     }
                 }
                 else
@@ -676,7 +680,8 @@ namespace Namiko
                         {
                             if (user != null && UserInventoryDb.OwnsWaifu(user.Id, waifu, user.Guild.Id))
                                 list += "✓ ";
-                        } catch { }
+                        }
+                        catch { }
                         list += $"**{waifu.Name}** - *{BasicUtil.ShortenString(waifu.LongName, 28, 27, "-")}*\n";
                     }
                     eb.AddField(x.Key, list);
@@ -696,15 +701,15 @@ namespace Namiko
 
             string waifu = "";
             string user = "";
-            for(int i = page; i < page+10; i++)
+            for (int i = page; i < page + 10; i++)
             {
                 var x = waifus.ElementAtOrDefault(i);
                 if (x.Key != null)
-                    waifu += $"#{i+1} {x.Key.Name} - {x.Value}\n";
+                    waifu += $"#{i + 1} {x.Key.Name} - {x.Value}\n";
 
                 var y = users.ElementAtOrDefault(i);
                 if (y.Key != null)
-                    user += $"#{i+1} {y.Key.Mention} - {y.Value}\n";
+                    user += $"#{i + 1} {y.Key.Mention} - {y.Value}\n";
             }
             if (waifu == "")
                 waifu = "-";
@@ -715,7 +720,7 @@ namespace Namiko
             eb.AddField("Users <:toastie3:454441133876183060>", user, true);
 
             eb.WithColor(BasicUtil.RandomColor());
-            eb.WithFooter($"Page: {page/10+1}");
+            eb.WithFooter($"Page: {page / 10 + 1}");
             return eb;
         }
         public static IEnumerable<IGrouping<int, TSource>> GroupBy<TSource>(this IEnumerable<TSource> source, int itemsPerGroup)
@@ -771,7 +776,8 @@ namespace Namiko
                     try
                     {
                         msg = await interactive.Context.Channel.SendMessageAsync(embed: FoundWaifusEmbedBuilder(grouped, (SocketGuildUser)interactive?.Context.User).Build());
-                    } catch
+                    }
+                    catch
                     {
                         _ = interactive.Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared()
                             .WithAuthor("Waifus Found", interactive?.Context.User.GetAvatarUrl(), BasicUtil._patreon)
@@ -809,11 +815,11 @@ namespace Namiko
                     .WithColor(201, 0, 16)
                     .Build());
             }
-            
+
             return null;
         }
 
-
+        //Image handlers
         public static async Task DownloadWaifuImageToServer(Waifu waifu, ISocketMessageChannel ch)
         {
             try
@@ -833,11 +839,86 @@ namespace Namiko
             catch (Exception ex)
             {
                 await ch.SendMessageAsync($"{Program.GetClient().GetUser(Config.OwnerId).Mention} Error while downloading waifu image variants to server.");
-                SentrySdk.ConfigureScope(scope =>
+                SentrySdk.WithScope(scope =>
                 {
                     scope.SetExtras(waifu.GetProperties());
+                    SentrySdk.CaptureException(ex);
                 });
-                SentrySdk.CaptureException(ex);
+            }
+        }
+        public static async Task FindAndUpdateWaifuImageSource(Waifu waifu, ISocketMessageChannel ch)
+        {
+            try
+            {
+                if (waifu.ImageUrl == null || waifu.ImageUrl == "")
+                    return;
+
+                var res = await WebUtil.SauceNETSearchAsync(waifu.ImageUrl);
+                string sauce = "";
+
+                foreach (var result in res.Results.OrderByDescending(x => Double.Parse(x.Similarity)))
+                {
+                    if (Double.Parse(result.Similarity) > 80)
+                    {
+                        sauce = result.SourceURL;
+                        await ch.SendMessageAsync($"<:TickYes:577838859107303424> **{waifu.Name}** - {result.DatabaseName} {result.Similarity}% ({result.SourceURL})");
+                        break;
+                    }
+                    else if ((result.DatabaseName == "Pixiv" ||
+                        result.DatabaseName == "Danbooru" ||
+                        result.DatabaseName == "Gelbooru" ||
+                        result.DatabaseName == "AniDb" ||
+                        result.DatabaseName == "Twitter") &&
+                        Double.Parse(result.Similarity) > 60)
+                    {
+                        sauce = result.SourceURL;
+                        await ch.SendMessageAsync($":question: **{waifu.Name}** - {result.DatabaseName} {result.Similarity}% ({result.SourceURL})\n" +
+                            $"Please verify if image sauce is correct.\n" +
+                            $"`!getwaifu {waifu.Name}` - check waifu details.\n" +
+                            $"`!wis {waifu.Name} [correct_source]` - change waifu image source.\n" +
+                            $"If you can't find the correct source, set waifu image source to `missing`.",
+                            embed: WebUtil.SauceEmbed(res, waifu.ImageUrl).Build());
+                        break;
+                    }
+                    else if (result.DatabaseName == "AniDb" && Double.Parse(result.Similarity) > 40)
+                    {
+                        sauce = result.SourceURL;
+                        await ch.SendMessageAsync($":question: **{waifu.Name}** - {result.DatabaseName} {result.Similarity}% ({result.SourceURL})\n" +
+                            $"Please verify if image sauce is correct.\n" +
+                            $"`!getwaifu {waifu.Name}` - check waifu details.\n" +
+                            $"`!wis {waifu.Name} [correct_source]` - change waifu image source.\n" +
+                            $"If you can't find the correct source, set waifu image source to `missing`.",
+                            embed: WebUtil.SauceEmbed(res, waifu.ImageUrl).Build());
+                        break;
+                    }
+                }
+
+                if (sauce != "")
+                {
+                    waifu.ImageSource = sauce;
+                    await WaifuDb.UpdateWaifu(waifu);
+                }
+                else
+                {
+                    waifu.ImageSource = "retry";
+                    await ch.SendMessageAsync($":x: Could not find sauce! Please find the correct image source!\n" +
+                        $"`!getwaifu {waifu.Name}` - check waifu details.\n" +
+                        $"`!wis {waifu.Name} [correct_source]` - change waifu image source.\n" +
+                        $"If you can't find the correct source, set waifu image source to `missing`.",
+                        embed: WebUtil.SauceEmbed(res, waifu.ImageUrl).Build());
+                }
+            }
+            catch (Exception ex)
+            {
+                await ch.SendMessageAsync($":x: Error searching for image sauce! Please find the correct image source!\n" +
+                    $"`!getwaifu {waifu.Name}` - check waifu details.\n" +
+                    $"`!wis {waifu.Name} [correct_source]` - change waifu image source.\n" +
+                    $"If you can't find the correct source, set waifu image source to `missing`.");
+                SentrySdk.WithScope(scope =>
+                {
+                    scope.SetExtras(waifu.GetProperties());
+                    SentrySdk.CaptureException(ex);
+                });
             }
         }
     }

@@ -52,5 +52,8 @@ namespace Namiko
 
         [JsonProperty("sauceWebhook")]
         public static string SauceWebhook { get; set; }
+
+        [JsonProperty("sauceRequestWebhook")]
+        public static string SauceRequestWebhook { get; set; }
     }
 }

@@ -511,7 +511,7 @@ namespace Namiko
 
                 await UserInventoryDb.AddWaifu(Context.User.Id, waifu, Context.Guild.Id);
                 await Task.Delay(waitms);
-                var embed = WaifuUtil.WaifuEmbedBuilder(waifu, true, Context).Build();
+                var embed = WaifuUtil.WaifuEmbedBuilder(waifu, Context).Build();
                 await msg.ModifyAsync(x => {
                     x.Embed = embed;
                     x.Content = $"{Context.User.Mention} Congratulations! You found **{waifu.Name}**!";
