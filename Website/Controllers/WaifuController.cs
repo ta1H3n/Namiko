@@ -1,10 +1,9 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using Model;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Model;
 using Website.Models;
 
 namespace Website.Controllers
@@ -31,8 +30,8 @@ namespace Website.Controllers
                 Tier = x.Tier
             }).ToList();
 
-            //if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
-            //{
+            if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+            {
                 string[] images = { "sample0.gif", "sample1.jpg", "sample2.gif", "sample3.gif" };
                 var rnd = new Random();
                 foreach (var w in waifus)
@@ -42,7 +41,7 @@ namespace Website.Controllers
                     w.ImageMedium = "images/" + images[i];
                     w.ImageRaw = "images/" + images[i];
                 }
-            //}
+            }
 
             waifus = waifus.OrderByDescending(x => x.Bought).ToList();
             return waifus;
