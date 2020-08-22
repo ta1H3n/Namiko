@@ -1,10 +1,11 @@
 ﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
-using Discord.Webhook;
+using Discord.Net;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Model;
 using Namiko.Data;
 using Newtonsoft.Json;
 using Sentry;
@@ -16,8 +17,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Victoria;
-using Model;
 
 #pragma warning disable CS1998
 
@@ -252,7 +251,7 @@ namespace Namiko
         {
             if (logMessage.Exception is CommandException cmdException)
             {
-                SentrySdk.ConfigureScope(scope =>
+                SentrySdk.WithScope(scope =>
                 {
                     scope.SetTag("Command", cmdException.Command.Name);
                     scope.SetExtra("GuildId", cmdException.Context.Guild.Id);
@@ -264,8 +263,10 @@ namespace Namiko
                     scope.SetExtra("User", cmdException.Context.User.Username);
                     scope.SetExtra("MessageId", cmdException.Context.Message.Id);
                     scope.SetExtra("Message", cmdException.Context.Message.Content);
+                    if (cmdException.InnerException is HttpException)
+                        scope.Level = Sentry.Protocol.SentryLevel.Warning;
+                    SentrySdk.CaptureException(cmdException.InnerException);
                 });
-                SentrySdk.CaptureException(cmdException.InnerException);
 
                 if (cmdException.Command.Module.Name.Equals(nameof(WaifuEditing)))
                 {
