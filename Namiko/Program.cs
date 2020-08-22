@@ -53,7 +53,8 @@ namespace Namiko
             using (SentrySdk.Init(options => 
             {
                 options.Dsn = new Dsn(Config.SentryWebhook);
-                options.Environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+                string env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+                options.Environment = env == null || env == "" ? "Production" : env;
             }))
             {
                 SetUp();
