@@ -11,6 +11,8 @@ namespace Model
         public ulong JoinLogChannelId { get; set; }
         public ulong TeamLogChannelId { get; set; }
         public string Prefix { get; set; }
+        public string Name { get; set; }
+        public DateTime LastUpdated { get; set; }
         public DateTime JoinDate { get; set; }
         public DateTime LeaveDate { get; set; }
     }

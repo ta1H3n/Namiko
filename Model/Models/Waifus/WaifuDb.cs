@@ -91,11 +91,11 @@ namespace Model
         {
             using var db = new NamikoDbContext();
             return (await db.Waifus.Where(x => x.Tier == tier &&
-(includeSource == null || includeSource.Contains(x.Source)) &&
-(excludeSource == null || !excludeSource.Contains(x.Source)))
-.ToListAsync())
-.OrderBy(r => Guid.NewGuid())
-.Take(amount).ToList();
+                (includeSource == null || includeSource.Contains(x.Source)) &&
+                (excludeSource == null || !excludeSource.Contains(x.Source)))
+                .ToListAsync())
+                .OrderBy(r => Guid.NewGuid())
+                .Take(amount).ToList();
         }
         public static async Task<int> RenameWaifu(string oldName, string newName)
         {

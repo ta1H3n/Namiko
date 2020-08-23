@@ -13,6 +13,9 @@ namespace Model
         public string Image { get; set; }
         public int LootboxesOpened { get; set; }
         public int Rep { get; set; }
+        public string Name { get; set; }
+        public string Discriminator { get; set; }
+        public DateTime LastUpdated { get; set; }
         public DateTime RepDate { get; set; }
     }
 }
