@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.OleDb;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Namiko
@@ -781,7 +782,9 @@ namespace Namiko
                 if (line.StartsWith('('))
                     continue;
 
-                desc += line + '\n' + '\n';
+                var l = Regex.Replace(line, @"\t|\n|\r|\\n|\\t|\\r", "");
+                if (l != "")
+                    desc += l + "\n\n";
             }
             //desc.Replace(@"\r", @"\n\n");
             waifu.Description = desc;
@@ -835,7 +838,9 @@ namespace Namiko
                 if (line.StartsWith('('))
                     continue;
 
-                desc += line + '\n' + '\n';
+                var l = Regex.Replace(line, @"\t|\n|\r|\\n|\\t|\\r", "");
+                if (l != "")
+                    desc += l + "\n\n";
             }
             waifu.Description = desc;
             waifu.Source = mal.Animeography.FirstOrDefault() == null ? "" : mal.Animeography.FirstOrDefault().Name;
