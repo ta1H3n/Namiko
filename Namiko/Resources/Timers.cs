@@ -63,7 +63,7 @@ namespace Namiko
             MinuteReminders.AutoReset = true;
             MinuteReminders.Enabled = true;
             MinuteReminders.Elapsed += Timer_RemindVote;
-            
+
             Hour.Elapsed += Timer_UpdateDBLGuildCount;
             Hour.Elapsed += Timer_ExpirePremium;
 
@@ -84,7 +84,6 @@ namespace Namiko
             SauceRequest = new Timer(1000 * 60 * 10);
             SauceRequest.AutoReset = true;
             SauceRequest.Enabled = true;
-            SauceRequest.Elapsed += Timer_RequestSauce;
         }
 
         private static async void Timer_PlayingStatus(object sender, ElapsedEventArgs e)
@@ -104,7 +103,8 @@ namespace Namiko
                 try
                 {
                     user = ntr.GetUser(premium.UserId);
-                } catch { }
+                }
+                catch { }
 
                 if (user == null)
                 {
@@ -117,7 +117,8 @@ namespace Namiko
                                 $"You can renew your subscription [Here](https://www.patreon.com/taiHen)\n" +
                                 $"If you think this is a mistake contact taiHen#2839 [Here](https://discord.gg/W6Ru5sM)")
                             .Build());
-                    } catch { }
+                    }
+                    catch { }
                     using var webhook = new DiscordWebhookClient(Config.PremiumWebhook);
                     await webhook.SendMessageAsync($"{premium.UserId} - {premium.Type.ToString()} subscription has expired.");
                 }
@@ -244,7 +245,8 @@ namespace Namiko
                     await Task.Delay(TimeSpan.FromMinutes(20));
                     Timer_CleanData(false, null);
                 }
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 SentrySdk.CaptureException(ex);
 
@@ -280,7 +282,7 @@ namespace Namiko
         private static async void Timer_Unban(object sender, ElapsedEventArgs e)
         {
             var bans = await BanDb.ToUnban();
-            foreach(var x in bans)
+            foreach (var x in bans)
             {
                 Console.WriteLine("Unbanning " + x.UserId);
                 await BanDb.EndBan(x.UserId, x.ServerId);
@@ -296,6 +298,7 @@ namespace Namiko
         // IMAGE SAUCING
         private static bool NullSource = true;
         private static bool RetrySource = true;
+        private static bool MissingSource = true;
         private static async void Timer_GetSauce(object sender, ElapsedEventArgs e)
         {
             if (!NullSource && !RetrySource)
@@ -310,7 +313,7 @@ namespace Namiko
                 if (NullSource)
                 {
                     waifu = await db.Waifus.FirstOrDefaultAsync(x => x.ImageSource == null);
-                    Console.WriteLine(DateTime.Now +  " New sauce - " + waifu?.Name);
+                    Console.WriteLine(DateTime.Now + " New sauce - " + waifu?.Name);
                 }
                 if (RetrySource && waifu == null)
                 {
@@ -385,7 +388,7 @@ namespace Namiko
                 });
             }
         }
-        public static async void Timer_RequestSauce(object sender, ElapsedEventArgs e)
+        public static async Task Timer_RequestSauce(object sender, ElapsedEventArgs e)
         {
             Waifu waifu = null;
             List<Embed> embeds = new List<Embed>();
@@ -407,7 +410,7 @@ namespace Namiko
                     waifu = await db.Waifus.FirstOrDefaultAsync(x => x.ImageSource.Equals("missing"));
                     if (waifu == null)
                     {
-                        await WebhookClients.SauceRequestChannel.SendMessageAsync("`No missing sauces. Idling...`");
+                        await WebhookClients.SauceRequestChannel.SendMessageAsync("`No unknown sauces. Idling...`");
                         return;
                     }
                 }
@@ -428,7 +431,7 @@ namespace Namiko
                 family = family.DistinctBy(x => x.ImageSource).ToList();
 
                 string familySauces = "";
-                foreach(var w in family)
+                foreach (var w in family)
                 {
                     familySauces += $"**{w.Name}** - {w.ImageSource}\n";
                 }
@@ -499,7 +502,7 @@ namespace Namiko
                 if (add.Count > 0)
                     Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} Shipped {add.Count} lootboxes.");
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 SentrySdk.CaptureException(ex);
             }
@@ -518,7 +521,7 @@ namespace Namiko
             {
                 done = true;
                 int diff = newList.Count - oldList.Count;
-                for (int i = newList.Count-1; i >= 0 && (i - diff) >= 0; i--)
+                for (int i = newList.Count - 1; i >= 0 && (i - diff) >= 0; i--)
                 {
                     T x = newList[i];
                     T y = oldList[i - diff];
@@ -539,14 +542,14 @@ namespace Namiko
         public static async Task<int> SendRewards(IEnumerable<ulong> voters)
         {
             int sent = 0;
-            foreach(var x in voters)
+            foreach (var x in voters)
             {
                 try
                 {
                     var type = LootBoxType.Vote;
                     if (PremiumDb.IsPremium(x, PremiumType.ProPlus))
                         type = LootBoxType.Premium;
-                    
+
                     await LootBoxDb.AddLootbox(x, type, 1);
                     sent++;
                     var user = Program.GetClient().GetUser(x);
@@ -575,7 +578,7 @@ namespace Namiko
                 catch { }
             }
         }
-        public static async void Timer_RemindVote(object sender, ElapsedEventArgs e) 
+        public static async void Timer_RemindVote(object sender, ElapsedEventArgs e)
         {
             if (ReminderLock)
                 return;
@@ -632,7 +635,7 @@ namespace Namiko
         {
             var hot = await RedditAPI.GetHot(sub.Key);
 
-            foreach(var post in hot)
+            foreach (var post in hot)
             {
                 var dbUpvotes = RedditDb.GetUpvotes(post.Permalink);
                 var channels = sub.Where(ch => ch.Upvotes < post.UpVotes && ch.Upvotes > dbUpvotes && !(post.NSFW && !ch.Channel.IsNsfw));
