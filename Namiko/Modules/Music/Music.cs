@@ -1061,6 +1061,9 @@ namespace Namiko
                     }
                 } catch (Exception ex)
                 {
+                    if (ex is NullReferenceException)
+                        return;
+
                     SentrySdk.CaptureException(ex);
                     if (ReconnectPlayer.Contains(player))
                         ReconnectPlayer.Remove(player);
