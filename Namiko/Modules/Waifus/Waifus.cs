@@ -263,7 +263,10 @@ namespace Namiko
                 }
             };
             msg.Fields = fields;
-            msg.ThumbnailUrl = WaifuDb.GetWaifu(waifus.First().Key).ImageUrl;
+            if (waifus.Any())
+            {
+                msg.ThumbnailUrl = WaifuDb.GetWaifu(waifus.First().Key).ImageUrl;
+            }
 
             await PagedReplyAsync(msg);
         }
