@@ -298,7 +298,6 @@ namespace Namiko
         // IMAGE SAUCING
         private static bool NullSource = true;
         private static bool RetrySource = true;
-        private static bool MissingSource = true;
         private static async void Timer_GetSauce(object sender, ElapsedEventArgs e)
         {
             if (!NullSource && !RetrySource)
@@ -649,7 +648,10 @@ namespace Namiko
                     await Task.Delay(5000);
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                SentrySdk.CaptureException(ex);
+            }
             finally
             {
                 RedditLock = false;
@@ -683,7 +685,10 @@ namespace Namiko
                             await msg.AddReactionAsync(Emote.Parse("<:SignDownvote:577919848554823680>"));
                         });
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        SentrySdk.CaptureException(ex);
+                    }
                 }
 
                 return;
@@ -736,7 +741,10 @@ namespace Namiko
                                 Upvotes = Int32.Parse(x.Args.Split(',')[1])
                             });
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        SentrySdk.CaptureException(ex);
+                    }
                 }
             });
             return channels;
