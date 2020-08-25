@@ -28,7 +28,7 @@ namespace Namiko
                 return Task.FromResult(PreconditionResult.FromSuccess());
 
             string roles = "";
-            foreach(var id in roles)
+            foreach(var id in ids)
             {
                 var role = context.Guild.GetRole(id);
                 if (role != null)
