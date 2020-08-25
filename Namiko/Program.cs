@@ -239,10 +239,9 @@ namespace Namiko
                     string reason = res.ErrorReason + "\n";
                     if (res.Error != CommandError.UnmetPrecondition)
                         reason += CommandHelpString(context.Message.Content.Split(null)[0].Replace(GetPrefix(context.Guild), ""), GetPrefix(context.Guild));
-                    await context.Channel.SendMessageAsync(reason);
+                    await context.Channel.SendMessageAsync(embed: new EmbedBuilder().WithColor(Color.DarkRed).WithDescription(":x: " + reason).Build());
                 }
             }
-
             // If the command is found and completed but it is a music command in a guild with no premium - set as failed
             else
             if ((cmdName == nameof(Music.Join) || cmdName == nameof(Music.Play) || cmdName == nameof(Music.PlayNext) || cmdName == nameof(Music.PlayFirst)) 
