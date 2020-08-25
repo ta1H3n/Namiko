@@ -13,6 +13,7 @@ namespace Model
         public string Source { get; set; }
         public int Tier { get; set; }
         public string ImageUrl { get; set; }
+        public int Bought { get; set; }
         public string ImageSource { get; set; }
 
         public virtual MalWaifu Mal { get; set; }

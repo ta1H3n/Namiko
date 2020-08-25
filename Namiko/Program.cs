@@ -1,10 +1,11 @@
 ﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
-using Discord.Webhook;
+using Discord.Net;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Model;
 using Namiko.Data;
 using Newtonsoft.Json;
 using Sentry;
@@ -16,8 +17,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Victoria;
-using Model;
 
 #pragma warning disable CS1998
 
@@ -37,6 +36,7 @@ namespace Namiko
         private static bool Diag = false;
         private static bool Pause = false;
         private static bool Startup = true;
+        public static bool GuildLeaveEvent = true;
         private static int ShardCount;
 
         static void Main(string[] args)
@@ -52,7 +52,8 @@ namespace Namiko
             using (SentrySdk.Init(options => 
             {
                 options.Dsn = new Dsn(Config.SentryWebhook);
-                options.Environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+                string env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+                options.Environment = env == null || env == "" ? "Production" : env;
             }))
             {
                 SetUp();
@@ -250,7 +251,7 @@ namespace Namiko
         {
             if (logMessage.Exception is CommandException cmdException)
             {
-                SentrySdk.ConfigureScope(scope =>
+                SentrySdk.WithScope(scope =>
                 {
                     scope.SetTag("Command", cmdException.Command.Name);
                     scope.SetExtra("GuildId", cmdException.Context.Guild.Id);
@@ -262,8 +263,10 @@ namespace Namiko
                     scope.SetExtra("User", cmdException.Context.User.Username);
                     scope.SetExtra("MessageId", cmdException.Context.Message.Id);
                     scope.SetExtra("Message", cmdException.Context.Message.Content);
+                    if (cmdException.InnerException is HttpException)
+                        scope.Level = Sentry.Protocol.SentryLevel.Warning;
+                    SentrySdk.CaptureException(cmdException.InnerException);
                 });
-                SentrySdk.CaptureException(cmdException.InnerException);
 
                 if (cmdException.Command.Module.Name.Equals(nameof(WaifuEditing)))
                 {
@@ -391,6 +394,9 @@ namespace Namiko
         }
         private async Task Client_LeftGuild(SocketGuild arg)
         {
+            if (!GuildLeaveEvent)
+                return;
+
             var server = ServerDb.GetServer(arg.Id);
             server.LeaveDate = DateTime.Now;
             await ServerDb.UpdateServer(server);

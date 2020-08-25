@@ -6,7 +6,9 @@ using Microsoft.EntityFrameworkCore;
 using Model;
 using System;
 using System.Collections.Generic;
+using System.Data.OleDb;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Namiko
@@ -566,10 +568,11 @@ namespace Namiko
                 return;
             }
 
+            string old = waifu.LongName;
             waifu.LongName = fullname;
 
             if (await WaifuDb.UpdateWaifu(waifu) > 0)
-                await Context.Channel.SendMessageAsync($":white_check_mark: {waifu.Name} updated.");
+                await SendWaifuUpdatedMessage(waifu, "Full Name", old, waifu.LongName);
             else
                 await Context.Channel.SendMessageAsync($":x: Failed to update {name}");
         }
@@ -584,10 +587,11 @@ namespace Namiko
                 return;
             }
 
+            string old = waifu.Description;
             waifu.Description = description;
 
             if (await WaifuDb.UpdateWaifu(waifu) > 0)
-                await Context.Channel.SendMessageAsync($":white_check_mark: {waifu.Name} updated.");
+                await SendWaifuUpdatedMessage(waifu, "Description", old, waifu.Description);
             else
                 await Context.Channel.SendMessageAsync($":x: Failed to update {name}");
         }
@@ -601,10 +605,11 @@ namespace Namiko
                 return;
             }
 
+            string old = waifu.Source;
             waifu.Source = source;
 
             if (await WaifuDb.UpdateWaifu(waifu) > 0)
-                await Context.Channel.SendMessageAsync($":white_check_mark: {waifu.Name} updated.");
+                await SendWaifuUpdatedMessage(waifu, "Source", old, waifu.Source);
             else
                 await Context.Channel.SendMessageAsync($":x: Failed to update {name}");
         }
@@ -618,10 +623,11 @@ namespace Namiko
                 return;
             }
 
+            string old = waifu.Tier.ToString();
             waifu.Tier = tier;
 
             if (await WaifuDb.UpdateWaifu(waifu) > 0)
-                await Context.Channel.SendMessageAsync($":white_check_mark: {waifu.Name} updated.");
+                await SendWaifuUpdatedMessage(waifu, "Tier", old, waifu.Tier.ToString());
             else
                 await Context.Channel.SendMessageAsync($":x: Failed to update {name}");
         }
@@ -663,12 +669,12 @@ namespace Namiko
             else albumId = ImageDb.GetAlbum("Waifus").AlbumId;
 
             var iImage = await ImgurAPI.UploadImageAsync(url, albumId, null, name);
+            string old = waifu.ImageUrl;
             waifu.ImageUrl = iImage.Link;
 
             if (await WaifuDb.UpdateWaifu(waifu) > 0)
             {
-                var rl = ImgurAPI.RateLimit;
-                await Context.Channel.SendMessageAsync($":white_check_mark: {waifu.Name} updated. {rl.ClientRemaining}/{rl.ClientLimit} imgur credits remaining.");
+                await SendWaifuUpdatedMessage(waifu, "ImageUrl", old, waifu.ImageUrl);
             }
             else
                 await Context.Channel.SendMessageAsync($":x: Failed to update {name}");
@@ -687,48 +693,28 @@ namespace Namiko
                 return;
             }
 
+            string old = waifu.ImageSource;
             waifu.ImageSource = url;
 
             if (await WaifuDb.UpdateWaifu(waifu) > 0)
             {
-                await Context.Channel.SendMessageAsync($":white_check_mark: {waifu.Name} updated.");
+                await SendWaifuUpdatedMessage(waifu, "Image Source", old, waifu.ImageSource);
             }
             else
             {
                 await Context.Channel.SendMessageAsync($":x: Failed to update {name}");
                 return;
             }
-
-            // Request for another sauce
-            await Context.Channel.TriggerTypingAsync();
-            Timers.Timer_RequestSauce(new SauceRequest
-            {
-                Channel = Context.Channel,
-                Waifu = waifu
-            }, null);
         }
 
-        [Command("ImageSourceRequest"), Alias("isr"), Summary("Get an image source request.\n**Usage**: `!isr`"), Insider]
-        public async Task ImageSourceRequest([Remainder] string url = null)
+        [Command("ImageSauceRequest"), Alias("isr"), Summary("Get a request for missing image sauce.\n**Usage**: `!wi [name] [image_url]`"), Insider]
+        public async Task ImageSauceRequest(string url = null)
         {
-            // Request for another sauce
-            await Context.Channel.TriggerTypingAsync();
-            Timers.Timer_RequestSauce(new SauceRequest
-            {
-                Channel = Context.Channel
-            }, null);
+            await Timers.Timer_RequestSauce(null, null);
+            await Context.Channel.SendMessageAsync("<#728729035986829342>");
         }
 
-        [Command("MissingSauceList"), Alias("msl"), Summary("List of missing waifu sauce.\n**Usage**: `!isr`"), Insider]
-        public async Task MissingSauceList([Remainder] string url = null)
-        {
-            using var db = new NamikoDbContext();
-            var waifus = await db.Waifus.Where(x => x.ImageSource.Equals("missing")).OrderBy(x => x.Name).Select(x => x.Name).ToListAsync();
-
-            await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared(String.Join("\n", waifus).Substring(2000)).Build());
-        }
-
-        [Command("GetWaifu"), Alias("wis"), Summary("Set waifu image source.\n**Usage**: `!wi [name] [image_url]`"), Insider]
+        [Command("GetWaifu"), Summary("Get details about a waifu.\n**Usage**: `!wi [name] [image_url]`"), Insider]
         public async Task WaifuImageSource([Remainder] string name)
         {
             var waifu = await WaifuUtil.ProcessWaifuListAndRespond(await WaifuDb.SearchWaifus(name, true, null, true), this);
@@ -797,7 +783,9 @@ namespace Namiko
                 if (line.StartsWith('('))
                     continue;
 
-                desc += line + '\n' + '\n';
+                var l = Regex.Replace(line, @"\t|\n|\r|\\n|\\t|\\r", "");
+                if (l != "")
+                    desc += l + "\n\n";
             }
             //desc.Replace(@"\r", @"\n\n");
             waifu.Description = desc;
@@ -851,7 +839,9 @@ namespace Namiko
                 if (line.StartsWith('('))
                     continue;
 
-                desc += line + '\n' + '\n';
+                var l = Regex.Replace(line, @"\t|\n|\r|\\n|\\t|\\r", "");
+                if (l != "")
+                    desc += l + "\n\n";
             }
             waifu.Description = desc;
             waifu.Source = mal.Animeography.FirstOrDefault() == null ? "" : mal.Animeography.FirstOrDefault().Name;
@@ -917,6 +907,21 @@ namespace Namiko
             await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Waifu, true);
             await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Gacha, true);
             await Context.Channel.SendMessageAsync("Waifu Shop and Gacha Shop reset.");
+        }
+
+
+        private async Task SendWaifuUpdatedMessage(Waifu waifu, string field, string oldVal, string newVal)
+        {
+            var author = Context.User;
+
+            var eb = new EmbedBuilder()
+                .WithAuthor($"{waifu.Name} - {field} updated", waifu.ImageUrl)
+                .AddField("New", newVal == null || newVal == "" ? "-" : newVal, true)
+                .AddField("Old", oldVal == null || oldVal == "" ? "-" : oldVal, true)
+                .WithColor(BasicUtil.RandomColor())
+                .WithFooter(author.Username + "#" + author.Discriminator, author.GetAvatarUrl());
+
+            await Context.Channel.SendMessageAsync(embed: eb.Build());
         }
     }
 }

@@ -1,0 +1,18 @@
+﻿
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.namiko-navbar {
+    background-color: rgba(30, 30, 30, 0.50);
+}
+
+.box-shadow {
+  box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
+}

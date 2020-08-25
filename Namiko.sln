@@ -5,7 +5,9 @@ VisualStudioVersion = 16.0.29613.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Namiko", "Namiko\Namiko.csproj", "{8D472380-F0CC-445B-A057-087595C9CF1B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Model", "Model\Model.csproj", "{B1C5980F-F862-479A-B3AD-0579D141874F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Model", "Model\Model.csproj", "{B1C5980F-F862-479A-B3AD-0579D141874F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Website", "Website\Website.csproj", "{D5D53C75-E071-4BAB-B20C-0590C9DB407E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{B1C5980F-F862-479A-B3AD-0579D141874F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B1C5980F-F862-479A-B3AD-0579D141874F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B1C5980F-F862-479A-B3AD-0579D141874F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D5D53C75-E071-4BAB-B20C-0590C9DB407E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5D53C75-E071-4BAB-B20C-0590C9DB407E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5D53C75-E071-4BAB-B20C-0590C9DB407E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D5D53C75-E071-4BAB-B20C-0590C9DB407E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

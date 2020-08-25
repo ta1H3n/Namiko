@@ -484,7 +484,7 @@ namespace Namiko
             Console.WriteLine("Total: " + total);
         }
 
-        [Command("CreateCommandSchema"), Summary("Copies command info to the database")]
+        [Command("CreateCommandSchema"), Summary("Copies command info to the database"), OwnerPrecondition]
         public async Task CreateCommandSchema([Remainder] string str = "")
         {
             var cmds = Program.GetCommands();
@@ -551,6 +551,13 @@ namespace Namiko
             res += await db.SaveChangesAsync();
 
             await ReplyAsync($"Updated db command list. {res} rows affected.");
+        }
+
+        [Command("GuildLeaveEvent"), Summary("Set guild leave tracking."), OwnerPrecondition]
+        public async Task GuildLeaveEvent([Remainder] string str = "")
+        {
+            Program.GuildLeaveEvent = !Program.GuildLeaveEvent;
+            await Context.Channel.SendMessageAsync(Program.GuildLeaveEvent.ToString());
         }
 
         public bool DownloadFile(string url, string path)
