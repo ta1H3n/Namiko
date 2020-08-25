@@ -243,18 +243,13 @@ namespace Namiko
         {
             await Context.Channel.TriggerTypingAsync();
             Subreddit sub = null;
-            try
-            {
-                sub = await RedditAPI.GetSubreddit(name);
-            }
-            catch
-            {
-                await Context.Channel.SendMessageAsync($"Subreddit **{name}** not found.");
-                return;
-            }
 
             var subs = SpecialChannelDb.GetChannelsByGuild(Context.Guild.Id, Model.ChannelType.Reddit);
-            var olds = subs.Where(x => x.Args.Split(",")[0].Equals(sub.Name));
+            var olds = subs.Where(x => x.Args.Split(",")[0].Equals(name, StringComparison.OrdinalIgnoreCase));
+            if (!olds.Any())
+            {
+                await Context.Channel.SendMessageAsync($"Subreddit **{name}** not found. Try `{Program.GetPrefix(Context)}sublist` for a list of your subreddits.");
+            }
             foreach (var old in olds)
             {
                 await SpecialChannelDb.Delete(old);
