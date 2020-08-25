@@ -243,6 +243,14 @@ namespace Namiko
                 }
             }
 
+            // If the command is found and completed but it is a music command in a guild with no premium - set as failed
+            else
+            if ((cmdName == nameof(Music.Join) || cmdName == nameof(Music.Play) || cmdName == nameof(Music.PlayNext) || cmdName == nameof(Music.PlayFirst)) 
+                && !(PremiumDb.IsPremium(context.Guild.Id, PremiumType.GuildPlus) || PremiumDb.IsPremium(context.Guild.Id, PremiumType.Guild)))
+            {
+                success = false;
+            }
+
             // If command is found - save a log of it
             if (cmdName != null)
                 await Stats.LogCommand(cmdName, context, success);
