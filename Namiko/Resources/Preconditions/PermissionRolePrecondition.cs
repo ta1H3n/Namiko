@@ -2,6 +2,7 @@
 using Discord.WebSocket;
 using Model;
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -28,16 +29,21 @@ namespace Namiko
                 return Task.FromResult(PreconditionResult.FromSuccess());
 
             string roles = "";
+            string again = "";
             foreach(var id in ids)
             {
                 var role = context.Guild.GetRole(id);
                 if (role != null)
                     roles += $"• **{role.Name}**\n";
                 else
-                    roles += $"• Unknown role - id: {id}\n";
+                {
+                    roles += $"• Deleted role - id: {id}\n";
+                    again = "Removed deleted roles from requirements... Please try again, Senpai...";
+                    _ = PermissionRoleDb.Delete(id);
+                }
             }
 
-            return Task.FromResult(PreconditionResult.FromError("You need one of these roles to use this command, Senpai...\n" + roles));
+            return Task.FromResult(PreconditionResult.FromError("You need one of these roles to use this command, Senpai...\n" + roles + "\n" + again));
         }
 
         public override string GetName()

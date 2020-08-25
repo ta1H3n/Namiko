@@ -30,6 +30,12 @@ namespace Model
             DbContext.PermissionRoles.RemoveRange(DbContext.PermissionRoles.Where(x => x.RoleId == roleId && x.Type == type));
             await DbContext.SaveChangesAsync();
         }
+        public static async Task Delete(ulong roleId)
+        {
+            using var DbContext = new NamikoDbContext();
+            DbContext.PermissionRoles.RemoveRange(DbContext.PermissionRoles.Where(x => x.RoleId == roleId));
+            await DbContext.SaveChangesAsync();
+        }
         public static async Task DeleteByGuild(ulong guildId)
         {
             using var db = new NamikoDbContext();
