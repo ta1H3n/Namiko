@@ -26,12 +26,14 @@ namespace Model
         public static async Task Delete(ulong channelId, ChannelType type)
         {
             using var db = new NamikoDbContext();
-            var ch = db.SpecialChannels.Where(x => x.ChannelId == channelId && x.Type == type);
-            if (ch != null)
-            {
-                db.SpecialChannels.RemoveRange(ch);
-                await db.SaveChangesAsync();
-            }
+            db.SpecialChannels.RemoveRange(db.SpecialChannels.Where(x => x.ChannelId == channelId && x.Type == type));
+            await db.SaveChangesAsync();
+        }
+        public static async Task Delete(ulong channelId)
+        {
+            using var db = new NamikoDbContext();
+            db.SpecialChannels.RemoveRange(db.SpecialChannels.Where(x => x.ChannelId == channelId));
+            await db.SaveChangesAsync();
         }
         public static async Task Delete(SpecialChannel ch)
         {

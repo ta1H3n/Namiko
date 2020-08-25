@@ -660,6 +660,8 @@ namespace Namiko
         public static async Task Post(IGrouping<string, RedditChannel> sub)
         {
             var hot = await RedditAPI.GetHot(sub.Key);
+            if (hot == null)
+                return;
 
             foreach (var post in hot)
             {
@@ -733,6 +735,10 @@ namespace Namiko
                     try
                     {
                         var ch = client.GetChannel(x.ChannelId);
+                        if (ch == null)
+                        {
+                            _ = SpecialChannelDb.Delete(x.ChannelId);
+                        }
                         if (ch.GetType() == typeof(SocketTextChannel))
                             channels.Add(new RedditChannel
                             {

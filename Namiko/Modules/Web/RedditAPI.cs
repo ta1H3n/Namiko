@@ -1,18 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.Threading.Tasks;
-using Namiko.Data;
+﻿using Namiko.Data;
 using Newtonsoft.Json;
 using Reddit;
 using Reddit.Controllers;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace Namiko
 {
     public static class RedditAPI
     {
-        private static Reddit.RedditClient Client;
+        private static RedditClient Client;
 
         public static void RedditSetup()
         {
@@ -31,11 +29,14 @@ namespace Namiko
 
         public static async Task<List<Post>> GetHot(string subredditName, int limit = 15)
         {
-            var sub = Client.Subreddit(subredditName);
-            List<Post> posts = null;
-            await Task.Run(() => posts = sub.Posts.GetHot(limit: limit));
-
-            return posts;
+            try
+            {
+                var sub = Client.Subreddit(subredditName);
+                List<Post> posts = null;
+                await Task.Run(() => posts = sub.Posts.GetHot(limit: limit));
+                return posts;
+            }
+            catch { return null; }
         }
 
         public static async Task<Subreddit> GetSubreddit(string subredditName)
