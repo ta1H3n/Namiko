@@ -239,7 +239,7 @@ namespace Namiko
 
         [RequireGuild]
         [Command("Unsubscribe"), Alias("unsub"), Summary("Unsubscribe from a subreddit.\n**Usage**: `!unsub [subreddit_name]`"), CustomUserPermission(GuildPermission.ManageChannels)]
-        public async Task Subreddit(string name)
+        public async Task Unsubscribe(string name)
         {
             await Context.Channel.TriggerTypingAsync();
             Subreddit sub = null;
@@ -253,7 +253,7 @@ namespace Namiko
             foreach (var old in olds)
             {
                 await SpecialChannelDb.Delete(old);
-                await Context.Channel.SendMessageAsync($"Unsubscribed from **{sub.Name}**. Were their posts not good enough?");
+                await Context.Channel.SendMessageAsync($"Unsubscribed from **{name}**. Were their posts not good enough?");
             }
         }
 
