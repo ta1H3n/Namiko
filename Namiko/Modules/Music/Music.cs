@@ -877,7 +877,7 @@ namespace Namiko
             else
             {
                 await PermissionRoleDb.Add(role.Id, Context.Guild.Id, RoleType.Music);
-                await Context.Channel.SendMessageAsync($"Users who have **{role.Name}** will now able to control music. <:NadeYay:564880253382819860>");
+                await Context.Channel.SendMessageAsync($"Users who have **{role.Name}** will now be able to control music. <:NadeYay:564880253382819860>");
                 return;
             }
         }
