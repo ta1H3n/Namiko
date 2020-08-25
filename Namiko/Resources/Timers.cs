@@ -700,7 +700,7 @@ namespace Namiko
         {
             var eb = new EmbedBuilder()
                         .WithColor(BasicUtil.RandomColor())
-                        .WithAuthor(post.Title, "https://i.imgur.com/GthCice.png", "https://www.reddit.com" + post.Permalink)
+                        .WithAuthor(post.Title.Substring(0, 250), "https://i.imgur.com/GthCice.png", "https://www.reddit.com" + post.Permalink)
                         .WithFooter("r/" + sub + " - " + post.UpVotes + " upvotes");
             try
             {
