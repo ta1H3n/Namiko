@@ -2,6 +2,7 @@
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
+using Microsoft.EntityFrameworkCore;
 using Model;
 using System;
 using System.Collections.Generic;
@@ -262,7 +263,10 @@ namespace Namiko
                 }
             };
             msg.Fields = fields;
-            msg.ThumbnailUrl = WaifuDb.GetWaifu(waifus.First().Key).ImageUrl;
+            if (waifus.Any())
+            {
+                msg.ThumbnailUrl = WaifuDb.GetWaifu(waifus.First().Key).ImageUrl;
+            }
 
             await PagedReplyAsync(msg);
         }
@@ -683,7 +687,7 @@ namespace Namiko
             await WaifuUtil.DownloadWaifuImageToServer(waifu, Context.Channel);
         }
 
-        [Command("WaifuImageSource"), Alias("wis"), Summary("Set waifu image source.\n**Usage**: `!wi [name] [image_url]`"), Insider]
+        [Command("WaifuImageSource"), Alias("wis"), Summary("Set waifu image source.\n**Usage**: `!wis [name] [image_sauce]`"), Insider]
         public async Task WaifuImageSource(string name, string url = null)
         {
             var waifu = await WaifuUtil.ProcessWaifuListAndRespond(await WaifuDb.SearchWaifus(name, true), this);
