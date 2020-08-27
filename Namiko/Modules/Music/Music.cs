@@ -98,6 +98,16 @@ namespace Namiko
             var player = Player;
             var current = (Context.Guild.CurrentUser as IGuildUser)?.VoiceChannel;
 
+            var perms = Context.Guild.CurrentUser.GetPermissions(user.VoiceChannel);
+            if (!perms.Connect)
+            {
+                await ReplyAsync($"I don't have the permission to **Connect** to **{user.VoiceChannel.Name}**, Senpai...\n");
+            }
+            if (!perms.Speak)
+            {
+                await ReplyAsync($"I don't have the permission to **Speak** in **{user.VoiceChannel.Name}**, Senpai...\n");
+            }
+
             if (player == null)
             {
                 if (current != null)
