@@ -919,8 +919,8 @@ namespace Namiko
 
             var eb = new EmbedBuilder()
                 .WithAuthor($"{waifu.Name} - {field} updated", waifu.ImageUrl)
-                .AddField("New", newVal == null || newVal == "" ? "-" : newVal, true)
-                .AddField("Old", oldVal == null || oldVal == "" ? "-" : oldVal, true)
+                .AddField("New", newVal == null || newVal == "" ? "-" : newVal.ShortenString(1200, 1200, " ..."), true)
+                .AddField("Old", oldVal == null || oldVal == "" ? "-" : oldVal.ShortenString(1200, 1200, " ..."), true)
                 .WithColor(BasicUtil.RandomColor())
                 .WithFooter(author.Username + "#" + author.Discriminator, author.GetAvatarUrl());
 
