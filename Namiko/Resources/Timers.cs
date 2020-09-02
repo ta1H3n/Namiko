@@ -689,7 +689,20 @@ namespace Namiko
                     }
                     catch (Exception ex)
                     {
-                        SentrySdk.CaptureException(ex);
+                        if (ex is Discord.Net.HttpException)
+                        {
+                            await SpecialChannelDb.Delete(ch.Channel.Id);
+                            await ch.Channel.Guild.Owner.SendMessageAsync(embed: new EmbedBuilder()
+                                .WithTitle($"r/{ch.Subreddit} subscription cancel")
+                                .WithDescription($"I do not have permission to send messages to channel **{ch.Channel.Name}**. Therefore, I cannot send posts from your subscribed subreddit.\n\n" +
+                                $"I have automatically unsubscribed. If you would like to subscribe again, use the `subreddit` command and make sure I have the permission to send messages in the channel.")
+                                .WithColor(Color.DarkRed)
+                                .Build());
+                        }
+                        else
+                        {
+                            SentrySdk.CaptureException(ex);
+                        }
                     }
                 }
 
