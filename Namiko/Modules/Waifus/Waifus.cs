@@ -917,10 +917,13 @@ namespace Namiko
         {
             var author = Context.User;
 
+            newVal = newVal == null || newVal == "" ? "-" : newVal.ShortenString(1000, 1000, " ...");
+            oldVal = oldVal == null || oldVal == "" ? "-" : oldVal.ShortenString(1000, 1000, " ...");
+
             var eb = new EmbedBuilder()
                 .WithAuthor($"{waifu.Name} - {field} updated", waifu.ImageUrl)
-                .AddField("New", newVal == null || newVal == "" ? "-" : newVal.ShortenString(1200, 1200, " ..."), true)
-                .AddField("Old", oldVal == null || oldVal == "" ? "-" : oldVal.ShortenString(1200, 1200, " ..."), true)
+                .AddField("New", newVal, true)
+                .AddField("Old", oldVal, true)
                 .WithColor(BasicUtil.RandomColor())
                 .WithFooter(author.Username + "#" + author.Discriminator, author.GetAvatarUrl());
 
