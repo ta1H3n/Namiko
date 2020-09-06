@@ -24,8 +24,6 @@ namespace Website
         {
             NamikoDbContext.ConnectionString = Configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<NamikoDbContext>();
-            //services.AddAuthentication()
-            //    .AddIdentityServerJwt();
 
             services.AddAuthentication(options =>
             {
@@ -33,8 +31,8 @@ namespace Website
             })
                 .AddCookie(options =>
                 {
-                    options.LoginPath = "/signin";
-                    options.LogoutPath = "/signout";
+                    options.LoginPath = "/authentication/login";
+                    options.LogoutPath = "/authentication/logout";
                 })
                 .AddDiscord(options =>
                 {

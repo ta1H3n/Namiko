@@ -7,6 +7,7 @@ import { Waifus } from './components/waifus/Waifus';
 import { Commands } from './components/commands/Commands';
 import { Guide } from './components/commands/Guide';
 import { WaifuShop } from './components/waifus/WaifuShop';
+import { LoginState } from './components/authentication/LoginState'
 
 import './custom.css';
 
@@ -23,6 +24,7 @@ export default class App extends Component {
                         <Route path='/commands' component={GaTracker(Commands)} />
                         <Route path='/guide' component={GaTracker(Guide)} />
                         <Route path='/waifushop/:handle' component={GaTracker(WaifuShop)} />
+                        <Route path='/authenticationcallback' component={GaTracker(LoginState)} />
 
                         <Redirect to='/' />
                     </Switch>
