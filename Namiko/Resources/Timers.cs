@@ -680,29 +680,39 @@ namespace Namiko
                 {
                     try
                     {
-                        var msg = await ch.Channel.SendMessageAsync(embed: embed);
-                        _ = Task.Run(async () =>
-                        {
-                            await msg.AddReactionAsync(Emote.Parse("<:SignUpvote:577919849250947072>"));
-                            await msg.AddReactionAsync(Emote.Parse("<:SignDownvote:577919848554823680>"));
-                        });
-                    }
-                    catch (Exception ex)
-                    {
-                        if (ex is Discord.Net.HttpException)
+                        if (!ch.Channel.Guild.CurrentUser.GetPermissions(ch.Channel).Has(ChannelPermission.SendMessages) || !ch.Channel.Guild.CurrentUser.GetPermissions(ch.Channel).Has(ChannelPermission.EmbedLinks))
                         {
                             await SpecialChannelDb.Delete(ch.Channel.Id);
+                            SentrySdk.WithScope(scope =>
+                            {
+                                scope.SetExtras(ch.GetProperties());
+                                SentrySdk.CaptureMessage("Deleted subreddit channel");
+                            });
+
                             await ch.Channel.Guild.Owner.SendMessageAsync(embed: new EmbedBuilder()
                                 .WithTitle($"r/{ch.Subreddit} subscription cancel")
                                 .WithDescription($"I do not have permission to send messages to channel **{ch.Channel.Name}**. Therefore, I cannot send posts from your subscribed subreddit.\n\n" +
-                                $"I have automatically unsubscribed. If you would like to subscribe again, use the `subreddit` command and make sure I have the permission to send messages in the channel.")
+                                $"I have automatically unsubscribed. If you would like to subscribe again, use the `subreddit` command and make sure I have the permission to send messages and embed links in the channel.")
                                 .WithColor(Color.DarkRed)
                                 .Build());
                         }
                         else
                         {
-                            SentrySdk.CaptureException(ex);
+                            var msg = await ch.Channel.SendMessageAsync(embed: embed);
+                            _ = Task.Run(async () =>
+                            {
+                                await msg.AddReactionAsync(Emote.Parse("<:SignUpvote:577919849250947072>"));
+                                await msg.AddReactionAsync(Emote.Parse("<:SignDownvote:577919848554823680>"));
+                            });
                         }
+                    }
+                    catch (Exception ex)
+                    {
+                        SentrySdk.WithScope(scope =>
+                        {
+                            scope.SetExtras(ch.GetProperties());
+                            SentrySdk.CaptureException(ex);
+                        });
                     }
                 }
 
@@ -713,7 +723,7 @@ namespace Namiko
         {
             var eb = new EmbedBuilder()
                         .WithColor(BasicUtil.RandomColor())
-                        .WithAuthor(post.Title.Substring(0, 250), "https://i.imgur.com/GthCice.png", "https://www.reddit.com" + post.Permalink)
+                        .WithAuthor(post.Title.ShortenString(200, 197), "https://i.imgur.com/GthCice.png", "https://www.reddit.com" + post.Permalink)
                         .WithFooter("r/" + sub + " - " + post.UpVotes + " upvotes");
             try
             {
@@ -741,7 +751,7 @@ namespace Namiko
         {
             var client = Program.GetClient();
             var channels = new List<RedditChannel>();
-            await Task.Run(() =>
+            await Task.Run(async () =>
             {
                 foreach (var x in ids)
                 {
@@ -750,15 +760,22 @@ namespace Namiko
                         var ch = client.GetChannel(x.ChannelId);
                         if (ch == null)
                         {
-                            _ = SpecialChannelDb.Delete(x.ChannelId);
+                            await SpecialChannelDb.Delete(x.ChannelId);
+                            SentrySdk.WithScope(scope =>
+                            {
+                                scope.SetExtras(x.GetProperties());
+                                SentrySdk.CaptureMessage("Deleted subreddit channel");
+                            });
                         }
-                        if (ch.GetType() == typeof(SocketTextChannel))
+                        else if (ch.GetType() == typeof(SocketTextChannel)) 
+                        {
                             channels.Add(new RedditChannel
                             {
                                 Channel = (SocketTextChannel)ch,
                                 Subreddit = x.Args.Split(',')[0],
                                 Upvotes = Int32.Parse(x.Args.Split(',')[1])
                             });
+                        }
                     }
                     catch (Exception ex)
                     {
