@@ -33,11 +33,18 @@ namespace Website
                 {
                     options.LoginPath = "/authentication/login";
                     options.LogoutPath = "/authentication/logout";
+                    options.AccessDeniedPath = "/authentication/forbidden";
+                    options.SlidingExpiration = true;
+                    options.Cookie.IsEssential = true;
+                    options.Cookie.HttpOnly = false;
                 })
                 .AddDiscord(options =>
                 {
-                    options.ClientId = Configuration.GetValue<string>("Discord:ClientId");
-                    options.ClientSecret = Configuration.GetValue<string>("Discord:ClientSecret");
+                    options.ClientId = Configuration["Discord:ClientId"];
+                    options.ClientSecret = Configuration["Discord:ClientSecret"];
+                    options.Scope.Add("identify");
+                    options.Scope.Add("guilds");
+                    options.SaveTokens = true;
                 });
 
             services.AddControllers();

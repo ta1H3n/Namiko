@@ -2,9 +2,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
+using Website.Models;
 
 namespace Website.Controllers
 {
@@ -13,24 +11,9 @@ namespace Website.Controllers
     public class AuthenticationController : ControllerBase
     {
         [HttpGet]
-        public object Info()
+        public User UserInfo()
         {
-            try
-            {
-                var values = new List<KeyValuePair<string, string>>();
-                var claims = HttpContext.User.Claims;
-                var user = new UserInfo
-                {
-                    Id = claims.First(x => x.Type == ClaimTypes.NameIdentifier).Value,
-                    Name = claims.First(x => x.Type == ClaimTypes.Name).Value,
-                    Discriminator = claims.First(x => x.Type == "urn:discord:user:discriminator").Value,
-                    AvatarHash = claims.First(x => x.Type == "urn:discord:avatar:hash").Value,
-                    AvatarUrl = claims.First(x => x.Type == "urn:discord:avatar:url").Value,
-                    LoggedIn = true
-                };
-                return user;
-            }
-            catch { return new UserInfo { LoggedIn = false }; }
+            return HttpContext.GetUser();
         }
 
         [HttpGet("login")]
@@ -57,14 +40,11 @@ namespace Website.Controllers
             return SignOut(new AuthenticationProperties { RedirectUri = returnUrl }, CookieAuthenticationDefaults.AuthenticationScheme);
         }
 
-        private class UserInfo
+        [HttpGet("forbidden")]
+        [HttpPost("forbidden")]
+        public IActionResult Forbidden([FromQuery] string returnUrl = null)
         {
-            public string Id { get; set; }
-            public string Name { get; set; }
-            public string Discriminator { get; set; }
-            public string AvatarHash { get; set; }
-            public string AvatarUrl { get; set; }
-            public bool LoggedIn { get; set; }
+            return Forbidden(returnUrl);
         }
     }
 }
