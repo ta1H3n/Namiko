@@ -242,7 +242,6 @@ namespace Namiko
         public async Task Unsubscribe(string name)
         {
             await Context.Channel.TriggerTypingAsync();
-            Subreddit sub = null;
 
             var subs = SpecialChannelDb.GetChannelsByGuild(Context.Guild.Id, Model.ChannelType.Reddit);
             var olds = subs.Where(x => x.Args.Split(",")[0].Equals(name, StringComparison.OrdinalIgnoreCase));

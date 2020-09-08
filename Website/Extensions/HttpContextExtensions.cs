@@ -12,6 +12,9 @@ namespace Website
 {
     public static class HttpContextExtensions
     {
+        public static string BotToken { get; set; }
+        private static DiscordRestClient BotClient { get; set; }
+
         public static ulong GetUserId(this HttpContext http)
         {
             var claim = http.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier);
@@ -54,6 +57,16 @@ namespace Website
 
             else
                 return await DiscordRestClientService.GetClient(id, token);
+        }
+
+        public static async Task<DiscordRestClient> GetBotClient(this HttpContext http)
+        {
+            if (BotClient == null || BotClient.LoginState == Discord.LoginState.LoggedOut)
+            {
+                BotClient = new DiscordRestClient();
+                await BotClient.LoginAsync(Discord.TokenType.Bot, BotToken);
+            }
+            return BotClient;
         }
     }
 }

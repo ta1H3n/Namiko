@@ -17,7 +17,7 @@ namespace Website.Services
 
         public static async Task<DiscordRestClient> GetClient(ulong userId, string accessToken)
         {
-            if (DiscordRestClients.TryGetValue(userId, out var client))
+            if (DiscordRestClients.TryGetValue(userId, out var client) && client.LoginState == Discord.LoginState.LoggedIn)
             {
                 ((TimedDiscordRestClient)client).ResetTimer();
                 return client;

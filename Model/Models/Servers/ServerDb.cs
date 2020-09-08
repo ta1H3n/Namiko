@@ -58,10 +58,10 @@ namespace Model
             db.Servers.AddRange(servers);
             return await db.SaveChangesAsync();
         }
-        public static List<Server> GetAll()
+        public static HashSet<ulong> GetAll()
         {
             using var db = new NamikoDbContext();
-            return db.Servers.ToList();
+            return db.Servers.Select(x => x.GuildId).ToHashSet();
         }
         public static List<Server> GetLeft()
         {

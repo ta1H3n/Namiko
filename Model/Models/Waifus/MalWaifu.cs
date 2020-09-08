@@ -7,7 +7,7 @@ namespace Model
     public class MalWaifu
     {
         [Key]
-        [ForeignKey("Waifu")]
+        [ForeignKey(nameof(Model.Waifu))]
         public string WaifuName { get; set; }
         public long MalId { get; set; }
         public bool MalConfirmed { get; set; }

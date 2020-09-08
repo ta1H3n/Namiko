@@ -265,7 +265,7 @@ namespace Namiko
             msg.Fields = fields;
             if (waifus.Any())
             {
-                msg.ThumbnailUrl = WaifuDb.GetWaifu(waifus.First().Key).ImageUrl;
+                msg.ThumbnailUrl = (await WaifuDb.GetWaifu(waifus.First().Key)).ImageUrl;
             }
 
             await PagedReplyAsync(msg);
@@ -287,7 +287,7 @@ namespace Namiko
                 }
             };
             msg.Fields = fields;
-            msg.ThumbnailUrl = WaifuDb.GetWaifu(waifus.First().Key).ImageUrl;
+            msg.ThumbnailUrl = (await WaifuDb.GetWaifu(waifus.First().Key)).ImageUrl;
 
             await PagedReplyAsync(msg);
         }
@@ -746,14 +746,14 @@ namespace Namiko
         [Command("RenameWaifu"), Alias("rw"), Summary("Change a waifu's primary name.\n**Usage**: `!rw [oldName] [newName]`"), Insider]
         public async Task RenameWaifu(string oldName, string newName)
         {
-            var waifu = WaifuDb.GetWaifu(oldName);
+            var waifu = await WaifuDb.GetWaifu(oldName);
             if(waifu == null)
             {
                 await Context.Channel.SendMessageAsync($"**{oldName}** doesn't exist. *BAAAAAAAAAAAAAAAAAAKA*");
                 return;
             }
 
-            waifu = WaifuDb.GetWaifu(newName);
+            waifu = await WaifuDb.GetWaifu(newName);
             if (waifu != null)
             {
                 await Context.Channel.SendMessageAsync($"**{newName}** already exists! *BAAAAAAAAAAAAAAAAAAKA*");
@@ -767,7 +767,7 @@ namespace Namiko
         [Command("AutocompleteWaifu"), Alias("acw"), Summary("Auto completes a waifu using MAL.\n**Usage**: `!acw [name] [MAL_ID]`"), Insider]
         public async Task AutocompleteWaifu(string name, long malId)
         {
-            var waifu = WaifuDb.GetWaifu(name);
+            var waifu = await WaifuDb.GetWaifu(name);
             if (waifu == null)
             {
                 await Context.Channel.SendMessageAsync($"**{name}** doesn't exist. *BAAAAAAAAAAAAAAAAAAKA*");

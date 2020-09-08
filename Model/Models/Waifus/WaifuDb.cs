@@ -8,10 +8,10 @@ namespace Model
 {
     public class WaifuDb
     {
-        public static Waifu GetWaifu(string name)
+        public static async Task<Waifu> GetWaifu(string name)
         {
             using var db = new NamikoDbContext();
-            return db.Waifus.FirstOrDefault(x => x.Name == name);
+            return await db.Waifus.Include(x => x.Mal).FirstOrDefaultAsync(x => x.Name == name);
         }
         public static async Task<int> AddWaifu(Waifu waifu)
         {

@@ -28,5 +28,16 @@ namespace Model
         public string ImageLarge { get { return Name + "+" + ImgurId + "l." + ImageFileType; } }
         [NotMapped]
         public string ImageRaw { get { return Name + "+" + ImgurId + "." + ImageFileType; } }
+
+        public int GetPrice()
+        {
+            return Tier == 1 ? 20000 :
+                Tier == 2 ? 10000 :
+                Tier == 3 ? 5000 :
+                Tier == 0 ? 100000 :
+
+                //default
+                0;
+        }
     }
 }
