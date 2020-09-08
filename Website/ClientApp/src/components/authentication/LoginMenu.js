@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Nav } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
+import Cookies from 'js-cookie';
 
 export class LoginMenu extends Component {
     constructor(props) {
@@ -8,7 +9,7 @@ export class LoginMenu extends Component {
     }
 
     render() {
-        if (localStorage.getItem("id")) {
+        if (localStorage.getItem("id") && Cookies.get(".AspNetCore.Cookies")) {
             return this.authenticatedView();
         } else {
             return this.anonymousView();

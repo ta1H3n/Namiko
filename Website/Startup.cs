@@ -1,3 +1,4 @@
+using Discord.Rest;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -7,6 +8,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Model;
+using System;
+using System.Threading.Tasks;
 
 namespace Website
 {
@@ -33,7 +36,16 @@ namespace Website
                 {
                     options.LoginPath = "/authentication/login";
                     options.LogoutPath = "/authentication/logout";
-                    options.AccessDeniedPath = "/authentication/forbidden";
+                    options.Events.OnRedirectToLogin = context =>
+                    {
+                        context.Response.StatusCode = 401;
+                        return Task.CompletedTask;
+                    };
+                    options.Events.OnRedirectToAccessDenied = context =>
+                    {
+                        context.Response.StatusCode = 401;
+                        return Task.CompletedTask;
+                    };
                     options.SlidingExpiration = true;
                     options.Cookie.IsEssential = true;
                     options.Cookie.HttpOnly = false;

@@ -39,12 +39,5 @@ namespace Website.Controllers
 
             return SignOut(new AuthenticationProperties { RedirectUri = returnUrl }, CookieAuthenticationDefaults.AuthenticationScheme);
         }
-
-        [HttpGet("forbidden")]
-        [HttpPost("forbidden")]
-        public IActionResult Forbidden([FromQuery] string returnUrl = null)
-        {
-            return Forbidden(returnUrl);
-        }
     }
 }

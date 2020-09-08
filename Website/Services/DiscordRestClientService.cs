@@ -8,7 +8,7 @@ namespace Website.Services
 {
     public static class DiscordRestClientService
     {
-        public static Dictionary<ulong, DiscordRestClient> DiscordRestClients { get; set; }
+        public static Dictionary<ulong, DiscordRestClient> DiscordRestClients { get;}
 
         static DiscordRestClientService()
         {

@@ -1,6 +1,5 @@
 ﻿import React, { Component } from 'react';
 import { Redirect } from "react-router-dom";
-import { Container } from 'reactstrap';
 
 export class LoginState extends Component {
     static displayName = LoginState.name;
@@ -18,15 +17,13 @@ export class LoginState extends Component {
 
     render() {
         let contents = this.state.loading
-            ? <h4 className="text-muted text-center align-middle"><em>Signing in...</em></h4>
+            ? <h4 className="text-muted text-center align-middle mt-3"><em>Processing login...</em></h4>
             : <Redirect to='/' />
 
         return (
-            <Container>
-                <div>
-                    {contents}
-                </div>
-            </Container>
+            <div>
+                {contents}
+            </div>
         );
     }
 
