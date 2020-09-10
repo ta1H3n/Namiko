@@ -19,6 +19,8 @@ namespace Website.Models
         public int Daily { get; set; }
         public int Balance { get; set; }
 
+        public WaifuView Waifu { get; set; }
+
         public List<WaifuView> Waifus { get; set; }
         public int WaifuAmount { get { return Waifus.Count; } }
         public int WaifuValue { get { return Waifus.Sum(x => x.GetPrice()); } }

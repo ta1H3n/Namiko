@@ -23,7 +23,7 @@ namespace Website.Controllers
             if (returnUrl == null)
                 returnUrl = "/authenticationcallback";
             else
-                returnUrl = "/authenticationcallback&#63;returnUrl=" + returnUrl;
+                returnUrl = "/authenticationcallback?returnUrl=" + returnUrl;
 
             return Challenge(new AuthenticationProperties { RedirectUri = returnUrl }, "Discord");
         }
@@ -35,7 +35,7 @@ namespace Website.Controllers
             if (returnUrl == null)
                 returnUrl = "/authenticationcallback";
             else
-                returnUrl = "/authenticationcallback&#63;returnUrl=" + returnUrl;
+                returnUrl = "/authenticationcallback?returnUrl=" + returnUrl;
 
             return SignOut(new AuthenticationProperties { RedirectUri = returnUrl }, CookieAuthenticationDefaults.AuthenticationScheme);
         }

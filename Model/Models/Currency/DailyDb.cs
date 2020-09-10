@@ -13,6 +13,11 @@ namespace Model
             using var DbContext = new NamikoDbContext();
             return DbContext.Dailies.Where(x => x.UserId == UserId && x.GuildId == GuildId).FirstOrDefault();
         }
+        public static async Task<Daily> GetDailyAsync(ulong UserId, ulong GuildId)
+        {
+            using var DbContext = new NamikoDbContext();
+            return await DbContext.Dailies.Where(x => x.UserId == UserId && x.GuildId == GuildId).FirstOrDefaultAsync();
+        }
         public static async Task SetDaily(Daily Daily)
         {
             using var DbContext = new NamikoDbContext();

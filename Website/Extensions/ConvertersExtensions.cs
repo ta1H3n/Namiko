@@ -8,7 +8,7 @@ namespace Website.Extensions
 {
     public static class ConvertersExtensions
     {
-        public static List<WaifuView> ToView(this List<Waifu> waifus)
+        public static List<WaifuView> ToView(this IEnumerable<Waifu> waifus)
         {
             var res = waifus.Select(x => new WaifuView
             {

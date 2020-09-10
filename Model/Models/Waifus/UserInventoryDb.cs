@@ -23,7 +23,11 @@ namespace Model
         {
             using var DbContext = new NamikoDbContext();
             return DbContext.UserInventories.Where(x => x.UserId == userId && x.GuildId == guildId).Select(x => x.Waifu).ToList();
-
+        }
+        public static async Task<List<Waifu>> GetWaifusAsync(ulong userId, ulong guildId)
+        {
+            using var DbContext = new NamikoDbContext();
+            return await DbContext.UserInventories.Where(x => x.UserId == userId && x.GuildId == guildId).Select(x => x.Waifu).ToListAsync();
         }
         public static async Task DeleteWaifu(ulong userId, Waifu waifu, ulong guildId)
         {

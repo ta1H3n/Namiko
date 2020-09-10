@@ -21,9 +21,9 @@ export class Commands extends Component {
 
     render() {
         let contents = this.state.loading
-            ? <h4 className="text-muted text-center align-middle"><em>Loading...</em></h4>
+            ? <h3 className="text-muted text-center align-middle mt-5"><em>Loading...</em></h3>
             : this.state.modules.length === 0
-                ? <h4 className="text-muted text-center align-middle"><em>No Results...</em></h4>
+                ? <h3 className="text-muted text-center align-middle mt-5"><em>No Results...</em></h3>
                 : <Modules modules={this.state.display} />
 
         return (

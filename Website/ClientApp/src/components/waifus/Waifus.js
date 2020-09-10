@@ -1,5 +1,5 @@
 ﻿import React, { Component } from 'react';
-import { Table } from './Table'
+import { WaifuTable } from './Table'
 import { Container } from 'reactstrap';
 import './Waifus.css';
 
@@ -19,12 +19,12 @@ export class Waifus extends Component {
 
     render() {
         let contents = this.state.loading
-            ? <h4 className="text-muted text-center align-middle"><em>Loading...</em></h4>
+            ? <h3 className="text-muted text-center align-middle mt-5"><em>Loading...</em></h3>
             : this.state.waiting
             ? Waifus.waitingInfo()
             : this.state.waifus.length === 0
             ? Waifus.waitingInfo("No results...")
-            : <Table waifus={this.state.waifus} />
+            : <WaifuTable waifus={this.state.waifus} />
 
         return (
             <div className="container-waifus">

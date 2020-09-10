@@ -7,18 +7,24 @@ export class LoginState extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            loading: true
+            loading: true,
+            returnUrl: '/'
         };
     }
 
     componentDidMount() {
+        const queryString = require('query-string');
+        const parsed = queryString.parse(window.location.search).returnUrl
+        if (parsed) {
+            this.setState({ returnUrl: parsed });
+        }
         this.updateState();
     }
 
     render() {
         let contents = this.state.loading
-            ? <h4 className="text-muted text-center align-middle mt-3"><em>Processing login...</em></h4>
-            : <Redirect to='/' />
+            ? <h3 className="text-muted text-center align-middle mt-5"><em>Processing login...</em></h3>
+            : <Redirect to={this.state.returnUrl} />
 
         return (
             <div>
@@ -28,7 +34,7 @@ export class LoginState extends Component {
     }
 
     async updateState() {
-        var query = "authentication";
+        const query = "authentication";
         const response = await fetch(query);
         const data = await response.json();
         if (data.loggedIn === true) {

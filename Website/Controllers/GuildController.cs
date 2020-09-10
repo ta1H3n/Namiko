@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Model;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Website.Extensions;
 using Website.Models;
@@ -50,47 +52,55 @@ namespace Website.Controllers
         public async Task<IActionResult> GetGuildUser([FromRoute] ulong guildId, [FromRoute] ulong userId)
         {
             var client = await HttpContext.GetBotClient();
-            RestGuildUser currentUser = null;
-            RestGuildUser searchUser = null;
+            Task<RestGuildUser> currentUser = client.GetGuildUserAsync(guildId, HttpContext.GetUserId());
+            Task<RestGuildUser> searchUser = client.GetGuildUserAsync(guildId, userId);
+            var guild = client.GetGuildAsync(guildId);
+            var tasks = new List<Task>();
             try
             {
-                currentUser = await client.GetGuildUserAsync(guildId, HttpContext.GetUserId());
-                searchUser = await client.GetGuildUserAsync(guildId, userId);
+                tasks.Add(currentUser);
+                tasks.Add(searchUser);
+                tasks.Add(guild);
+                await Task.WhenAll(tasks);
             }
-            catch (HttpException)
+            catch (HttpException) 
             {
                 return StatusCode(4011, "Bot not in guild");
             }
-            if (currentUser == null)
+            if (currentUser.Result == null)
             {
                 return StatusCode(403, "Unauthorized");
             }
-            if (searchUser == null)
+            if (searchUser.Result == null)
             {
                 return StatusCode(404, "No user in guild");
             }
 
-            var guild = await client.GetGuildAsync(guildId);
-            var profile = await ProfileDb.GetProfile(searchUser.Id);
+            var profile = await ProfileDb.GetProfile(searchUser.Result.Id);
+            var bal = await BalanceDb.GetToastiesAsync(userId, guildId);
+            var daily = (await DailyDb.GetDailyAsync(userId, guildId)).Streak;
+            var waifus = (await UserInventoryDb.GetWaifusAsync(userId, guildId)).OrderBy(x => x.Source).ThenBy(x => x.Name).ToView();
+            var waifu = FeaturedWaifuDb.GetFeaturedWaifu(userId, guildId).ToView();
 
             var user = new GuildUserView
             {
-                AvatarUrl = searchUser.GetAvatarUrl(size: 256),
-                Id = searchUser.Id,
-                Name = searchUser.Nickname,
+                AvatarUrl = searchUser.Result.GetAvatarUrl(size: 256),
+                Id = searchUser.Result.Id,
+                Name = searchUser.Result.Username,
                 ImageUrl = profile.Image,
-                Quote = profile.Quote,
+                Quote = profile.Quote.CleanQuote(),
                 LootboxesOpened = profile.LootboxesOpened,
                 Rep = profile.Rep,
-                Balance = BalanceDb.GetToasties(userId, guildId),
-                Daily = DailyDb.GetDaily(userId, guildId).Streak,
-                Waifus = UserInventoryDb.GetWaifus(userId, guildId).ToView(),
-                JoinedAt = searchUser.JoinedAt,
+                Balance = bal,
+                Daily = daily,
+                Waifus = waifus,
+                JoinedAt = searchUser.Result.JoinedAt,
+                Waifu = waifu,
                 Guild = new GuildSummaryView
                 {
-                    ImageUrl = guild.IconUrl,
-                    Id = guild.Id,
-                    Name = guild.Name
+                    ImageUrl = guild.Result.IconUrl,
+                    Id = guild.Result.Id,
+                    Name = guild.Result.Name
                 }
             };
 

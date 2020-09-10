@@ -42,6 +42,7 @@ export class NavMenu extends Component {
                                 <Nav.Link as={Link} to="/Guide">Guide</Nav.Link>
                                 <Nav.Link as={Link} to="/Commands">Commands</Nav.Link>
                                 <Nav.Link as={Link} to="/Waifus">Waifus</Nav.Link>
+                                <Nav.Link as={Link} to="/Guild/418900885079588884/113677776417980419">GuildUser</Nav.Link>
                             </Nav>
                             <LoginMenu/>
                         </Navbar.Collapse>

@@ -1,5 +1,5 @@
 ﻿import React, { Component } from 'react';
-import { Table } from './Table'
+import { WaifuTable } from './Table'
 import { Container } from 'reactstrap';
 import './Waifus.css';
 
@@ -15,8 +15,8 @@ export class WaifuShop extends Component {
     }
 
     componentDidMount() {
-        const { handle } = this.props.match.params;
-        this.populateWaifus(handle);
+        const { guildId } = this.props.match.params;
+        this.populateWaifus(guildId);
     }
 
     render() {
@@ -35,10 +35,10 @@ export class WaifuShop extends Component {
         );
     }
 
-    async populateWaifus(s) {
+    async populateWaifus(guildId) {
         var query = "api/waifushop";
-        if (s) {
-            query = query + "/" + s;
+        if (guildId) {
+            query = query + "/" + guildId;
         }
         const response = await fetch(query);
         const data = await response.json();
@@ -63,7 +63,7 @@ export class WaifuShop extends Component {
                     <span className="badge color1 col-lg-9 col-md-8 col-sm-7 col-xs-6">Tier {tier}</span>
                     <span className="badge color3 col-lg-3 col-md-4 col-sm-5 col-xs-6">{priceFromTier(tier)} Toasties</span>
                 </h2>
-                <Table waifus={waifus} />
+                <WaifuTable waifus={waifus} />
             </div>
         );
     }

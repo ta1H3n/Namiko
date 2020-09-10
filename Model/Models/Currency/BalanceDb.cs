@@ -13,6 +13,11 @@ namespace Model
             using var DbContext = new NamikoDbContext();
             return DbContext.Toasties.Where(x => x.UserId == UserId && x.GuildId == GuildId).Select(x => x.Amount).FirstOrDefault();
         }
+        public static async Task<int> GetToastiesAsync(ulong UserId, ulong GuildId)
+        {
+            using var DbContext = new NamikoDbContext();
+            return await DbContext.Toasties.Where(x => x.UserId == UserId && x.GuildId == GuildId).Select(x => x.Amount).FirstOrDefaultAsync();
+        }
         public static async Task SetToasties(ulong UserId, int Amount, ulong GuildId)
         {
             using var DbContext = new NamikoDbContext();

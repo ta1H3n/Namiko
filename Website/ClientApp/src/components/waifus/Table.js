@@ -1,8 +1,8 @@
 ﻿import React, { Component } from 'react';
 import { Card } from './Card'
 
-export class Table extends Component {
-    static displayName = Table.name;
+export class WaifuTable extends Component {
+    static displayName = WaifuTable.name;
 
     render() {
         return (
