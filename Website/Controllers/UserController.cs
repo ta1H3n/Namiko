@@ -30,8 +30,9 @@ namespace Website.Controllers
             var user = new UserView
             {
                 AvatarUrl = client.CurrentUser.GetAvatarUrl(size: 256),
-                Id = client.CurrentUser.Id,
+                Id = client.CurrentUser.Id.ToString(),
                 Name = client.CurrentUser.Username,
+                Discriminator = client.CurrentUser.Discriminator,
                 ImageUrl = profile.Image,
                 Quote = profile.Quote,
                 LootboxesOpened = profile.LootboxesOpened,
@@ -39,9 +40,9 @@ namespace Website.Controllers
                 Guilds = guilds.Select(x => new GuildSummaryView
                 {
                     ImageUrl = x.IconUrl,
-                    Id = x.Id,
-                    Name = x.Name
-                }).ToList()
+                    Id = x.Id.ToString(),
+                    Name = x.Name,
+                }).OrderBy(x => x.Name).ToList()
             };
 
             return Ok(user);

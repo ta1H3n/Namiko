@@ -35,7 +35,7 @@ export class GuildUser extends Component {
                 : <>
                     <div className="dashboard-header">
                         <img className="avatar" alt="avatar" src={this.state.res.avatarUrl} /><br />
-                        <h2 className="text-center title-text inline"><strong>{this.state.res.name}</strong><h5 className="inline">#1234</h5></h2>
+                        <h2 className="text-center title-text inline"><strong>{this.state.res.name}</strong><h5 className="inline">#{this.state.res.discriminator}</h5></h2>
                     </div>
                     <Container>
                         <div className="row mt-2">
@@ -84,7 +84,7 @@ export class GuildUser extends Component {
                                     <section className="quote">{this.state.res.quote}</section>
                                 </div>
                                 <div className="row container-adds">
-                                    <img className="img-fluid" alt="custom image" src={this.state.res.imageUrl} /><br />
+                                    <img className="img-fluid" alt={this.state.res.imageUrl} src={this.state.res.imageUrl} /><br />
                                 </div>
                             </div>
                         </div>

@@ -68,6 +68,10 @@
     color: rgb(30, 30, 30);
 }
 
+.card-guild:hover {
+    background-color: rgba(0, 0, 0, 0.70);
+}
+
 
 .search-bar {
     max-width: 1110px;

@@ -9,6 +9,9 @@ namespace Website.Extensions
     {
         public static string CleanQuote(this string str)
         {
+            if (str == null)
+                return null;
+
             str = str.Replace("`", "");
             str = str.Replace("*", "");
             return str;

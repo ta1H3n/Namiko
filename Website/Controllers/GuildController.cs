@@ -40,7 +40,7 @@ namespace Website.Controllers
             var guild = new GuildView
             {
                 ImageUrl = res.IconUrl,
-                Id = res.Id,
+                Id = res.Id.ToString(),
                 Name = res.Name
             };
 
@@ -78,15 +78,17 @@ namespace Website.Controllers
 
             var profile = await ProfileDb.GetProfile(searchUser.Result.Id);
             var bal = await BalanceDb.GetToastiesAsync(userId, guildId);
-            var daily = (await DailyDb.GetDailyAsync(userId, guildId)).Streak;
+            var dailyRes = await DailyDb.GetDailyAsync(userId, guildId);
+            var daily = dailyRes == null ? 0 : dailyRes.Streak;
             var waifus = (await UserInventoryDb.GetWaifusAsync(userId, guildId)).OrderBy(x => x.Source).ThenBy(x => x.Name).ToView();
             var waifu = FeaturedWaifuDb.GetFeaturedWaifu(userId, guildId).ToView();
 
             var user = new GuildUserView
             {
                 AvatarUrl = searchUser.Result.GetAvatarUrl(size: 256),
-                Id = searchUser.Result.Id,
+                Id = searchUser.Result.Id.ToString(),
                 Name = searchUser.Result.Username,
+                Discriminator = searchUser.Result.Discriminator,
                 ImageUrl = profile.Image,
                 Quote = profile.Quote.CleanQuote(),
                 LootboxesOpened = profile.LootboxesOpened,
@@ -99,7 +101,7 @@ namespace Website.Controllers
                 Guild = new GuildSummaryView
                 {
                     ImageUrl = guild.Result.IconUrl,
-                    Id = guild.Result.Id,
+                    Id = guild.Result.Id.ToString(),
                     Name = guild.Result.Name
                 }
             };

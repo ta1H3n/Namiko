@@ -8,7 +8,7 @@ export class LoginState extends Component {
         super(props);
         this.state = {
             loading: true,
-            returnUrl: '/'
+            returnUrl: '/User/Me'
         };
     }
 
@@ -52,6 +52,7 @@ export class LoginState extends Component {
             localStorage.removeItem('avatarHash');
             localStorage.removeItem('avatarUrl');
             localStorage.setItem('loggedIn', data.loggedIn);
+            this.setState({ returnUrl: '/' });
         }
         this.setState({ loading: false });
     }

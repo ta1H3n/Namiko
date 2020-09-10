@@ -19,7 +19,7 @@ export class LoginMenu extends Component {
     authenticatedView() {
         return (
             <Nav>
-                <Nav.Link as={Link} to='/'>Hi {localStorage.getItem("name")}!</Nav.Link>
+                <Nav.Link as={Link} to='/User/Me'>Hi {localStorage.getItem("name")}!</Nav.Link>
                 <Nav.Link href='/authentication/logout'>Logout</Nav.Link>
             </Nav>
         );

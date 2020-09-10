@@ -42,6 +42,9 @@ namespace Website.Extensions
 
         public static WaifuDetailedView ToView(this Waifu waifu)
         {
+            if (waifu == null)
+                return null;
+
             var res = new WaifuDetailedView
             {
                 Bought = waifu.Bought,
