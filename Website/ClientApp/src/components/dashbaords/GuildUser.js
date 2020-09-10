@@ -2,7 +2,8 @@
 import { Container } from 'reactstrap';
 import { parseCode } from '../authentication/ResponseHandler';
 import { Table } from 'react-bootstrap';
-import { WaifuTable } from '../waifus/Table'
+import { WaifuTable } from '../waifus/Table';
+import { Link } from 'react-router-dom';
 import './dashboard.css';
 
 export class GuildUser extends Component {
@@ -44,7 +45,7 @@ export class GuildUser extends Component {
                                     <div className="stats-header">
                                         <img className="avatar" alt="avatar" src={this.state.res.guild.imageUrl} /><br />
                                         <h4 className="text-center title-text inline"><strong>{this.state.res.guild.name}</strong></h4>
-                                        <Table borderless size="sm" hover variant="dark" striped className="stat">
+                                        <Table borderless size="sm" striped className="stat">
                                             <tbody>
                                                 <tr>
                                                     <td><section className="stat-title">Join date</section></td>
@@ -76,6 +77,9 @@ export class GuildUser extends Component {
                                                 </tr>
                                             </tbody>
                                         </Table>
+                                        <div className="horizontal-center">
+                                            <Link type="button" className="btn btn-blank mt-2" to={"/WaifuShop/" + this.state.res.guild.id}>Waifu&nbsp;shop</Link>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

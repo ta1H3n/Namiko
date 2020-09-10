@@ -147,7 +147,7 @@ export class Home extends Component {
                             <div className="horizontal-center">
                                 <Link type="button" className="btn btn-blank mr-2 mt-2" to="/Commands">Commands</Link>
                                 <a href="https://www.patreon.com/taiHen" className="btn btn-blank mr-2 mt-2">Get&nbsp;Pro</a>
-                                <Link type="button" className="btn btn-blank mr-2 mt-2" to="/WaifuShop/418900885079588884">Web&nbsp;dashboard</Link>
+                                <Link type="button" className="btn btn-blank mr-2 mt-2" to="/User/Me">Web&nbsp;dashboard</Link>
                                 <Link type="button" className="btn btn-blank mr-2 mt-2" to="/Waifus">Waifus</Link>
                             </div>
                         </div>

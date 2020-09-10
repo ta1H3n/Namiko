@@ -61,7 +61,7 @@ export class WaifuShop extends Component {
             <div>
                 <h2>
                     <span className="badge color1 col-lg-9 col-md-8 col-sm-7 col-xs-6">Tier {tier}</span>
-                    <span className="badge color3 col-lg-3 col-md-4 col-sm-5 col-xs-6">{priceFromTier(tier)} Toasties</span>
+                    <span className={"badge col-lg-3 col-md-4 col-sm-5 col-xs-6 t" + tier}>{priceFromTier(tier)} Toasties</span>
                 </h2>
                 <WaifuTable waifus={waifus} />
             </div>
