@@ -1,4 +1,4 @@
-﻿import React, { Component, Button } from 'react';
+﻿import React, { Component } from 'react';
 import { Modules } from './Modules'
 import './Commands.css';
 

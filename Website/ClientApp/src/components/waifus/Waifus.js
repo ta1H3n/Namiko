@@ -1,6 +1,5 @@
 ﻿import React, { Component } from 'react';
 import { WaifuTable } from './Table'
-import { Container } from 'reactstrap';
 import './Waifus.css';
 
 export class Waifus extends Component {

@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { NavMenu } from './NavMenu';
-import { EarlyBuildBar } from './EarlyBuildBar';
 import { FooterMenu } from './FooterMenu';
 
 export class Layout extends Component {
