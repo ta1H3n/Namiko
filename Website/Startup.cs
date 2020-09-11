@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -7,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Model;
+using System;
 using System.Threading.Tasks;
 
 namespace Website
@@ -44,7 +46,6 @@ namespace Website
                         context.Response.StatusCode = 401;
                         return Task.CompletedTask;
                     };
-                    options.SlidingExpiration = true;
                     options.Cookie.IsEssential = true;
                     options.Cookie.HttpOnly = false;
                 })
@@ -55,6 +56,15 @@ namespace Website
                     options.Scope.Add("identify");
                     options.Scope.Add("guilds");
                     options.SaveTokens = true;
+                    options.Events = new OAuthEvents()
+                    {
+                        OnTicketReceived = context =>
+                        {
+                            context.Properties.IsPersistent = true;
+                            context.Properties.ExpiresUtc = DateTimeOffset.UtcNow.AddDays(7);
+                            return Task.FromResult(0);
+                        }
+                    };
                 });
 
             HttpContextExtensions.BotToken = Configuration["Bot:Token"];
