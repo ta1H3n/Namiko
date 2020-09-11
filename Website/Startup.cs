@@ -76,7 +76,6 @@ namespace Website
                 ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
             });
 
-
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

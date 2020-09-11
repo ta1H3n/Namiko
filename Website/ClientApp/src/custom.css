@@ -62,6 +62,23 @@ body {
     color: #fff;
 }
 
+.navLink {
+    color: rgba(255, 255, 255, 0.5);
+    padding-right: 0.5rem;
+    padding-left: 0.5rem;
+    display: block;
+    padding: 0.5rem 1rem;
+}
+
+    .navLink:hover {
+        color: rgba(255, 255, 255, 0.75);
+        text-decoration: none;
+        padding-right: 0.5rem;
+        padding-left: 0.5rem;
+        padding: 0.5rem 1rem;
+        display: block;
+    }
+
 .color3-text {
     color: #522d5b;
 }

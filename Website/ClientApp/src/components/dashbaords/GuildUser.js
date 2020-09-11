@@ -84,10 +84,10 @@ export class GuildUser extends Component {
                                 </div>
                             </div>
                             <div className="col-sm-12 col-md-8 mt-3">
-                                <div className="row container-adds mb-3">
+                                <div className="row container-item mb-3">
                                     <section className="quote">{this.state.res.quote}</section>
                                 </div>
-                                <div className="row container-adds">
+                                <div className="row container-item">
                                     <img className="img-fluid" alt={this.state.res.imageUrl} src={this.state.res.imageUrl} /><br />
                                 </div>
                             </div>
