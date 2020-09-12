@@ -6,7 +6,7 @@ using Website.Models;
 
 namespace Website.Controllers
 {
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     [ApiController]
     public class AuthenticationController : ControllerBase
     {

@@ -34,7 +34,7 @@ export class LoginState extends Component {
     }
 
     async updateState() {
-        const query = "authentication";
+        const query = "api/authentication";
         const response = await fetch(query);
         const data = await response.json();
         if (data.loggedIn === true) {
