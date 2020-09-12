@@ -4,10 +4,6 @@ import { Clickable, ParseTier } from './Clickable';
 export class Card extends Component {
     static displayName = Card.name;
 
-    constructor(props) {
-        super(props)
-    }
-
     render() {
         return (
             <div className={"card card-t" + ParseTier(this.props.waifu.tier)}>

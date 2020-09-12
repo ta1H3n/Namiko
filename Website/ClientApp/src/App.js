@@ -22,29 +22,28 @@ export default class App extends Component {
         if (api_regex.test(window.location.pathname)) {
             return <div />
         }
-        else {
-            return (
-                <>
-                    <Layout>
-                        <Switch>
-                            <Route exact path='/' component={GaTracker(Home)} />
-                            <Route path='/waifus' component={GaTracker(Waifus)} />
-                            <Route path='/waifushop/:guildId' component={GaTracker(WaifuShop)} />
 
-                            <Route path='/commands' component={GaTracker(Commands)} />
-                            <Route path='/guide' component={GaTracker(Guide)} />
+        return (
+            <>
+                <Layout>
+                    <Switch>
+                        <Route exact path='/' component={GaTracker(Home)} />
+                        <Route path='/waifus' component={GaTracker(Waifus)} />
+                        <Route path='/waifushop/:guildId' component={GaTracker(WaifuShop)} />
 
-                            <Route path='/user/me' component={GaTracker(User)} />
-                            <Route path='/guild/:guildId/:userId' component={GaTracker(GuildUser)} />
-                            <Route path='/guild/:guildId' component={GaTracker(Guild)} />
+                        <Route path='/commands' component={GaTracker(Commands)} />
+                        <Route path='/guide' component={GaTracker(Guide)} />
 
-                            <Route path='/authenticationcallback' component={GaTracker(LoginState)} />
+                        <Route path='/user/me' component={GaTracker(User)} />
+                        <Route path='/guild/:guildId/:userId' component={GaTracker(GuildUser)} />
+                        <Route path='/guild/:guildId' component={GaTracker(Guild)} />
 
-                            <Redirect to='/' />
-                        </Switch>
-                    </Layout>
-                </>
-            );
-        }
+                        <Route path='/authenticationcallback' component={GaTracker(LoginState)} />
+
+                        <Redirect to='/' />
+                    </Switch>
+                </Layout>
+            </>
+        );
     }
 }

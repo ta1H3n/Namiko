@@ -4,9 +4,6 @@ import { Link } from 'react-router-dom';
 import Cookies from 'js-cookie';
 
 export class LoginMenu extends Component {
-    constructor(props) {
-        super(props);
-    }
 
     render() {
         if (localStorage.getItem("id") && Cookies.get(".AspNetCore.Cookies")) {

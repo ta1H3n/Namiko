@@ -4,10 +4,6 @@ import './Commands.css';
 export class Guide extends Component {
     static displayName = Guide.name;
 
-    constructor(props) {
-        super(props);
-    }
-
     render() {
         return (
             <>

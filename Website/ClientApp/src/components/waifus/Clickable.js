@@ -9,8 +9,8 @@ export function Clickable(props) {
 
     return (
         <>
-            <a className="stretched-link" onClick={handleShow} />
-            <Modal show={show} onHide={handleClose} size="md" aria-labelbody="contained-modal-title-vcenter">
+            <div className="stretched-link" onClick={handleShow} />
+            <Modal show={show} onHide={handleClose} size="md">
                 <Modal.Header className={"t" + ParseTier(props.waifu.tier)} closeButton>
                     <Modal.Title>{props.waifu.longName}</Modal.Title>
                 </Modal.Header>
@@ -39,12 +39,12 @@ export function ParseTier(tier) {
 }
 
 function SourcePop(source) {
-    if (source === null || source === "retry" || source === "missing") {
+    if (source === null || source === "retry" || source === "missing" || source === "custom" || source === "") {
         return (
             <OverlayTrigger overlay={<Tooltip id="source">Source missing! :(</Tooltip>}>
-                <a class="btn waifu-image-btn">Source</a>
+                <div class="btn waifu-image-btn">Source</div>
             </OverlayTrigger>);
     }
 
-    return (<a href={source} target="_blank" class="btn waifu-image-btn">Source</a>);
+    return (<a href={source} target="_blank" rel="noopener noreferrer" class="btn waifu-image-btn">Source</a>);
 }

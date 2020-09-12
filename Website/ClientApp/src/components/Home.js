@@ -19,7 +19,7 @@ export class Home extends Component {
                         <h3 className="text-center title-text">Anime Powered Discord Bot</h3>
                         <div className="btn-group color-discord round-sm mt-2" role="group">
                             <div className="btn btn-static color-discord small-padding">
-                                <img src="/images/Discord-Logo-White.png" className="img" />
+                                <img src="/images/Discord-Logo-White.png" alt="" className="img" />
                             </div>
                             <a href="https://discordapp.com/oauth2/authorize?client_id=418823684459855882&scope=bot&permissions=268707844" type="button" className="btn color-discord color-discord-hover">Invite&nbsp;Namiko</a>
                             <a href="https://discord.gg/W6Ru5sM" type="button" className="btn color-discord color-discord-hover">Join&nbsp;Server</a>
@@ -137,7 +137,7 @@ export class Home extends Component {
                             <div className="horizontal-center">
                                 <div className="btn-group color-discord color-discord-hover round-sm mt-2 mr-2" role="group">
                                     <div className="btn btn-static color-discord color-discord-hover small-padding">
-                                        <img src="/images/Discord-Logo-White.png" className="img" />
+                                        <img src="/images/Discord-Logo-White.png" alt="" className="img" />
                                     </div>
                                     <a href="https://discordapp.com/oauth2/authorize?client_id=418823684459855882&scope=bot&permissions=268707844" type="button" className="btn color-discord color-discord-hover">Invite&nbsp;Namiko</a>
                                 </div>
