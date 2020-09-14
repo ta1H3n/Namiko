@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Model.Models.Roles;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
@@ -47,6 +48,7 @@ namespace Model
         public DbSet<BanroyaleMessage> BanroyaleMessages { get; set; }
         public DbSet<Module> Modules { get; set; }
         public DbSet<Command> Commands { get; set; }
+        public DbSet<ShopRole> ShopRoles { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder Options)
         {

@@ -74,7 +74,7 @@ namespace Namiko
             }
         }
 
-        [Command("ClearRole"), Alias("cr"), Summary("Removes all users from a role.\n**Usage**: `cr [name]`"), CustomUserPermission(GuildPermission.ManageRoles), CustomBotPermission(GuildPermission.ManageRoles)]
+        [Command("ClearRole"), Alias("cr"), Summary("Removes all users from a role.\n**Usage**: `!cr [name]`"), CustomUserPermission(GuildPermission.ManageRoles), CustomBotPermission(GuildPermission.ManageRoles)]
         public async Task ClearRole([Remainder] string name = "")
         {
             var role = await this.SelectRole(name);
@@ -95,6 +95,102 @@ namespace Namiko
 
             await Task.WhenAll(tasks);
             await Context.Channel.SendMessageAsync($"There are now **{users.Count}** less weebs in the `{role.Name}` role. Can I have them?");
+        }
+
+        [Command("RoleShop"), Alias("rs"), Summary("Open a role shop managed by the server admins.\n**Usage**: `!rs`")]
+        public async Task RoleShop([Remainder] string str = "")
+        {
+            var roles = await ShopRoleDb.GetRoles(Context.Guild.Id);
+
+            var eb = new EmbedBuilderPrepared()
+                .WithTitle(":star: Role Shop");
+
+            if (!roles.Any())
+            {
+                await Context.Channel.SendMessageAsync(embed: eb.WithDescription(" *~ No roles in shop ~*\n").WithColor(Color.DarkRed).Build());
+                return;
+            }
+
+            await Context.Channel.SendMessageAsync(embed:
+                eb.WithDescription(CustomPaginatedMessage.PagesArray(roles, 100, (r) => $"<@&{r.RoleId}> - **{r.Price:n0}**\n").First()).Build());
+        }
+
+        [Command("BuyRole"), Summary("Buy a role from the role shop.\n**Usage**: `!buyrole [role_name]`"), CustomBotPermission(GuildPermission.ManageRoles)]
+        public async Task RoleShopAddRole([Remainder] string name = "")
+        {
+            var roles = await ShopRoleDb.GetRoles(Context.Guild.Id);
+
+            var role = await this.SelectRole(name, roles.Select(x => x.RoleId));
+
+            if (role == null)
+                return;
+
+            var user = Context.User as SocketGuildUser;
+            if (user.Roles.Contains(role))
+            {
+                await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared($"You already have **{role.Mention}** !").Build());
+                return;
+            }
+
+            int price = roles.FirstOrDefault(x => x.RoleId == role.Id).Price;
+
+            try
+            {
+                await BalanceDb.AddToasties(Context.User.Id, price, Context.Guild.Id);
+                await user.AddRoleAsync(role);
+                await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared($"You bought the **{role.Mention}** role!").Build());
+            } catch(Exception ex)
+            {
+                await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared(ex.Message).WithColor(Color.DarkRed).Build());
+            }
+        }
+
+        [Command("RoleShopAddRole"), Alias("rsar"), Summary("Add a role to the role shop.\n**Usage**: `!rsar [price] [role_name]`"), CustomUserPermission(GuildPermission.Administrator), CustomBotPermission(GuildPermission.ManageRoles)]
+        public async Task RoleShopAddRole(int price, [Remainder] string name = "")
+        {
+            if (price < 0)
+            {
+                await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared($"~ Price can't be negative ~")
+                    .WithColor(Color.DarkRed)
+                    .Build());
+                return;
+            }
+
+            var role = await this.SelectRole(name);
+
+            if (role == null)
+                return;
+
+            if (await ShopRoleDb.IsRole(role.Id))
+            {
+                await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared($"~ **{role.Name}** is already in the shop ~")
+                    .WithColor(Color.DarkRed)
+                    .Build());
+                return;
+            }
+
+            await ShopRoleDb.AddRole(Context.Guild.Id, role.Id, price);
+            await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared($"~ **{role.Name}** added to the shop ~").Build());
+        }
+
+        [Command("RoleShopRemoveRole"), Alias("rsrr"), Summary("Remove a role from the role shop.\n**Usage**: `!rsrr [role_name]`"), CustomUserPermission(GuildPermission.Administrator)]
+        public async Task RoleShopRemoveRole([Remainder] string name = "")
+        {
+            var roles = await ShopRoleDb.GetRoles(Context.Guild.Id);
+
+            var eb = new EmbedBuilderPrepared()
+                .WithTitle(":star: Role Shop");
+
+            if (!roles.Any())
+            {
+                await Context.Channel.SendMessageAsync(embed: eb.WithDescription(" *~ No roles in shop ~*\n").WithColor(Color.DarkRed).Build());
+                return;
+            }
+
+            var role = await this.SelectItem(roles, eb.WithDescription(CustomPaginatedMessage.PagesArray(roles, 100, (r) => $"`{r.Price:n0}` - <@!{r.RoleId}>/n").First()));
+
+            await ShopRoleDb.RemoveRole(role.RoleId);
+            await Context.Channel.SendMessageAsync(embed: eb.WithDescription(" *~ Role removed ~*\n").Build());
         }
 
         [Command("Invite"), Summary("Invites a user to your team.\n**Usage**: `!inv [user]`")]

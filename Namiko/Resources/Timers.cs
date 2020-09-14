@@ -218,6 +218,7 @@ namespace Namiko
                     db.RemoveRange(db.Weeklies.Where(x => ids.Contains(x.GuildId)));
                     db.RemoveRange(db.Toasties.Where(x => ids.Contains(x.GuildId)));
                     db.RemoveRange(db.Marriages.Where(x => ids.Contains(x.GuildId)));
+                    db.RemoveRange(db.ShopRoles.Where(x => ids.Contains(x.GuildId)));
                     db.RemoveRange(db.PublicRoles.Where(x => ids.Contains(x.GuildId)));
                     db.RemoveRange(db.WaifuWishlist.Where(x => ids.Contains(x.GuildId)));
                     db.RemoveRange(db.FeaturedWaifus.Where(x => ids.Contains(x.GuildId)));
