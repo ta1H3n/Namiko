@@ -17,7 +17,7 @@ export class LoginMenu extends Component {
         return (
             <Nav>
                 <Nav.Link as={Link} to='/User/Me'>Hi {localStorage.getItem("name")}!</Nav.Link>
-                <a className="navLink" href='/api/authentication/logout'>Logout</a>
+                <a className="navLink" href='/authentication/logout'>Logout</a>
             </Nav>
         );
     }
@@ -25,7 +25,7 @@ export class LoginMenu extends Component {
     anonymousView() {
         return (
             <Nav>
-                <a className="navLink" href='/api/authentication/login'>Login</a>
+                <a className="navLink" href='/authentication/login'>Login</a>
             </Nav>
         );
     }

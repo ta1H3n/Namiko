@@ -18,11 +18,6 @@ export default class App extends Component {
     static displayName = App.name;
 
     render() {
-        const api_regex = /^\/api\/.*/
-        if (api_regex.test(window.location.pathname)) {
-            return <div />
-        }
-
         return (
             <>
                 <Layout>
