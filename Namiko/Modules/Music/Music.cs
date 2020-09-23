@@ -969,12 +969,12 @@ namespace Namiko
             if (!reason.ShouldPlayNext())
                 return;
 
-            if (player.Repeat && !track.Url.ToString().Contains("VoiceLines"))
+            if (player.Repeat && !track.Url.ToString().Contains("VoiceLines") && reason != TrackEndReason.LoadFailed)
             {
                 player.Queue.EnqueueFirst(track);
             }
 
-            else if (player.Loop && !track.Url.ToString().Contains("VoiceLines"))
+            else if (player.Loop && !track.Url.ToString().Contains("VoiceLines") && reason != TrackEndReason.LoadFailed)
             {
                 player.Queue.Enqueue(track);
             }
