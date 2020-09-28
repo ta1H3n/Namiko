@@ -9,7 +9,6 @@ import { Guide } from './components/commands/Guide';
 import { WaifuShop } from './components/waifus/WaifuShop';
 import { LoginState } from './components/authentication/LoginState';
 import { User } from './components/dashbaords/User';
-import { Guild } from './components/dashbaords/Guild';
 import { GuildUser } from './components/dashbaords/GuildUser';
 
 import './custom.css';
@@ -31,8 +30,9 @@ export default class App extends Component {
 
                         <Route path='/user/me' component={GaTracker(User)} />
                         <Route path='/guild/:guildId/:userId' component={GaTracker(GuildUser)} />
-                        <Route path='/guild/:guildId' component={GaTracker(Guild)} />
-
+                        {
+                        //<Route path='/guild/:guildId' component={GaTracker(Guild)} />
+                        }
                         <Route path='/authenticationcallback' component={GaTracker(LoginState)} />
 
                         <Redirect to='/' />

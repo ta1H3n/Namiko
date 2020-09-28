@@ -5,6 +5,7 @@ import { Table } from 'react-bootstrap';
 import { WaifuTable } from '../waifus/Table';
 import { Link } from 'react-router-dom';
 import './dashboard.css';
+import { get } from '../RequestHandler';
 
 export class GuildUser extends Component {
     static displayName = GuildUser.name;
@@ -36,7 +37,7 @@ export class GuildUser extends Component {
                 : <>
                     <div className="dashboard-header">
                         <img className="avatar" alt="avatar" src={this.state.res.avatarUrl} /><br />
-                        <h2 className="text-center title-text inline"><strong>{this.state.res.name}</strong><h5 className="inline">#{this.state.res.discriminator}</h5></h2>
+                        <h2 className="text-center title-text inline"><strong>{this.state.res.name}</strong></h2><h5 className="inline">#{this.state.res.discriminator}</h5>
                     </div>
                     <Container>
                         <div className="row mt-2">
@@ -103,7 +104,7 @@ export class GuildUser extends Component {
 
     async load(guildId, userId) {
         const query = "api/guild/" + guildId + "/" + userId;
-        const response = await fetch(query);
+        const response = await get(query);
 
         var result = parseCode(response.status);
         if (result) {
@@ -111,7 +112,7 @@ export class GuildUser extends Component {
             return;
         }
 
-        const data = await response.json();
+        const data = response.value;
         this.setState({ res: data, loading: false });
     }
 }

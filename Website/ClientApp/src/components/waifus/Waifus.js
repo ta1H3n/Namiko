@@ -1,6 +1,7 @@
 ﻿import React, { Component } from 'react';
 import { WaifuTable } from './Table'
 import './Waifus.css';
+import { get } from '../RequestHandler';
 
 export class Waifus extends Component {
     static displayName = Waifus.name;
@@ -40,10 +41,10 @@ export class Waifus extends Component {
         var query = "api/waifu";
         if (s) {
             query = query + "?search=";
-            query = query + encodeURIComponent(s);
+            query = query + encodeURIComponent(s.toLowerCase());
         }
-        const response = await fetch(query);
-        const data = await response.json();
+        const response = await get(query);
+        const data = response.value;
         this.setState({ waifus: data, loading: false, waiting: false });
     }
 

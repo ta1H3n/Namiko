@@ -1,6 +1,7 @@
 ﻿import React, { Component } from 'react';
 import { Modules } from './Modules'
 import './Commands.css';
+import { get } from '../RequestHandler';
 
 export class Commands extends Component {
     static displayName = Commands.name;
@@ -52,8 +53,8 @@ export class Commands extends Component {
 
     async populateCommands() {
         var query = "api/commands";
-        const response = await fetch(query);
-        const data = await response.json();
+        const response = await get(query);
+        const data = response.value;
         this.setState({ modules: data, display: data, loading: false });
     }
 }

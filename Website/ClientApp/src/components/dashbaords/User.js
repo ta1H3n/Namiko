@@ -3,6 +3,7 @@ import { Container } from 'reactstrap';
 import { Link } from 'react-router-dom';
 import { parseCode } from '../authentication/ResponseHandler';
 import './dashboard.css';
+import { get } from '../RequestHandler';
 
 export class User extends Component {
     static displayName = User.name;
@@ -32,7 +33,7 @@ export class User extends Component {
                 : <>
                     <div className="dashboard-header">
                         <img className="avatar" alt="avatar" src={this.state.res.avatarUrl} /><br />
-                        <h2 className="text-center title-text inline"><strong>{this.state.res.name}</strong><h5 className="inline">#{this.state.res.discriminator}</h5></h2>
+                        <h2 className="text-center title-text inline"><strong>{this.state.res.name}</strong></h2><h5 className="inline">#{this.state.res.discriminator}</h5>
                     </div>
                     <Container>
                         <div className="row mt-5">
@@ -56,7 +57,7 @@ export class User extends Component {
 
     async load() {
         const query = "api/user";
-        const response = await fetch(query);
+        const response = await get(query);
 
         var result = parseCode(response.status);
         if (result) {
@@ -64,7 +65,7 @@ export class User extends Component {
             return;
         }
 
-        const data = await response.json();
+        const data = response.value;
         this.setState({ res: data, loading: false });
     }
 }

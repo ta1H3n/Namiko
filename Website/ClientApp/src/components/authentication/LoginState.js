@@ -44,6 +44,7 @@ export class LoginState extends Component {
             localStorage.setItem('avatarHash', data.avatarHash);
             localStorage.setItem('avatarUrl', data.avatarUrl);
             localStorage.setItem('loggedIn', data.loggedIn);
+            sessionStorage.clear();
         }
         else {
             localStorage.removeItem('name');
@@ -52,6 +53,7 @@ export class LoginState extends Component {
             localStorage.removeItem('avatarHash');
             localStorage.removeItem('avatarUrl');
             localStorage.setItem('loggedIn', data.loggedIn);
+            sessionStorage.clear();
             this.setState({ returnUrl: '/' });
         }
         this.setState({ loading: false });

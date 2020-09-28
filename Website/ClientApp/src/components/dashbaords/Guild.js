@@ -1,5 +1,6 @@
 ﻿import React, { Component } from 'react';
 import { Container } from 'reactstrap';
+import { get } from '../RequestHandler';
 
 export class Guild extends Component {
     static displayName = Guild.name;
@@ -13,8 +14,8 @@ export class Guild extends Component {
     }
 
     componentDidMount() {
-        const { guildId, userId } = this.props.match.params;
-        this.load(guildId, userId);
+        const { guildId } = this.props.match.params;
+        this.load(guildId);
     }
 
     render() {
@@ -33,10 +34,10 @@ export class Guild extends Component {
         );
     }
 
-    async load(guildId, userId) {
-        var query = "api/waifushop/" + guildId + "/" + userId;
-        const response = await fetch(query);
-        const data = await response.json();
+    async load(guildId) {
+        var query = "api/waifushop/" + guildId;
+        const response = await get(query);
+        const data = response.value;
         this.setState({ waifus: data, loading: false });
     }
 }

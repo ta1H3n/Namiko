@@ -2,6 +2,7 @@
 import { WaifuTable } from './Table'
 import { Container } from 'reactstrap';
 import './Waifus.css';
+import { get } from '../RequestHandler';
 
 export class WaifuShop extends Component {
     static displayName = WaifuShop.name;
@@ -40,8 +41,8 @@ export class WaifuShop extends Component {
         if (guildId) {
             query = query + "/" + guildId;
         }
-        const response = await fetch(query);
-        const data = await response.json();
+        const response = await get(query);
+        const data = response.value;
         this.setState({ waifus: data, loading: false });
     }
 
