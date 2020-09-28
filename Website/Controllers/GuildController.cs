@@ -28,7 +28,7 @@ namespace Website.Controllers
             }
             catch (HttpException)
             {
-                return StatusCode(4011, "Bot not in guild");
+                return StatusCode(412, "Bot not in guild");
             }
             if (currentUser == null)
             {
@@ -65,7 +65,7 @@ namespace Website.Controllers
             }
             catch (HttpException) 
             {
-                return StatusCode(4011, "Bot not in guild");
+                return StatusCode(412, "Bot not in guild");
             }
             if (currentUser.Result == null)
             {

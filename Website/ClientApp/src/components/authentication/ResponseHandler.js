@@ -19,7 +19,7 @@ export function parseCode(code) {
             }
         }
 
-        else if (code === 4011) {
+        else if (code === 412) {
             result = <>
                 <h3 className="row text-muted text-center align-middle mt-5"><em>Namiko is not in this guild...</em></h3>
                 <a href="https://discordapp.com/oauth2/authorize?client_id=418823684459855882&scope=bot&permissions=268707844" type="button" className="row btn color-discord color-discord-hover">Invite&nbsp;Namiko</a>
