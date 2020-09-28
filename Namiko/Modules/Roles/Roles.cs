@@ -136,7 +136,7 @@ namespace Namiko
 
             try
             {
-                await BalanceDb.AddToasties(Context.User.Id, price, Context.Guild.Id);
+                await BalanceDb.AddToasties(Context.User.Id, -price, Context.Guild.Id);
                 await user.AddRoleAsync(role);
                 await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared($"You bought the **{role.Mention}** role!").Build());
             } catch(Exception ex)
