@@ -25,7 +25,7 @@ function retrieve(query) {
     let item = JSON.parse(sessionStorage.getItem(query));
     if (item) {
         let now = new Date().getTime();
-        if (item.time + 60000 > now) // 1 mins
+        if (item.time + 600000 > now) // 10 mins
             return item.value;
     }
     return false;
