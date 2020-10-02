@@ -60,6 +60,14 @@ namespace Namiko
             {
                 return;
             }
+
+            int userHigh = ((SocketGuildUser)Context.User).Roles.Max(x => x.Position);
+            if (userHigh <= role.Position)
+            {
+                await Context.Channel.SendMessageAsync($":x: You do not have permission to modify `{role.Name}`! Make sure you have a role higher in the list.");
+                return;
+            }
+
             if (!PublicRoleDb.IsPublic(role.Id))
             {
                 await PublicRoleDb.Add(role.Id, Context.Guild.Id);
@@ -145,7 +153,7 @@ namespace Namiko
             }
         }
 
-        [Command("RoleShopAddRole"), Alias("rsar"), Summary("Add a role to the role shop.\n**Usage**: `!rsar [price] [role_name]`"), CustomUserPermission(GuildPermission.Administrator), CustomBotPermission(GuildPermission.ManageRoles)]
+        [Command("RoleShopAddRole"), Alias("rsar"), Summary("Add a role to the role shop.\n**Usage**: `!rsar [price] [role_name]`"), CustomUserPermission(GuildPermission.ManageRoles), CustomBotPermission(GuildPermission.ManageRoles)]
         public async Task RoleShopAddRole(int price, [Remainder] string name = "")
         {
             if (price < 0)
@@ -160,6 +168,14 @@ namespace Namiko
 
             if (role == null)
                 return;
+
+
+            int userHigh = ((SocketGuildUser)Context.User).Roles.Max(x => x.Position);
+            if (userHigh <= role.Position)
+            {
+                await Context.Channel.SendMessageAsync($":x: You do not have permission to modify `{role.Name}`! Make sure you have a role higher in the list.");
+                return;
+            }
 
             if (await ShopRoleDb.IsRole(role.Id))
             {
