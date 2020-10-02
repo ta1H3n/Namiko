@@ -2,11 +2,9 @@
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
-using Microsoft.EntityFrameworkCore;
 using Model;
 using System;
 using System.Collections.Generic;
-using System.Data.OleDb;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -51,14 +49,22 @@ namespace Namiko
         public async Task ModShop([Remainder] string str = "")
         {
             WaifuShop shop = await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Mod);
+            int count = Constants.shoplimitedamount + Constants.shopt1amount + Constants.shopt2amount + Constants.shopt3amount;
             string prefix = Program.GetPrefix(Context);
             List<ShopWaifu> waifus = new List<ShopWaifu>();
             if (shop != null)
                 waifus = shop.ShopWaifus;
 
             waifus = waifus.OrderBy(x => x.Waifu.Tier).ThenBy(x => x.Waifu.Source).ThenBy(x => x.Waifu.Name).ToList();
-            var eb = WaifuUtil.NewShopEmbed(waifus, prefix, ShopType.Mod);
-            await Context.Channel.SendMessageAsync("", false, eb.Build());
+
+            if (waifus.Count <= count)
+            {
+                var eb = WaifuUtil.NewShopEmbed(waifus, prefix, ShopType.Mod);
+                await Context.Channel.SendMessageAsync("", false, eb.Build());
+                return;
+            }
+
+            await PagedReplyAsync(WaifuUtil.PaginatedShopMessage(waifus, count, prefix, ShopType.Mod));
         }
 
         [Command("WaifuShopSlides"), Alias("wss"), Summary("Opens the waifu shop slides.")]

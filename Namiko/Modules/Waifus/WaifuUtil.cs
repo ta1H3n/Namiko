@@ -407,7 +407,13 @@ namespace Namiko
             paginatedMessage.Pages = new List<string> { $"Titles with a lot of waifus were moved to the `{prefix}GachaShop`" };
             paginatedMessage.Author = new EmbedAuthorBuilder()
             {
-                Name = type == ShopType.Waifu ? "Waifu Shop" : "Gacha Shop",
+                Name = type switch
+                {
+                    ShopType.Waifu => "Waifu Shop",
+                    ShopType.Gacha => "Gacha Shop",
+                    ShopType.Mod => "Mod Shop",
+                    _ => "Waifu Shop"
+                },
                 IconUrl = Program.GetClient().CurrentUser.GetAvatarUrl(),
                 Url = BasicUtil._patreon
             };
