@@ -13,21 +13,25 @@ namespace Model
         public static async Task<DisabledCommand> GetDisabledCommand(ulong GuildId, string name, DisabledCommandType type)
         {
             using var db = new NamikoDbContext();
-            return await db.DisabledCommands.Where(x => x.GuildId == GuildId && x.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && x.Type == type).FirstOrDefaultAsync();
+            return await db.DisabledCommands.Where(x => x.GuildId == GuildId && x.Name.Equals(name) && x.Type == type).FirstOrDefaultAsync();
         }
         public static async Task DeleteDisabledCommand(ulong GuildId, string name, DisabledCommandType type)
         {
             using var db = new NamikoDbContext();
-            var server = db.DisabledCommands.Where(x => x.GuildId == GuildId && x.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && x.Type == type).FirstOrDefault();
-            if (server != null)
+            var command = await db.DisabledCommands.Where(x => x.GuildId == GuildId && x.Name.Equals(name) && x.Type == type).FirstOrDefaultAsync();
+            if (command != null)
             {
-                db.Remove(server);
+                db.Remove(command);
                 await db.SaveChangesAsync();
             }
         }
         public static async Task<int> AddNewDisabledCommand(ulong GuildId, string name, DisabledCommandType type)
         {
             using var db = new NamikoDbContext();
+            var cmd = await db.DisabledCommands.Where(x => x.GuildId == GuildId && x.Name.Equals(name) && x.Type == type).FirstOrDefaultAsync();
+            if (cmd != null)
+                return -1;
+
             var DisabledCommand = new DisabledCommand
             {
                 GuildId = GuildId,

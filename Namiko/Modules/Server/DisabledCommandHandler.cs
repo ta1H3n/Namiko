@@ -87,7 +87,7 @@ namespace Namiko
                 set.Remove(name);
             }
 
-            await DisabledCommandDb.AddNewDisabledCommand(guildId, name, type);
+            await DisabledCommandDb.DeleteDisabledCommand(guildId, name, type);
         }
         public static bool IsDisabled(string name, ulong guildId, DisabledCommandType type)
         {

@@ -4,6 +4,7 @@ using Discord.Commands;
 using Discord.Webhook;
 using Discord.WebSocket;
 using Model;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -214,6 +215,112 @@ namespace Namiko
                             .Build()
                     });
             }
+        }
+
+        [Command("ToggleModule"), Alias("tm"), Summary("Disables or enables a command module.\n**Usage**: `!tm [module_name]`"), CustomUserPermission(GuildPermission.Administrator)]
+        public async Task ToggleModule([Remainder] string name)
+        {
+            var cmdService = Program.GetCommands();
+            var module = cmdService.Modules.SingleOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+
+            if (module == null)
+            {
+                await ReplyAsync($":x: There is no module called `{name}`");
+                return;
+            }
+
+            if (module.Name.Equals("Server") || module.Name.Equals("Basic"))
+            {
+                await ReplyAsync($":x: The **{module.Name}** module can't be disabled.");
+                return;
+            }
+
+            if (await DisabledCommandHandler.AddNew(module.Name, Context.Guild.Id, DisabledCommandType.Module))
+            {
+                await ReplyAsync($":star: Module **{module.Name}** disabled... Use the same command again to re-enable");
+                return;
+            }
+            else
+            {
+                await DisabledCommandHandler.Remove(module.Name, Context.Guild.Id, DisabledCommandType.Module);
+                await ReplyAsync($":star: Module **{module.Name}** re-enabled.");
+                return;
+            }
+        }
+
+        [Command("ToggleCommand"), Alias("tc"), Summary("Disables or enables a command.\n**Usage**: `!tc [command_name]`"), CustomUserPermission(GuildPermission.Administrator)]
+        public async Task ToggleCommand([Remainder] string name)
+        {
+            var cmdService = Program.GetCommands();
+            var command = cmdService.Commands.SingleOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+
+            if (command == null)
+            {
+                await ReplyAsync($":x: There is no command called `{name}`");
+                return;
+            }
+
+            if (command.Name.Equals("ToggleModule") || 
+                command.Name.Equals("ToggleCommand") || 
+                command.Name.Equals("ToggleReactionImages") ||
+                command.Name.Equals("ListDisabledCommands"))
+            {
+                await ReplyAsync($":x: The **{command.Name}** command can't be disabled.");
+                return;
+            }
+
+            if (await DisabledCommandHandler.AddNew(command.Name, Context.Guild.Id, DisabledCommandType.Command))
+            {
+                await ReplyAsync($":star: Command **{command.Name}** disabled... Use the same command again to re-enable");
+                return;
+            }
+            else
+            {
+                await DisabledCommandHandler.Remove(command.Name, Context.Guild.Id, DisabledCommandType.Command);
+                await ReplyAsync($":star: Command **{command.Name}** re-enabled.");
+                return;
+            }
+        }
+
+        [Command("ToggleReactionImages"), Alias("tri"), Summary("Disables or enables reaction images.\n**Usage**: `!tri`"), CustomUserPermission(GuildPermission.Administrator)]
+        public async Task ToggleReactionImages([Remainder] string name = "")
+        {
+            if (await DisabledCommandHandler.AddNew(name, Context.Guild.Id, DisabledCommandType.Images))
+            {
+                await ReplyAsync($":star: **Reaction images** disabled... Use the same command again to re-enable");
+                return;
+            }
+            else
+            {
+                await DisabledCommandHandler.Remove(name, Context.Guild.Id, DisabledCommandType.Images);
+                await ReplyAsync($":star: **Reaction images** re-enabled.");
+                return;
+            }
+        }
+
+        [Command("ListDisabledCommands"), Alias("ldc"), Summary("Lists all disabled modules and commands.\n**Usage**: `!ldc`")]
+        public async Task ListDisabledCommands([Remainder] string name = "")
+        {
+            string modules = "-";
+            string commands = "-";
+
+            if (DisabledCommandHandler.DisabledCommands.TryGetValue(Context.Guild.Id, out var set) && set.Any())
+            {
+                commands = string.Join(" | ", set);
+            }
+            if (DisabledCommandHandler.DisabledModules.TryGetValue(Context.Guild.Id, out set) && set.Any())
+            {
+                modules = string.Join(" | ", set);
+            }
+
+            var eb = new EmbedBuilderPrepared(Context.User);
+            eb.AddField("Disabled Modules", modules);
+            eb.AddField("Disabled Commands", commands);
+            if (DisabledCommandHandler.DisabledImages.Contains(Context.Guild.Id))
+            {
+                eb.AddField("Reaction Images", "All Disabled");
+            }
+            await ReplyAsync(embed: eb.Build());
         }
     }
 }
