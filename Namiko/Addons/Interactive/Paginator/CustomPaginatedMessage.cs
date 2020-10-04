@@ -26,10 +26,10 @@ namespace Namiko
         }
 
         //Returns pages of items in the list based on their .ToString() size = amount per page, toString = custom entry delegate, counter = adds a count to each entry #1, #2 etc.
-        public static IEnumerable<string> PagesArray<T>(IEnumerable<T> source, int size = 10, Func<T, string> toString = null, bool counter = true)
+        public static List<string> PagesArray<T>(IEnumerable<T> source, int size = 10, Func<T, string> toString = null, bool counter = true)
         {
             var lists = Split(source, size);
-            var strList = new List<String>();
+            var strList = new List<string>();
             int count = 0;
 
             toString ??= delegate(T x) { return $"{x.ToString()}\n"; };

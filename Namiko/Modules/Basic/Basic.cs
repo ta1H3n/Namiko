@@ -289,7 +289,8 @@ namespace Namiko
             if (eb != null)
             {
                 await Context.Channel.SendMessageAsync(embed: eb.Build());
-                string msg = $"Check out this simple guide detailing my main features: <https://github.com/ta1H3n/Namiko/wiki>\n" +
+                string msg = $"Check out this simple guide detailing my main features: <https://namiko.moe/Guide>\n" +
+                    $"Find the command list online: <https://namiko.moe/Commands>\n" +
                     $"Type `{prefix}info` to learn more about me and find useful links!\n" +
                     $"Type `{prefix}images` for a list of my reaction image commands!";
                 await Context.Channel.SendMessageAsync(msg);
@@ -328,7 +329,8 @@ namespace Namiko
             
             eb.WithFooter(@"""What are you? Twelve?"" -Namiko");
             eb.WithColor(BasicUtil.RandomColor());
-            eb.WithDescription($"Check out Namiko's usage guide [here](https://github.com/ta1H3n/Namiko/wiki) :star:");
+            eb.WithDescription($"Check out Namiko's usage guide [here](https://namiko.moe/Guide) :star:\n" +
+                $"Open in [browser](https://namiko.moe/Commands) :star:");
             eb.WithTitle("Commands");
             return eb;
         }

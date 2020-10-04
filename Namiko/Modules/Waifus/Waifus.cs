@@ -26,12 +26,12 @@ namespace Namiko
 
             if (waifus.Count <= count)
             {
-                var eb = WaifuUtil.NewShopEmbed(waifus, prefix);
+                var eb = WaifuUtil.NewShopEmbed(waifus, prefix, Context.Guild.Id);
                 await Context.Channel.SendMessageAsync("", false, eb.Build());
                 return;
             }
 
-            await PagedReplyAsync(WaifuUtil.PaginatedShopMessage(waifus, count, prefix));
+            await PagedReplyAsync(WaifuUtil.PaginatedShopMessage(waifus, count, prefix, Context.Guild.Id));
         }
 
         [Command("GachaShop"), Alias("gs"), Summary("Opens the gacha shop.")]
@@ -41,7 +41,7 @@ namespace Namiko
             string prefix = Program.GetPrefix(Context);
             var waifus = shop.ShopWaifus.OrderByDescending(x => x.Limited).ThenBy(x => x.Waifu.Tier).ThenBy(x => x.Waifu.Source).ToList();
 
-            var eb = WaifuUtil.NewShopEmbed(waifus, prefix, ShopType.Gacha);
+            var eb = WaifuUtil.NewShopEmbed(waifus, prefix, Context.Guild.Id, ShopType.Gacha);
             await Context.Channel.SendMessageAsync("", false, eb.Build());
         }
 
@@ -59,12 +59,12 @@ namespace Namiko
 
             if (waifus.Count <= count)
             {
-                var eb = WaifuUtil.NewShopEmbed(waifus, prefix, ShopType.Mod);
+                var eb = WaifuUtil.NewShopEmbed(waifus, prefix, Context.Guild.Id, ShopType.Mod);
                 await Context.Channel.SendMessageAsync("", false, eb.Build());
                 return;
             }
 
-            await PagedReplyAsync(WaifuUtil.PaginatedShopMessage(waifus, count, prefix, ShopType.Mod));
+            await PagedReplyAsync(WaifuUtil.PaginatedShopMessage(waifus, count, prefix, Context.Guild.Id, ShopType.Mod));
         }
 
         [Command("WaifuShopSlides"), Alias("wss"), Summary("Opens the waifu shop slides.")]

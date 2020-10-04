@@ -341,7 +341,7 @@ namespace Namiko
             eb.Color = BasicUtil.RandomColor();
             return eb;
         }*/
-        public static EmbedBuilder NewShopEmbed(List<ShopWaifu> waifus, string prefix, ShopType type = ShopType.Waifu)
+        public static EmbedBuilder NewShopEmbed(List<ShopWaifu> waifus, string prefix, ulong guildId = 0, ShopType type = ShopType.Waifu)
         {
             var client = Program.GetClient();
             var eb = new EmbedBuilder();
@@ -357,7 +357,8 @@ namespace Namiko
             else
             {
                 eb.WithAuthor("Waifu Shop", client.CurrentUser.GetAvatarUrl(), BasicUtil._patreon);
-                eb.WithDescription($"Titles with a lot of waifus were moved to the `{prefix}GachaShop`");
+                if (guildId != 0)
+                    eb.WithDescription($"Open in [browser](https://namiko.moe/WaifuShop/{guildId})");
             }
 
             string list = WaifuShopWaifuList(waifus);
@@ -372,7 +373,7 @@ namespace Namiko
             eb.Color = BasicUtil.RandomColor();
             return eb;
         }
-        public static CustomPaginatedMessage PaginatedShopMessage(IEnumerable<ShopWaifu> waifus, int pageSize, string prefix, ShopType type = ShopType.Waifu)
+        public static CustomPaginatedMessage PaginatedShopMessage(IEnumerable<ShopWaifu> waifus, int pageSize, string prefix, ulong guildId = 0, ShopType type = ShopType.Waifu)
         {
             CustomPaginatedMessage paginatedMessage = new CustomPaginatedMessage();
             var fieldList = new List<FieldPages>();
@@ -404,7 +405,8 @@ namespace Namiko
             paginatedMessage.Footer = $"Resets in {11 - DateTime.Now.Hour % 12} Hours {60 - DateTime.Now.Minute} Minutes | ";
             paginatedMessage.Color = BasicUtil.RandomColor();
             paginatedMessage.PageCount = pages;
-            paginatedMessage.Pages = new List<string> { $"Titles with a lot of waifus were moved to the `{prefix}GachaShop`" };
+            if (guildId != 0)
+                paginatedMessage.Pages = new List<string> { $"Open in [browser](https://namiko.moe/WaifuShop/{guildId})" };
             paginatedMessage.Author = new EmbedAuthorBuilder()
             {
                 Name = type switch

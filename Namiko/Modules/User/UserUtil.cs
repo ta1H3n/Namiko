@@ -3,6 +3,7 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Model;
+using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -99,7 +100,7 @@ namespace Namiko
                 name += " | Pro+ 🌟";
             else if (PremiumDb.IsPremium(user.Id, PremiumType.Pro))
                 name += " | Pro ⭐";
-            eb.WithAuthor(name, user.GetAvatarUrl(), BasicUtil._patreon);
+            eb.WithAuthor(name, user.GetAvatarUrl(), $"https://namiko.moe/Guild/{user.Guild.Id}/{user.Id}");
 
             var waifus = UserInventoryDb.GetWaifus(user.Id, user.Guild.Id);
             int waifucount = waifus.Count();
@@ -238,13 +239,15 @@ namespace Namiko
                         row = row.Substring(0, 43) + "...";
                     wstr += row + "\n";
                 }
-                eb.AddField("Waifus", wstr);
+                eb.AddField("Waifus :revolving_hearts:", wstr);
 
                 var waifu = FeaturedWaifuDb.GetFeaturedWaifu(user.Id, user.Guild.Id);
                 if (waifu != null)
                     eb.WithThumbnailUrl(waifu.ImageUrl);
                 else
                     eb.WithThumbnailUrl(user.GetAvatarUrl());
+
+                eb.WithDescription($"Open in [browser](https://namiko.moe/Guild/{user.Guild.Id}/{user.Id})");
             }
             else
             {

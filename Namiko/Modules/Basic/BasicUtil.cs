@@ -77,7 +77,7 @@ namespace Namiko
 
             string field = "Creator: taiHen#2839\n";
             field += "Support Server: [Namiko Test Realm](https://discord.gg/W6Ru5sM)\n";
-            field += "Usage Guide: [Wiki](https://github.com/ta1H3n/Namiko/wiki)\n";
+            field += "Usage Guide: [Wiki](https://namiko.moe/Guide)\n";
             field += "Origin Server: [AMFWT](https://discord.gg/PVYmSmN)\n";
             field += "Invite Link: [Namiko](https://discordapp.com/oauth2/authorize?client_id=418823684459855882&scope=bot&permissions=268707844)\n";
             field += "Repository: [Github](https://github.com/ta1H3n/Namiko)\n";
