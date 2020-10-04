@@ -16,3 +16,10 @@ html {
 .box-shadow {
   box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
 }
+
+.footer {
+    padding-top: 8px;
+    padding-bottom: 8px;
+    background-color: rgba(30, 30, 30, 0.50);
+    text-align: center;
+}
