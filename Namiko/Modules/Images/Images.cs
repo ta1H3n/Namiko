@@ -16,6 +16,11 @@ namespace Namiko
 
         public async Task<bool> SendRandomImage(ICommandContext Context)
         {
+            if (Context.Guild != null && DisabledCommandHandler.IsDisabled("", Context.Guild.Id, DisabledCommandType.Images))
+            {
+                return false;
+            }
+
             string text = Context.Message.Content;
             text = text.Replace(Program.GetPrefix(Context.Guild), "");
             text = text.Split(' ')[0];

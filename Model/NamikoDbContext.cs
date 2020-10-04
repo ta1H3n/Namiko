@@ -48,6 +48,7 @@ namespace Model
         public DbSet<Module> Modules { get; set; }
         public DbSet<Command> Commands { get; set; }
         public DbSet<ShopRole> ShopRoles { get; set; }
+        public DbSet<DisabledCommand> DisabledCommands { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder Options)
         {

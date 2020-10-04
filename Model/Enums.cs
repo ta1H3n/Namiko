@@ -43,4 +43,12 @@ namespace Model
     {
         Music
     }
+
+    [Flags]
+    public enum DisabledCommandType
+    {
+        Command,
+        Module,
+        Images
+    }
 }

@@ -134,6 +134,7 @@ namespace Namiko
             catch { }
             cts.Dispose();
             Console.WriteLine("Shutting down...");
+            await Client.LogoutAsync();
         }
 
         // COMMANDS
@@ -175,45 +176,49 @@ namespace Namiko
                 return;
 
             var cmds = Commands.Search(Context, ArgPos);
-            if (cmds.IsSuccess && !RateLimit.CanExecute(Context.Channel.Id))
+            if (cmds.IsSuccess)
             {
-                await Context.Channel.SendMessageAsync($"Woah there, Senpai, calm down! I locked this channel for **{RateLimit.InvokeLockoutPeriod.Seconds}** seconds <:MeguExploded:627470499278094337>\n" +
-                    $"You can only use **{RateLimit.InvokeLimit}** commands per **{RateLimit.InvokeLimitPeriod.Seconds}** seconds per channel.");
-                return;
-            }
+                if (Context.Guild != null && cmds.Commands.Any(x => DisabledCommandHandler.IsDisabled(x.Command.Name, Context.Guild.Id, DisabledCommandType.Command)))
+                    return;
+                else if (Context.Guild != null && cmds.Commands.Any(x => DisabledCommandHandler.IsDisabled(x.Command.Module.Name, Context.Guild.Id, DisabledCommandType.Module)))
+                    return;
 
-            if (Pause && Context.User.Id != Config.OwnerId)
-            {
-                if (cmds.IsSuccess && Pause && Context.User.Id != Config.OwnerId)
+                else if (!RateLimit.CanExecute(Context.Channel.Id))
+                {
+                    await Context.Channel.SendMessageAsync($"Woah there, Senpai, calm down! I locked this channel for **{RateLimit.InvokeLockoutPeriod.Seconds}** seconds <:MeguExploded:627470499278094337>\n" +
+                        $"You can only use **{RateLimit.InvokeLimit}** commands per **{RateLimit.InvokeLimitPeriod.Seconds}** seconds per channel.");
+                    return;
+                }
+
+                else if (Pause && Context.User.Id != Config.OwnerId)
                 {
                     await Context.Channel.SendMessageAsync("Commands disabled temporarily. Try again later.");
                     return;
                 }
-            }
 
-            if (Diag)
-            {
-                var watch = new Stopwatch();
-                watch.Start();
-                var task = Commands.ExecuteAsync(Context, ArgPos, Services).ContinueWith(x =>
+                else if (Diag)
                 {
-                    watch.Stop();
-                    Context.Channel.SendMessageAsync($"Execution time: `{watch.ElapsedMilliseconds}ms`");
-                });
-                return;
-            }
+                    var watch = new Stopwatch();
+                    watch.Start();
+                    var task = Commands.ExecuteAsync(Context, ArgPos, Services).ContinueWith(x =>
+                    {
+                        watch.Stop();
+                        Context.Channel.SendMessageAsync($"Execution time: `{watch.ElapsedMilliseconds}ms`");
+                    });
+                    return;
+                }
 
-            if (cmds.IsSuccess 
-                && Context.Channel is SocketTextChannel ch 
-                && (!ch.Guild.CurrentUser.GetPermissions(ch).Has(ChannelPermission.SendMessages) || !ch.Guild.CurrentUser.GetPermissions(ch).Has(ChannelPermission.EmbedLinks)))
-            {
-                var dm = await Context.User.GetOrCreateDMChannelAsync();
-                await dm.SendMessageAsync(embed: new EmbedBuilderPrepared(Context.Guild.CurrentUser)
-                    .WithDescription($"I don't have permission to reply to you in **{ch.Name}**.\n" +
-                    $"Make sure I have a role that allows me to send messages and embed links in the channels you want to use me in.")
-                    .WithImageUrl("https://i.imgur.com/lrPHjyt.png")
-                    .Build());
-                return;
+                else if (Context.Channel is SocketTextChannel ch
+                    && (!ch.Guild.CurrentUser.GetPermissions(ch).Has(ChannelPermission.SendMessages) || !ch.Guild.CurrentUser.GetPermissions(ch).Has(ChannelPermission.EmbedLinks)))
+                {
+                    var dm = await Context.User.GetOrCreateDMChannelAsync();
+                    await dm.SendMessageAsync(embed: new EmbedBuilderPrepared(Context.Guild.CurrentUser)
+                        .WithDescription($"I don't have permission to reply to you in **{ch.Name}**.\n" +
+                        $"Make sure I have a role that allows me to send messages and embed links in the channels you want to use me in.")
+                        .WithImageUrl("https://i.imgur.com/lrPHjyt.png")
+                        .Build());
+                    return;
+                }
             }
 
             _ = Commands.ExecuteAsync(Context, ArgPos, Services);
