@@ -27,12 +27,29 @@ namespace Namiko
             catch { }
 
             if (type == ShopType.Mod)
+            {
+                // Create mod shop if doesn't exist
+                if (shop == null)
+                {
+                    shop = new WaifuShop
+                    {
+                        GeneratedDate = DateTime.Now,
+                        GuildId = guildId,
+                        Type = type,
+                        ShopWaifus = new List<ShopWaifu>()
+                    };
+                    shop = await WaifuShopDb.AddShop(shop);
+                }
                 return shop;
+            }
 
-            if (overrideNew || shop == null || shop.GeneratedDate.AddHours(12) < System.DateTime.Now)
+            if (overrideNew || shop == null || shop.GeneratedDate.AddHours(12) < DateTime.Now)
             {
                 var newShop = await CreateNewShop(guildId, type);
-                await WaifuShopDb.AddShop(newShop, false);
+                await WaifuShopDb.DeleteShop(guildId, type);
+                await WaifuShopDb.AddShop(newShop);
+                if (Program.Debug == false)
+                    _ = Task.Run(() => NotifyWishlist(newShop.ShopWaifus.Select(x => x.Waifu), guildId));
                 return newShop;
             }
 
@@ -52,7 +69,6 @@ namespace Namiko
             };
 
             List<ShopWaifu> waifus = null;
-            shop = await WaifuShopDb.AddShop(shop, true);
 
             switch (type)
             {
@@ -65,9 +81,6 @@ namespace Namiko
                 default:
                     return null;
             }
-
-            if (Program.Debug == false)
-                _ = Task.Run(() => NotifyWishlist(waifus.Select(x => x.Waifu), guildId));
 
             shop.ShopWaifus = waifus;
             return shop;

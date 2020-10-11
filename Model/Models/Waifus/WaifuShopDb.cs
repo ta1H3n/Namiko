@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,56 +7,83 @@ namespace Model
 {
     public class WaifuShopDb
     {
-        public static async Task RemoveItem(ShopWaifu waifu)
+        public static async Task<WaifuShop> AddShop(WaifuShop shop)
         {
             using var db = new NamikoDbContext();
-            db.ShopWaifus.Remove(waifu);
+            var waifus = new Dictionary<string, Waifu>();
+
+            // Detach waifus from list so they could be added to database
+            foreach (var x in shop.ShopWaifus)
+            {
+                x.WaifuName = x.Waifu.Name;
+                waifus.Add(x.Waifu.Name, x.Waifu);
+                x.Waifu = null;
+            }
+
+            db.WaifuShops.Add(shop);
             await db.SaveChangesAsync();
+
+            // Re-attach after submitting on the database and return
+            foreach (var x in shop.ShopWaifus)
+            {
+                x.Waifu = waifus.GetValueOrDefault(x.WaifuName);
+            }
+            return shop;
         }
-        public static async Task<WaifuShop> AddShop(WaifuShop shop, bool overwrite)
+        public static async Task DeleteShop(ulong guildId, ShopType type)
         {
             using var db = new NamikoDbContext();
-            var items = shop.ShopWaifus ?? new List<ShopWaifu>();
-
-            if (overwrite)
-            {
-                var old = db.WaifuShops.Where(x => x.GuildId == shop.GuildId && x.Type == shop.Type).Include(x => x.ShopWaifus).ToList();
-                db.WaifuShops.RemoveRange(old);
-                foreach (var oldshop in old)
-                {
-                    db.ShopWaifus.RemoveRange(oldshop.ShopWaifus);
-                }
-
-                shop.ShopWaifus = null;
-                db.WaifuShops.Add(shop);
-                await db.SaveChangesAsync();
-            }
-
-            foreach (var item in items)
-            {
-                item.WaifuShop = shop;
-                await UpdateShopWaifu(item);
-            }
-
-            return shop;
+            db.WaifuShops.RemoveRange(db.WaifuShops.Where(x => x.GuildId == guildId && x.Type == type));
+            await db.SaveChangesAsync();
         }
         public static async Task<WaifuShop> GetWaifuShop(ulong guildId, ShopType type)
         {
             using var db = new NamikoDbContext();
-            var shop = await db.WaifuShops.OrderByDescending(x => x.Id).Include(x => x.ShopWaifus).ThenInclude(x => x.Waifu).FirstOrDefaultAsync(x => x.GuildId == guildId && x.Type == type);
+            var shop = await db.WaifuShops
+                .OrderByDescending(x => x.Id)
+                .Include(x => x.ShopWaifus)
+                .ThenInclude(x => x.Waifu)
+                .FirstOrDefaultAsync(x => x.GuildId == guildId && x.Type == type);
             return shop;
         }
         public static async Task<List<Waifu>> GetWaifus(ulong guildId)
         {
             using var db = new NamikoDbContext();
-            var waifus = await db.WaifuShops.Where(x => x.GuildId == guildId).OrderByDescending(x => x.Id).SelectMany(x => x.ShopWaifus.Select(x => x.Waifu)).ToListAsync();
+            var waifus = await db.WaifuShops
+                .Where(x => x.GuildId == guildId)
+                .OrderByDescending(x => x.Id)
+                .SelectMany(x => x.ShopWaifus.Select(x => x.Waifu))
+                .ToListAsync();
             return waifus;
         }
-        public static async Task UpdateShopWaifu(ShopWaifu shopWaifu)
+        public static async Task<List<ShopWaifu>> GetAllShopWaifus(ulong guildId)
+        {
+            using var db = new NamikoDbContext();
+            var waifus = await db.WaifuShops
+                .Where(x => x.GuildId == guildId)
+                .OrderByDescending(x => x.Id)
+                .SelectMany(x => x.ShopWaifus)
+                .Include(x => x.Waifu)
+                .ToListAsync();
+            return waifus;
+        }
+        public static async Task AddItem(ShopWaifu shopWaifu)
+        {
+            using var dbContext = new NamikoDbContext();
+            dbContext.ShopWaifus.Add(shopWaifu);
+            await dbContext.SaveChangesAsync();
+        }
+        public static async Task UpdateItem(ShopWaifu shopWaifu)
         {
             using var dbContext = new NamikoDbContext();
             dbContext.ShopWaifus.Update(shopWaifu);
             await dbContext.SaveChangesAsync();
+        }
+        public static async Task RemoveItem(ShopWaifu shopWaifu)
+        {
+            using var db = new NamikoDbContext();
+            db.ShopWaifus.Remove(shopWaifu);
+            await db.SaveChangesAsync();
         }
         public static async Task CompletelyDeleteWaifu(Waifu waifu)
         {

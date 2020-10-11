@@ -103,12 +103,7 @@ namespace Namiko
         [Command("BuyWaifu"), Alias("bw"), Summary("Buys a waifu, must be in a shop.\n**Usage**: `!bw [name]`")]
         public async Task BuyWaifu([Remainder] string str = "")
         {
-            var shopwaifus = (await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Waifu)).ShopWaifus;
-            shopwaifus.AddRange((await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Gacha)).ShopWaifus);
-
-            var modshop = await WaifuShopDb.GetWaifuShop(Context.Guild.Id, ShopType.Mod);
-            if (modshop != null)
-                shopwaifus.AddRange(modshop.ShopWaifus);
+            var shopwaifus = (await WaifuShopDb.GetAllShopWaifus(Context.Guild.Id)).DistinctBy(x => x.WaifuName);
 
             var waifu = await WaifuUtil.ProcessWaifuListAndRespond(await WaifuDb.SearchWaifus(str, false, shopwaifus.Select(x => x.Waifu)), this);
 
@@ -122,14 +117,8 @@ namespace Namiko
                 await Context.Channel.SendMessageAsync("You already have **" + waifu.Name + "**.");
                 return;
             }
-            ShopWaifu shopWaifu = null;
-            foreach (var x in shopwaifus)
-            {
-                if (x.Waifu.Name.Equals(waifu.Name) && x.Limited != 0)
-                {
-                    shopWaifu = x;
-                }
-            }
+
+            ShopWaifu shopWaifu = shopwaifus.FirstOrDefault(x => x.Waifu.Equals(waifu) && x.Limited != 0);
             if (shopWaifu == null)
             {
                 await Context.Channel.SendMessageAsync($"**{waifu.Name}** is not currently for sale! Try the `waifushop` command.");
@@ -156,7 +145,7 @@ namespace Namiko
             {
                 shopWaifu.BoughtBy = Context.User.Id;
                 shopWaifu.Limited -= 1;
-                await WaifuShopDb.UpdateShopWaifu(shopWaifu);
+                await WaifuShopDb.UpdateItem(shopWaifu);
             }
         }
 
@@ -418,17 +407,6 @@ namespace Namiko
             }
 
             var shop = await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Mod);
-            if (shop == null)
-            {
-                shop = new WaifuShop
-                {
-                    GeneratedDate = System.DateTime.Now,
-                    GuildId = Context.Guild.Id,
-                    Type = ShopType.Mod,
-                    ShopWaifus = new List<ShopWaifu>()
-                };
-                shop = await WaifuShopDb.AddShop(shop, true);
-            }
             var waifus = shop.ShopWaifus.Select(x => x.Waifu);
 
             var waifu = await WaifuUtil.ProcessWaifuListAndRespond(await WaifuDb.SearchWaifus(name), this);
@@ -457,7 +435,7 @@ namespace Namiko
                 return;
             }
 
-            await WaifuShopDb.UpdateShopWaifu(new ShopWaifu
+            await WaifuShopDb.UpdateItem(new ShopWaifu
             {
                 Discount = 0,
                 Limited = -1,
