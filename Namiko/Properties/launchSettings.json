@@ -1,0 +1,13 @@
+{
+  "profiles": {
+    "Namiko": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    "Namiko Production": {
+      "commandName": "Project"
+    }
+  }
+}

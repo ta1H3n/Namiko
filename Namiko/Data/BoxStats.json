@@ -1,0 +1,77 @@
+[
+  {
+    "Name": "Vote Box",
+    "TypeId": 1,
+    "WaifuChance": {
+      "1": 0,
+      "2": 0,
+      "3": 10
+    },
+    "DefaultWaifutier": 3,
+    "ToastieChance": 90,
+    "ToastiesFrom": 500,
+    "ToastiesTo": 1200,
+    "Emote": ":mailbox:",
+	"Price": -1
+  },
+  {
+    "Name": "Premium Box",
+    "TypeId": 2,
+    "WaifuChance": {
+      "1": 2,
+      "2": 5,
+      "3": 13
+    },
+    "DefaultWaifutier": 3,
+    "ToastieChance": 80,
+    "ToastiesFrom": 1000,
+    "ToastiesTo": 2400,
+    "Emote": ":star2:",
+	"Price": -1
+  },
+  {
+    "Name": "T1 Waifu Box",
+    "TypeId": 3,
+    "WaifuChance": {
+      "1": 30,
+      "2": 50,
+      "3": 0
+    },
+    "DefaultWaifutier": 2,
+    "ToastieChance": 20,
+    "ToastiesFrom": 4000,
+    "ToastiesTo": 8000,
+    "Emote": "<:T1Box:615280067081404427>",
+	"Price": 10000
+  },
+  {
+    "Name": "T2 Waifu Box",
+    "TypeId": 4,
+    "WaifuChance": {
+      "1": 0,
+      "2": 50,
+      "3": 30
+    },
+    "DefaultWaifutier": 3,
+    "ToastieChance": 20,
+    "ToastiesFrom": 2000,
+    "ToastiesTo": 6000,
+    "Emote": "<:T2Box:615280067232137442>",
+	"Price": 7000
+  },
+  {
+    "Name": "T3 Waifu Box",
+    "TypeId": 5,
+    "WaifuChance": {
+      "1": 0,
+      "2": 0,
+      "3": 80
+    },
+    "DefaultWaifutier": 3,
+    "ToastieChance": 20,
+    "ToastiesFrom": 1000,
+    "ToastiesTo": 3000,
+    "Emote": "<:T3Box:615280068138106934>",
+	"Price": 4500
+  }
+]
