@@ -253,7 +253,7 @@ namespace Namiko
         public static EmbedBuilder MangaEmbed(Manga manga)
         {
             string MangaState;
-            if (manga.Status == "Publishing") MangaState = "^"; else MangaState = manga.Chapters;
+            if (manga.Status == "Publishing") MangaState = "^"; else MangaState = manga.Chapters?.ToString();
 
             var eb = new EmbedBuilder();
             eb.WithColor(BasicUtil.RandomColor());

@@ -95,7 +95,7 @@ namespace Namiko
             var now = System.DateTime.Now;
             var expired = PremiumDb.GetAllPremiums(now.AddMonths(-1).AddDays(-1));
             var client = Program.GetClient();
-            var ntr = client.GetGuild((ulong)PremiumType.HomeGuildId_NOTAPREMIUMTYPE);
+            var ntr = client.GetGuild((ulong)ProType.HomeGuildId_NOTAPREMIUMTYPE);
 
             foreach (var premium in expired)
             {
@@ -571,7 +571,7 @@ namespace Namiko
                 try
                 {
                     var type = LootBoxType.Vote;
-                    if (PremiumDb.IsPremium(x, PremiumType.ProPlus))
+                    if (PremiumDb.IsPremium(x, ProType.ProPlus))
                         type = LootBoxType.Premium;
 
                     await LootBoxDb.AddLootbox(x, type, 1);

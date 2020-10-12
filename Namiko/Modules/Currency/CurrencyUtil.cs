@@ -316,7 +316,7 @@ namespace Namiko
                 $"Vote for me on [Discord Bots](https://discordbots.org/bot/418823684459855882/vote) every day to receive a lootbox!");
             eb.WithColor(BasicUtil.RandomColor());
 
-            if (!(PremiumDb.IsPremium(user.Id, PremiumType.Pro) || PremiumDb.IsPremium(user.Id, PremiumType.ProPlus)))
+            if (!(PremiumDb.IsPremium(user.Id, ProType.Pro) || PremiumDb.IsPremium(user.Id, ProType.ProPlus)))
                 eb.WithFooter($"Check out Pro upgrades! `{prefix}Pro`");
             return eb;
         }
@@ -329,7 +329,7 @@ namespace Namiko
                 eb.WithImageUrl("https://i.imgur.com/LcqpKmo.png");
             eb.WithColor(BasicUtil.RandomColor());
 
-            if (!(PremiumDb.IsPremium(user.Id, PremiumType.Pro) || PremiumDb.IsPremium(user.Id, PremiumType.ProPlus)))
+            if (!(PremiumDb.IsPremium(user.Id, ProType.Pro) || PremiumDb.IsPremium(user.Id, ProType.ProPlus)))
                 eb.WithFooter($"Check out Pro upgrades! `{prefix}Pro`");
             return eb;
         }
@@ -345,7 +345,7 @@ namespace Namiko
             eb.WithDescription($"You already claimed your weekly reward.\nYou must wait `{wait}`");
             eb.WithColor(BasicUtil.RandomColor());
 
-            if (!(PremiumDb.IsPremium(user.Id, PremiumType.Pro) || PremiumDb.IsPremium(user.Id, PremiumType.ProPlus)))
+            if (!(PremiumDb.IsPremium(user.Id, ProType.Pro) || PremiumDb.IsPremium(user.Id, ProType.ProPlus)))
                 eb.WithFooter($"Check out Pro upgrades! `{prefix}Pro`");
             return eb;
         }
@@ -356,7 +356,7 @@ namespace Namiko
             eb.WithDescription($"You received **{amount.ToString("n0")}** {RandomEmote()}\nNow you have **{current.ToString("n0")}** {RandomEmote()}");
             eb.WithColor(BasicUtil.RandomColor());
 
-            if (!(PremiumDb.IsPremium(user.Id, PremiumType.Pro) || PremiumDb.IsPremium(user.Id, PremiumType.ProPlus)))
+            if (!(PremiumDb.IsPremium(user.Id, ProType.Pro) || PremiumDb.IsPremium(user.Id, ProType.ProPlus)))
                 eb.WithFooter($"Check out Pro upgrades! `{prefix}Pro`");
             return eb;
         }

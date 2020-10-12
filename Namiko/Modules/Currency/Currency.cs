@@ -78,7 +78,7 @@ namespace Namiko
 
             long timeNow = DateTimeOffset.Now.ToUnixTimeMilliseconds();
             int ms = 72000000;
-            if (PremiumDb.IsPremium(Context.User.Id, PremiumType.ProPlus))
+            if (PremiumDb.IsPremium(Context.User.Id, ProType.ProPlus))
                 ms /= 2;
 
             if ((daily.Date + ms) < timeNow)
@@ -127,7 +127,7 @@ namespace Namiko
             }
 
             int hours = 164;
-            if (PremiumDb.IsPremium(Context.Guild.Id, PremiumType.Guild) || PremiumDb.IsPremium(Context.Guild.Id, PremiumType.GuildPlus))
+            if (PremiumDb.IsPremium(Context.Guild.Id, ProType.Guild) || PremiumDb.IsPremium(Context.Guild.Id, ProType.GuildPlus))
                 hours /= 2;
 
             if (weekly.Date == null ? true : weekly.Date.AddHours(hours).CompareTo(DateTime.Now) < 0)
@@ -136,11 +136,11 @@ namespace Namiko
                 int amount = ToastieUtil.DailyAmount(streak);
                 int tax = ToastieUtil.DailyTax(amount, BalanceDb.GetToasties(Context.User.Id, Context.Guild.Id), BalanceDb.GetToasties(Context.Client.CurrentUser.Id, Context.Guild.Id), await BalanceDb.TotalToasties(Context.Guild.Id));
                 amount -= tax / 2;
-                if (PremiumDb.IsPremium(Context.Guild.Id, PremiumType.GuildPlus))
+                if (PremiumDb.IsPremium(Context.Guild.Id, ProType.GuildPlus))
                     amount += 1000;
 
                 string text = "";
-                if (PremiumDb.IsPremium(Context.User.Id, PremiumType.ProPlus))
+                if (PremiumDb.IsPremium(Context.User.Id, ProType.ProPlus))
                 {
                     await LootBoxDb.AddLootbox(Context.User.Id, LootBoxType.WaifuT1, 1, Context.Guild.Id);
                     text = "You receive a T1 Waifu lootbox! :star2:";
@@ -291,7 +291,7 @@ namespace Namiko
         {
             var prefix = Program.GetPrefix(Context);
 
-            if (!PremiumDb.IsPremium(Context.Guild.Id, PremiumType.GuildPlus))
+            if (!PremiumDb.IsPremium(Context.Guild.Id, ProType.GuildPlus))
             {
                 await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared(Context.User)
                     .WithDescription($"*~ This command requires Pro Guild+ ~*\n" +
@@ -504,7 +504,7 @@ namespace Namiko
 
             if (type.IsWaifu())
             {
-                bool isPremium = PremiumDb.IsPremium(Context.User.Id, PremiumType.Pro);
+                bool isPremium = PremiumDb.IsPremium(Context.User.Id, ProType.Pro);
                 var waifu = await ToastieUtil.UnboxWaifu(type, isPremium, Context.User.Id, Context.Guild.Id);
                 while(UserInventoryDb.OwnsWaifu(Context.User.Id, waifu, Context.Guild.Id))
                     waifu = await ToastieUtil.UnboxWaifu(type, isPremium, Context.User.Id, Context.Guild.Id);
@@ -614,7 +614,7 @@ namespace Namiko
             int toasties = 0;
             var waifusFound = new List<Waifu>();
             var waifus = UserInventoryDb.GetWaifus(Context.User.Id, Context.Guild.Id);
-            bool isPremium = PremiumDb.IsPremium(Context.User.Id, PremiumType.Pro);
+            bool isPremium = PremiumDb.IsPremium(Context.User.Id, ProType.Pro);
 
             for (int i = 0; i < amount; i++)
             {
