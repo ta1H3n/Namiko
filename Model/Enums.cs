@@ -21,7 +21,7 @@ namespace Model
     }
 
     [Flags]
-    public enum PremiumType : ulong
+    public enum ProType : ulong
     {
         HomeGuildId_NOTAPREMIUMTYPE = 418900885079588884,
         GuildPlus = 581848782396981250,

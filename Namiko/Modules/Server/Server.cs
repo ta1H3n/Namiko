@@ -138,7 +138,7 @@ namespace Namiko
         [Command("ActivateProGuild"), Alias("asp", "ActivateServerPremium", "apg"), Summary("Activates pro guild in the current server.\n**Usage**: `!asp [tier]`")]
         public async Task ActivateServerPremium([Remainder] string str = "")
         {
-            var ntr = Context.Client.GetGuild((ulong)PremiumType.HomeGuildId_NOTAPREMIUMTYPE);
+            var ntr = Context.Client.GetGuild((ulong)ProType.HomeGuildId_NOTAPREMIUMTYPE);
             SocketGuildUser user = ntr.GetUser(Context.User.Id);
 
             if (user == null)
@@ -154,23 +154,23 @@ namespace Namiko
             string text = "";
             foreach (var role in roles)
             {
-                if (role.Id == (ulong)PremiumType.GuildPlus)
+                if (role.Id == (ulong)ProType.GuildPlus)
                 {
-                    if (current.Any(x => x.Type == PremiumType.GuildPlus))
+                    if (current.Any(x => x.Type == ProType.GuildPlus))
                     {
                         text += "**Pro Guild+** is already activated in this server!\n";
                     }
                     else
                     {
-                        if (PremiumDb.IsPremium(user.Id, PremiumType.GuildPlus))
+                        if (PremiumDb.IsPremium(user.Id, ProType.GuildPlus))
                             text += "You used your **Pro Guild+** premium upgrade in another server...\n";
 
                         else
                         {
-                            await PremiumDb.AddPremium(user.Id, PremiumType.GuildPlus, Context.Guild.Id);
+                            await PremiumDb.AddPremium(user.Id, ProType.GuildPlus, Context.Guild.Id);
                             try
                             {
-                                await PremiumDb.DeletePremium(PremiumDb.GetGuildPremium(Context.Guild.Id).FirstOrDefault(x => x.Type == PremiumType.Guild));
+                                await PremiumDb.DeletePremium(PremiumDb.GetGuildPremium(Context.Guild.Id).FirstOrDefault(x => x.Type == ProType.Guild));
                             }
                             catch { }
                             text += "**Pro Guild+** activated!\n";
@@ -179,20 +179,20 @@ namespace Namiko
                     }
                     break;
                 }
-                if (role.Id == (ulong)PremiumType.Guild)
+                if (role.Id == (ulong)ProType.Guild)
                 {
-                    if (current.Any(x => x.Type == PremiumType.GuildPlus))
+                    if (current.Any(x => x.Type == ProType.GuildPlus))
                         text += "**Pro Guild+** is already activated in this server!\n";
-                    else if (current.Any(x => x.Type == PremiumType.Guild))
+                    else if (current.Any(x => x.Type == ProType.Guild))
                         text += "**Pro Guild** is already activated in this server!\n";
                     else
                     {
-                        if (PremiumDb.IsPremium(user.Id, PremiumType.Guild))
+                        if (PremiumDb.IsPremium(user.Id, ProType.Guild))
                             text += "You used your **Pro Guild** premium upgrade in another server...\n";
 
                         else
                         {
-                            await PremiumDb.AddPremium(user.Id, PremiumType.Guild, Context.Guild.Id);
+                            await PremiumDb.AddPremium(user.Id, ProType.Guild, Context.Guild.Id);
                             text += "**Pro Guild** activated!\n";
                             log = true;
                         }

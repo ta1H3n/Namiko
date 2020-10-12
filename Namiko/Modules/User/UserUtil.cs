@@ -65,9 +65,9 @@ namespace Namiko
         public static int GetMarriageLimit(ulong userId)
         {
             int limit = Constants.MarriageLimit;
-            if (PremiumDb.IsPremium(userId, PremiumType.Pro))
+            if (PremiumDb.IsPremium(userId, ProType.Pro))
                 limit = Constants.ProMarriageLimit;
-            if (PremiumDb.IsPremium(userId, PremiumType.ProPlus))
+            if (PremiumDb.IsPremium(userId, ProType.ProPlus))
                 limit = Constants.ProPlusMarriageLimit;
 
             return limit;
@@ -96,9 +96,9 @@ namespace Namiko
                 }
             }
 
-            if (PremiumDb.IsPremium(user.Id, PremiumType.ProPlus))
+            if (PremiumDb.IsPremium(user.Id, ProType.ProPlus))
                 name += " | Pro+ 🌟";
-            else if (PremiumDb.IsPremium(user.Id, PremiumType.Pro))
+            else if (PremiumDb.IsPremium(user.Id, ProType.Pro))
                 name += " | Pro ⭐";
             eb.WithAuthor(name, user.GetAvatarUrl(), $"https://namiko.moe/Guild/{user.Guild.Id}/{user.Id}");
 

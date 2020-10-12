@@ -331,7 +331,7 @@ namespace Namiko
 
             var waifus = await WaifuWishlistDb.GetWishlist(user.Id, Context.Guild.Id);
             int cap = 5;
-            if (PremiumDb.IsPremium(Context.User.Id, PremiumType.ProPlus))
+            if (PremiumDb.IsPremium(Context.User.Id, ProType.ProPlus))
                 cap = 12;
 
             string prefix = Program.GetPrefix(Context);
@@ -397,7 +397,7 @@ namespace Namiko
         {
             var prefix = Program.GetPrefix(Context);
 
-            if (!PremiumDb.IsPremium(Context.Guild.Id, PremiumType.GuildPlus))
+            if (!PremiumDb.IsPremium(Context.Guild.Id, ProType.GuildPlus))
             {
                 await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared(Context.User)
                     .WithDescription($"*~ This command requires Pro Guild+ ~*")

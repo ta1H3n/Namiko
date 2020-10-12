@@ -119,7 +119,7 @@ namespace Namiko
 
             if (!insider)
             {
-                if(!PremiumDb.IsPremium(Context.Guild.Id, PremiumType.GuildPlus))
+                if(!PremiumDb.IsPremium(Context.Guild.Id, ProType.GuildPlus))
                 {
                     await Context.Channel.SendMessageAsync($"This server does not have Pro Guild+. `{Program.GetPrefix(Context)}pro`");
                     return;

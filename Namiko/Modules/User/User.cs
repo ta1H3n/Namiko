@@ -617,7 +617,7 @@ namespace Namiko
         [Command("ActivatePro"), Alias("ap", "ActivatePremium"), Summary("Activates premium subscriptions associated with this account.\n**Usage**: `!ap`")]
         public async Task ActivatePremium([Remainder] string str = "")
         {
-            var ntr = Context.Client.GetGuild((ulong)PremiumType.HomeGuildId_NOTAPREMIUMTYPE);
+            var ntr = Context.Client.GetGuild((ulong)ProType.HomeGuildId_NOTAPREMIUMTYPE);
             SocketGuildUser user = ntr.GetUser(Context.User.Id);
 
             if (user == null)
@@ -633,24 +633,24 @@ namespace Namiko
             string text = "";
             foreach(var role in roles)
             {
-                if(role.Id == (ulong) PremiumType.ProPlus)
+                if(role.Id == (ulong)ProType.ProPlus)
                 {
-                    if (current.Any(x => x.Type == PremiumType.ProPlus))
+                    if (current.Any(x => x.Type == ProType.ProPlus))
                         text += "You already have **Pro+**!\n";
                     else
                     {
-                        await PremiumDb.AddPremium(user.Id, PremiumType.ProPlus);
+                        await PremiumDb.AddPremium(user.Id, ProType.ProPlus);
                         text += "**Pro+** activated!\n";
                         log = true;
                     }
                 }
-                if (role.Id == (ulong)PremiumType.Pro)
+                if (role.Id == (ulong)ProType.Pro)
                 {
-                    if (current.Any(x => x.Type == PremiumType.Pro))
+                    if (current.Any(x => x.Type == ProType.Pro))
                         text += "You already have **Pro**!\n";
                     else
                     {
-                        await PremiumDb.AddPremium(user.Id, PremiumType.Pro);
+                        await PremiumDb.AddPremium(user.Id, ProType.Pro);
                         text += "**Pro** activated!\n";
                         log = true;
                     }

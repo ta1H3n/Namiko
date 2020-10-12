@@ -14,7 +14,7 @@ namespace Model
             var entry = new WaifuWish { UserId = userId, Waifu = waifu, GuildId = guildId };
 
             int cap = 5;
-            if (PremiumDb.IsPremium(userId, PremiumType.Pro))
+            if (PremiumDb.IsPremium(userId, ProType.Pro))
                 cap = 12;
 
             db.WaifuWishlist.Update(entry);
@@ -57,7 +57,7 @@ namespace Model
                 await DbContext.SaveChangesAsync();
             }
         }
-        public static async Task<List<WaifuWish>> GetAllPremiumWishlists(ulong guildId, PremiumType premium)
+        public static async Task<List<WaifuWish>> GetAllPremiumWishlists(ulong guildId, ProType premium)
         {
             using var db = new NamikoDbContext();
             var users = db.Premiums.Where(x => x.Type == premium).Select(x => x.UserId);

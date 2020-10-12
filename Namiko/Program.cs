@@ -250,7 +250,7 @@ namespace Namiko
             // If the command is found and completed but it is a music command in a guild with no premium - set as failed
             else
             if ((cmdName == nameof(Music.Join) || cmdName == nameof(Music.Play) || cmdName == nameof(Music.PlayNext) || cmdName == nameof(Music.PlayFirst)) 
-                && !(PremiumDb.IsPremium(context.Guild.Id, PremiumType.GuildPlus) || PremiumDb.IsPremium(context.Guild.Id, PremiumType.Guild)))
+                && !(PremiumDb.IsPremium(context.Guild.Id, ProType.GuildPlus) || PremiumDb.IsPremium(context.Guild.Id, ProType.Guild)))
             {
                 success = false;
             }
@@ -612,7 +612,7 @@ namespace Namiko
             {
                 var zerotime = new DateTime(0);
                 var now = DateTime.Now;
-                var servers = db.Servers.Where(x => x.LeaveDate == zerotime && !existingIds.Contains(x.GuildId));
+                IQueryable<Server> servers = db.Servers.AsQueryable().Where(x => x.LeaveDate == zerotime && !existingIds.Contains(x.GuildId));
 
                 await servers.ForEachAsync(x => x.LeaveDate = now);
 

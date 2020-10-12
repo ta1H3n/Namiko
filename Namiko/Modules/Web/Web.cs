@@ -185,9 +185,9 @@ namespace Namiko
         {
             var subs = SpecialChannelDb.GetChannelsByGuild(Context.Guild.Id, Model.ChannelType.Reddit);
             int limit = 1;
-            if (PremiumDb.IsPremium(Context.Guild.Id, PremiumType.Guild))
+            if (PremiumDb.IsPremium(Context.Guild.Id, ProType.Guild))
                 limit = 5;
-            if (PremiumDb.IsPremium(Context.Guild.Id, PremiumType.GuildPlus))
+            if (PremiumDb.IsPremium(Context.Guild.Id, ProType.GuildPlus))
                 limit = 10;
 
             if (subs.Count() >= limit)

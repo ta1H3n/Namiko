@@ -92,7 +92,7 @@ namespace Namiko
             int t2amount = Constants.shopt2amount;
             int t3amount = Constants.shopt3amount;
             int pages = 1;
-            if (PremiumDb.IsPremium(guildId, PremiumType.GuildPlus))
+            if (PremiumDb.IsPremium(guildId, ProType.GuildPlus))
                 pages = 3;
             int randomizerMultiplier = 7 - pages;
 
@@ -102,7 +102,7 @@ namespace Namiko
             var tier2 = await WaifuDb.RandomWaifus(2, t2amount * pages * randomizerMultiplier, excludeSource: gachaSource);
             var tier3 = await WaifuDb.RandomWaifus(3, t3amount * pages * randomizerMultiplier, excludeSource: gachaSource);
 
-            var wishlists = await WaifuWishlistDb.GetAllPremiumWishlists(guildId, PremiumType.Pro);
+            var wishlists = await WaifuWishlistDb.GetAllPremiumWishlists(guildId, ProType.Pro);
             wishlists.RemoveAll(x => gachaSource.Contains(x.Waifu.Source));
             var ids = wishlists.Select(x => x.UserId).Distinct().ToArray();
             var guild = Program.GetClient().GetGuild(guildId);
@@ -188,7 +188,7 @@ namespace Namiko
             int t2amount = Constants.gachat2amount;
             int t3amount = Constants.gachat3amount;
             int pages = 1;
-            if (PremiumDb.IsPremium(guildId, PremiumType.GuildPlus))
+            if (PremiumDb.IsPremium(guildId, ProType.GuildPlus))
                 pages = 3;
             int randomizerMultiplier = 7 - pages;
 
@@ -199,7 +199,7 @@ namespace Namiko
             waifus.AddRange(await WaifuDb.RandomWaifus(2, t2amount * pages * randomizerMultiplier, includeSource: gachaSource));
             waifus.AddRange(await WaifuDb.RandomWaifus(3, t3amount * pages * randomizerMultiplier, includeSource: gachaSource));
 
-            var wishlists = await WaifuWishlistDb.GetAllPremiumWishlists(guildId, PremiumType.Pro);
+            var wishlists = await WaifuWishlistDb.GetAllPremiumWishlists(guildId, ProType.Pro);
             wishlists.RemoveAll(x => !gachaSource.Contains(x.Waifu.Source));
             var ids = wishlists.Select(x => x.UserId).Distinct().ToArray();
             var guild = Program.GetClient().GetGuild(guildId);

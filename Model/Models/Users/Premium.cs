@@ -9,7 +9,7 @@ namespace Model
         public int Id { get; set; }
         public ulong UserId { get; set; }
         public ulong GuildId { get; set; }
-        public PremiumType Type { get; set; }
+        public ProType Type { get; set; }
         public DateTime ClaimDate { get; set; }
     }
 }

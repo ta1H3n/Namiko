@@ -18,7 +18,7 @@ namespace Model
             using var db = new NamikoDbContext();
             return db.Premiums.Where(x => x.GuildId == GuildId).ToList();
         }
-        public static bool IsPremium(ulong Id, PremiumType type)
+        public static bool IsPremium(ulong Id, ProType type)
         {
             using var db = new NamikoDbContext();
             return db.Premiums.Any(x => x.Type == type && (x.GuildId == Id || x.UserId == Id));
@@ -46,7 +46,7 @@ namespace Model
             db.Premiums.Remove(premium);
             return await db.SaveChangesAsync();
         }
-        public async static Task<int> AddPremium(ulong userId, PremiumType type, ulong guildId = 0)
+        public async static Task<int> AddPremium(ulong userId, ProType type, ulong guildId = 0)
         {
             using var db = new NamikoDbContext();
             db.Premiums.Add(new Premium
