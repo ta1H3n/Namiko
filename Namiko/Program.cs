@@ -501,16 +501,19 @@ namespace Namiko
                         Console.WriteLine($"{DateTime.Now} - Left {res} Guilds.");
                         _ = WebhookClients.NamikoLogChannel.SendMessageAsync($"`{DateTime.Now.ToString("HH:mm:ss")}` <:TickNo:577838859077943306> Left {res} Guilds.`");
                     }
+
+                    await Task.Delay(1000 * 60 * 15); // 15min
+                    string report = $":space_invader: `{DateTime.Now.ToString("HH:mm:ss")}` - `Downloaded users:`\n";
+                    foreach (var shard in Client.Shards.OrderBy(x => x.ShardId))
+                    {
+                        report += $"`Shard {shard.ShardId} downloaded {shard.Guilds.Sum(x => x.Users.Count)} users.`\n";
+                    }
+                    _ = WebhookClients.NamikoLogChannel.SendMessageAsync(report);
                 }
             } catch (Exception ex)
             {
                 SentrySdk.CaptureException(ex);
             }
-
-            await Task.Delay(3000);
-            await Task.WhenAll(arg.Guilds.Select(x => x.DownloadUsersAsync()));
-            int count = arg.Guilds.Sum(x => x.Users.Count);
-            _ = WebhookClients.NamikoLogChannel.SendMessageAsync($":space_invader: `{DateTime.Now.ToString("HH:mm:ss")}` - `Shard {arg.ShardId} downloaded {count} users.`");
         }
         private async Task Client_ShardConnected(DiscordSocketClient arg)
         {
