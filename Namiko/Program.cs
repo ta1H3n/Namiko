@@ -66,7 +66,7 @@ namespace Namiko
                 LogLevel = LogSeverity.Info,
                 DefaultRetryMode = RetryMode.Retry502,
                 ExclusiveBulkDelete = true,
-                AlwaysDownloadUsers = true,
+                AlwaysDownloadUsers = false,
                 MessageCacheSize = 0,
                 LargeThreshold = 50,
                 GatewayIntents = GatewayIntents.Guilds | 
@@ -92,6 +92,7 @@ namespace Namiko
             Client.MessageReceived += Client_ReadCommand;
             Client.UserVoiceStateUpdated += Client_UserVoiceChannel;
             Client.ShardConnected += Client_ShardConnected;
+            Client.GuildAvailable += Client_GuildAvailable_DownloadUsers;
 
             // Namiko join/leave
             Client.JoinedGuild += Client_JoinedGuild;
@@ -144,6 +145,11 @@ namespace Namiko
             cts.Dispose();
             Console.WriteLine("Shutting down...");
             await Client.LogoutAsync();
+        }
+
+        private async Task Client_GuildAvailable_DownloadUsers(SocketGuild arg)
+        {
+            _ = Task.Run(() => arg.DownloadUsersAsync());
         }
 
         // COMMANDS
