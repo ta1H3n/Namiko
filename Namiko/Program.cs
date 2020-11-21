@@ -66,9 +66,16 @@ namespace Namiko
                 LogLevel = LogSeverity.Info,
                 DefaultRetryMode = RetryMode.Retry502,
                 ExclusiveBulkDelete = true,
-                AlwaysDownloadUsers = false,
+                AlwaysDownloadUsers = true,
                 MessageCacheSize = 0,
-                LargeThreshold = 50
+                LargeThreshold = 50,
+                GatewayIntents = GatewayIntents.Guilds | 
+                    GatewayIntents.GuildMembers | 
+                    GatewayIntents.GuildVoiceStates |
+                    GatewayIntents.GuildMessages |
+                    GatewayIntents.GuildMessageReactions |
+                    GatewayIntents.DirectMessages | 
+                    GatewayIntents.DirectMessageReactions
             });
             
             Commands = new CommandService(new CommandServiceConfig
@@ -82,11 +89,13 @@ namespace Namiko
             Client.ShardDisconnected += Client_ShardDisconnected;
             Client.ReactionAdded += Client_ReactionAdded;
             Client.ReactionAdded += BanroyaleGame.HandleBanroyaleReactionAsync;
-            Client.JoinedGuild += Client_JoinedGuild;
-            Client.LeftGuild += Client_LeftGuild;
             Client.MessageReceived += Client_ReadCommand;
             Client.UserVoiceStateUpdated += Client_UserVoiceChannel;
             Client.ShardConnected += Client_ShardConnected;
+
+            // Namiko join/leave
+            Client.JoinedGuild += Client_JoinedGuild;
+            Client.LeftGuild += Client_LeftGuild;
 
             // Join/leave logging.
             if (!Debug)
@@ -466,7 +475,7 @@ namespace Namiko
             try
             {
                 ReadyCount++;
-                Console.WriteLine($"{DateTime.Now} - Shard {arg.ShardId} Ready");
+                Console.WriteLine($"{DateTime.Now} - Shard {arg.ShardId} Ready.");
                 _ = WebhookClients.NamikoLogChannel.SendMessageAsync($":european_castle: `{DateTime.Now.ToString("HH:mm:ss")}` - `Shard {arg.ShardId} Ready`");
 
                 int res;
@@ -491,6 +500,11 @@ namespace Namiko
             {
                 SentrySdk.CaptureException(ex);
             }
+
+            await Task.Delay(3000);
+            await Task.WhenAll(arg.Guilds.Select(x => x.DownloadUsersAsync()));
+            int count = arg.Guilds.Sum(x => x.Users.Count);
+            _ = WebhookClients.NamikoLogChannel.SendMessageAsync($":space_invader: `{DateTime.Now.ToString("HH:mm:ss")}` - `Shard {arg.ShardId} downloaded {count} users.`");
         }
         private async Task Client_ShardConnected(DiscordSocketClient arg)
         {

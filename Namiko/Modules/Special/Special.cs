@@ -365,8 +365,8 @@ namespace Namiko
             var eb = await JsonHelper.ReadJson<EmbedBuilder>(Assembly.GetEntryAssembly().Location.Replace(@"Namiko.dll", $@"embeds/{name}"));
             eb.WithColor(BasicUtil.RandomColor());
             using var db = new NamikoDbContext();
-            var voters = db.Voters.Where(x => x.Date > DateTime.Now.AddDays(-days)).Select(x => x.UserId).ToHashSet();
-            int votes = db.Voters.Where(x => x.Date > DateTime.Now.AddDays(-days)).Count();
+            var voters = db.Voters.AsQueryable().Where(x => x.Date > DateTime.Now.AddDays(-days)).Select(x => x.UserId).ToHashSet();
+            int votes = db.Voters.AsQueryable().Where(x => x.Date > DateTime.Now.AddDays(-days)).Count();
             await ReplyAsync($"Sending this to {voters.Count} users. Votes - {votes}");
             await ReplyAsync(embed: eb.Build());
         }
@@ -377,8 +377,8 @@ namespace Namiko
             var eb = await JsonHelper.ReadJson<EmbedBuilder>(Assembly.GetEntryAssembly().Location.Replace(@"Namiko.dll", $@"embeds/{name}"));
             eb.WithColor(BasicUtil.RandomColor());
             using var db = new NamikoDbContext();
-            var voters = db.Voters.Where(x => x.Date > DateTime.Now.AddDays(-days)).Select(x => x.UserId).ToHashSet();
-            int votes = db.Voters.Where(x => x.Date > DateTime.Now.AddDays(-days)).Count();
+            var voters = db.Voters.AsQueryable().Where(x => x.Date > DateTime.Now.AddDays(-days)).Select(x => x.UserId).ToHashSet();
+            int votes = db.Voters.AsQueryable().Where(x => x.Date > DateTime.Now.AddDays(-days)).Count();
             await ReplyAsync($"Sending this to {voters.Count} users. Votes - {votes}");
             await ReplyAsync(embed: eb.Build());
             var client = Program.GetClient();

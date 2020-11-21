@@ -48,7 +48,7 @@ namespace Namiko
 
             if (roleId == 0)
             {
-                var newRole = await Context.Guild.CreateRoleAsync("Namiko-Banroyale", color: Color.Red);
+                var newRole = await Context.Guild.CreateRoleAsync("Namiko-Banroyale", null, Color.Red, false, null);
                 roleId = newRole.Id;
                 await ReplyAsync($"Creating a role - {newRole.Mention}. It will be used to track the Ban Royale participants automatically by assigning/removing the role to/from them.\n" +
                     $"You can change the name and the color of the role. But make sure it is lower in the role list than my bot role, Senpai.");

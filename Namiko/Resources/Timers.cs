@@ -163,19 +163,19 @@ namespace Namiko
             {
                 var client = Program.GetClient();
                 var nid = client.CurrentUser.Id;
-                var namikos = await db.Toasties.Where(x => x.UserId == nid && x.Amount < 200000).ToListAsync();
+                var namikos = await db.Toasties.AsQueryable().Where(x => x.UserId == nid && x.Amount < 200000).ToListAsync();
 
                 foreach (var nam in namikos)
                 {
-                    var bals = db.Toasties.Where(x => x.GuildId == nam.GuildId && x.Amount > 100 && x.UserId != nid);
+                    var bals = db.Toasties.AsQueryable().Where(x => x.GuildId == nam.GuildId && x.Amount > 100 && x.UserId != nid);
 
                     int sum = 0;
-                    await bals.ForEachAsync(x =>
+                    foreach (var x in bals)
                     {
                         int t = x.Amount / 20;
                         sum += t;
                         x.Amount -= t;
-                    });
+                    }
 
                     nam.Amount += sum;
                     db.Toasties.UpdateRange(bals);
@@ -204,6 +204,7 @@ namespace Namiko
                 {
                     var date = new DateTime(0);
                     var ids = db.Servers
+                        .AsQueryable()
                         .Where(x => x.LeaveDate != date && x.LeaveDate.AddDays(3) < DateTime.Now)
                         .OrderBy(x => x.LeaveDate)
                         .Select(x => x.GuildId)
@@ -212,21 +213,21 @@ namespace Namiko
                         .ToHashSet();
                     s = ids.Count;
 
-                    db.RemoveRange(db.Teams.Where(x => ids.Contains(x.GuildId)));
-                    db.RemoveRange(db.Dailies.Where(x => ids.Contains(x.GuildId)));
-                    db.RemoveRange(db.Servers.Where(x => ids.Contains(x.GuildId)));
-                    db.RemoveRange(db.Weeklies.Where(x => ids.Contains(x.GuildId)));
-                    db.RemoveRange(db.Toasties.Where(x => ids.Contains(x.GuildId)));
-                    db.RemoveRange(db.Marriages.Where(x => ids.Contains(x.GuildId)));
-                    db.RemoveRange(db.ShopRoles.Where(x => ids.Contains(x.GuildId)));
-                    db.RemoveRange(db.PublicRoles.Where(x => ids.Contains(x.GuildId)));
-                    db.RemoveRange(db.WaifuWishlist.Where(x => ids.Contains(x.GuildId)));
-                    db.RemoveRange(db.FeaturedWaifus.Where(x => ids.Contains(x.GuildId)));
-                    db.RemoveRange(db.UserInventories.Where(x => ids.Contains(x.GuildId)));
-                    db.RemoveRange(db.SpecialChannels.Where(x => ids.Contains(x.GuildId)));
+                    db.RemoveRange(db.Teams.AsQueryable().Where(x => ids.Contains(x.GuildId)));
+                    db.RemoveRange(db.Dailies.AsQueryable().Where(x => ids.Contains(x.GuildId)));
+                    db.RemoveRange(db.Servers.AsQueryable().Where(x => ids.Contains(x.GuildId)));
+                    db.RemoveRange(db.Weeklies.AsQueryable().Where(x => ids.Contains(x.GuildId)));
+                    db.RemoveRange(db.Toasties.AsQueryable().Where(x => ids.Contains(x.GuildId)));
+                    db.RemoveRange(db.Marriages.AsQueryable().Where(x => ids.Contains(x.GuildId)));
+                    db.RemoveRange(db.ShopRoles.AsQueryable().Where(x => ids.Contains(x.GuildId)));
+                    db.RemoveRange(db.PublicRoles.AsQueryable().Where(x => ids.Contains(x.GuildId)));
+                    db.RemoveRange(db.WaifuWishlist.AsQueryable().Where(x => ids.Contains(x.GuildId)));
+                    db.RemoveRange(db.FeaturedWaifus.AsQueryable().Where(x => ids.Contains(x.GuildId)));
+                    db.RemoveRange(db.UserInventories.AsQueryable().Where(x => ids.Contains(x.GuildId)));
+                    db.RemoveRange(db.SpecialChannels.AsQueryable().Where(x => ids.Contains(x.GuildId)));
 
-                    var shops = db.WaifuShops.Where(x => ids.Contains(x.GuildId));
-                    db.ShopWaifus.RemoveRange(db.ShopWaifus.Where(x => shops.Any(y => y.Id == x.WaifuShop.Id)));
+                    var shops = db.WaifuShops.AsQueryable().Where(x => ids.Contains(x.GuildId));
+                    db.ShopWaifus.RemoveRange(db.ShopWaifus.AsQueryable().Where(x => shops.Any(y => y.Id == x.WaifuShop.Id)));
                     db.WaifuShops.RemoveRange(shops);
 
                     r = await db.SaveChangesAsync();
@@ -261,7 +262,7 @@ namespace Namiko
                     using (var db = new NamikoDbContext())
                     {
                         var date = new DateTime(0);
-                        var id = db.Servers.Where(x => x.LeaveDate != date && x.LeaveDate.AddDays(3) < DateTime.Now).Select(x => x.GuildId).FirstOrDefault();
+                        var id = db.Servers.AsQueryable().Where(x => x.LeaveDate != date && x.LeaveDate.AddDays(3) < DateTime.Now).Select(x => x.GuildId).FirstOrDefault();
                         await WebhookClients.NamikoLogChannel.SendMessageAsync($"[TIMER] Skipping clean of guild {id}.");
                     }
                 }
@@ -312,13 +313,13 @@ namespace Namiko
 
                 if (NullSource)
                 {
-                    waifu = await db.Waifus.FirstOrDefaultAsync(x => x.ImageSource == null);
+                    waifu = await db.Waifus.AsQueryable().FirstOrDefaultAsync(x => x.ImageSource == null);
                     Console.WriteLine(DateTime.Now + " New sauce - " + waifu?.Name);
                 }
                 if (RetrySource && waifu == null)
                 {
                     NullSource = false;
-                    waifu = await db.Waifus.FirstOrDefaultAsync(x => x.ImageSource.Equals("retry"));
+                    waifu = await db.Waifus.AsQueryable().AsQueryable().FirstOrDefaultAsync(x => x.ImageSource.Equals("retry"));
                     Console.WriteLine(DateTime.Now + " Retrying - " + waifu?.Name);
                 }
                 if (waifu == null)
@@ -405,11 +406,11 @@ namespace Namiko
                 using var db = new NamikoDbContext();
                 if (waifu != null)
                 {
-                    waifu = await db.Waifus.FirstOrDefaultAsync(x => x.Source.Equals(waifu.Source) && x.ImageSource.Equals("missing"));
+                    waifu = await db.Waifus.AsQueryable().FirstOrDefaultAsync(x => x.Source.Equals(waifu.Source) && x.ImageSource.Equals("missing"));
                 }
                 if (waifu == null)
                 {
-                    waifu = await db.Waifus.OrderBy(x => Guid.NewGuid()).FirstOrDefaultAsync(x => x.ImageSource.Equals("missing"));
+                    waifu = await db.Waifus.AsQueryable().OrderBy(x => Guid.NewGuid()).FirstOrDefaultAsync(x => x.ImageSource.Equals("missing"));
                     if (waifu == null)
                     {
                         await WebhookClients.SauceRequestChannel.SendMessageAsync("`No unknown sauces. Idling...`");
@@ -428,7 +429,7 @@ namespace Namiko
                     embeds.Add(WebUtil.SauceEmbed(res, waifu.ImageUrl).Build());
                 }
 
-                var family = await db.Waifus.Where(x => x.Source.Equals(waifu.Source) &&
+                var family = await db.Waifus.AsQueryable().Where(x => x.Source.Equals(waifu.Source) &&
                     !(x.ImageSource == null || x.ImageSource.Equals("retry") || x.ImageSource.Equals("missing"))).ToListAsync();
                 family = family.DistinctBy(x => x.ImageSource).ToList();
 
