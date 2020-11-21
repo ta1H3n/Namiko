@@ -128,7 +128,7 @@ namespace Namiko
             string desc = "";
             desc += $"`{prefix}info` - learn more about me.\n" +
                 $"`{prefix}help` - list of my commands.\n" +
-                $"Or check out my usage guide [here](https://github.com/ta1H3n/Namiko/wiki) :star: \n\n" +
+                $"Or check out my usage guide [here](https://namiko.moe/Guide) :star: \n\n" +
                 $"You can change my prefix by typing `{prefix}sp [prefix]` and replacing [prefix] with your prefix!\n" +
                 $"Mentioning me {client.CurrentUser.Mention} can also be used as a prefix!";
             eb.WithDescription(desc);
