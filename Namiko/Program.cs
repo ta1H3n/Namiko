@@ -92,7 +92,8 @@ namespace Namiko
             Client.MessageReceived += Client_ReadCommand;
             Client.UserVoiceStateUpdated += Client_UserVoiceChannel;
             Client.ShardConnected += Client_ShardConnected;
-            Client.GuildAvailable += Client_GuildAvailable_DownloadUsers;
+            Client.ShardReady += Client_ShardReady_DownloadUsers;
+            //Client.GuildAvailable += Client_GuildAvailable_DownloadUsers;
 
             // Namiko join/leave
             Client.JoinedGuild += Client_JoinedGuild;
@@ -145,6 +146,26 @@ namespace Namiko
             cts.Dispose();
             Console.WriteLine("Shutting down...");
             await Client.LogoutAsync();
+        }
+
+        private HashSet<int> ShardsDownloadingUsers = new HashSet<int>();
+        private async Task Client_ShardReady_DownloadUsers(DiscordSocketClient arg)
+        {
+            if (ShardsDownloadingUsers.Contains(arg.ShardId))
+                return;
+
+            try
+            {
+                ShardsDownloadingUsers.Add(arg.ShardId);
+
+                await Task.Delay(5000);
+                await arg.DownloadUsersAsync(arg.Guilds);
+                int users = arg.Guilds.Sum(x => x.Users.Count);
+                _ = WebhookClients.NamikoLogChannel.SendMessageAsync($":space_invader: `{DateTime.Now:HH:mm:ss}` - `Shard {arg.ShardId} downloaded {users} users.`");
+            } finally
+            {
+                ShardsDownloadingUsers.Remove(arg.ShardId);
+            }
         }
 
         private async Task Client_GuildAvailable_DownloadUsers(SocketGuild arg)
@@ -502,13 +523,13 @@ namespace Namiko
                         _ = WebhookClients.NamikoLogChannel.SendMessageAsync($"`{DateTime.Now.ToString("HH:mm:ss")}` <:TickNo:577838859077943306> Left {res} Guilds.`");
                     }
 
-                    await Task.Delay(1000 * 60 * 15); // 15min
-                    string report = $":space_invader: `{DateTime.Now.ToString("HH:mm:ss")}` - `Downloaded users:`\n";
-                    foreach (var shard in Client.Shards.OrderBy(x => x.ShardId))
-                    {
-                        report += $"`Shard {shard.ShardId} downloaded {shard.Guilds.Sum(x => x.Users.Count)} users.`\n";
-                    }
-                    _ = WebhookClients.NamikoLogChannel.SendMessageAsync(report);
+                    //await Task.Delay(1000 * 60 * 15); // 15min
+                    //string report = $":space_invader: `{DateTime.Now.ToString("HH:mm:ss")}` - `Downloaded users:`\n";
+                    //foreach (var shard in Client.Shards.OrderBy(x => x.ShardId))
+                    //{
+                    //    report += $"`Shard {shard.ShardId} downloaded {shard.Guilds.Sum(x => x.Users.Count)} users.`\n";
+                    //}
+                    //_ = WebhookClients.NamikoLogChannel.SendMessageAsync(report);
                 }
             } catch (Exception ex)
             {
