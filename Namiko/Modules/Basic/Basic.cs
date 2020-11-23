@@ -257,6 +257,29 @@ namespace Namiko
             }
         }
 
+        [Command("Status"), Summary("Bot status.\n **Usage**: `!status`")]
+        public async Task Status()
+        {
+            var shards = Context.Client.Shards;
+            var eb = new EmbedBuilderPrepared();
+
+            int homeShard = -1;
+            if (Context.Guild != null)
+            {
+                homeShard = (int)(Context.Guild.Id << 22) % Context.Client.Shards.Count;
+            }
+
+            foreach(var shard in shards)
+            {
+                eb.AddField($"Shard {shard.ShardId}{(shard.ShardId == homeShard ? " - your shard" : "")}",
+                    $"State: {shard.ConnectionState}\n" +
+                    $"Latency: {shard.Latency}\n",
+                    true);
+            }
+
+            await Context.Channel.SendMessageAsync(embed: eb.Build());
+        }
+
         // HELP COMMAND STUFF
 
         [Command("Help"), Alias("h"), Summary("Shows more information about a command.\n**Usage**: `!help [command/module_name]`")]
