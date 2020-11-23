@@ -644,15 +644,15 @@ namespace Namiko
                 {
                     try
                     {
+                        await guild.Owner.SendMessageAsync($"I am leaving **{guild.Name}** due to {days}+ days of inactivity. All data like user balances related to that server will be deleted in 3 days.\n" +
+                            $"You can re-invite me using this link: https://discordapp.com/oauth2/authorize?client_id=418823684459855882&scope=bot&permissions=268707844");
+                        dm++;
+                    }
+                    catch { }
+                    try
+                    {
                         await guild.LeaveAsync();
                         s++;
-                        try
-                        {
-                            await guild.Owner.SendMessageAsync($"I am leaving **{guild.Name}** due to {days}+ days of inactivity. All data like user balances related to that server will be deleted in 3 days.\n" +
-                                $"You can re-invite me using this link: https://discordapp.com/oauth2/authorize?client_id=418823684459855882&scope=bot&permissions=268707844");
-                            dm++;
-                        }
-                        catch { }
                     }
                     catch { }
 
