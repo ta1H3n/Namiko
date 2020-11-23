@@ -553,6 +553,133 @@ namespace Namiko
             await ReplyAsync($"Updated db command list. {res} rows affected.");
         }
 
+        [Command("LeaveInactiveGuildsTest"), Summary("Rundown of how many guilds are inactive.\n**Usage**: `!LeaveInactiveGuildsTest [inactive_days] [new_servers_days]`"), OwnerPrecondition]
+        public async Task LeaveInactiveGuildsTest(int days, int newDays)
+        {
+            string desc = "";
+            using (var statsdb = new StatsDbContext())
+            using (var db = new NamikoDbContext())
+            {
+                var now = DateTime.Now;
+                var newServers = db.Servers.AsQueryable().Where(x => x.JoinDate > now.AddDays(-newDays)).Select(x => x.GuildId).Distinct().ToHashSet();
+                desc += $"New servers: {newServers.Count}\n" +
+                    $"AMFWT: {newServers.Contains(417064769309245471)}\n" +
+                    $"Personal: {newServers.Contains(231113616911237120)}\n" +
+                    $"NTR: {newServers.Contains(418900885079588884)}\n\n";
+
+                var active = statsdb.CommandLogs.AsQueryable().Where(x => x.Date > now.AddDays(-days)).Select(x => x.GuildId).Distinct().ToHashSet();
+                desc += $"Active servers: {active.Count}\n" +
+                    $"AMFWT: {active.Contains(417064769309245471)}\n" +
+                    $"Personal: {active.Contains(231113616911237120)}\n" +
+                    $"NTR: {active.Contains(418900885079588884)}\n\n";
+
+                var guilds = Program.GetClient().Guilds.ToList();
+                desc += $"Joined servers: {guilds.Count}\n" +
+                    $"AMFWT: {guilds.Any(x => x.Id == 417064769309245471)}\n" +
+                    $"Personal: {guilds.Any(x => x.Id == 231113616911237120)}\n" +
+                    $"NTR: {guilds.Any(x => x.Id == 418900885079588884)}\n\n";
+
+                guilds = guilds.Where(x => !active.Contains(x.Id) && !newServers.Contains(x.Id)).ToList();
+                desc += $"Filtered servers: {guilds.Count}\n" +
+                    $"AMFWT: {guilds.Any(x => x.Id == 417064769309245471)}\n" +
+                    $"Personal: {guilds.Any(x => x.Id == 231113616911237120)}\n" +
+                    $"NTR: {guilds.Any(x => x.Id == 418900885079588884)}\n\n";
+            }
+
+            await Context.Channel.SendMessageAsync(desc);
+        }
+
+        [Command("LeaveInactiveGuilds"), Summary("Leave all inactive guilds.\n**Usage**: `!LeaveInactiveGuilds [inactive_days] [new_servers_days] [ms_delay_per_task]`"), OwnerPrecondition]
+        public async Task LeaveInactiveGuilds(int days, int newDays, int delay)
+        {
+            if (days < 14)
+            {
+                await Context.Channel.SendMessageAsync("Less than 14 days illegal");
+                return;
+            }
+
+            string desc = "";
+            using (var statsdb = new StatsDbContext())
+            using (var db = new NamikoDbContext())
+            {
+                var now = DateTime.Now;
+                var newServers = db.Servers.AsQueryable().Where(x => x.JoinDate > now.AddDays(-newDays)).Select(x => x.GuildId).Distinct().ToHashSet();
+                desc += $"New servers: {newServers.Count}\n" +
+                    $"AMFWT: {newServers.Contains(417064769309245471)}\n" +
+                    $"Personal: {newServers.Contains(231113616911237120)}\n" +
+                    $"NTR: {newServers.Contains(418900885079588884)}\n\n";
+
+                var active = statsdb.CommandLogs.AsQueryable().Where(x => x.Date > now.AddDays(-days)).Select(x => x.GuildId).Distinct().ToHashSet();
+                desc += $"Active servers: {active.Count}\n" +
+                    $"AMFWT: {active.Contains(417064769309245471)}\n" +
+                    $"Personal: {active.Contains(231113616911237120)}\n" +
+                    $"NTR: {active.Contains(418900885079588884)}\n\n";
+
+                var guilds = Program.GetClient().Guilds.ToList();
+                desc += $"Joined servers: {guilds.Count}\n" +
+                    $"AMFWT: {guilds.Any(x => x.Id == 417064769309245471)}\n" +
+                    $"Personal: {guilds.Any(x => x.Id == 231113616911237120)}\n" +
+                    $"NTR: {guilds.Any(x => x.Id == 418900885079588884)}\n\n";
+
+                guilds = guilds.Where(x => !active.Contains(x.Id) && !newServers.Contains(x.Id)).ToList();
+                desc += $"Filtered servers: {guilds.Count}\n" +
+                    $"AMFWT: {guilds.Any(x => x.Id == 417064769309245471)}\n" +
+                    $"Personal: {guilds.Any(x => x.Id == 231113616911237120)}\n" +
+                    $"NTR: {guilds.Any(x => x.Id == 418900885079588884)}\n\n";
+
+                desc += "Leaving filtered guilds...";
+                await Context.Channel.SendMessageAsync(desc);
+
+                Program.GuildLeaveEvent = false;
+
+                if (guilds.Count >= Program.GetClient().Guilds.Count)
+                {
+                    await Context.Channel.SendMessageAsync("Filtered same or higher than all. Cancelling.");
+                    return;
+                }
+                int s = 0;
+                int f = 0;
+                int dm = 0;
+                foreach (var guild in guilds)
+                {
+                    try
+                    {
+                        await guild.LeaveAsync();
+                        s++;
+                        try
+                        {
+                            await guild.Owner.SendMessageAsync($"I am leaving **{guild.Name}** due to {days}+ days of inactivity. All data like user balances related to that server will be deleted in 3 days.\n" +
+                                $"You can re-invite me using this link: https://discordapp.com/oauth2/authorize?client_id=418823684459855882&scope=bot&permissions=268707844");
+                            dm++;
+                        }
+                        catch { }
+                    }
+                    catch { }
+
+                    if ((s + f) % 100 == 0)
+                    {
+                        try
+                        {
+                            _ = Context.Channel.SendMessageAsync($"Left: {s}\n" +
+                                $"Failed: {f}\n" +
+                                $"Dms: {dm}\n" +
+                                $"Remaining: {guilds.Count - s - f}");
+                        }
+                        catch { }
+                    }
+
+                    await Task.Delay(delay);
+                }
+
+                await Context.Channel.SendMessageAsync($"Left: {s}\n" +
+                    $"Failed: {f}\n" +
+                    $"Dms: {dm}\n" +
+                    $"Done.");
+
+                Program.GuildLeaveEvent = true;
+            }
+        }
+
         [Command("GuildLeaveEvent"), Summary("Set guild leave tracking."), OwnerPrecondition]
         public async Task GuildLeaveEvent([Remainder] string str = "")
         {
