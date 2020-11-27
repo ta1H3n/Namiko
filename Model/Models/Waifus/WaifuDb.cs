@@ -11,7 +11,7 @@ namespace Model
         public static async Task<Waifu> GetWaifu(string name)
         {
             using var db = new NamikoDbContext();
-            return await db.Waifus.Include(x => x.Mal).FirstOrDefaultAsync(x => x.Name == name);
+            return await db.Waifus.Include(x => x.Mal).FirstOrDefaultAsync(x => x.Name.ToUpper().Equals(name.ToUpper()));
         }
         public static async Task<int> AddWaifu(Waifu waifu)
         {

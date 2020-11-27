@@ -499,6 +499,13 @@ namespace Namiko
         [Command("NewWaifu"), Alias("nw"), Summary("Adds a waifu to the database.\n**Usage**: `!nw [name] [tier(1-3)] [image_url]`"), Insider]
         public async Task NewWaifu(string name, int tier, string url = null)
         {
+            var exists = await WaifuDb.GetWaifu(name);
+            if (exists != null)
+            {
+                await ReplyAsync($"**{exists.Name}** is already a waifu.");
+                return;
+            }
+
             await Context.Channel.TriggerTypingAsync();
 
             url ??= Context.Message.Attachments.FirstOrDefault()?.Url;
@@ -782,9 +789,16 @@ namespace Namiko
             await Context.Channel.SendMessageAsync($"Autocompleted **{waifu.Name}**. Has **{mal.MemberFavorites}** favorites.", false, WaifuUtil.WaifuEmbedBuilder(waifu, Context).Build());
         }
 
-        [Command("NewWaifuAutocomplete"), Alias("nwac"), Summary("Creates a new waifu and auto completes using MAL.\n**Usage**: `!acw [name] [MAL_ID] [image_url_optional]`"), Insider]
+        [Command("NewWaifuAutocomplete"), Alias("nwac"), Summary("Creates a new waifu and auto completes using MAL.\n**Usage**: `!nwac [name] [MAL_ID] [image_url_optional]`"), Insider]
         public async Task NewWaifuAutocomplete(string name, long malId, string url = null)
         {
+            var exists = await WaifuDb.GetWaifu(name);
+            if (exists != null)
+            {
+                await ReplyAsync($"**{exists.Name}** is already a waifu.");
+                return;
+            }
+
             await Context.Channel.TriggerTypingAsync();
 
             url ??= Context.Message.Attachments.FirstOrDefault()?.Url;
