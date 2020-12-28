@@ -225,8 +225,7 @@ namespace Namiko
                 await ReplyAsync($"Queued **{amount}** tracks :musical_note:");
                 if (player.PlayerState != PlayerState.Playing)
                 {
-                    await player.SkipAsync();
-                    await NowPlaying();
+                    await PlayNext(player);
                 }
                 return;
             }
@@ -398,9 +397,9 @@ namespace Namiko
         {
             var player = Player;
 
-            if (player?.Track == null)
+            if (player.PlayerState != PlayerState.Playing)
             {
-                await ReplyAsync("I have nothing to skip, Senpai.");
+                await PlayNext(player);
                 return;
             }
 
@@ -625,7 +624,7 @@ namespace Namiko
         [Command("NowPlaying"), Alias("Playing", "np"), Summary("Shows the current playing song.\n**Usage**: `!np`")]
         public async Task NowPlaying([Remainder]string str = "")
         {
-           if (Player?.Track == null)
+            if (Player?.Track == null)
             {
                 await ReplyAsync("I'm not playing anything, Senpai.");
                 return;
@@ -1122,6 +1121,20 @@ namespace Namiko
         {
             var user = Context.User as SocketGuildUser;
             return user.VoiceChannel;
+        }
+        public async Task PlayNext(LavaPlayer player)
+        {
+            if (player.Queue.TryDequeue(out var nextTrack) && (nextTrack is LavaTrack))
+            {
+                await player.PlayAsync(nextTrack);
+                await NowPlaying();
+            }
+            else
+            {
+                await player.TextChannel.SendMessageAsync(embed: new EmbedBuilderLava()
+                    .WithDescription("The queue is empty, Senpai...")
+                    .Build());
+            }
         }
 
         // LOCAL FILES
