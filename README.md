@@ -8,3 +8,8 @@
 I used this project to teach myself programming as I was studying in my computer science course. Even though it was refactored a few times, it might still be difficult to understand and set-up for anyone who is not me.
 
 I am planning to make another major refactor at some point in the future, including proper use of dependency injection, to streamline the codebase. Once that is done I will write some proper documentation that will be helpful to set-up the project for anyone interested.
+
+## References
+
+https://namiko.moe/Guide - bot usage guides.<br>
+https://namiko.moe/Commands - list of commands.
