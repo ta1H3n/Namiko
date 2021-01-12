@@ -92,7 +92,7 @@ namespace Namiko
             int t2amount = Constants.shopt2amount;
             int t3amount = Constants.shopt3amount;
             int pages = 1;
-            if (PremiumDb.IsPremium(guildId, ProType.GuildPlus))
+            if (PremiumDb.IsPremium(guildId, ProType.GuildPlus) || PremiumDb.IsPremium(guildId, ProType.Guild))
                 pages = 3;
             int randomizerMultiplier = 7 - pages;
 
