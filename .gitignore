@@ -287,3 +287,5 @@ __pycache__/
 /Namiko/Data/Settings.json
 /Website/Properties/launchSettings.json
 /Website/appsettings.json
+/Maid/appsettings.json
+/Maid/Properties/PublishProfiles/FolderProfile.pubxml
