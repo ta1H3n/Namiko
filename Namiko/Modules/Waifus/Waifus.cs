@@ -150,7 +150,8 @@ namespace Namiko
         }
 
         [Command("SellWaifu"), Alias("sw"), Summary("Sells a waifu you already own for a discounted price.\n**Usage**: `!sw [name]`")]
-        public async Task SellWaifu([Remainder] string str = "") {
+        public async Task SellWaifu([Remainder] string str = "") 
+        {
             var waifu = await WaifuUtil.ProcessWaifuListAndRespond(await WaifuDb.SearchWaifus(str, false, UserInventoryDb.GetWaifus(Context.User.Id, Context.Guild.Id)), this);
 
             //waifus existance
@@ -158,45 +159,45 @@ namespace Namiko
                 return;
             }
 
-            //getting waifus u own
-            var waifus = UserInventoryDb.GetWaifus(Context.User.Id, Context.Guild.Id);
-            if (waifus.Any(x => x.Name.Equals(waifu.Name)))
+            int worth = WaifuUtil.GetSalePrice(waifu.Tier);
+
+            var sell = new DialogueBoxOption();
+            sell.Action = async (IUserMessage message) =>
             {
-                int worth = WaifuUtil.GetSalePrice(waifu.Tier);
-
-                var sell = new DialogueBoxOption();
-                sell.Action = async (IUserMessage message) =>
+                if (!UserInventoryDb.OwnsWaifu(Context.User.Id, waifu, Context.Guild.Id)) 
                 {
-                    try { await BalanceDb.AddToasties(Context.User.Id, worth, Context.Guild.Id); }
-                    catch (Exception ex) { await Context.Channel.SendMessageAsync(ex.Message); }
-
-                    //removing waifu + confirmation
-                    await UserInventoryDb.DeleteWaifu(Context.User.Id, waifu, Context.Guild.Id);
                     await message.ModifyAsync(x => {
-                        x.Content = $"You sold **{waifu.Name}** for **{worth.ToString("n0")}** toasties.";
-                        x.Embed = ToastieUtil.ToastieEmbed(Context.User, BalanceDb.GetToasties(Context.User.Id, Context.Guild.Id)).Build();
+                        x.Embed = new EmbedBuilderPrepared(Context.User).WithDescription("You tried :star:").Build();
                     });
-                };
-                sell.After = OnExecute.RemoveReactions;
+                    return;
+                }
 
-                var cancel = new DialogueBoxOption();
-                cancel.After = OnExecute.Delete;
+                try { await BalanceDb.AddToasties(Context.User.Id, worth, Context.Guild.Id); }
+                catch (Exception ex) { await Context.Channel.SendMessageAsync(ex.Message); }
 
-                var dia = new DialogueBox();
-                dia.Options.Add(Emote.Parse("<:TickYes:577838859107303424>"), sell);
-                dia.Options.Add(Emote.Parse("<:TickNo:577838859077943306>"), cancel);
-                dia.Timeout = new TimeSpan(0, 1, 0);
-                dia.Embed = new EmbedBuilder()
-                    .WithAuthor(Context.User)
-                    .WithColor(BasicUtil.RandomColor())
-                    .WithDescription($"Sell **{waifu.Name}** for **{worth.ToString("n0")}** toasties?").Build();
+                //removing waifu + confirmation
+                await UserInventoryDb.DeleteWaifu(Context.User.Id, waifu, Context.Guild.Id);
+                await message.ModifyAsync(x => {
+                    x.Content = $"You sold **{waifu.Name}** for **{worth.ToString("n0")}** toasties.";
+                    x.Embed = ToastieUtil.ToastieEmbed(Context.User, BalanceDb.GetToasties(Context.User.Id, Context.Guild.Id)).Build();
+                });
+            };
+            sell.After = OnExecute.RemoveReactions;
 
-                await DialogueReplyAsync(dia);
-                return;
-            }
+            var cancel = new DialogueBoxOption();
+            cancel.After = OnExecute.Delete;
 
-            //doesnt have the waifu
-            await Context.Channel.SendMessageAsync($"Sure, here's 100k toasties, as imanigary as the waifu you're trying to sell. You don't own her, baaaaaaaaaka.");
+            var dia = new DialogueBox();
+            dia.Options.Add(Emote.Parse("<:TickYes:577838859107303424>"), sell);
+            dia.Options.Add(Emote.Parse("<:TickNo:577838859077943306>"), cancel);
+            dia.Timeout = new TimeSpan(0, 1, 0);
+            dia.Embed = new EmbedBuilder()
+                .WithAuthor(Context.User)
+                .WithColor(BasicUtil.RandomColor())
+                .WithDescription($"Sell **{waifu.Name}** for **{worth.ToString("n0")}** toasties?").Build();
+
+            await DialogueReplyAsync(dia);
+            return;
         }
 
         [Command("GiveWaifu"), Alias("gw"), Summary("Transfers waifu to another user.\n**Usage**: `!gw [user] [waifu_name]`")]
