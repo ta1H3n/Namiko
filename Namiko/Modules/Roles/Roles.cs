@@ -203,10 +203,17 @@ namespace Namiko
                 return;
             }
 
-            var role = await this.SelectItem(roles, eb.WithDescription(CustomPaginatedMessage.PagesArray(roles, 100, (r) => $"`{r.Price:n0}` - <@!{r.RoleId}>/n").First()));
+            int i = 1;
+            var role = await this.SelectItem(
+                roles, 
+                eb.WithDescription(
+                    "Enter the number of the role you wish to delete...\n\n" +
+                    CustomPaginatedMessage.PagesArray(roles, 100, (r) => $"**#{i++}** <@&{r.RoleId}>\n", false).First()
+                )
+            );
 
             await ShopRoleDb.RemoveRole(role.RoleId);
-            await Context.Channel.SendMessageAsync(embed: eb.WithDescription(" *~ Role removed ~*\n").Build());
+            await Context.Channel.SendMessageAsync(embed: eb.WithDescription($" *~ <@&{role.RoleId}> removed ~*\n").Build());
         }
 
         [Command("Invite"), Summary("Invites a user to your team.\n**Usage**: `!inv [user]`")]

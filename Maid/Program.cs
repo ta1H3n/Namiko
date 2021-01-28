@@ -59,7 +59,9 @@ namespace Maid
         }
 
         private static Regex r = new Regex(@"([a-zA-Z\d]+://)?((\w+:\w+@)?([a-zA-Z\d.-]+\.[A-Za-z]{2,4})(:\d+)?(/.*)?)");
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         private async Task Client_MessageReceived(SocketMessage msg)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             if (!Config.ImageChannelIds.Contains(msg.Channel.Id))
                 return;
