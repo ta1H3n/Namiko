@@ -8,14 +8,22 @@ namespace Model
 {
     public static class ImageDb
     {
-        public static async Task AddImage(string name, string url, ulong guildId = 0, int id = -1)
+        public static async Task<ReactionImage> AddImage(string name, string url, ulong guildId = 0, int id = -1)
         {
             using var DbContext = new NamikoDbContext();
+            ReactionImage img;
             if (id == -1)
-                DbContext.Add(new ReactionImage { Name = name.ToLowerInvariant(), Url = url, GuildId = guildId });
+            {
+                img = new ReactionImage { Name = name.ToLowerInvariant(), Url = url, GuildId = guildId };
+            }
             else
-                DbContext.Add(new ReactionImage { Id = id, Name = name.ToLowerInvariant(), Url = url, GuildId = guildId });
+            {
+                img = new ReactionImage { Id = id, Name = name.ToLowerInvariant(), Url = url, GuildId = guildId };
+            }
+            DbContext.Images.Add(img);
             await DbContext.SaveChangesAsync();
+
+            return img;
         }
 
         public static async Task<List<ReactionImage>> GetImages(string name = null, ulong guildId = 0)

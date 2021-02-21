@@ -622,6 +622,7 @@ namespace Namiko
             Prefixes = ServerDb.GetPrefixes();
             Images.ReactionImageCommands = ImageDb.GetReactionImageCommandHashSet();
             Blacklist = BlacklistDb.GetAll();
+            Waifu.Path = Config.ImageUrlPath + "waifus/";
         }
         private async static Task StartTimers()
         {

@@ -473,7 +473,7 @@ namespace Namiko
         {
             var eb = new EmbedBuilder();
             eb.Description = $"**{waifu.LongName}**\nT{waifu.Tier} - `{GetPrice(waifu.Tier)}` {ToastieUtil.RandomEmote()}";
-            eb.WithImageUrl(waifu.ImageUrl);
+            eb.WithImageUrl(waifu.HostImageUrl);
             eb.WithColor(BasicUtil.RandomColor());
             return eb;
         }
@@ -557,8 +557,8 @@ namespace Namiko
                 eb.WithDescription(desc);
             }
 
-            if (waifu.ImageUrl != null)
-                eb.WithImageUrl(waifu.ImageUrl);
+            if (waifu.HostImageUrl != null)
+                eb.WithImageUrl(waifu.HostImageUrl);
 
             string footer = $"Tier: {waifu.Tier}";
             if (context != null)
@@ -767,7 +767,7 @@ namespace Namiko
                     wstr += String.Format("**{0}** - *{1}*\n", x.Name, x.Source);
                 }
                 eb.AddField("Wishlist", wstr);
-                eb.WithImageUrl(waifus.Last().ImageUrl);
+                eb.WithImageUrl(waifus.Last().HostImageUrl);
             }
             else
             {
@@ -853,9 +853,10 @@ namespace Namiko
                 string filetype = waifu.ImageUrl.Split('.').Last();
                 string imgurId = waifu.ImageUrl.Split('/').Last().Split('.').First();
                 string domain = "https://i.imgur.com/";
-                await client.DownloadFileTaskAsync(new Uri(domain + imgurId + "." + filetype), $"{Config.ImagePath}{waifu.ImageRaw}");
-                await client.DownloadFileTaskAsync(new Uri(domain + imgurId + "l." + filetype), $"{Config.ImagePath}{waifu.ImageLarge}");
-                await client.DownloadFileTaskAsync(new Uri(domain + imgurId + "m." + filetype), $"{Config.ImagePath}{waifu.ImageMedium}");
+                string path = Config.ImagePath + "waifus/";
+                await client.DownloadFileTaskAsync(new Uri(domain + imgurId + "." + filetype), $"{path}{waifu.ImageRaw}");
+                await client.DownloadFileTaskAsync(new Uri(domain + imgurId + "l." + filetype), $"{path}{waifu.ImageLarge}");
+                await client.DownloadFileTaskAsync(new Uri(domain + imgurId + "m." + filetype), $"{path}{waifu.ImageMedium}");
             }
             catch (Exception ex)
             {
@@ -871,10 +872,10 @@ namespace Namiko
         {
             try
             {
-                if (waifu.ImageUrl == null || waifu.ImageUrl == "")
+                if (waifu.HostImageUrl == null || waifu.HostImageUrl == "")
                     return;
 
-                var res = await WebUtil.SauceNETSearchAsync(waifu.ImageUrl);
+                var res = await WebUtil.SauceNETSearchAsync(waifu.HostImageUrl);
                 string sauce = "";
 
                 foreach (var result in res.Results.OrderByDescending(x => Double.Parse(x.Similarity)))
@@ -898,7 +899,7 @@ namespace Namiko
                             $"`!getwaifu {waifu.Name}` - check waifu details.\n" +
                             $"`!wis {waifu.Name} [correct_source]` - change waifu image source.\n" +
                             $"If you can't find the correct source, set waifu image source to `missing`.",
-                            embed: WebUtil.SauceEmbed(res, waifu.ImageUrl).Build());
+                            embed: WebUtil.SauceEmbed(res, waifu.HostImageUrl).Build());
                         break;
                     }
                     else if (result.DatabaseName == "AniDb" && Double.Parse(result.Similarity) > 40)
@@ -909,7 +910,7 @@ namespace Namiko
                             $"`!getwaifu {waifu.Name}` - check waifu details.\n" +
                             $"`!wis {waifu.Name} [correct_source]` - change waifu image source.\n" +
                             $"If you can't find the correct source, set waifu image source to `missing`.",
-                            embed: WebUtil.SauceEmbed(res, waifu.ImageUrl).Build());
+                            embed: WebUtil.SauceEmbed(res, waifu.HostImageUrl).Build());
                         break;
                     }
                 }
@@ -926,7 +927,7 @@ namespace Namiko
                         $"`!getwaifu {waifu.Name}` - check waifu details.\n" +
                         $"`!wis {waifu.Name} [correct_source]` - change waifu image source.\n" +
                         $"If you can't find the correct source, set waifu image source to `missing`.",
-                        embed: WebUtil.SauceEmbed(res, waifu.ImageUrl).Build());
+                        embed: WebUtil.SauceEmbed(res, waifu.HostImageUrl).Build());
                 }
             }
             catch (Exception ex)

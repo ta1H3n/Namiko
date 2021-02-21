@@ -44,7 +44,8 @@ namespace Namiko
                 return false;
             }
 
-            await Context.Channel.SendMessageAsync("", false, ImageUtil.ToEmbed(image).Build());
+            var embed = ImageUtil.ToEmbed(image).Build();
+            await Context.Channel.SendMessageAsync("", false, embed);
             return true;
         }
 
@@ -106,7 +107,8 @@ namespace Namiko
                 await Context.Channel.SendMessageAsync($"There is no image with id: {id}");
                 return;
             }
-            await Context.Channel.SendMessageAsync("", false, ImageUtil.ToEmbed(image).Build());
+            var embed = ImageUtil.ToEmbed(image).Build();
+            await Context.Channel.SendMessageAsync("", false, embed);
         }
 
         [Command("NewImage"), Alias("ni"), Summary("Adds a new image to the database.\n**Usage**: `!ni [name] [url_or_attachment]`"), HomeOrT1GuildPrecondition, CustomUserPermission(GuildPermission.ManageMessages)]
@@ -156,17 +158,15 @@ namespace Namiko
             else albumId = ImageDb.GetAlbum(albumName).AlbumId;
 
             var iImage = await ImgurAPI.UploadImageAsync(url, albumId);
-            await ImageDb.AddImage(name.ToLower(), iImage.Link, insider ? 0 : Context.Guild.Id);
+            var img = await ImageDb.AddImage(name.ToLower(), iImage.Link, insider ? 0 : Context.Guild.Id);
 
             if (!ReactionImageCommands.Contains(name.ToLower()))
                 ReactionImageCommands.Add(name.ToLower());
 
-            //Test
-            var image = ImageDb.GetLastImage();
-
-            await ImgurAPI.EditImageAsync(iImage.Id.ToString(), null, image.Id.ToString());
+            await ImgurAPI.EditImageAsync(iImage.Id.ToString(), null, img.Id.ToString());
             var rl = ImgurAPI.RateLimit;
-            await Context.Channel.SendMessageAsync($"{rl.ClientRemaining-20}/{rl.ClientLimit} imgur credits remaining.", false, ImageUtil.ToEmbed(image).Build());
+            await ImageUtil.DownloadImageToServer(img, Context.Channel);
+            await Context.Channel.SendMessageAsync($"{rl.ClientRemaining-20}/{rl.ClientLimit} imgur credits remaining.", false, ImageUtil.ToEmbed(img).Build());
         }
 
         [Command("DeleteImage"), Alias("di"), Summary("Deletes image from the database using the id.\n**Usage**: `di [id]`"), HomeOrT1GuildPrecondition, CustomUserPermission(GuildPermission.ManageMessages)]

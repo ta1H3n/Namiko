@@ -261,7 +261,7 @@ namespace Namiko
             msg.Fields = fields;
             if (waifus.Any())
             {
-                msg.ThumbnailUrl = (await WaifuDb.GetWaifu(waifus.First().Key)).ImageUrl;
+                msg.ThumbnailUrl = (await WaifuDb.GetWaifu(waifus.First().Key)).HostImageUrl;
             }
 
             await PagedReplyAsync(msg);
@@ -283,7 +283,7 @@ namespace Namiko
                 }
             };
             msg.Fields = fields;
-            msg.ThumbnailUrl = (await WaifuDb.GetWaifu(waifus.First().Key)).ImageUrl;
+            msg.ThumbnailUrl = (await WaifuDb.GetWaifu(waifus.First().Key)).HostImageUrl;
 
             await PagedReplyAsync(msg);
         }
@@ -664,12 +664,12 @@ namespace Namiko
             else albumId = ImageDb.GetAlbum("Waifus").AlbumId;
 
             var iImage = await ImgurAPI.UploadImageAsync(url, albumId, null, name);
-            string old = waifu.ImageUrl;
+            string old = waifu.HostImageUrl;
             waifu.ImageUrl = iImage.Link;
 
             if (await WaifuDb.UpdateWaifu(waifu) > 0)
             {
-                await SendWaifuUpdatedMessage(waifu, "ImageUrl", old, waifu.ImageUrl);
+                await SendWaifuUpdatedMessage(waifu, "ImageUrl", old, waifu.HostImageUrl);
             }
             else
                 await Context.Channel.SendMessageAsync($":x: Failed to update {name}");
@@ -724,7 +724,7 @@ namespace Namiko
             str += $"FullName: {waifu.LongName}\n";
             str += $"Source: {waifu.Source}\n";
             str += $"Description: {waifu.Description}\n";
-            str += $"ImageUrl: {waifu.ImageUrl}\n";
+            str += $"ImageUrl: {waifu.HostImageUrl}\n";
             str += $"ImageSource: {waifu.ImageSource}\n";
             str += $"Tier: {waifu.Tier}\n";
             str += $"MalId: {waifu.Mal?.MalId}\n";
@@ -920,7 +920,7 @@ namespace Namiko
             oldVal = oldVal == null || oldVal == "" ? "-" : oldVal.ShortenString(1000, 1000, " ...");
 
             var eb = new EmbedBuilder()
-                .WithAuthor($"{waifu.Name} - {field} updated", waifu.ImageUrl)
+                .WithAuthor($"{waifu.Name} - {field} updated", waifu.HostImageUrl)
                 .AddField("New", newVal, true)
                 .AddField("Old", oldVal, true)
                 .WithColor(BasicUtil.RandomColor())

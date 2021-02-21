@@ -45,7 +45,7 @@ namespace Namiko
             };
             msg.Author = author;
 
-            msg.ThumbnailUrl = FeaturedWaifuDb.GetFeaturedWaifu(user.Id, Context.Guild.Id).ImageUrl;
+            msg.ThumbnailUrl = FeaturedWaifuDb.GetFeaturedWaifu(user.Id, Context.Guild.Id).HostImageUrl;
             var pages = CustomPaginatedMessage.PagesArray(ordwaifus, 15, (x) => String.Format("**{0}** - *{1}*\n", x.Name, x.Source.Length > 33 ? x.Source.Substring(0, 33) + "..." : x.Source), false);
             msg.Fields = new List<FieldPages> { new FieldPages { Title = "Waifus :revolving_hearts:", Pages = pages } };
             msg.Pages = new List<string> { $"Open in [browser](https://namiko.moe/Guild/{Context.Guild.Id}/{user.Id})" };

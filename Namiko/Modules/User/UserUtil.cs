@@ -131,7 +131,7 @@ namespace Namiko
             var waifu = FeaturedWaifuDb.GetFeaturedWaifu(user.Id, user.Guild.Id);
             if (waifu != null)
             {
-                eb.WithImageUrl(waifu.ImageUrl);
+                eb.WithImageUrl(waifu.HostImageUrl);
                 eb.AddField("Featured Waifu <:MiaHug:536580304018735135>", $"**{waifu.Name}** - *{waifu.Source}*");
             }
 
@@ -243,7 +243,7 @@ namespace Namiko
 
                 var waifu = FeaturedWaifuDb.GetFeaturedWaifu(user.Id, user.Guild.Id);
                 if (waifu != null)
-                    eb.WithThumbnailUrl(waifu.ImageUrl);
+                    eb.WithThumbnailUrl(waifu.HostImageUrl);
                 else
                     eb.WithThumbnailUrl(user.GetAvatarUrl());
 

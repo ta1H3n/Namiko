@@ -1,7 +1,12 @@
 ﻿using Discord;
+using Discord.WebSocket;
 using Model;
+using Sentry;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
 using static Namiko.Images;
 
 namespace Namiko
@@ -9,11 +14,12 @@ namespace Namiko
     public static class ImageUtil
     {
 
-        public static EmbedBuilder ToEmbed(ReactionImage image)
+        public static EmbedBuilder ToEmbed(ReactionImage img)
         {
             EmbedBuilder embed = new EmbedBuilder();
-            embed.WithImageUrl(image.Url);
-            embed.WithFooter($"{image.Name} id: {image.Id}");
+            string path = $"{Config.ImagePath}{img.Name}{(img.GuildId > 0 ? img.GuildId.ToString() : "")}/{img.Id}";
+            embed.WithImageUrl(path);
+            embed.WithFooter($"{img.Name} id: {img.Id}");
             embed.WithColor(BasicUtil.RandomColor());
             return embed;
         }
@@ -83,6 +89,31 @@ namespace Namiko
             eb.AddField("Server images", list);
             
             return eb;
+        }
+
+
+        //Image handlers
+        public static async Task DownloadImageToServer(ReactionImage img, ISocketMessageChannel ch)
+        {
+            try
+            {
+                if (img.Url == null || img.Url == "")
+                    return;
+
+                using WebClient client = new WebClient();
+
+                string path = $"{Config.ImagePath}{img.Name}{(img.GuildId > 0 ? img.GuildId.ToString() : "")}/{img.Id}";
+                await client.DownloadFileTaskAsync(img.Url, path);
+            }
+            catch (Exception ex)
+            {
+                await ch.SendMessageAsync($"{Program.GetClient().GetUser(Config.OwnerId).Mention} Error while downloading image to server.");
+                SentrySdk.WithScope(scope =>
+                {
+                    scope.SetExtras(img.GetProperties());
+                    SentrySdk.CaptureException(ex);
+                });
+            }
         }
     }
 }

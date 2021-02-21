@@ -6,6 +6,8 @@ namespace Model
 {
     public class Waifu
     {
+        public static string Path;
+
         [Key]
         public string Name { get; set; }
         public string LongName { get; set; }
@@ -28,6 +30,8 @@ namespace Model
         public string ImageLarge { get { return Name + "+" + ImgurId + "l." + ImageFileType; } }
         [NotMapped]
         public string ImageRaw { get { return Name + "+" + ImgurId + "." + ImageFileType; } }
+        [NotMapped]
+        public string HostImageUrl { get { return Path + Name + "+" + ImgurId + "." + ImageFileType; } }
 
         public int GetPrice()
         {

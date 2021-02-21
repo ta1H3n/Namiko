@@ -28,6 +28,9 @@ namespace Namiko
         [JsonProperty("imagePath")]
         public static string ImagePath { get; set; }
 
+        [JsonProperty("imageUrlPath")]
+        public static string ImageUrlPath { get; set; }
+
         [JsonProperty("sauceNaoApi")]
         public static string SauceNaoApi { get; set; }
 

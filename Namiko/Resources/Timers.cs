@@ -329,7 +329,7 @@ namespace Namiko
                     return;
                 }
 
-                var res = await WebUtil.SauceNETSearchAsync(waifu.ImageUrl);
+                var res = await WebUtil.SauceNETSearchAsync(waifu.HostImageUrl);
                 if (res.Message.Contains("limit exceeded", StringComparison.OrdinalIgnoreCase))
                 {
                     Console.WriteLine("Sauce limit exceeded");
@@ -352,16 +352,16 @@ namespace Namiko
                     {
                         waifu.ImageSource = result.SourceURL;
                         await WebhookClients.SauceChannel.SendMessageAsync($":question: **{waifu.Name}** - {result.DatabaseName} {result.Similarity}% ({result.SourceURL})\n" +
-                            $"Verify: *{waifu.Source}* ({waifu.ImageUrl})",
-                            embeds: new List<Embed> { WebUtil.SauceEmbed(res, waifu.ImageUrl).Build() });
+                            $"Verify: *{waifu.Source}* ({waifu.HostImageUrl})",
+                            embeds: new List<Embed> { WebUtil.SauceEmbed(res, waifu.HostImageUrl).Build() });
                         break;
                     }
                     else if (result.DatabaseName == "AniDb" && Double.Parse(result.Similarity) > 40)
                     {
                         waifu.ImageSource = result.SourceURL;
                         await WebhookClients.SauceChannel.SendMessageAsync($":question: **{waifu.Name}** - {result.DatabaseName} {result.Similarity}% ({result.SourceURL})\n" +
-                            $"Verify: *{waifu.Source}* ({waifu.ImageUrl})",
-                            embeds: new List<Embed> { WebUtil.SauceEmbed(res, waifu.ImageUrl).Build() });
+                            $"Verify: *{waifu.Source}* ({waifu.HostImageUrl})",
+                            embeds: new List<Embed> { WebUtil.SauceEmbed(res, waifu.HostImageUrl).Build() });
                         break;
                     }
                 }
@@ -419,14 +419,14 @@ namespace Namiko
                 }
                 embeds.Add(WaifuUtil.WaifuEmbedBuilder(waifu).Build());
 
-                var res = await WebUtil.SauceNETSearchAsync(waifu.ImageUrl);
+                var res = await WebUtil.SauceNETSearchAsync(waifu.HostImageUrl);
                 if (res.Message.Contains("limit exceeded", StringComparison.OrdinalIgnoreCase))
                 {
                     Console.WriteLine("Sauce limit exceeded");
                 }
                 else
                 {
-                    embeds.Add(WebUtil.SauceEmbed(res, waifu.ImageUrl).Build());
+                    embeds.Add(WebUtil.SauceEmbed(res, waifu.HostImageUrl).Build());
                 }
 
                 var family = await db.Waifus.AsQueryable().Where(x => x.Source.Equals(waifu.Source) &&
