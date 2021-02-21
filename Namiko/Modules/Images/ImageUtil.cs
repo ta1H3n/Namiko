@@ -19,7 +19,7 @@ namespace Namiko
         {
             EmbedBuilder embed = new EmbedBuilder();
 
-            string path = $"{Config.ImagePath + "reaction/"}{img.Name}{(img.GuildId > 0 ? "/" + img.GuildId.ToString() : "")}/{img.Id}.{img.ImageFileType}";
+            string path = $"{Config.ImageUrlPath + "reaction/"}{img.Name}{(img.GuildId > 0 ? "/" + img.GuildId.ToString() : "")}/{img.Id}.{img.ImageFileType}";
 
             embed.WithImageUrl(path);
             embed.WithFooter($"{img.Name} id: {img.Id}");
