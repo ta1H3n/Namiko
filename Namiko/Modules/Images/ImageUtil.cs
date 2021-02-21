@@ -4,6 +4,7 @@ using Model;
 using Sentry;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -17,7 +18,9 @@ namespace Namiko
         public static EmbedBuilder ToEmbed(ReactionImage img)
         {
             EmbedBuilder embed = new EmbedBuilder();
-            string path = $"{Config.ImagePath}{img.Name}{(img.GuildId > 0 ? img.GuildId.ToString() : "")}/{img.Id}";
+
+            string path = $"{Config.ImagePath + "reaction/"}{img.Name}{(img.GuildId > 0 ? "/" + img.GuildId.ToString() : "")}/{img.Id}.{img.ImageFileType}";
+
             embed.WithImageUrl(path);
             embed.WithFooter($"{img.Name} id: {img.Id}");
             embed.WithColor(BasicUtil.RandomColor());
@@ -102,8 +105,13 @@ namespace Namiko
 
                 using WebClient client = new WebClient();
 
-                string path = $"{Config.ImagePath}{img.Name}{(img.GuildId > 0 ? img.GuildId.ToString() : "")}/{img.Id}";
-                await client.DownloadFileTaskAsync(img.Url, path);
+                string to = Config.ImagePath + "reaction/";
+                string path = $"{to}{img.Name}{(img.GuildId > 0 ? "/" + img.GuildId.ToString() : "")}";
+
+                CreateIfNotExists(path);
+                string fileName = $"{img.Id}.{img.ImageFileType}";
+
+                await client.DownloadFileTaskAsync(img.Url, path + "/" + fileName);
             }
             catch (Exception ex)
             {
@@ -113,6 +121,14 @@ namespace Namiko
                     scope.SetExtras(img.GetProperties());
                     SentrySdk.CaptureException(ex);
                 });
+            }
+        }
+
+        public static void CreateIfNotExists(string path)
+        {
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
             }
         }
     }
