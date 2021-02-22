@@ -25,13 +25,13 @@ namespace Model
         [NotMapped]
         private string ImageFileType { get { return ImageUrl?.Split('.').Last(); } }
         [NotMapped]
-        public string ImageMedium { get { return Name + "+" + ImgurId + "m." + ImageFileType; } }
+        public string ImageMedium { get { return Name + "_" + ImgurId + "m." + ImageFileType; } }
         [NotMapped]
-        public string ImageLarge { get { return Name + "+" + ImgurId + "l." + ImageFileType; } }
+        public string ImageLarge { get { return Name + "_" + ImgurId + "l." + ImageFileType; } }
         [NotMapped]
-        public string ImageRaw { get { return Name + "+" + ImgurId + "." + ImageFileType; } }
+        public string ImageRaw { get { return Name + "_" + ImgurId + "." + ImageFileType; } }
         [NotMapped]
-        public string HostImageUrl { get { return Path + Name + "+" + ImgurId + "." + ImageFileType; } }
+        public string HostImageUrl { get { return Path + Name + "_" + ImgurId + "." + ImageFileType; } }
 
         public int GetPrice()
         {

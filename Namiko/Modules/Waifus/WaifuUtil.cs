@@ -861,6 +861,7 @@ namespace Namiko
             catch (Exception ex)
             {
                 await ch.SendMessageAsync($"{Program.GetClient().GetUser(Config.OwnerId).Mention} Error while downloading waifu image variants to server.");
+                await ch.TriggerTypingAsync();
                 SentrySdk.WithScope(scope =>
                 {
                     scope.SetExtras(waifu.GetProperties());
@@ -872,10 +873,10 @@ namespace Namiko
         {
             try
             {
-                if (waifu.HostImageUrl == null || waifu.HostImageUrl == "")
+                if (waifu.ImageUrl == null || waifu.ImageUrl == "")
                     return;
 
-                var res = await WebUtil.SauceNETSearchAsync(waifu.HostImageUrl);
+                var res = await WebUtil.SauceNETSearchAsync(waifu.ImageUrl);
                 string sauce = "";
 
                 foreach (var result in res.Results.OrderByDescending(x => Double.Parse(x.Similarity)))
@@ -899,7 +900,7 @@ namespace Namiko
                             $"`!getwaifu {waifu.Name}` - check waifu details.\n" +
                             $"`!wis {waifu.Name} [correct_source]` - change waifu image source.\n" +
                             $"If you can't find the correct source, set waifu image source to `missing`.",
-                            embed: WebUtil.SauceEmbed(res, waifu.HostImageUrl).Build());
+                            embed: WebUtil.SauceEmbed(res, waifu.ImageUrl).Build());
                         break;
                     }
                     else if (result.DatabaseName == "AniDb" && Double.Parse(result.Similarity) > 40)
@@ -910,7 +911,7 @@ namespace Namiko
                             $"`!getwaifu {waifu.Name}` - check waifu details.\n" +
                             $"`!wis {waifu.Name} [correct_source]` - change waifu image source.\n" +
                             $"If you can't find the correct source, set waifu image source to `missing`.",
-                            embed: WebUtil.SauceEmbed(res, waifu.HostImageUrl).Build());
+                            embed: WebUtil.SauceEmbed(res, waifu.ImageUrl).Build());
                         break;
                     }
                 }
@@ -927,7 +928,7 @@ namespace Namiko
                         $"`!getwaifu {waifu.Name}` - check waifu details.\n" +
                         $"`!wis {waifu.Name} [correct_source]` - change waifu image source.\n" +
                         $"If you can't find the correct source, set waifu image source to `missing`.",
-                        embed: WebUtil.SauceEmbed(res, waifu.HostImageUrl).Build());
+                        embed: WebUtil.SauceEmbed(res, waifu.ImageUrl).Build());
                 }
             }
             catch (Exception ex)

@@ -535,13 +535,14 @@ namespace Namiko
             }
 
             var waifu = new Waifu { Name = name, Tier = tier, ImageUrl = url, Description = null, LongName = null};
+            await WaifuUtil.DownloadWaifuImageToServer(waifu, Context.Channel);
 
             if (await WaifuDb.AddWaifu(waifu) > 0)
                 await Context.Channel.SendMessageAsync($"{name} added.");
             else
                 await Context.Channel.SendMessageAsync($"Failed to add {name}");
 
-            await WaifuUtil.DownloadWaifuImageToServer(waifu, Context.Channel);
+            await Context.Channel.TriggerTypingAsync();
             await WaifuUtil.FindAndUpdateWaifuImageSource(waifu, Context.Channel);
         }
 
@@ -664,19 +665,21 @@ namespace Namiko
             else albumId = ImageDb.GetAlbum("Waifus").AlbumId;
 
             var iImage = await ImgurAPI.UploadImageAsync(url, albumId, null, name);
-            string old = waifu.HostImageUrl;
+            string old = waifu.ImageUrl;
             waifu.ImageUrl = iImage.Link;
+            await WaifuUtil.DownloadWaifuImageToServer(waifu, Context.Channel);
 
             if (await WaifuDb.UpdateWaifu(waifu) > 0)
             {
-                await SendWaifuUpdatedMessage(waifu, "ImageUrl", old, waifu.HostImageUrl);
+                await SendWaifuUpdatedMessage(waifu, "ImageUrl", old, waifu.ImageUrl);
             }
             else
+            {
                 await Context.Channel.SendMessageAsync($":x: Failed to update {name}");
+            }
 
             await Context.Channel.TriggerTypingAsync();
             await WaifuUtil.FindAndUpdateWaifuImageSource(waifu, Context.Channel);
-            await WaifuUtil.DownloadWaifuImageToServer(waifu, Context.Channel);
         }
 
         [Command("WaifuImageSource"), Alias("wis"), Summary("Set waifu image source.\n**Usage**: `!wis [name] [image_sauce]`"), Insider]
@@ -702,7 +705,7 @@ namespace Namiko
             }
         }
 
-        [Command("ImageSauceRequest"), Alias("isr"), Summary("Get a request for missing image sauce.\n**Usage**: `!wi [name] [image_url]`"), Insider]
+        [Command("ImageSauceRequest"), Alias("isr"), Summary("Get a request for missing image sauce.\n**Usage**: `!isr`"), Insider]
         public async Task ImageSauceRequest(string url = null)
         {
             await Timers.Timer_RequestSauce(null, null);
@@ -724,7 +727,8 @@ namespace Namiko
             str += $"FullName: {waifu.LongName}\n";
             str += $"Source: {waifu.Source}\n";
             str += $"Description: {waifu.Description}\n";
-            str += $"ImageUrl: {waifu.HostImageUrl}\n";
+            str += $"ImgurUrl: {waifu.ImageUrl}\n";
+            str += $"NamikoMoeUrl: {waifu.HostImageUrl}\n";
             str += $"ImageSource: {waifu.ImageSource}\n";
             str += $"Tier: {waifu.Tier}\n";
             str += $"MalId: {waifu.Mal?.MalId}\n";
@@ -828,6 +832,7 @@ namespace Namiko
             }
 
             var waifu = new Waifu { Name = name, Tier = 404, ImageUrl = url, Description = null, LongName = null };
+            await WaifuUtil.DownloadWaifuImageToServer(waifu, Context.Channel);
 
             var mal = await WebUtil.GetWaifu(malId);
             waifu.LongName = $"{mal.Name} ({mal.NameKanji})";
@@ -879,7 +884,7 @@ namespace Namiko
                 await Context.Channel.SendMessageAsync("Rip");
             }
 
-            await WaifuUtil.DownloadWaifuImageToServer(waifu, Context.Channel);
+            await Context.Channel.TriggerTypingAsync();
             await WaifuUtil.FindAndUpdateWaifuImageSource(waifu, Context.Channel);
         }
 
