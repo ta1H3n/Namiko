@@ -180,6 +180,8 @@ namespace Namiko
                 EmbedBuilder eb = new EmbedBuilder();
                 var bot = game.Message.Author.Id;
 
+                game.Stand();
+
                 if (game.SumHand(game.Hand) > 21)
                 {
                     await BalanceDb.AddToasties(bot, game.Toasties, game.Channel.Guild.Id);
@@ -245,6 +247,7 @@ namespace Namiko
         public DateTime Refresh { get; set; }
         public IUserMessage Message { get; set; }
         public SocketTextChannel Channel { get; set; }
+        public bool Timeout { get; set; } = false;
 
         public BlackjackGame(int Toasties, SocketTextChannel channel)
         {
