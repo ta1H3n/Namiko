@@ -1,0 +1,35 @@
+{
+  // Bot Token
+  "token": "",
+  "defaultPrefix": "?",
+
+  // Discord user Id for owner permissions
+  "ownerId": 0,
+  // Discord role Id for insider bot management permissions
+  "insiderRoleId": 0,
+
+  // Postgres database 
+  "connectionString": "",
+
+  // Path for image location on the website client
+  "imagePath": "",
+  // Domain of the hosted images
+  "imageUrlPath": "https://namiko.moe/images/",
+
+  // APIs
+  "sauceNaoApi": "",
+  "sentryWebhook": "",
+
+  // Image for stylised info commands
+  "namikoBannerUrl": "https://i.imgur.com/Iw3SsqS.png",
+
+  // Discord channel webhooks for logging
+  "logWebhook": "",
+  "guildJoinWebhook": "",
+  "premiumWebhook": "",
+  "usageReportWebhook": "",
+  "errorLogWebhook": "",
+  "lavalinkWebhook": "",
+  "sauceWebhook": "",
+  "sauceRequestWebhook": ""
+}
