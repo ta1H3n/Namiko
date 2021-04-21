@@ -10,8 +10,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
+using Timer = System.Timers.Timer;
 
 namespace Namiko
 {
@@ -493,7 +495,7 @@ namespace Namiko
 
 
         // DISCORBBOTLIST
-        private static bool VoteLock = false;
+        private static int VoteLock = 0;
         private static bool ReminderLock = false;
         public static void Timer_UpdateDBLGuildCount(object sender, ElapsedEventArgs e)
         {
@@ -502,38 +504,37 @@ namespace Namiko
         }
         public static async void Timer_Voters2(object sender, ElapsedEventArgs e)
         {
-            if (VoteLock)
-                return;
-
-            try
+            if (Interlocked.Exchange(ref VoteLock, 1) == 0)
             {
-                VoteLock = true;
-                var voters = await WebUtil.GetVotersAsync();
-                var old = await VoteDb.GetVoters(500);
-                var votersParsed = voters.Select(x => x.Id).ToList();
-                votersParsed.Reverse();
-
-                List<ulong> add = NewEntries(old, votersParsed);
-
-                if (add.Count > 500)
+                try
                 {
-                    var ch = await Program.GetClient().GetUser(Config.OwnerId).GetOrCreateDMChannelAsync();
-                    await ch.SendMessageAsync($"Found {add.Count} new voters.");
-                    return;
-                }
+                    var voters = await WebUtil.GetVotersAsync();
+                    var old = await VoteDb.GetVoters(500);
+                    var votersParsed = voters.Select(x => x.Id).ToList();
+                    votersParsed.Reverse();
 
-                await VoteDb.AddVoters(add);
-                await SendRewards(add);
-                if (add.Count > 0)
-                    Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} Shipped {add.Count} lootboxes.");
-            }
-            catch (Exception ex)
-            {
-                SentrySdk.CaptureException(ex);
-            }
-            finally
-            {
-                VoteLock = false;
+                    List<ulong> add = NewEntries(old, votersParsed);
+
+                    if (add.Count > 500)
+                    {
+                        var ch = await Program.GetClient().GetUser(Config.OwnerId).GetOrCreateDMChannelAsync();
+                        await ch.SendMessageAsync($"Found {add.Count} new voters.");
+                        return;
+                    }
+
+                    await VoteDb.AddVoters(add);
+                    await SendRewards(add);
+                    if (add.Count > 0)
+                        Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} Shipped {add.Count} lootboxes.");
+                }
+                catch (Exception ex)
+                {
+                    SentrySdk.CaptureException(ex);
+                }
+                finally
+                {
+                    VoteLock = 0;
+                }
             }
         }
         public static List<T> NewEntries<T>(List<T> oldList, List<T> newList, Func<T, T, bool> equal = null)
