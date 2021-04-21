@@ -49,7 +49,9 @@ namespace Model
         public static async Task<List<ulong>> GetVoters(int amount)
         {
             using var db = new NamikoDbContext();
-            return await db.Voters.Skip(await db.Voters.CountAsync() - amount).Take(amount).Select(x => x.UserId).ToListAsync();
+            var res = await db.Voters.OrderByDescending(x => x.Id).Take(amount).Select(x => x.UserId).ToListAsync();
+            res.Reverse();
+            return res;
         }
         public static async Task<List<ulong>> GetVoters(DateTime dateFrom, DateTime dateTo)
         {
