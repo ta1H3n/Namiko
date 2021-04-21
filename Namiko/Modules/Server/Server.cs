@@ -252,7 +252,7 @@ namespace Namiko
         public async Task ToggleCommand([Remainder] string name)
         {
             var cmdService = Program.GetCommands();
-            var command = cmdService.Commands.SingleOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+            var command = cmdService.Commands.FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
 
             if (command == null)
             {
