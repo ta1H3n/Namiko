@@ -35,7 +35,7 @@ namespace Namiko
         public static bool Debug = false;
         private static bool Diag = false;
         private static bool Pause = false;
-        private static bool Startup = true;
+        private static int Startup = 0;
         public static bool GuildLeaveEvent = true;
         private static int ShardCount;
 
@@ -541,11 +541,11 @@ namespace Namiko
             Console.WriteLine($"{DateTime.Now} - Shard {arg.ShardId} Connected");
             _ = WebhookClients.NamikoLogChannel.SendMessageAsync($"<:TickYes:577838859107303424> `{DateTime.Now.ToString("HH:mm:ss")}` - `Shard {arg.ShardId} Connected`");
 
-            if (Startup)
+            // Making sure this part only runs once, unless an exception is thrown. Thread safe.
+            if (Interlocked.Exchange(ref Startup, 1) == 0)
             {
                 try
                 {
-                    Startup = false;
                     WebUtil.SetUpDbl(arg.CurrentUser.Id);
                     await StartTimers();
                     if (!Debug)
@@ -554,7 +554,7 @@ namespace Namiko
                 }
                 catch (Exception ex)
                 {
-                    Startup = true;
+                    Startup = 0;
                     SentrySdk.CaptureException(ex);
                 }
             }
