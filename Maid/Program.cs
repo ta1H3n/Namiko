@@ -87,7 +87,7 @@ namespace Maid
             string msg = (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")) switch
             {
                 "Development" => "<:NekoHi:620711213826834443> Dev mode >_<",
-                _ => $"<:NekoHi:620711213826834443> `{DateTime.Now.ToString("HH:mm: ss")}` Reporting uwu"
+                _ => $"<:NekoHi:620711213826834443> `{DateTime.Now.ToString("HH:mm:ss")}` Reporting uwu"
             };
 
             await ch.SendMessageAsync(msg);
