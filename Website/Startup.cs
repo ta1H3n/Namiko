@@ -18,11 +18,7 @@ namespace Website
     {
         public Startup(IConfiguration configuration)
         {
-            var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-
-            Configuration = new ConfigurationBuilder()
-                .AddJsonFile($"appsettings.{env}.json", optional: true)
-                .Build();
+            Configuration = configuration;
         }
 
         public IConfiguration Configuration { get; }
