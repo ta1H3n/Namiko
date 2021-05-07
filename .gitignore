@@ -289,3 +289,4 @@ __pycache__/
 /Website/appsettings.json
 /Maid/appsettings.json
 /Maid/Properties/PublishProfiles/FolderProfile.pubxml
+/Website/appsettings.Development.json
