@@ -3,6 +3,7 @@ using Discord.Webhook;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Model;
+using Namiko.Modules.Basic;
 using Reddit.Controllers;
 using Sentry;
 using System;
@@ -116,8 +117,8 @@ namespace Namiko
                         var ch = await client.GetUser(premium.UserId).GetOrCreateDMChannelAsync();
                         await ch.SendMessageAsync(embed: new EmbedBuilderPrepared()
                             .WithDescription($"Your **{premium.Type.ToString()}** subscription has expired. It's sad to see you go...\n" +
-                                $"You can renew your subscription [Here](https://www.patreon.com/taiHen)\n" +
-                                $"If you think this is a mistake contact taiHen#2839 [Here](https://discord.gg/W6Ru5sM)")
+                                $"You can renew your subscription [Here]({LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "pro-expired")})\n" +
+                                $"If you think this is a mistake contact taiHen#2839 [Here]({LinkHelper.SupportServerInvite})")
                             .Build());
                     }
                     catch { }
@@ -133,8 +134,8 @@ namespace Namiko
                         var ch = await client.GetUser(premium.UserId).GetOrCreateDMChannelAsync();
                         await ch.SendMessageAsync(embed: new EmbedBuilderPrepared()
                             .WithDescription($"Your **{premium.Type.ToString()}** subscription has expired. It's sad to see you go...\n" +
-                                $"You can renew your subscription [Here](https://www.patreon.com/taiHen)\n" +
-                                $"If you think this is a mistake contact taiHen#2839 [Here](https://discord.gg/W6Ru5sM)")
+                                $"You can renew your subscription [Here]({LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "pro-expired")})\n" +
+                                $"If you think this is a mistake contact taiHen#2839 [Here]({LinkHelper.SupportServerInvite})")
                             .Build());
                     }
                     catch { }
@@ -598,7 +599,7 @@ namespace Namiko
                     var user = Program.GetClient().GetUser(x);
                     var ch = await user.GetOrCreateDMChannelAsync();
                     await ch.SendMessageAsync(embed: new EmbedBuilderPrepared(user)
-                        .WithDescription("You can now vote for me again and receive another lootbox! [Discord Bots](https://discordbots.org/bot/418823684459855882/vote)")
+                        .WithDescription($"You can now vote for me again and receive another lootbox! [Discord Bots]({LinkHelper.GetRedirectUrl(LinkHelper.Vote, "Vote", "reminder")})")
                         .Build());
                 }
                 catch { }

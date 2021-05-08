@@ -10,7 +10,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Model.Migrations
 {
     [DbContext(typeof(NamikoDbContext))]
-    [Migration("20210508132417_ClickTracking")]
+    [Migration("20210508152947_ClickTracking")]
     partial class ClickTracking
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -452,13 +452,16 @@ namespace Model.Migrations
                     b.Property<string>("Ip")
                         .HasColumnType("text");
 
-                    b.Property<string>("OriginTag")
-                        .HasColumnType("text");
-
                     b.Property<string>("RedirectUrl")
                         .HasColumnType("text");
 
                     b.Property<string>("Referer")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Tag")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Type")
                         .HasColumnType("text");
 
                     b.HasKey("Id");

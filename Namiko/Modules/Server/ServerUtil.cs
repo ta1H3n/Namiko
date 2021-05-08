@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using Model;
+using Namiko.Modules.Basic;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -18,7 +19,7 @@ namespace Namiko
                 name += " | T1 Guild 🌟";
             else if (PremiumDb.IsPremium(guild.Id, ProType.Guild))
                 name += " | T2 Guild ⭐";
-            eb.WithAuthor(name, guild.IconUrl, BasicUtil._patreon);
+            eb.WithAuthor(name, guild.IconUrl, LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-embed-info"));
 
             var toasties = (await BalanceDb.GetAllToastiesRaw(guild.Id)).OrderByDescending(x => x.Amount).ToList();
             var waifus = await UserInventoryDb.GetAllWaifuItems(guild.Id);

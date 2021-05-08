@@ -25,7 +25,7 @@ namespace Website.Controllers
             {
                 Date = DateTime.Now,
                 DiscordId = HttpContext.GetUserId(),
-                OriginTag = tag,
+                Tag = tag,
                 Referer = Request.Headers["Referrer"],
                 Ip = Request.Host.Host,
                 RedirectUrl = redirectUrl,

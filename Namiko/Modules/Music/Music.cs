@@ -3,6 +3,7 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Model;
+using Namiko.Modules.Basic;
 using Sentry;
 using System;
 using System.Collections.Generic;
@@ -78,7 +79,7 @@ namespace Namiko
                     $"• And... I... I will talk to you in voice chat~ <:Awooo:582888496793124866>\n" +
                     $"\n" +
                     $"Type `{Program.GetPrefix(Context)}pro` for more info! Get all these features and more from 5$/month!\n" +
-                    $"Or join my [Support Server](https://discord.gg/W6Ru5sM) and try!");
+                    $"Or join my [Support Server]({LinkHelper.SupportServerInvite}) and try!");
                 return;
             }
 
@@ -179,7 +180,7 @@ namespace Namiko
                     $"• And... I... I will talk to you in voice chat~ <:Awooo:582888496793124866>\n" +
                     $"\n" +
                     $"Type `{Program.GetPrefix(Context)}pro` for more info! Get all these features and more from 5$/month!\n" +
-                    $"Or join my [Support Server](https://discord.gg/W6Ru5sM) and try!");
+                    $"Or join my [Support Server]({LinkHelper.SupportServerInvite}) and try!");
                 return;
             }
 
@@ -252,7 +253,7 @@ namespace Namiko
                     $"• And... I... I will talk to you in voice chat~ <:Awooo:582888496793124866>\n" +
                     $"\n" +
                     $"Type `{Program.GetPrefix(Context)}pro` for more info! Get all these features and more from 5$/month!\n" +
-                    $"Or join my [Support Server](https://discord.gg/W6Ru5sM) and try!");
+                    $"Or join my [Support Server]({LinkHelper.SupportServerInvite}) and try!");
                 return;
             }
 
@@ -341,7 +342,7 @@ namespace Namiko
                     $"• And... I... I will talk to you in voice chat~ <:Awooo:582888496793124866>\n" +
                     $"\n" +
                     $"Type `{Program.GetPrefix(Context)}pro` for more info! Get all these features and more from 5$/month!\n" +
-                    $"Or join my [Support Server](https://discord.gg/W6Ru5sM) and try!");
+                    $"Or join my [Support Server]({LinkHelper.SupportServerInvite}) and try!");
                 return;
             }
 
@@ -654,7 +655,7 @@ namespace Namiko
             {
                 Name = $"Song Queue",
                 IconUrl = Context.User.GetAvatarUrl(),
-                Url = BasicUtil._patreon
+                Url = LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-embed-queue")
             };
             var pages = CustomPaginatedMessage.PagesArray(player.Queue.Items, 10, x => $"[{x.Title.ShortenString(70, 65)}]({x.Url})\n");
             if (player.Loop)

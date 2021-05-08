@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using System.Linq;
-using Discord;
-using Discord.Commands;
+﻿using Discord;
 using Discord.WebSocket;
-
-using System.Diagnostics.Contracts;
+using Namiko.Modules.Basic;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Namiko
 {
@@ -15,7 +11,6 @@ namespace Namiko
     {
         public readonly static List<Color> colors;
         public readonly static Random rnd;
-        public const string _patreon = "https://www.patreon.com/taiHen";
 
         static BasicUtil()
         {
@@ -76,13 +71,12 @@ namespace Namiko
             eb.WithDescription(desc);
 
             string field = "Creator: taiHen#2839\n";
-            field += "Support Server: [Namiko Test Realm](https://discord.gg/W6Ru5sM)\n";
-            field += "Usage Guide: [Wiki](https://namiko.moe/Guide)\n";
-            field += "Origin Server: [AMFWT](https://discord.gg/PVYmSmN)\n";
-            field += "Invite Link: [Namiko](https://discordapp.com/oauth2/authorize?client_id=418823684459855882&scope=bot&permissions=268707844)\n";
-            field += "Repository: [Github](https://github.com/ta1H3n/Namiko)\n";
-            field += "Donate: [Paypal](https://www.paypal.me/NamikoBot)\n";
-            field += "Get Pro: [Patreon](https://www.patreon.com/taiHen) :star:";
+            field += $"Support Server: [Namiko Test Realm]({LinkHelper.SupportServerInvite})\n";
+            field += $"Usage Guide: [Guide]({LinkHelper.Guide})\n";
+            field += $"Origin Server: [AMFWT]({LinkHelper.AmfwtServerInvite})\n";
+            field += $"Invite Link: [Namiko]({LinkHelper.GetRedirectUrl(LinkHelper.BotInvite, "BotInvite", "cmd-info")})\n";
+            field += $"Repository: [Github]({LinkHelper.Repository})\n";
+            field += $"Get Pro: [Patreon]({LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-info")}) :star:";
             eb.AddField("References", field);
 
             eb.WithAuthor(client.CurrentUser);
@@ -110,8 +104,7 @@ namespace Namiko
             eb.AddField("Server Wide Upgrades <:Guild:632544044660031498>", field, true);
 
             field = "";
-            field += ":star: [Patreon](https://www.patreon.com/taiHen) - includes Pro.\n";
-            field += ":dollar: [Paypal](https://www.paypal.me/NamikoBot)\n";
+            field += $":star: [Patreon]({LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-pro")}) - includes Pro.\n";
             eb.AddField("Donation Links", field);
 
             eb.WithAuthor(client.CurrentUser);
@@ -128,7 +121,7 @@ namespace Namiko
             string desc = "";
             desc += $"`{prefix}info` - learn more about me.\n" +
                 $"`{prefix}help` - list of my commands.\n" +
-                $"Or check out my usage guide [here](https://namiko.moe/Guide) :star: \n\n" +
+                $"Or check out my usage guide [here]({LinkHelper.Guide}) :star: \n\n" +
                 $"You can change my prefix by typing `{prefix}sp [prefix]` and replacing [prefix] with your prefix!\n" +
                 $"Mentioning me {client.CurrentUser.Mention} can also be used as a prefix!";
             eb.WithDescription(desc);

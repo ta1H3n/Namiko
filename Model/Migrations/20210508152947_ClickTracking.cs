@@ -30,8 +30,9 @@ namespace Model.Migrations
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Type = table.Column<string>(nullable: true),
+                    Tag = table.Column<string>(nullable: true),
                     RedirectUrl = table.Column<string>(nullable: true),
-                    OriginTag = table.Column<string>(nullable: true),
                     Date = table.Column<DateTime>(nullable: false),
                     DiscordId = table.Column<decimal>(nullable: false),
                     Ip = table.Column<string>(nullable: true),

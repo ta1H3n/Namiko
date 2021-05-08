@@ -450,13 +450,16 @@ namespace Model.Migrations
                     b.Property<string>("Ip")
                         .HasColumnType("text");
 
-                    b.Property<string>("OriginTag")
-                        .HasColumnType("text");
-
                     b.Property<string>("RedirectUrl")
                         .HasColumnType("text");
 
                     b.Property<string>("Referer")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Tag")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Type")
                         .HasColumnType("text");
 
                     b.HasKey("Id");

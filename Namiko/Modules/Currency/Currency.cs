@@ -3,6 +3,7 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Model;
+using Namiko.Modules.Basic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -525,7 +526,7 @@ namespace Namiko
             await Task.Delay(waitms);
             await msg.ModifyAsync(x => {
                 x.Embed = new EmbedBuilder()
-                .WithAuthor($"{Context.User} | {box.Type.ToString()}", Context.User.GetAvatarUrl(), BasicUtil._patreon)
+                .WithAuthor($"{Context.User} | {box.Type.ToString()}", Context.User.GetAvatarUrl(), LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-embed-lootbox"))
                 .WithColor(BasicUtil.RandomColor())
                 .WithThumbnailUrl("https://i.imgur.com/4JQmxa6.png")
                 .WithDescription($"Congratulations! You found **{amountWon.ToString("n0")}** {ToastieUtil.RandomEmote()}!\nNow you have **{bal.ToString("n0")}** {ToastieUtil.RandomEmote()}!")
@@ -638,7 +639,7 @@ namespace Namiko
 
             await Task.Delay(waitms);
             var eb = new EmbedBuilder()
-                .WithAuthor($"{Context.User} | {box.Type.ToString()} x{amount}", Context.User.GetAvatarUrl(), BasicUtil._patreon)
+                .WithAuthor($"{Context.User} | {box.Type.ToString()} x{amount}", Context.User.GetAvatarUrl(), LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-embed-lootbox"))
                 .WithColor(BasicUtil.RandomColor())
                 .WithThumbnailUrl("https://i.imgur.com/4JQmxa6.png");
 

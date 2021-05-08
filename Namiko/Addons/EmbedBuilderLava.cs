@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Discord;
+﻿using Discord;
+using Namiko.Modules.Basic;
 
 namespace Namiko
 {
@@ -12,7 +10,7 @@ namespace Namiko
             WithColor(BasicUtil.RandomColor());
             WithFooter($"Namiko 🌋 Lavalink");
             string title = author != null ? $"{author.Username}#{author.Discriminator}" : "Player";
-            WithAuthor(title, author?.GetAvatarUrl(), BasicUtil._patreon);
+            WithAuthor(title, author?.GetAvatarUrl(), LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-lavalink"));
         }
     }
 }

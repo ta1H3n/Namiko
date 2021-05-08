@@ -8,6 +8,8 @@
   <ItemGroup>
     <Compile Remove="Migrations\20210508132235_ClickTracking.cs" />
     <Compile Remove="Migrations\20210508132235_ClickTracking.Designer.cs" />
+    <Compile Remove="Migrations\20210508132417_ClickTracking.cs" />
+    <Compile Remove="Migrations\20210508132417_ClickTracking.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

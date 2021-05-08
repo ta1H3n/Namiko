@@ -2,6 +2,7 @@
 using Discord.Addons.Interactive;
 using Discord.WebSocket;
 using Model;
+using Namiko.Modules.Basic;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -138,7 +139,7 @@ namespace Namiko
                 str += $"`#{i}` [{track.Title.ShortenString(70, 65)}]({track.Url})\n";
             }
 
-            eb.WithAuthor($"Song Queue", author?.GetAvatarUrl(), BasicUtil._patreon);
+            eb.WithAuthor($"Song Queue", author?.GetAvatarUrl(), LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-embed-queue"));
             eb.WithDescription(str);
             return eb;
         }

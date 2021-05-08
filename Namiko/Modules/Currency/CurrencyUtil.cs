@@ -2,6 +2,7 @@
 using Discord.Commands;
 using Discord.WebSocket;
 using Model;
+using Namiko.Modules.Basic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -310,10 +311,10 @@ namespace Namiko
         public static EmbedBuilder DailyGetEmbed(IUser user, int streak, int amount, int balance, string prefix)
         {
             var eb = new EmbedBuilder();
-            eb.WithAuthor(user.ToString(), user.GetAvatarUrl(), BasicUtil._patreon);
+            eb.WithAuthor(user.ToString(), user.GetAvatarUrl(), LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-embed-daily"));
             eb.WithDescription($"You're on a **{streak.ToString("n0")}** day streak. You receive **{amount.ToString("n0")}** {ToastieUtil.RandomEmote()}\n" +
                 $"Now you have **{balance.ToString("n0")}** {ToastieUtil.RandomEmote()}\n\n" +
-                $"Vote for me on [Discord Bots](https://discordbots.org/bot/418823684459855882/vote) every day to receive a lootbox!");
+                $"Vote for me on [Discord Bots]({LinkHelper.GetRedirectUrl(LinkHelper.Vote, "Vote", "cmd-daily")}) every day to receive a lootbox!");
             eb.WithColor(BasicUtil.RandomColor());
 
             if (!(PremiumDb.IsPremium(user.Id, ProType.Pro) || PremiumDb.IsPremium(user.Id, ProType.ProPlus)))
@@ -323,7 +324,7 @@ namespace Namiko
         public static EmbedBuilder DailyWaitEmbed(IUser user, int hours, int minutes, int seconds, string prefix)
         {
             var eb = new EmbedBuilder();
-            eb.WithAuthor(user.ToString(), user.GetAvatarUrl(), BasicUtil._patreon);
+            eb.WithAuthor(user.ToString(), user.GetAvatarUrl(), LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-embed-daily"));
             eb.WithDescription($"You already claimed your daily reward today.\nYou must wait `{hours} hours {minutes} minutes {seconds} seconds`");
             if (new Random().Next(20) == 1)
                 eb.WithImageUrl("https://i.imgur.com/LcqpKmo.png");
@@ -339,7 +340,7 @@ namespace Namiko
         public static EmbedBuilder WeeklyWaitEmbed(DateTime date, IUser user, string prefix)
         {
             var eb = new EmbedBuilder();
-            eb.WithAuthor(user.ToString(), user.GetAvatarUrl(), BasicUtil._patreon);
+            eb.WithAuthor(user.ToString(), user.GetAvatarUrl(), LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-embed-weekly"));
             DateTime now = DateTime.Now;
             string wait = $"{(date - now).Days} Days {(date - now).Hours} Hours {(date - now).Minutes} Minutes";
             eb.WithDescription($"You already claimed your weekly reward.\nYou must wait `{wait}`");
@@ -352,7 +353,7 @@ namespace Namiko
         public static EmbedBuilder WeeklyGetEmbed(int amount, int current, IUser user, string prefix)
         {
             var eb = new EmbedBuilder();
-            eb.WithAuthor(user.ToString(), user.GetAvatarUrl(), BasicUtil._patreon);
+            eb.WithAuthor(user.ToString(), user.GetAvatarUrl(), LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-embed-weekly"));
             eb.WithDescription($"You received **{amount.ToString("n0")}** {RandomEmote()}\nNow you have **{current.ToString("n0")}** {RandomEmote()}");
             eb.WithColor(BasicUtil.RandomColor());
 
@@ -391,7 +392,7 @@ namespace Namiko
             var eb = new EmbedBuilder();
             eb.WithAuthor(author);
             eb.WithColor(BasicUtil.RandomColor());
-            eb.WithDescription("You have no lootboxes!\nVote for me on [Discord Bots](https://discordbots.org/bot/418823684459855882/vote) to get one!");
+            eb.WithDescription($"You have no lootboxes!\nVote for me on [Discord Bots]({LinkHelper.GetRedirectUrl(LinkHelper.Vote, "Vote", "cmd-lootbox")}) to get one!");
             return eb;
         }
         public static EmbedBuilder BoxOpeningEmbed(IUser author)
@@ -445,7 +446,7 @@ namespace Namiko
             }
 
             eb.WithFooter("Try the `lootboxstats` command");
-            eb.WithAuthor("Lootbox Shop", author.GetAvatarUrl(), BasicUtil._patreon);
+            eb.WithAuthor("Lootbox Shop", author.GetAvatarUrl(), LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-embed-lootbox"));
             eb.AddField("Lootboxes", str);
             eb.WithDescription("`!bl` to buy a lootbox!");
             return eb;

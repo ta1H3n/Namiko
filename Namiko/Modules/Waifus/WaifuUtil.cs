@@ -4,6 +4,7 @@ using Discord.Commands;
 using Discord.Rest;
 using Discord.WebSocket;
 using Model;
+using Namiko.Modules.Basic;
 using Sentry;
 using System;
 using System.Collections.Generic;
@@ -360,16 +361,16 @@ namespace Namiko
             var eb = new EmbedBuilder();
 
             if (type == ShopType.Gacha)
-                eb.WithAuthor("Gacha Shop", client.CurrentUser.GetAvatarUrl(), BasicUtil._patreon);
+                eb.WithAuthor("Gacha Shop", client.CurrentUser.GetAvatarUrl(), LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-embed-shop"));
             else
             if (type == ShopType.Mod)
             {
-                eb.WithAuthor("Mod Shop", client.CurrentUser.GetAvatarUrl(), BasicUtil._patreon);
+                eb.WithAuthor("Mod Shop", client.CurrentUser.GetAvatarUrl(), LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-embed-shop"));
                 eb.WithDescription($"A waifu shop controlled by server moderators.\n`{prefix}MsAddWaifu` | `{prefix}MsRemoveWaifu` - requires Namiko Pro Guild+.");
             }
             else
             {
-                eb.WithAuthor("Waifu Shop", client.CurrentUser.GetAvatarUrl(), BasicUtil._patreon);
+                eb.WithAuthor("Waifu Shop", client.CurrentUser.GetAvatarUrl(), LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-embed-shop"));
                 if (guildId != 0)
                     eb.WithDescription($"Open in [browser](https://namiko.moe/WaifuShop/{guildId})");
             }
@@ -430,7 +431,7 @@ namespace Namiko
                     _ => "Waifu Shop"
                 },
                 IconUrl = Program.GetClient().CurrentUser.GetAvatarUrl(),
-                Url = BasicUtil._patreon
+                Url = LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-embed-shop")
             };
 
             return paginatedMessage;
@@ -535,7 +536,7 @@ namespace Namiko
         public static EmbedBuilder WaifuEmbedBuilder(Waifu waifu, SocketCommandContext context = null)
         {
             EmbedBuilder eb = new EmbedBuilder();
-            eb.WithAuthor(waifu.Name, null, BasicUtil._patreon);
+            eb.WithAuthor(waifu.Name, null, LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-embed-waifu"));
 
             string desc = "";
             if (waifu.LongName != null)
@@ -709,7 +710,7 @@ namespace Namiko
                 }
             }
 
-            eb.WithAuthor("Waifus Found", user?.GetAvatarUrl(), BasicUtil._patreon);
+            eb.WithAuthor("Waifus Found", user?.GetAvatarUrl(), LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-embed-waifulist"));
             eb.WithDescription("Enter the number of the waifu you wish to select.");
             eb.WithFooter("Times out in 23 seconds.");
             return eb;
@@ -801,7 +802,7 @@ namespace Namiko
                     catch
                     {
                         _ = interactive.Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared()
-                            .WithAuthor("Waifus Found", interactive?.Context.User.GetAvatarUrl(), BasicUtil._patreon)
+                            .WithAuthor("Waifus Found", interactive?.Context.User.GetAvatarUrl(), LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-embed-waifulist"))
                             .WithDescription("*~ Too many results ~*")
                             .WithColor(255, 255, 255)
                             .Build());
@@ -831,7 +832,7 @@ namespace Namiko
                 }
 
                 _ = interactive.Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared()
-                    .WithAuthor("Waifus Found", interactive?.Context.User.GetAvatarUrl(), BasicUtil._patreon)
+                    .WithAuthor("Waifus Found", interactive?.Context.User.GetAvatarUrl(), LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-embed-waifulist"))
                     .WithDescription("*~ No results ~*")
                     .WithColor(201, 0, 16)
                     .Build());

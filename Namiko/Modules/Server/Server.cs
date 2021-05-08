@@ -4,6 +4,7 @@ using Discord.Commands;
 using Discord.Webhook;
 using Discord.WebSocket;
 using Model;
+using Namiko.Modules.Basic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -143,7 +144,7 @@ namespace Namiko
 
             if (user == null)
             {
-                await Context.Channel.SendMessageAsync("You are not in my server! https://discord.gg/W6Ru5sM");
+                await Context.Channel.SendMessageAsync($"You are not in my server! {LinkHelper.SupportServerInvite}");
                 return;
             }
 

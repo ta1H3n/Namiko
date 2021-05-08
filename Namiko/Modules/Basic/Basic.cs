@@ -3,6 +3,7 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Model;
+using Namiko.Modules.Basic;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -48,7 +49,7 @@ namespace Namiko
                     $"- Get upgraded lootboxes for voting: chance to get **T1** and **T2** waifus, more toasties.\n" +
                     $"- Marry up to **3** users\n" +
                     $"\n" +
-                    $":star: Subscribe on [Patreon](https://www.patreon.com/taiHen)")
+                    $":star: Subscribe on [Patreon]({LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-info-pro")})")
                 .WithImageUrl("https://i.imgur.com/NIAP5QC.png")
                 .WithFooter("-What are you? Twelve?")
                 .WithColor(BasicUtil.RandomColor());
@@ -72,7 +73,7 @@ namespace Namiko
                     $"- Marry up to **10** users\n" +
                     $"- Behind the scenes access in *Namiko Test Realm*\n" +
                     $"\n" +
-                    $":star: Subscribe on [Patreon](https://www.patreon.com/taiHen)")
+                    $":star: Subscribe on [Patreon]({LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-info-proplus")})")
                 .WithImageUrl("https://i.imgur.com/uq9eip4.png")
                 .WithFooter("-What are you? Twelve?")
                 .WithColor(BasicUtil.RandomColor());
@@ -93,7 +94,7 @@ namespace Namiko
                     $"- **3** times more waifus in waifu shop and gacha shop\n" +
                     $"- Subreddit follow limit increased to **5**\n" +
                     $"\n" +
-                    $":star: Subscribe on [Patreon](https://www.patreon.com/taiHen)")
+                    $":star: Subscribe on [Patreon]({LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-info-guild")})")
                 .WithImageUrl("https://i.imgur.com/XxFJ1gH.png")
                 .WithFooter("-What are you? Twelve?")
                 .WithColor(BasicUtil.RandomColor());
@@ -116,7 +117,7 @@ namespace Namiko
                     $"- Weekly increased by **1000** for everyone\n" +
                     $"- Subreddit follow limit increased to **10**\n" +
                     $"\n" +
-                    $":star: Subscribe on [Patreon](https://www.patreon.com/taiHen)")
+                    $":star: Subscribe on [Patreon]({LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-info-guildplus")})")
                 .WithImageUrl("https://i.imgur.com/f8XYQxU.png")
                 .WithFooter("-What are you? Twelve?")
                 .WithColor(BasicUtil.RandomColor());
@@ -128,7 +129,7 @@ namespace Namiko
         public async Task Vote([Remainder] string str = "")
         {
             await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared(Context.User)
-                .WithDescription("Vote for Namiko on [Discord Bots](https://discordbots.org/bot/418823684459855882/vote) and receive a lootbox!")
+                .WithDescription($"Vote for Namiko on [Discord Bots]({LinkHelper.GetRedirectUrl(LinkHelper.Vote, "Vote", "cmd-vote")}) and receive a lootbox!")
                 .Build());
         }
 
@@ -240,7 +241,7 @@ namespace Namiko
                 {
                     var ch = await guild.Owner.GetOrCreateDMChannelAsync();
                     await ch.SendMessageAsync($"Your guild ({guild.Name} - {id}) has been blacklisted.\n" +
-                        $"Please contact taiHen#2839 in https://discord.gg/W6Ru5sM for more information or if you think this is a mistake.");
+                        $"Please contact taiHen#2839 in {LinkHelper.SupportServerInvite} for more information or if you think this is a mistake.");
                     what = $"Guild ({guild.Name} {id}) Blacklisted.";
                 } else
                 {
@@ -249,7 +250,7 @@ namespace Namiko
                     {
                         var ch = await user.GetOrCreateDMChannelAsync();
                         await ch.SendMessageAsync($"You ({user.Username} - {id}) have been blacklisted.\n" +
-                            $"Please contact taiHen#2839 in https://discord.gg/W6Ru5sM for more information or if you think this is a mistake.");
+                            $"Please contact taiHen#2839 in {LinkHelper.SupportServerInvite} for more information or if you think this is a mistake.");
                         what = $"User ({user.Username} {id}) Blacklisted.";
                     }
                 }
@@ -312,8 +313,8 @@ namespace Namiko
             if (eb != null)
             {
                 await Context.Channel.SendMessageAsync(embed: eb.Build());
-                string msg = $"Check out this simple guide detailing my main features: <https://namiko.moe/Guide>\n" +
-                    $"Find the command list online: <https://namiko.moe/Commands>\n" +
+                string msg = $"Check out this simple guide detailing my main features: <{LinkHelper.Guide}>\n" +
+                    $"Find the command list online: <{LinkHelper.Commands}>\n" +
                     $"Type `{prefix}info` to learn more about me and find useful links!\n" +
                     $"Type `{prefix}images` for a list of my reaction image commands!";
                 await Context.Channel.SendMessageAsync(msg);
@@ -352,8 +353,8 @@ namespace Namiko
             
             eb.WithFooter(@"""What are you? Twelve?"" -Namiko");
             eb.WithColor(BasicUtil.RandomColor());
-            eb.WithDescription($"Check out Namiko's usage guide [here](https://namiko.moe/Guide) :star:\n" +
-                $"Open in [browser](https://namiko.moe/Commands) :star:");
+            eb.WithDescription($"Check out Namiko's usage guide [here]({LinkHelper.Guide}) :star:\n" +
+                $"Open in [browser]({LinkHelper.Commands}) :star:");
             eb.WithTitle("Commands");
             return eb;
         }
