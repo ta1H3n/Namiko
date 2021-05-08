@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Model.Models.Logging;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
@@ -49,6 +50,7 @@ namespace Model
         public DbSet<Command> Commands { get; set; }
         public DbSet<ShopRole> ShopRoles { get; set; }
         public DbSet<DisabledCommand> DisabledCommands { get; set; }
+        public DbSet<Click> Clicks { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder Options)
         {

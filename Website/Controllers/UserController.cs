@@ -9,6 +9,7 @@ using Website.Models;
 
 namespace Website.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class UserController : ControllerBase
@@ -20,7 +21,6 @@ namespace Website.Controllers
         }
 
         [HttpGet]
-        [Authorize]
         public async Task<IActionResult> GetMe()
         {
             var client = await HttpContext.GetUserDiscordClientAsync();

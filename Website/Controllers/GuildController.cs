@@ -12,11 +12,11 @@ using Website.Models;
 
 namespace Website.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class GuildController : ControllerBase
     {
-        [Authorize]
         [HttpGet("{guildId}")]
         public async Task<IActionResult> GetGuild([FromRoute] ulong guildId)
         {
@@ -47,7 +47,6 @@ namespace Website.Controllers
             return Ok(guild);
         }
 
-        [Authorize]
         [HttpGet("{guildId}/{userId}")]
         public async Task<IActionResult> GetGuildUser([FromRoute] ulong guildId, [FromRoute] ulong userId)
         {
