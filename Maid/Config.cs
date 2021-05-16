@@ -48,7 +48,7 @@ namespace Maid
             return (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")) switch
             {
                 "Development" => Assembly.GetEntryAssembly().Location.Replace(@"bin\Debug\netcoreapp3.1\Maid.dll", @"appsettings.json"),
-                _ => Assembly.GetEntryAssembly().Location.Replace(@"Maid.dll", @"appsettings.json"),
+                _ => Directory.GetCurrentDirectory() + @"/appsettings.json",
             };
         }
     }
