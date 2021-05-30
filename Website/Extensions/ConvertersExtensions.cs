@@ -8,15 +8,17 @@ namespace Website.Extensions
 {
     public static class ConvertersExtensions
     {
+        public static string ImageHost;
+
         public static List<WaifuView> ToView(this IEnumerable<Waifu> waifus)
         {
             var res = waifus.Select(x => new WaifuView
             {
                 Bought = x.Bought,
                 Description = x.Description,
-                ImageLarge = "images/waifus/" + x.ImageLarge,
-                ImageMedium = "images/waifus/" + x.ImageMedium,
-                ImageRaw = "images/waifus/" + x.ImageRaw,
+                ImageLarge = ImageHost + "images/waifus/" + x.ImageLarge,
+                ImageMedium = ImageHost + "images/waifus/" + x.ImageMedium,
+                ImageRaw = ImageHost + "images/waifus/" + x.ImageRaw,
                 ImageSource = x.ImageSource,
                 LongName = x.LongName,
                 Name = x.Name,
@@ -49,9 +51,9 @@ namespace Website.Extensions
             {
                 Bought = waifu.Bought,
                 Description = waifu.Description,
-                ImageLarge = "images/waifus/" + waifu.ImageLarge,
-                ImageMedium = "images/waifus/" + waifu.ImageMedium,
-                ImageRaw = "images/waifus/" + waifu.ImageRaw,
+                ImageLarge = ImageHost + "images/waifus/" + waifu.ImageLarge,
+                ImageMedium = ImageHost + "images/waifus/" + waifu.ImageMedium,
+                ImageRaw = ImageHost + "images/waifus/" + waifu.ImageRaw,
                 ImageSource = waifu.ImageSource,
                 LongName = waifu.LongName,
                 Name = waifu.Name,

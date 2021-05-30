@@ -165,7 +165,7 @@ namespace Namiko
 
             await ImgurAPI.EditImageAsync(iImage.Id.ToString(), null, img.Id.ToString());
             var rl = ImgurAPI.RateLimit;
-            await ImageUtil.DownloadImageToServer(img, Context.Channel);
+            await ImageUtil.UploadReactionImage(img, Context.Channel);
             await Context.Channel.SendMessageAsync($"{rl.ClientRemaining-20}/{rl.ClientLimit} imgur credits remaining.", false, ImageUtil.ToEmbed(img).Build());
         }
 

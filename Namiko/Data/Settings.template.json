@@ -11,9 +11,10 @@
   // Postgres database 
   "connectionString": "",
 
-  // Path for image location on the website client
-  "imagePath": "",
-  // Domain of the hosted images
+  // Image host domain and access key, used for uploading images
+  "imageHost": "",
+  "imageHostKey": "test",
+  // Path of the hosted images
   "imageUrlPath": "https://namiko.moe/images/",
 
   // APIs

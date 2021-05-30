@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Model", "Model\Model.csproj
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Website", "Website\Website.csproj", "{D5D53C75-E071-4BAB-B20C-0590C9DB407E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Maid", "Maid\Maid.csproj", "{2E479599-239D-4083-B09C-BED72FC98BEE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Maid", "Maid\Maid.csproj", "{2E479599-239D-4083-B09C-BED72FC98BEE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageHost", "ImageHost\ImageHost.csproj", "{D70BFAB1-95D7-44AB-861F-26C3C9CE0EC6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{2E479599-239D-4083-B09C-BED72FC98BEE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2E479599-239D-4083-B09C-BED72FC98BEE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2E479599-239D-4083-B09C-BED72FC98BEE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D70BFAB1-95D7-44AB-861F-26C3C9CE0EC6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D70BFAB1-95D7-44AB-861F-26C3C9CE0EC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D70BFAB1-95D7-44AB-861F-26C3C9CE0EC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D70BFAB1-95D7-44AB-861F-26C3C9CE0EC6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

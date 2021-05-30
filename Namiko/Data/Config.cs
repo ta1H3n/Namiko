@@ -25,8 +25,11 @@ namespace Namiko
         [JsonProperty("connectionString")]
         public static string ConnectionString { get; set; }
 
-        [JsonProperty("imagePath")]
-        public static string ImagePath { get; set; }
+        [JsonProperty("imageHost")]
+        public static string ImageHost { get; set; }
+
+        [JsonProperty("imageHostKey")]
+        public static string ImageHostKey { get; set; }
 
         [JsonProperty("imageUrlPath")]
         public static string ImageUrlPath { get; set; }

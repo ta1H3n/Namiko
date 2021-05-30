@@ -1,12 +1,14 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using Model;
+using Newtonsoft.Json;
 using Sentry;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
+using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using static Namiko.Images;
 
@@ -14,6 +16,7 @@ namespace Namiko
 {
     public static class ImageUtil
     {
+        public static HttpClient _client = new HttpClient();
 
         public static EmbedBuilder ToEmbed(ReactionImage img)
         {
@@ -96,26 +99,31 @@ namespace Namiko
 
 
         //Image handlers
-        public static async Task DownloadImageToServer(ReactionImage img, ISocketMessageChannel ch)
+        public static async Task UploadReactionImage(ReactionImage img, ISocketMessageChannel ch)
         {
             try
             {
                 if (img.Url == null || img.Url == "")
                     return;
 
-                using WebClient client = new WebClient();
+                string to = "reaction";
+                string path = Path.Combine(to, img.Name);
+                if (img.GuildId > 0)
+                {
+                    path = Path.Combine(path, img.GuildId.ToString());
+                }
 
-                string to = Config.ImagePath + "reaction/";
-                string path = $"{to}{img.Name}{(img.GuildId > 0 ? "/" + img.GuildId.ToString() : "")}";
-
-                CreateIfNotExists(path);
                 string fileName = $"{img.Id}.{img.ImageFileType}";
 
-                await client.DownloadFileTaskAsync(img.Url, path + "/" + fileName);
+                var res = await UploadImage(path, fileName, img.Url);
+                if (res != null)
+                {
+                    await ch.SendMessageAsync($"Failed to upload image to host: `{res}`");
+                }
             }
             catch (Exception ex)
             {
-                await ch.SendMessageAsync($"{Program.GetClient().GetUser(Config.OwnerId).Mention} Error while downloading image to server.");
+                await ch.SendMessageAsync($"{Program.GetClient().GetUser(Config.OwnerId).Mention} Error while uploading image to host.");
                 SentrySdk.WithScope(scope =>
                 {
                     scope.SetExtras(img.GetProperties());
@@ -129,6 +137,33 @@ namespace Namiko
             if (!Directory.Exists(path))
             {
                 Directory.CreateDirectory(path);
+            }
+        }
+
+        public static async Task<string> UploadImage(string path, string name, string imageUrl)
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Post, Config.ImageHost + "Image/Upload"))
+            {
+                var json = JsonConvert.SerializeObject(new { imageUrl, path, name });
+                using (var stringContent = new StringContent(json, Encoding.UTF8, "application/json"))
+                {
+                    request.Content = stringContent;
+                    request.Headers.Add("authorization", Config.ImageHostKey);
+
+                    using (var response = await _client
+                        .SendAsync(request, HttpCompletionOption.ResponseHeadersRead)
+                        .ConfigureAwait(false))
+                    {
+                        if (response.IsSuccessStatusCode)
+                        {
+                            return null;
+                        }
+                        else
+                        {
+                            return response.ReasonPhrase;
+                        }
+                    }
+                }
             }
         }
     }

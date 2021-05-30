@@ -290,3 +290,4 @@ __pycache__/
 /Maid/appsettings.json
 /Maid/Properties/PublishProfiles/FolderProfile.pubxml
 /Website/appsettings.Development.json
+/ImageHost/appsettings.Development.json

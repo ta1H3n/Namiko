@@ -11,6 +11,7 @@ using Microsoft.Extensions.Hosting;
 using Model;
 using System;
 using System.Threading.Tasks;
+using Website.Extensions;
 
 namespace Website
 {
@@ -71,6 +72,7 @@ namespace Website
                 });
 
             HttpContextExtensions.BotToken = Configuration["Bot:Token"];
+            ConvertersExtensions.ImageHost = Configuration["Images:Host"];
 
             services.AddControllers();
 

@@ -842,7 +842,7 @@ namespace Namiko
         }
 
         //Image handlers
-        public static async Task DownloadWaifuImageToServer(Waifu waifu, ISocketMessageChannel ch)
+        public static async Task UploadWaifuImage(Waifu waifu, ISocketMessageChannel ch)
         {
             try
             {
@@ -854,15 +854,18 @@ namespace Namiko
                 string filetype = waifu.ImageUrl.Split('.').Last();
                 string imgurId = waifu.ImageUrl.Split('/').Last().Split('.').First();
                 string domain = "https://i.imgur.com/";
-                string path = Config.ImagePath + "waifus/";
-                await client.DownloadFileTaskAsync(new Uri(domain + imgurId + "." + filetype), $"{path}{waifu.ImageRaw}");
-                await client.DownloadFileTaskAsync(new Uri(domain + imgurId + "l." + filetype), $"{path}{waifu.ImageLarge}");
-                await client.DownloadFileTaskAsync(new Uri(domain + imgurId + "m." + filetype), $"{path}{waifu.ImageMedium}");
+                string path = "waifus";
+
+                var tasks = new List<Task>();
+                tasks.Add(ImageUtil.UploadImage(path, waifu.ImageRaw,    domain + imgurId + "."  + filetype));
+                tasks.Add(ImageUtil.UploadImage(path, waifu.ImageLarge,  domain + imgurId + "l." + filetype));
+                tasks.Add(ImageUtil.UploadImage(path, waifu.ImageMedium, domain + imgurId + "m." + filetype));
+
+                await Task.WhenAll(tasks);
             }
             catch (Exception ex)
             {
                 await ch.SendMessageAsync($"{Program.GetClient().GetUser(Config.OwnerId).Mention} Error while downloading waifu image variants to server.");
-                await ch.TriggerTypingAsync();
                 SentrySdk.WithScope(scope =>
                 {
                     scope.SetExtras(waifu.GetProperties());

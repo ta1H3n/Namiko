@@ -535,7 +535,7 @@ namespace Namiko
             }
 
             var waifu = new Waifu { Name = name, Tier = tier, ImageUrl = url, Description = null, LongName = null};
-            await WaifuUtil.DownloadWaifuImageToServer(waifu, Context.Channel);
+            await WaifuUtil.UploadWaifuImage(waifu, Context.Channel);
 
             if (await WaifuDb.AddWaifu(waifu) > 0)
                 await Context.Channel.SendMessageAsync($"{name} added.");
@@ -667,7 +667,7 @@ namespace Namiko
             var iImage = await ImgurAPI.UploadImageAsync(url, albumId, null, name);
             string old = waifu.ImageUrl;
             waifu.ImageUrl = iImage.Link;
-            await WaifuUtil.DownloadWaifuImageToServer(waifu, Context.Channel);
+            await WaifuUtil.UploadWaifuImage(waifu, Context.Channel);
 
             if (await WaifuDb.UpdateWaifu(waifu) > 0)
             {
@@ -832,7 +832,7 @@ namespace Namiko
             }
 
             var waifu = new Waifu { Name = name, Tier = 404, ImageUrl = url, Description = null, LongName = null };
-            await WaifuUtil.DownloadWaifuImageToServer(waifu, Context.Channel);
+            await WaifuUtil.UploadWaifuImage(waifu, Context.Channel);
 
             var mal = await WebUtil.GetWaifu(malId);
             waifu.LongName = $"{mal.Name} ({mal.NameKanji})";
