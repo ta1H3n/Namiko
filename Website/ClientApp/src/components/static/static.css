@@ -63,6 +63,11 @@
     font-weight: 650;
 }
 
+.tick-green {
+    color: rgb(0, 220, 4);
+    font-weight: 700;
+}
+
 .price {
     color: #fff;
     margin-top: -6px;

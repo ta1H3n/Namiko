@@ -21,7 +21,7 @@ export class Pro extends Component {
                         <div className="col-12 pro-description" >
                             Upgrades for a <strong>Discord account</strong>. Active in all Discord servers! Good for anyone enjoying Namiko.
                         </div>
-                        <Table striped bordered variant="dark" className="pro-table">
+                        <Table striped bordered responsive variant="dark" className="pro-table">
                             <thead>
                                 <tr>
                                     <th className="col-3"></th>
@@ -40,8 +40,8 @@ export class Pro extends Component {
                                 <tr>
                                     <td>Increased wishlist droprate</td>
                                     <td>❌</td>
-                                    <td>✔️</td>
-                                    <td>✔️</td>
+                                    <td className="tick-green">✓</td>
+                                    <td className="tick-green">✓</td>
                                 </tr>
                                 <tr>
                                     <td>Daily cooldown</td>
@@ -65,7 +65,7 @@ export class Pro extends Component {
                                     <td>Your own custom waifu</td>
                                     <td>❌</td>
                                     <td>❌</td>
-                                    <td>✔️</td>
+                                    <td className="tick-green">✓</td>
                                 </tr>
                                 <tr>
                                     <td>Marriage limit</td>
@@ -95,7 +95,7 @@ export class Pro extends Component {
                         <div className="col-12 pro-title">Server upgrades</div>
                         <br />
                         <div className="col-12 pro-description" >Upgrades for a <strong>Discord server</strong>. Active for all members of a server! Good for communities.</div>
-                        <Table striped bordered variant="dark" className="pro-table">
+                        <Table striped bordered responsive variant="dark" className="pro-table">
                             <thead>
                                 <tr>
                                     <th className="col-3"></th>
@@ -108,14 +108,14 @@ export class Pro extends Component {
                                 <tr>
                                     <td>Music</td>
                                     <td>❌</td>
-                                    <td>✔️</td>
-                                    <td>✔️</td>
+                                    <td className="tick-green">✓</td>
+                                    <td className="tick-green">✓</td>
                                 </tr>
                                 <tr>
                                     <td>All music features</td>
                                     <td>❌</td>
-                                    <td>✔️</td>
-                                    <td>✔️</td>
+                                    <td className="tick-green">✓</td>
+                                    <td className="tick-green">✓</td>
                                 </tr>
                                 <tr>
                                     <td>Music queue length</td>
@@ -145,7 +145,7 @@ export class Pro extends Component {
                                     <td>Mod controlled waifu shop</td>
                                     <td>❌</td>
                                     <td>❌</td>
-                                    <td><b>✔️</b></td>
+                                    <td className="tick-green">✓</td>
                                 </tr>
                                 <tr>
                                     <td>Weekly boost</td>
@@ -157,13 +157,13 @@ export class Pro extends Component {
                                     <td>Lootbox Shop</td>
                                     <td>❌</td>
                                     <td>❌</td>
-                                    <td>✔️</td>
+                                    <td className="tick-green">✓</td>
                                 </tr>
                                 <tr>
                                     <td>Ship waifu command</td>
                                     <td>❌</td>
                                     <td>❌</td>
-                                    <td>✔️</td>
+                                    <td className="tick-green">✓</td>
                                 </tr>
                                 <tr>
                                     <td></td>
