@@ -1,5 +1,6 @@
 ﻿import React, { Component } from 'react';
 import './Commands.css';
+import { TitleBar } from '../shared/TitleBar';
 
 export class Guide extends Component {
     static displayName = Guide.name;
@@ -7,6 +8,7 @@ export class Guide extends Component {
     render() {
         return (
             <>
+                <TitleBar title="Guide" />
                 <div className="container-guide">
                     <div className="guide-module-title" id="namiko">Namiko Usage Guides</div>
                     <div className="guide-module">

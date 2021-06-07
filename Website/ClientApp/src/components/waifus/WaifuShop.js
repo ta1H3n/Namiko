@@ -3,6 +3,7 @@ import { WaifuTable } from './Table'
 import { Container } from 'reactstrap';
 import './Waifus.css';
 import { get } from '../RequestHandler';
+import { TitleBar } from '../shared/TitleBar';
 
 export class WaifuShop extends Component {
     static displayName = WaifuShop.name;
@@ -23,16 +24,19 @@ export class WaifuShop extends Component {
     render() {
         let contents = this.state.loading
             ? <h4 className="text-muted text-center align-middle"><em>Loading...</em></h4>
-                : this.state.waifus.length === 0
+            : this.state.waifus.length === 0
                 ? <h4 className="text-muted text-center align-middle"><em>~ Shop empty ~</em></h4>
                 : WaifuShop.showWaifus(this.state.waifus)
 
         return (
-            <Container>
-                <div>
-                    {contents}
-                </div>
-            </Container>
+            <>
+                <TitleBar title="Waifu Shop" />
+                <Container>
+                    <div>
+                        {contents}
+                    </div>
+                </Container>
+            </>
         );
     }
 
@@ -52,7 +56,7 @@ export class WaifuShop extends Component {
 
         return (
             <div>
-                {tiers.map(t => { return WaifuShop.tieredList(waifus.filter(w => { return w.tier === t }), t)})}
+                {tiers.map(t => { return WaifuShop.tieredList(waifus.filter(w => { return w.tier === t }), t) })}
             </div>
         );
     }

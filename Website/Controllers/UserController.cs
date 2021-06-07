@@ -24,6 +24,11 @@ namespace Website.Controllers
         public async Task<IActionResult> GetMe()
         {
             var client = await HttpContext.GetUserDiscordClientAsync();
+            if (client == null)
+            {
+                return Unauthorized();
+            }
+
             var guilds = await client.GetGuildSummariesAsync().FlattenAsync();
             var profile = await ProfileDb.GetProfile(client.CurrentUser.Id);
 

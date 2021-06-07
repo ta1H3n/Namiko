@@ -1,52 +1,100 @@
-﻿.box {
-    position: relative;
-    top: -16px;
-    padding: 16px 0px 8px 0px;
-    background-color: rgba(31, 31, 36, 0.80);
-    color: rgba(201, 201, 210);
-}
-
+﻿
 .pro-container {
     color: #ddd;
-    margin: 0 10px;
-    max-width: 1280px;
+    margin-bottom: 20px;
     padding: 20px;
-    padding-top: 20px;
-    margin-bottom: 40px;
+    padding-bottom: 0px;
     background-color: rgba(0, 0, 0, 0.20);
 }
 
-.pro-module-title {
-    margin-top: 0px;
+    .pro-container:first-child {
+        margin-top: 20px;
+    }
+
+.pro-title {
+    color: #eee;
+    text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.8);
+    font-size: 2rem;
+    font-weight: 650;
+}
+
+.pro-header-image {
+    padding-right: 0px;
+    max-width: 100%;
+    float: right;
+}
+
+#exclude {
+    
+}
+
+.pro-header-image-container {
+    padding: 0px;
+    padding-bottom: 12px;
+}
+
+.pro-description {
+    padding: 16px;
+}
+
+.pro-table {
+    background-color: rgba(0, 0, 0, 0.30);
+    text-align: center;
+    border-color: rgba(0, 0, 0, 1);
+}
+
+.table-dark th, .table-dark td, .table-dark thead th {
+    border-color: rgba(100, 100, 140, 0.1);
+}
+
+    .table-dark td:first-of-type {
+        color: #ddd;
+        background-color: rgba(0, 0, 0, 0.1);
+        font-weight: 500;
+        font-size: 1rem;
+    }
+
+.table-dark thead th {
+    padding: 2px;
+    color: #fff;
+    text-align: center;
+    text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.8);
+    font-size: 1.5rem;
+    font-weight: 650;
+}
+
+.price {
+    color: #fff;
+    margin-top: -6px;
+    text-align: center;
+    text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.8);
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.btn-pro {
+    color: #fff;
+    margin-top: -12px;
+    text-align: center;
+    text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.8);
+    box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.8);
+    font-weight: 600;
+    background-color: rgb(150, 13, 46);
+    padding: 6px 36px;
+}
+    .btn-pro:hover {
+        color: #fff;
+        background-color: rgba(150, 13, 46, 0.8);
+    }
+
+.pro-free {
+    background-color: rgba(23, 66, 100, 0.9);
+}
+
+.pro-pro {
     background-color: rgba(150, 13, 46, 0.9);
 }
 
-.pro-module-button {
-    padding: 0px 16px;
+.pro-plus {
+    background-color: rgba(255, 170, 22, 0.9);
 }
-
-.pro-module-header {
-    margin-top: 0;
-    background-color: rgba(150, 13, 46, 0.9);
-}
-
-    .pro-module-header:nth-child(3n+2) {
-        background-color: rgba(23, 66, 100, 0.9);
-    }
-
-    .pro-module-header:nth-child(3n+3) {
-        background-color: rgba(81, 42, 92, 0.9);
-    }
-
-.pro-module {
-    padding: 8px 16px;
-    margin: 0px 0px 16px 0px;
-}
-
-    .pro-module:nth-child(even) {
-        background-color: rgba(0, 0, 0, 0.4);
-    }
-
-    .pro-module:nth-child(odd) {
-        background-color: rgba(0, 0, 0, 0.3);
-    }

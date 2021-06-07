@@ -21,7 +21,7 @@ export class Home extends Component {
                             <div className="btn btn-static color-discord small-padding">
                                 <img src="/images/Discord-Logo-White.png" alt="" className="img" />
                             </div>
-                            <a href="https://discordapp.com/oauth2/authorize?client_id=418823684459855882&scope=bot&permissions=268707844" type="button" className="btn color-discord color-discord-hover">Invite&nbsp;Namiko</a>
+                            <a href="https://namiko.moe/redirect?type=BotInvite&tag=moe-home&redirectUrl=https%3A%2F%2Fdiscordapp.com%2Foauth2%2Fauthorize%3Fclient_id%3D418823684459855882%26scope%3Dbot%26permissions%3D268707844" type="button" className="btn color-discord color-discord-hover">Invite&nbsp;Namiko</a>
                             <a href="https://discord.gg/W6Ru5sM" type="button" className="btn color-discord color-discord-hover">Join&nbsp;Server</a>
                         </div>
                     </div>
@@ -139,14 +139,14 @@ export class Home extends Component {
                                     <div className="btn btn-static color-discord color-discord-hover small-padding">
                                         <img src="/images/Discord-Logo-White.png" alt="" className="img" />
                                     </div>
-                                    <a href="https://discordapp.com/oauth2/authorize?client_id=418823684459855882&scope=bot&permissions=268707844" type="button" className="btn color-discord color-discord-hover">Invite&nbsp;Namiko</a>
+                                    <a href="https://namiko.moe/redirect?type=BotInvite&tag=moe-home&redirectUrl=https%3A%2F%2Fdiscordapp.com%2Foauth2%2Fauthorize%3Fclient_id%3D418823684459855882%26scope%3Dbot%26permissions%3D268707844" type="button" className="btn color-discord color-discord-hover">Invite&nbsp;Namiko</a>
                                 </div>
                             </div>
                         </div>
                         <div className="container row mt-2 mr-0 ml-0">
                             <div className="horizontal-center">
                                 <Link type="button" className="btn btn-blank mr-2 mt-2" to="/Commands">Commands</Link>
-                                <a href="https://www.patreon.com/taiHen" className="btn btn-blank mr-2 mt-2">Get&nbsp;Pro</a>
+                                <a href="https://namiko.moe/redirect?type=Pro&tag=moe-home&redirectUrl=https%3A%2F%2Fnamiko.moe%2FPro" className="btn btn-blank mr-2 mt-2">Get&nbsp;Pro</a>
                                 <Link type="button" className="btn btn-blank mr-2 mt-2" to="/User/Me">Web&nbsp;dashboard</Link>
                                 <Link type="button" className="btn btn-blank mr-2 mt-2" to="/Waifus">Waifus</Link>
                             </div>

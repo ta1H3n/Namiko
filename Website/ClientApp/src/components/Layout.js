@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { NavMenu } from './NavMenu';
-import { FooterMenu } from './FooterMenu';
+import { NavMenu } from './shared/NavMenu';
+import { FooterMenu } from './shared/FooterMenu';
 
 export class Layout extends Component {
     static displayName = Layout.name;

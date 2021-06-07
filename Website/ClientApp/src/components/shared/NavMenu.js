@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Container } from 'reactstrap';
 import { Navbar, Nav } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { LoginMenu } from './authentication/LoginMenu';
+import { LoginMenu } from '../authentication/LoginMenu';
 import './NavMenu.css';
 
 export class NavMenu extends Component {
@@ -43,6 +43,7 @@ export class NavMenu extends Component {
                                 <Nav.Link as={Link} to="/Guide">Guide</Nav.Link>
                                 <Nav.Link as={Link} to="/Commands">Commands</Nav.Link>
                                 <Nav.Link as={Link} to="/Waifus">Waifus</Nav.Link>
+                                <Nav.Link as={Link} to="/Pro">Pro</Nav.Link>
                             </Nav>
                             <LoginMenu />
                         </Navbar.Collapse>

@@ -1,7 +1,8 @@
 ﻿import React, { Component } from 'react';
-import { Modules } from './Modules'
+import { Modules } from './Modules';
 import './Commands.css';
 import { get } from '../RequestHandler';
+import { TitleBar } from '../shared/TitleBar';
 
 export class Commands extends Component {
     static displayName = Commands.name;
@@ -28,17 +29,20 @@ export class Commands extends Component {
                 : <Modules modules={this.state.display} />
 
         return (
-            <div className="container-commands-list">
-                <div className="row">
-                    <div className="text-center horizontal-center">
-                        <button className="btn btn-blank mr-1 mt-1" onClick={() => this.filterModules("All")}>Show all</button>
-                        {this.state.modules.map(module =>
-                            <button className="btn btn-blank mr-1 mt-1" onClick={() => this.filterModules(module.name)}>{module.name}</button>
-                        )}
+            <>
+                <TitleBar title="Commands" />
+                <div className="container-commands-list">
+                    <div className="row">
+                        <div className="text-center horizontal-center">
+                            <button className="btn btn-blank mr-1 mt-1" onClick={() => this.filterModules("All")}>Show all</button>
+                            {this.state.modules.map(module =>
+                                <button className="btn btn-blank mr-1 mt-1" onClick={() => this.filterModules(module.name)}>{module.name}</button>
+                            )}
+                        </div>
                     </div>
+                    {contents}
                 </div>
-                {contents}
-            </div>
+            </>
         );
     }
 

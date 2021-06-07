@@ -55,8 +55,14 @@ namespace Website
             if (id == 0 || token == null || token == "")
                 return null;
 
-            else
+            try
+            {
                 return await DiscordRestClientService.GetClient(id, token);
+            } catch (Exception ex)
+            {
+                Sentry.SentrySdk.CaptureException(ex);
+                return null;
+            }
         }
 
         public static async Task<DiscordRestClient> GetBotClient(this HttpContext http)
