@@ -47,6 +47,9 @@ namespace Namiko
         [JsonProperty("premiumWebhook")]
         public static string PremiumWebhook { get; set; }
 
+        [JsonProperty("codeWebhook")]
+        public static string CodeWebhook { get; set; }
+
         [JsonProperty("usageReportWebhook")]
         public static string UsageReportWebhook { get; set; }
 

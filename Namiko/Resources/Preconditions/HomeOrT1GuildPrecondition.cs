@@ -33,7 +33,7 @@ namespace Namiko
 
         public override string GetName()
         {
-            return "BotInsider";
+            return "Guild+";
         }
     }
 }

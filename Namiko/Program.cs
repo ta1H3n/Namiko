@@ -6,6 +6,7 @@ using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Model;
+using Model.Exceptions;
 using Namiko.Data;
 using Newtonsoft.Json;
 using Sentry;
@@ -291,34 +292,42 @@ namespace Namiko
                 success = false;
             }
 
+
             // If command is found - save a log of it
-            if (cmdName != null)
+            if (cmdName != null && Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Development")
                 await Stats.LogCommand(cmdName, context, success);
         }
         private async Task Commands_Log(LogMessage logMessage)
         {
             if (logMessage.Exception is CommandException cmdException)
             {
-                SentrySdk.WithScope(scope =>
+                if (cmdException.InnerException is NamikoException ex)
                 {
-                    scope.SetTag("Command", cmdException.Command.Name);
-                    scope.SetExtra("GuildId", cmdException.Context.Guild.Id);
-                    scope.SetExtra("Guild", cmdException.Context.Guild.Name);
-                    scope.SetExtra("GuildOwnerId", cmdException.Context.Guild.OwnerId);
-                    scope.SetExtra("ChannelId", cmdException.Context.Channel.Id);
-                    scope.SetExtra("Channel", cmdException.Context.Channel.Name);
-                    scope.SetExtra("UserId", cmdException.Context.User.Id);
-                    scope.SetExtra("User", cmdException.Context.User.Username);
-                    scope.SetExtra("MessageId", cmdException.Context.Message.Id);
-                    scope.SetExtra("Message", cmdException.Context.Message.Content);
-                    if (cmdException.InnerException is HttpException)
-                        scope.Level = Sentry.Protocol.SentryLevel.Warning;
-                    SentrySdk.CaptureException(cmdException.InnerException);
-                });
+                    await cmdException.Context.Channel.SendMessageAsync(":x: " + ex.Message);
+                }
+                else
+                {
+                    SentrySdk.WithScope(scope =>
+                    {
+                        scope.SetTag("Command", cmdException.Command.Name);
+                        scope.SetExtra("GuildId", cmdException.Context.Guild.Id);
+                        scope.SetExtra("Guild", cmdException.Context.Guild.Name);
+                        scope.SetExtra("GuildOwnerId", cmdException.Context.Guild.OwnerId);
+                        scope.SetExtra("ChannelId", cmdException.Context.Channel.Id);
+                        scope.SetExtra("Channel", cmdException.Context.Channel.Name);
+                        scope.SetExtra("UserId", cmdException.Context.User.Id);
+                        scope.SetExtra("User", cmdException.Context.User.Username);
+                        scope.SetExtra("MessageId", cmdException.Context.Message.Id);
+                        scope.SetExtra("Message", cmdException.Context.Message.Content);
+                        if (cmdException.InnerException is HttpException)
+                            scope.Level = Sentry.Protocol.SentryLevel.Warning;
+                        SentrySdk.CaptureException(cmdException.InnerException);
+                    });
 
-                if (cmdException.Command.Module.Name.Equals(nameof(WaifuEditing)))
-                {
-                    await cmdException.Context.Channel.SendMessageAsync(cmdException.InnerException.Message);
+                    if (cmdException.Command.Module.Name.Equals(nameof(WaifuEditing)))
+                    {
+                        await cmdException.Context.Channel.SendMessageAsync(cmdException.InnerException.Message);
+                    }
                 }
             }
         }
@@ -579,7 +588,7 @@ namespace Namiko
             string JSON = "";
             var JSONLocation = (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")) switch
             {
-                "Development" => Assembly.GetEntryAssembly().Location.Replace(@"bin\Debug\netcoreapp3.1\Namiko.dll", @"Data\Settings.json"),
+                "Development" => Assembly.GetEntryAssembly().Location.Replace(@"bin\Debug\net5.0\Namiko.dll", @"Data\Settings.json"),
                 _ => Assembly.GetEntryAssembly().Location.Replace(@"Namiko.dll", @"data/Settings.json"),
             };
             using (var Stream = new FileStream(JSONLocation, FileMode.Open, FileAccess.Read))

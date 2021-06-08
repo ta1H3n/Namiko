@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Model.Models.Logging;
+using Model.Models.Users;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
@@ -51,6 +52,9 @@ namespace Model
         public DbSet<ShopRole> ShopRoles { get; set; }
         public DbSet<DisabledCommand> DisabledCommands { get; set; }
         public DbSet<Click> Clicks { get; set; }
+
+        public DbSet<PremiumCode> PremiumCodes { get; set; }
+        public DbSet<PremiumCodeUse> PremiumCodeUses { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder Options)
         {

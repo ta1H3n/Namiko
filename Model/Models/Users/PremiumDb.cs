@@ -11,27 +11,22 @@ namespace Model
         public static List<Premium> GetUserPremium(ulong UserId)
         {
             using var db = new NamikoDbContext();
-            return db.Premiums.Where(x => x.UserId == UserId).ToList();
+            return db.Premiums.Where(x => x.UserId == UserId && x.ExpiresAt > DateTime.Now).ToList();
         }
         public static List<Premium> GetGuildPremium(ulong GuildId)
         {
             using var db = new NamikoDbContext();
-            return db.Premiums.Where(x => x.GuildId == GuildId).ToList();
+            return db.Premiums.Where(x => x.GuildId == GuildId && x.ExpiresAt > DateTime.Now).ToList();
         }
         public static bool IsPremium(ulong Id, ProType type)
         {
             using var db = new NamikoDbContext();
-            return db.Premiums.Any(x => x.Type == type && (x.GuildId == Id || x.UserId == Id));
+            return db.Premiums.Any(x => x.Type == type && (x.GuildId == Id || x.UserId == Id) && x.ExpiresAt > DateTime.Now);
         }
-        public static List<Premium> GetAllPremiums()
+        public static List<Premium> GetNewlyExpired()
         {
             using var db = new NamikoDbContext();
-            return db.Premiums.ToList();
-        }
-        public static List<Premium> GetAllPremiums(DateTime ClaimedBefore)
-        {
-            using var db = new NamikoDbContext();
-            return db.Premiums.Where(x => x.ClaimDate < ClaimedBefore).ToList();
+            return db.Premiums.Where(x => x.ExpiresAt > DateTime.Now && x.ExpireSent == false).ToList();
         }
 
         public async static Task<int> UpdatePremium(Premium premium)
@@ -46,15 +41,22 @@ namespace Model
             db.Premiums.Remove(premium);
             return await db.SaveChangesAsync();
         }
-        public async static Task<int> AddPremium(ulong userId, ProType type, ulong guildId = 0)
+        public async static Task<int> AddPremium(ulong userId, ProType type, ulong guildId = 0, DateTime? expiresAt = null)
         {
+            if (expiresAt == null)
+            {
+                expiresAt = DateTime.Now.AddMonths(1);
+            }
+
             using var db = new NamikoDbContext();
             db.Premiums.Add(new Premium
             {
                 GuildId = guildId,
                 UserId = userId,
                 Type = type,
-                ClaimDate = System.DateTime.Now
+                ClaimDate = System.DateTime.Now,
+                ExpiresAt = expiresAt.Value,
+                ExpireSent = false
             });
             return await db.SaveChangesAsync();
         }

@@ -4,6 +4,7 @@ using Discord.Commands;
 using Discord.Webhook;
 using Discord.WebSocket;
 using Model;
+using Model.Models.Users;
 using Namiko.Modules.Basic;
 using System;
 using System.Collections.Generic;
@@ -672,6 +673,23 @@ namespace Namiko
                             .Build()
                     });
             }
+        }
+
+        [Command("RedeemCode"), Alias("Redeem"), Summary("Redeem a premium trial code.\n**Usage**: `!redeem [code]`"), RequireGuild]
+        public async Task RedeemCode(string code, [Remainder] string str = "")
+        {
+            Premium res = await PremiumCodeDb.RedeemCode(code, Context.User.Id, Context.Guild.Id);
+
+            await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared(Context.User).WithDescription($"**{res.Type}** activated until {res.ExpiresAt.ToShortDateString()}").Build());
+
+            using var ch = new DiscordWebhookClient(Config.PremiumWebhook);
+            await ch.SendMessageAsync(embeds: new List<Embed>
+            {
+                new EmbedBuilderPrepared(Context.User)
+                    .WithDescription($"{Context.User.Mention} `{Context.User.Id}`\n**{res.Type}** activated until {res.ExpiresAt.ToString("yyyy-MM-dd")} with code {code}")
+                    .WithFooter(System.DateTime.Now.ToLongDateString())
+                    .Build()
+            });
         }
     }
 }

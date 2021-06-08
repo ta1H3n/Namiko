@@ -10,6 +10,7 @@ namespace Namiko
         public static DiscordWebhookClient LavalinkChannel { get; }
         public static DiscordWebhookClient SauceChannel { get; }
         public static DiscordWebhookClient SauceRequestChannel { get; }
+        public static DiscordWebhookClient CodeRedeemChannel { get; }
 
         static WebhookClients()
         {
@@ -19,6 +20,7 @@ namespace Namiko
             LavalinkChannel = new DiscordWebhookClient(Config.LavalinkWebhook);
             SauceChannel = new DiscordWebhookClient(Config.SauceWebhook);
             SauceRequestChannel = new DiscordWebhookClient(Config.SauceRequestWebhook);
+            CodeRedeemChannel = new DiscordWebhookClient(Config.CodeWebhook);
         }
     }
 }

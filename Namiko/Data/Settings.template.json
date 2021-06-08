@@ -28,6 +28,7 @@
   "logWebhook": "",
   "guildJoinWebhook": "",
   "premiumWebhook": "",
+  "codeWebhook": "",
   "usageReportWebhook": "",
   "errorLogWebhook": "",
   "lavalinkWebhook": "",

@@ -96,7 +96,7 @@ namespace Namiko
         private static async void Timer_ExpirePremium(object sender, ElapsedEventArgs e)
         {
             var now = System.DateTime.Now;
-            var expired = PremiumDb.GetAllPremiums(now.AddMonths(-1).AddDays(-1));
+            var expired = PremiumDb.GetNewlyExpired();
             var client = Program.GetClient();
             var ntr = client.GetGuild((ulong)ProType.HomeGuildId_NOTAPREMIUMTYPE);
 
@@ -111,7 +111,8 @@ namespace Namiko
 
                 if (user == null)
                 {
-                    await PremiumDb.DeletePremium(premium);
+                    premium.ExpireSent = true;
+                    await PremiumDb.UpdatePremium(premium);
                     try
                     {
                         var ch = await client.GetUser(premium.UserId).GetOrCreateDMChannelAsync();
@@ -128,7 +129,8 @@ namespace Namiko
 
                 else if (!user.Roles.Any(x => x.Id == (ulong)premium.Type))
                 {
-                    await PremiumDb.DeletePremium(premium);
+                    premium.ExpireSent = true;
+                    await PremiumDb.UpdatePremium(premium);
                     try
                     {
                         var ch = await client.GetUser(premium.UserId).GetOrCreateDMChannelAsync();
@@ -145,7 +147,7 @@ namespace Namiko
 
                 else
                 {
-                    premium.ClaimDate = now;
+                    premium.ExpiresAt.AddMonths(1);
                     await PremiumDb.UpdatePremium(premium);
                     using var webhook = new DiscordWebhookClient(Config.PremiumWebhook);
                     await webhook.SendMessageAsync($"{user.Mention} ({premium.UserId}) - {premium.Type.ToString()} subscription extended.");

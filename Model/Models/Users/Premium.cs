@@ -11,5 +11,7 @@ namespace Model
         public ulong GuildId { get; set; }
         public ProType Type { get; set; }
         public DateTime ClaimDate { get; set; }
+        public DateTime ExpiresAt { get; set; }
+        public bool ExpireSent { get; set; }
     }
 }

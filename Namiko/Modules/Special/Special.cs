@@ -4,6 +4,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Model;
+using Model.Models.Users;
 using Namiko.Modules.Basic;
 using Newtonsoft.Json;
 using Sentry;
@@ -686,6 +687,46 @@ namespace Namiko
         {
             Program.GuildLeaveEvent = !Program.GuildLeaveEvent;
             await Context.Channel.SendMessageAsync(Program.GuildLeaveEvent.ToString());
+        }
+
+        [Command("TestCode"), Summary("Test code."), OwnerPrecondition]
+        public async Task GenerateCode(string code, [Remainder] string str = "")
+        {
+            string desc = "```yaml\n";
+            var example = await PremiumCodeDb.TestCode(code);
+            foreach (var prop in example.GetProperties())
+            {
+                desc += prop.Key + ": " + prop.Value + "\n";
+            }
+            desc += "```";
+
+            await Context.Channel.SendMessageAsync(desc);
+        }
+
+        [Command("GenerateCodes"), Summary("Generate trial codes. 0 to pass null into optionals.\n**Usage**: `!GenerateCodes ProType type, int durationDays, int useAmount, int codeAmount, string prefix, string id, int codeExpiresInDays`"), OwnerPrecondition]
+        public async Task GenerateCode(ProType type, int durationDays, int useAmount, int codeAmount, string prefix, string id, int codeExpiresInDays, [Remainder] string str = "")
+        {
+            prefix = prefix == "0" ? null : prefix;
+            id = id == "0" ? null : id;
+            DateTime? expires = null;
+            if (codeExpiresInDays != 0)
+                expires = DateTime.Now.AddDays(codeExpiresInDays);
+
+            var res = await PremiumCodeDb.GenerateCodes(type, durationDays, useAmount, codeAmount, prefix, id, expires);
+            var example = res.FirstOrDefault();
+            string desc = "```yaml\n";
+            foreach (var prop in example.GetProperties())
+            {
+                desc += prop.Key + ": " + prop.Value + "\n";
+            }
+            desc += "```\n```";
+            foreach(var code in res.Select(x => x.Id))
+            {
+                desc += code + "\n";
+            }
+            desc += "```";
+
+            await Context.Channel.SendMessageAsync(desc);
         }
 
         public bool DownloadFile(string url, string path)
