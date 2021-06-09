@@ -111,7 +111,8 @@ namespace Model.Models.Users
                 GuildId = guildId,
                 UserId = userId,
                 PremiumCode = res,
-                PremiumCodeId = res.Id
+                PremiumCodeId = res.Id,
+                ClaimedAt = DateTime.Now
             };
 
             res.UsesLeft--;
