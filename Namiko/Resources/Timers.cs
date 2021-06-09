@@ -147,7 +147,7 @@ namespace Namiko
 
                 else
                 {
-                    premium.ExpiresAt.AddMonths(1);
+                    premium.ExpiresAt = premium.ExpiresAt.AddMonths(1);
                     await PremiumDb.UpdatePremium(premium);
                     using var webhook = new DiscordWebhookClient(Config.PremiumWebhook);
                     await webhook.SendMessageAsync($"{user.Mention} ({premium.UserId}) - {premium.Type.ToString()} subscription extended.");

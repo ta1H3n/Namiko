@@ -26,7 +26,7 @@ namespace Model
         public static List<Premium> GetNewlyExpired()
         {
             using var db = new NamikoDbContext();
-            return db.Premiums.Where(x => x.ExpiresAt > DateTime.Now && x.ExpireSent == false).ToList();
+            return db.Premiums.Where(x => x.ExpiresAt < DateTime.Now && x.ExpireSent == false).ToList();
         }
 
         public async static Task<int> UpdatePremium(Premium premium)
