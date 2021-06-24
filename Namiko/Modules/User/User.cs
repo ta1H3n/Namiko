@@ -682,8 +682,7 @@ namespace Namiko
 
             await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared(Context.User).WithDescription($"**{res.Type}** activated until {res.ExpiresAt.ToShortDateString()}").Build());
 
-            using var ch = new DiscordWebhookClient(Config.PremiumWebhook);
-            await ch.SendMessageAsync(embeds: new List<Embed>
+            await WebhookClients.CodeRedeemChannel.SendMessageAsync(embeds: new List<Embed>
             {
                 new EmbedBuilderPrepared(Context.User)
                     .WithDescription($"{Context.User.Mention} `{Context.User.Id}`\n**{res.Type}** activated until {res.ExpiresAt.ToString("yyyy-MM-dd")} with code {code}")
