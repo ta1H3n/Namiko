@@ -521,7 +521,18 @@ namespace Namiko
                     if (add.Count > 500)
                     {
                         var ch = await Program.GetClient().GetUser(Config.OwnerId).GetOrCreateDMChannelAsync();
-                        await ch.SendMessageAsync($"Found {add.Count} new voters.");
+                        string er = "```\n";
+                        foreach(var id in voters.Take(10))
+                        {
+                            er += $"{id.Id}\n";
+                        }
+                        er += "...\n";
+                        foreach(var id in voters.Skip(add.Count - 10))
+                        {
+                            er += $"{id.Id}\n";
+                        }
+                        er += "```";
+                        await ch.SendMessageAsync($"Found {add.Count} new voters.\n {er}");
                         return;
                     }
 

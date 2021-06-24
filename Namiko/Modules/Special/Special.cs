@@ -186,6 +186,11 @@ namespace Namiko
                 catch (Exception ex) { SentrySdk.CaptureException(ex); }
             }
 
+            // This part is very unecessary but it's cool lol
+            var image = ImageDb.GetRandomImage("sudoku");
+            var embed = ImageUtil.ToEmbed(image).Build();
+            await Context.Channel.SendMessageAsync("", false, embed);
+
             await Task.WhenAll(tasks);
 
             var cts = Program.GetCts();
@@ -727,6 +732,25 @@ namespace Namiko
             desc += "```";
 
             await Context.Channel.SendMessageAsync(desc);
+        }
+
+        [Command("GetVoters")]
+        public async Task GetVoters(ulong botId = 0)
+        {
+            string er = "```\n";
+            WebUtil.SetUpDbl(botId == 0 ? Context.Client.CurrentUser.Id : botId);
+            var voters = await WebUtil.GetVotersAsync();
+            foreach (var id in voters.Take(10))
+            {
+                er += $"{id.Id}\n";
+            }
+            er += "...\n";
+            foreach (var id in voters.Skip(voters.Count - 10))
+            {
+                er += $"{id.Id}\n";
+            }
+            er += "```";
+            await ReplyAsync($"Found {voters.Count} new voters.\n {er}");
         }
 
         public bool DownloadFile(string url, string path)
