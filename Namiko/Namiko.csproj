@@ -15,13 +15,13 @@
 
   <ItemGroup>
     <PackageReference Include="Discord.Net" Version="2.4.0" />
-    <PackageReference Include="DiscordBotsList.Api.Adapter.Discord.Net" Version="1.4.0" />
+    <PackageReference Include="DiscordBotsList.Api.Adapter.Discord.Net" Version="1.4.5" />
     <PackageReference Include="Imgur.API" Version="4.0.1" />
     <PackageReference Include="IqdbApi" Version="1.4.0" />
-    <PackageReference Include="JikanDotNet" Version="1.5.4" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.4" />
+    <PackageReference Include="JikanDotNet" Version="1.5.6" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.7" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="5.0.7" />
-    <PackageReference Include="Reddit" Version="1.4.0" />
+    <PackageReference Include="Reddit" Version="1.5.0" />
     <PackageReference Include="SauceNET" Version="1.1.1" />
     <PackageReference Include="Sentry.AspNetCore" Version="2.1.8" />
   </ItemGroup>
