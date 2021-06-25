@@ -724,7 +724,7 @@ namespace Namiko
             {
                 desc += prop.Key + ": " + prop.Value + "\n";
             }
-            desc += "```\n```";
+            desc += "```\n```yaml\n";
             foreach(var code in res.Select(x => x.Id))
             {
                 desc += code + "\n";
