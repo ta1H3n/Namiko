@@ -60,15 +60,16 @@ namespace Namiko
                     Emote.Parse("<:MeguExploded:627470499278094337>"),
                     Emote.Parse("<:KannaWant:419214048064831508>"),
                     Emote.Parse("<:KaeriThumbsUp:582902255884173315>"),
-                    Emote.Parse("<:XmasYeah:523986875497578522>"),
                     Emote.Parse("<:pat:431601376796213278>"),
                     Emote.Parse("<:toastie3:454441133876183060>"),
                     Emote.Parse("<:Awooo:582888496793124866>"),
-                    Emote.Parse("<:ChristmasAwoo:523987349743599616>"),
-                    Emote.Parse("<:OwOPresent:523995763559235594>"),
                     Emote.Parse("<:MiaHug:536580304018735135>"),
-                    Emote.Parse("<:XmasSip:523995761742970901>"),
-                    Emote.Parse("<:NekoHi:620711213826834443>")
+                    Emote.Parse("<:NekoHi:620711213826834443>"),
+                    Emote.Parse("<:NamikoSmug:806967747673980938>"),
+                    Emote.Parse("<:NamikoSip:804435685834096681>"),
+                    Emote.Parse("<:NamikoYeah:804702236482994196>"),
+                    Emote.Parse("<:NamikoTickNo:806967748189356052>"),
+                    Emote.Parse("<:NamikoTickYes:806967747951067177>"),
                 };
             }
 
