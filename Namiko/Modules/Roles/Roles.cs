@@ -120,7 +120,7 @@ namespace Namiko
             }
 
             await Context.Channel.SendMessageAsync(embed:
-                eb.WithDescription(CustomPaginatedMessage.PagesArray(roles, 100, (r) => $"<@&{r.RoleId}> - **{r.Price:n0}**\n").First()).Build());
+                eb.WithDescription(CustomPaginatedMessage.PagesArray(roles.OrderByDescending(x => x.Price), 100, (r) => $"<@&{r.RoleId}> - **{r.Price:n0}**\n").First()).Build());
         }
 
         [Command("BuyRole"), Summary("Buy a role from the role shop.\n**Usage**: `!buyrole [role_name]`"), CustomBotPermission(GuildPermission.ManageRoles)]

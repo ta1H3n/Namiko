@@ -11,7 +11,7 @@ namespace Model
         public static async Task<List<ShopRole>> GetRoles(ulong guildId)
         {
             using var db = new NamikoDbContext();
-            return await db.ShopRoles.Where(x => x.GuildId == guildId).ToListAsync();
+            return await db.ShopRoles.Where(x => x.GuildId == guildId).OrderByDescending(x => x.Price).ToListAsync();
         }
 
         public static async Task AddRole(ulong guildId, ulong roleId, int price)
