@@ -9,13 +9,47 @@ namespace Maid
     public sealed class Config
     {
         [JsonProperty("token")]
-        public static string Token { get; set; }
+        public static string Token 
+        { 
+            get
+            {
+                if (Token == null || Token == "")
+                {
+                    return Environment.GetEnvironmentVariable("token");
+                }
+                else
+                {
+                    return Token;
+                }
+            }
+            set 
+            { 
+                Token = value; 
+            } 
+        }
 
         [JsonProperty("imageChannelIds")]
-        public static HashSet<ulong> ImageChannelIds { get; set; }
+        public static HashSet<ulong> ImageChannelIds { get; set; } = new HashSet<ulong>();
 
         [JsonProperty("logChannelId")]
-        public static ulong LogChannelId { get; set; }
+        public static ulong LogChannelId
+        {
+            get
+            {
+                if (LogChannelId == null || LogChannelId == 0)
+                {
+                    return ulong.Parse(Environment.GetEnvironmentVariable("logChannelId"));
+                }
+                else
+                {
+                    return LogChannelId;
+                }
+            }
+            set
+            {
+                LogChannelId = value;
+            }
+        }
 
         static Config()
         {
