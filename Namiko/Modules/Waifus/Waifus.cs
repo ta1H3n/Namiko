@@ -475,7 +475,7 @@ namespace Namiko
 
             if (waifu.Tier < 1 || waifu.Tier > 3)
             {
-                if (!(Context.Guild.Id == 482974382445035520 && waifu.Tier == 825))
+                if (!(Context.Guild.Id == 738291903770132646 && waifu.Tier == 825))
                 {
                     await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared(Context.User)
                         .WithDescription($"*~ You can only ship Tier 1-3 waifus ~*")
