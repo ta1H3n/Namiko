@@ -66,6 +66,7 @@ namespace Namiko
         [Command("Daily"), Alias("dailies", "daywy", "daiwy"), Summary("Gives daily toasties.")]
         public async Task DailyCmd()
         {
+            bool newDaily = false;
             Daily daily = DailyDb.GetDaily(Context.User.Id, Context.Guild.Id);
             if (daily == null)
             {
@@ -75,6 +76,7 @@ namespace Namiko
                     GuildId = Context.Guild.Id,
                     Date = 0
                 };
+                newDaily = true;
             }
 
             long timeNow = DateTimeOffset.Now.ToUnixTimeMilliseconds();
@@ -84,9 +86,13 @@ namespace Namiko
 
             if ((daily.Date + ms) < timeNow)
             {
-                if ((daily.Date + 172800000) < timeNow)
+                if ((daily.Date + 172800000) < timeNow && !newDaily)
                 {
-                    daily.Streak = 0;
+                    long mslate = timeNow - (daily.Date + 172800000);
+                    long dayslate = (mslate / (1000 * 60 * 60 * 24)) + 1;
+                    double multiplier = dayslate > 3 ? 0 : 1 - dayslate * 0.25;
+                    daily.Streak = (int)(daily.Streak * multiplier);
+                    await ReplyAsync($"You are **{dayslate}** days late to claim your daily. For every day missed, you lose 25% of your streak.");
                 }
 
                 daily.Streak++;
