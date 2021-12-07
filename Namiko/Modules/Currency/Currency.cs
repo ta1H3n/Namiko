@@ -339,18 +339,39 @@ namespace Namiko
                 box = boxes[i - 1];
             }
 
+            var msg = await Context.Channel.SendMessageAsync($"How many **{box.Name}** lootboxes do you wish to buy? (max 100)");
+            var resp = await NextMessageAsync(
+                new Criteria<IMessage>()
+                .AddCriterion(new EnsureSourceUserCriterion())
+                .AddCriterion(new EnsureSourceChannelCriterion())
+                .AddCriterion(new EnsureRangeCriterion(100, Program.GetPrefix(Context))),
+                new TimeSpan(0, 0, 23));
+
+            _ = msg.DeleteAsync();
+            int amount = 0;
             try
             {
-                await BalanceDb.AddToasties(Context.User.Id, -box.Price, Context.Guild.Id);
+                amount = int.Parse(resp.Content);
+            }
+            catch
+            {
+                _ = Context.Message.DeleteAsync();
+                return;
+            }
+            _ = resp.DeleteAsync();
+
+            try
+            {
+                await BalanceDb.AddToasties(Context.User.Id, -box.Price * amount, Context.Guild.Id);
             } catch (Exception ex)
             {
                 await Context.Channel.SendMessageAsync(ex.Message);
                 return;
             }
 
-            await LootBoxDb.AddLootbox(Context.User.Id, (LootBoxType)box.TypeId, 1, Context.Guild.Id);
+            await LootBoxDb.AddLootbox(Context.User.Id, (LootBoxType)box.TypeId, amount, Context.Guild.Id);
             await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared(Context.User)
-                .WithDescription($"You bought a **{box.Name}**!\nType `{Program.GetPrefix(Context)}open` to open it!")
+                .WithDescription($"You bought {amount}x **{box.Name}**!\nType `{Program.GetPrefix(Context)}open` to open it!")
                 .Build());
         }
 
