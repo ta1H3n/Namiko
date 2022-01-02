@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -91,6 +92,56 @@ namespace Maid
             };
 
             await ch.SendMessageAsync(msg);
+        }
+
+        private async Task Giveaway()
+        {
+            var ch = Client.GetChannel(549341713542414336) as SocketTextChannel;
+            var m = await ch.GetMessageAsync(926466939168108574);
+
+            var users = (await m.GetReactionUsersAsync(Emote.Parse("<:NamikoYes:806196730440974376>"), 100).FlattenAsync()).OrderBy(x => Guid.NewGuid()).ToList();
+            var me = users.First(x => x.Id == 113677776417980419);
+
+            var proplus = new List<string>
+            {
+            };
+
+            var guild = new List<string>
+            {
+            };
+
+            string res = "";
+
+            foreach (var code in proplus)
+            {
+                try
+                {
+                    var user = users.FirstOrDefault();
+                    users.Remove(user);
+
+                    res += $"{user} - {user.Mention} - `{code}`\n";
+                    await user.SendMessageAsync($"Congratulations! You won the giveaway for **Namiko Pro+**!\nYour code is `{code}`.\n\nTo activate it, use Namiko's redeem command: `!redeem {code}`\n\nMore info: <https://namiko.moe/Pro>");
+                }
+                catch { }
+            }
+
+            res += "\n\n";
+
+            foreach (var code in guild)
+            {
+                try
+                {
+                    var user = users.FirstOrDefault();
+                    users.Remove(user);
+
+                    res += $"{user} - {user.Mention} - `{code}`\n";
+                    await user.SendMessageAsync($"Congratulations! You won the giveaway for **Namiko Pro Guild**!\nYour code is `{code}`.\n\nUse Namiko's redeem command in the server that you wish to activate it: `!redeem {code}`\n\nMore info: <https://namiko.moe/Pro>");
+                }
+                catch { }
+            }
+
+            Console.WriteLine(res);
+            await me.SendMessageAsync(res);
         }
     }
 }
