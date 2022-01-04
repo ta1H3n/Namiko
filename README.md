@@ -14,7 +14,7 @@ I am planning to make another major refactor at some point in the future, includ
 https://namiko.moe/Guide - bot usage guides.<br>
 https://namiko.moe/Commands - list of commands.
 
-## Libraries
+## Main libraries
 
 [Discord-net](https://github.com/discord-net/Discord.Net) - main implementation is based on this framework.<br>
 [Discord-net-interactive](https://github.com/foxbot/Discord.Addons.Interactive) - some extensions for discord-net, custom modified to suit Namiko.<br>
