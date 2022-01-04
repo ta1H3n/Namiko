@@ -78,7 +78,16 @@ namespace Model.Models.Users
             {
                 throw new NamikoException("Code invalid");
             }
-            else if (res.Uses.Any())
+
+            bool used = res.Type switch
+            {
+                ProType.Guild => res.Uses.Any(x => x.GuildId == guildId),
+                ProType.GuildPlus => res.Uses.Any(x => x.GuildId == guildId),
+                ProType.Pro => res.Uses.Any(x => x.UserId == guildId),
+                ProType.ProPlus => res.Uses.Any(x => x.UserId == guildId),
+                _ => throw new ArgumentException("Unknown pro type")
+            };
+            if (used)
             {
                 throw new NamikoException("Code already redeemed on this account/server");
             }
