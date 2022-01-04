@@ -14,7 +14,7 @@ namespace Model
             var entry = new WaifuWish { UserId = userId, Waifu = waifu, GuildId = guildId };
 
             int cap = 5;
-            if (PremiumDb.IsPremium(userId, ProType.Pro))
+            if (PremiumDb.IsPremium(userId, ProType.ProPlus))
                 cap = 12;
 
             db.WaifuWishlist.Update(entry);
