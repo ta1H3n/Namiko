@@ -179,19 +179,12 @@ namespace Namiko
             {
                 try
                 {
-                    tasks.Add(player.TextChannel.SendMessageAsync(embed: new EmbedBuilderLava().WithDescription("Gomen, Senpai. I have to Disconnect the player due to server restart.\n" +
-                        "You can restart the player once I am back online in a few minutes.").Build()));
-                    tasks.Add(Music.Node.LeaveAsync(player.VoiceChannel));
+                    await player.TextChannel.SendMessageAsync(embed: new EmbedBuilderLava().WithDescription("Gomen, Senpai. I have to Disconnect the player due to server restart.\n" +
+                        "You can restart the player once I am back online in a few minutes.").Build());
+                    await Music.Node.LeaveAsync(player.VoiceChannel);
                 } 
                 catch (Exception ex) { SentrySdk.CaptureException(ex); }
             }
-
-            // This part is very unecessary but it's cool lol
-            var image = ImageDb.GetRandomImage("sudoku");
-            var embed = ImageUtil.ToEmbed(image).Build();
-            await Context.Channel.SendMessageAsync("", false, embed);
-
-            await Task.WhenAll(tasks);
 
             var cts = Program.GetCts();
             await Context.Client.StopAsync();
