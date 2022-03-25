@@ -137,7 +137,7 @@ namespace Namiko
             if (PremiumDb.IsPremium(Context.Guild.Id, ProType.Guild) || PremiumDb.IsPremium(Context.Guild.Id, ProType.GuildPlus))
                 hours /= 2;
 
-            if (weekly.Date == null ? true : weekly.Date.AddHours(hours).CompareTo(DateTime.Now) < 0)
+            if (weekly.Date.AddHours(hours).CompareTo(DateTime.Now) < 0)
             {
                 int streak = await DailyDb.GetHighest(Context.Guild.Id) + 15;
                 int amount = ToastieUtil.DailyAmount(streak);

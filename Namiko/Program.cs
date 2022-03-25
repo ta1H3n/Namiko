@@ -588,7 +588,7 @@ namespace Namiko
             string JSON = "";
             var JSONLocation = (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")) switch
             {
-                "Development" => Assembly.GetEntryAssembly().Location.Replace(@"bin\Debug\net5.0\Namiko.dll", @"Data\Settings.json"),
+                "Development" => Assembly.GetEntryAssembly().Location.Replace(@"bin\Debug\net6.0\Namiko.dll", @"Data\Settings.json"),
                 _ => Assembly.GetEntryAssembly().Location.Replace(@"Namiko.dll", @"data/Settings.json"),
             };
             using (var Stream = new FileStream(JSONLocation, FileMode.Open, FileAccess.Read))

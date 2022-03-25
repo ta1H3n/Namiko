@@ -292,7 +292,7 @@ namespace Namiko
             {
                 SetUpDbl(Program.GetClient().CurrentUser.Id);
                 SentrySdk.CaptureException(ex);
-                throw ex;
+                throw;
             }
         }
         public static void SetUpDbl(ulong id)

@@ -48,7 +48,7 @@ namespace Discord.Addons.Interactive
                 }
             });
 
-            if (Timeout.HasValue && Timeout.Value != null)
+            if (Timeout.HasValue)
             {
                 _ = Task.Delay(Timeout.Value).ContinueWith(_ =>
                 {

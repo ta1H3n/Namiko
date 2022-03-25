@@ -36,7 +36,7 @@ namespace Maid
         {
             get
             {
-                if (LogChannelId == null || LogChannelId == 0)
+                if (LogChannelId == 0)
                 {
                     return ulong.Parse(Environment.GetEnvironmentVariable("logChannelId"));
                 }
