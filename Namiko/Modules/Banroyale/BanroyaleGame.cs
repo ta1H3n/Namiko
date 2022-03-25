@@ -99,10 +99,8 @@ namespace Namiko
             Timer.Start();
         }
 
-        internal static async Task HandleBanroyaleReactionAsync(Cacheable<IUserMessage, ulong> msg, ISocketMessageChannel ch, SocketReaction reaction)
+        internal static async Task HandleBanroyaleReactionAsync(Cacheable<IUserMessage, ulong> msg, Cacheable<IMessageChannel, ulong> ch, SocketReaction reaction)
         {
-            //if (reaction.UserId == Program.GetClient().CurrentUser.Id)
-            //    return;
             if (!BanroyaleMessageDict.TryGetValue(reaction.MessageId, out var br))
                 return;
             if (br.Emote.Id != ((Emote)reaction.Emote).Id)

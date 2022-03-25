@@ -259,7 +259,7 @@ namespace Namiko
             {
                 try
                 {
-                    var ch = await Program.GetClient().GetUser(x).GetOrCreateDMChannelAsync();
+                    var ch = await Program.GetClient().GetUser(x).CreateDMChannelAsync();
                     await ch.SendMessageAsync(msg);
                     sent++;
                 }
@@ -389,7 +389,7 @@ namespace Namiko
             {
                 try
                 {
-                    var ch = await client.GetUser(id).GetOrCreateDMChannelAsync();
+                    var ch = await client.GetUser(id).CreateDMChannelAsync();
                     await ch.SendMessageAsync(embed: embed);
                     i++;
                 }

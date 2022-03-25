@@ -50,7 +50,7 @@ namespace Model
             var servers = guildsIds.Select(x => new Server
             {
                 GuildId = x,
-                JoinDate = System.DateTime.Now,
+                JoinDate = DateTime.Now,
                 LeaveDate = zerotime,
                 Prefix = prefix
             });
@@ -67,19 +67,17 @@ namespace Model
         {
             using var db = new NamikoDbContext();
             var time = new DateTime(0);
-            return db.Servers.Where(x => x.LeaveDate > time).ToList();
+            return db.Servers.Where(x => x.LeaveDate != null && x.LeaveDate > time).ToList();
         }
         public static HashSet<ulong> GetNotLeft()
         {
             using var db = new NamikoDbContext();
-            var zerotime = new DateTime(0);
-            return db.Servers.Where(x => x.LeaveDate == zerotime).Select(x => x.GuildId).ToHashSet();
+            return db.Servers.Where(x => x.LeaveDate == null).Select(x => x.GuildId).ToHashSet();
         }
         public static List<Server> GetOld()
         {
             using var db = new NamikoDbContext();
-            var date = new DateTime(0);
-            return db.Servers.Where(x => x.LeaveDate != date && x.LeaveDate.AddDays(3) < DateTime.Now).ToList();
+            return db.Servers.Where(x => x.LeaveDate != null && x.LeaveDate.Value.AddDays(3) < DateTime.Now).ToList();
         }
     }
 }

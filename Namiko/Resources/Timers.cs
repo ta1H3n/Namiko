@@ -115,7 +115,7 @@ namespace Namiko
                     await PremiumDb.UpdatePremium(premium);
                     try
                     {
-                        var ch = await client.GetUser(premium.UserId).GetOrCreateDMChannelAsync();
+                        var ch = await client.GetUser(premium.UserId).CreateDMChannelAsync();
                         await ch.SendMessageAsync(embed: new EmbedBuilderPrepared()
                             .WithDescription($"Your **{premium.Type.ToString()}** subscription has expired. It's sad to see you go...\n" +
                                 $"You can renew your subscription [Here]({LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "pro-expired")})\n" +
@@ -133,7 +133,7 @@ namespace Namiko
                     await PremiumDb.UpdatePremium(premium);
                     try
                     {
-                        var ch = await client.GetUser(premium.UserId).GetOrCreateDMChannelAsync();
+                        var ch = await client.GetUser(premium.UserId).CreateDMChannelAsync();
                         await ch.SendMessageAsync(embed: new EmbedBuilderPrepared()
                             .WithDescription($"Your **{premium.Type.ToString()}** subscription has expired. It's sad to see you go...\n" +
                                 $"You can renew your subscription [Here]({LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "pro-expired")})\n" +
@@ -207,10 +207,9 @@ namespace Namiko
                 int r;
                 using (var db = new NamikoDbContext())
                 {
-                    var date = new DateTime(0);
                     var ids = db.Servers
                         .AsQueryable()
-                        .Where(x => x.LeaveDate != date && x.LeaveDate.AddDays(3) < DateTime.Now)
+                        .Where(x => x.LeaveDate != null && x.LeaveDate.Value.AddDays(3) < DateTime.Now)
                         .OrderBy(x => x.LeaveDate)
                         .Select(x => x.GuildId)
                         .Skip(CleanSkip)
@@ -266,8 +265,7 @@ namespace Namiko
                     CleanSkip++;
                     using (var db = new NamikoDbContext())
                     {
-                        var date = new DateTime(0);
-                        var id = db.Servers.AsQueryable().Where(x => x.LeaveDate != date && x.LeaveDate.AddDays(3) < DateTime.Now).Select(x => x.GuildId).FirstOrDefault();
+                        var id = db.Servers.AsQueryable().Where(x => x.LeaveDate != null && x.LeaveDate.Value.AddDays(3) < DateTime.Now).Select(x => x.GuildId).FirstOrDefault();
                         await WebhookClients.NamikoLogChannel.SendMessageAsync($"[TIMER] Skipping clean of guild {id}.");
                     }
                 }
@@ -520,7 +518,7 @@ namespace Namiko
 
                     if (add.Count > 500)
                     {
-                        var ch = await Program.GetClient().GetUser(Config.OwnerId).GetOrCreateDMChannelAsync();
+                        var ch = await Program.GetClient().GetUser(Config.OwnerId).CreateDMChannelAsync();
                         string er = "```\n";
                         foreach(var id in voters.Take(10))
                         {
@@ -593,7 +591,7 @@ namespace Namiko
                     await LootBoxDb.AddLootbox(x, type, 1);
                     sent++;
                     var user = Program.GetClient().GetUser(x);
-                    var ch = await user.GetOrCreateDMChannelAsync();
+                    var ch = await user.CreateDMChannelAsync();
                     await ch.SendMessageAsync(embed: new EmbedBuilderPrepared(user)
                          .WithDescription($"Thank you for voting for me! I have given you a **{type.ToString()} Lootbox**! :star:\n" +
                          $"You can open it in a server of your choice by typing `!open`")
@@ -610,7 +608,7 @@ namespace Namiko
                 try
                 {
                     var user = Program.GetClient().GetUser(x);
-                    var ch = await user.GetOrCreateDMChannelAsync();
+                    var ch = await user.CreateDMChannelAsync();
                     await ch.SendMessageAsync(embed: new EmbedBuilderPrepared(user)
                         .WithDescription($"You can now vote for me again and receive another lootbox! [Discord Bots]({LinkHelper.GetRedirectUrl(LinkHelper.Vote, "Vote", "reminder")})")
                         .Build());

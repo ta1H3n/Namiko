@@ -138,9 +138,11 @@ namespace Namiko
             var rep = ProfileDb.GetRepAmount(user.Id);
             string footer = $"Votes: {await VoteDb.VoteCount(user.Id)} • ";
             footer += $"Rep: {rep} • ";
-            footer += $"Status: '{user.Status.ToString()}'";
-            if (user.Activity != null)
-                footer += $", Playing: '{user.Activity.Name}'";
+            // Activities require guildpresence
+            //footer += $"Status: '{user.Status}'";
+            //var activity = user.Activities.FirstOrDefault();
+            //if (activity != null)
+            //    footer += $", {activity.Type}: '{activity.Name}'";
             eb.WithFooter(footer);
 
             //quote 

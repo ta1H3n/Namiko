@@ -14,6 +14,6 @@ namespace Model
         public string Name { get; set; }
         public DateTime LastUpdated { get; set; }
         public DateTime JoinDate { get; set; }
-        public DateTime LeaveDate { get; set; }
+        public DateTime? LeaveDate { get; set; }
     }
 }

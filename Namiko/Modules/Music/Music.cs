@@ -864,7 +864,7 @@ namespace Namiko
             await ReplyAsync($"**{playlist.Name}** deleted <:KannaSad:625348483968401419>");
             if (playlist.UserId != Context.User.Id)
             {
-                var ch = await Program.GetClient().GetUser(playlist.UserId).GetOrCreateDMChannelAsync();
+                var ch = await Program.GetClient().GetUser(playlist.UserId).CreateDMChannelAsync();
                 await ch.SendMessageAsync($"Your playlist ({playlist.Name}) in {Context.Guild.Name} has been deleted by {Context.User}");
             }
         }

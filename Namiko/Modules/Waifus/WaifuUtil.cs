@@ -279,7 +279,7 @@ namespace Namiko
                     try
                     {
                         var guild = Program.GetClient().GetGuild(guildId);
-                        var ch = await guild.GetUser(wish.UserId).GetOrCreateDMChannelAsync();
+                        var ch = await guild.GetUser(wish.UserId).CreateDMChannelAsync();
                         await ch.SendMessageAsync($"**{wish.Waifu.Name}** is now for sale in **{guild.Name}**", false, WaifuEmbedBuilder(wish.Waifu).Build());
                     }
                     catch { }

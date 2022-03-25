@@ -64,13 +64,13 @@ namespace Namiko
         private async Task MainAsync()
         {
             Client = new DiscordShardedClient(new DiscordSocketConfig {
-                LogLevel = LogSeverity.Info,
+                LogLevel = Debug ? LogSeverity.Debug : LogSeverity.Info,
                 DefaultRetryMode = RetryMode.Retry502,
-                ExclusiveBulkDelete = true,
                 AlwaysDownloadUsers = false,
                 MessageCacheSize = 0,
-                LargeThreshold = 50,
-                GatewayIntents = GatewayIntents.Guilds | 
+                LargeThreshold = 250,
+                GatewayIntents = 
+                    GatewayIntents.Guilds | 
                     GatewayIntents.GuildMembers | 
                     GatewayIntents.GuildVoiceStates |
                     GatewayIntents.GuildMessages |
@@ -83,7 +83,7 @@ namespace Namiko
             {
                 CaseSensitiveCommands = false,
                 DefaultRunMode = Diag ? RunMode.Sync : RunMode.Async,
-                LogLevel = LogSeverity.Info
+                LogLevel = Debug ? LogSeverity.Debug : LogSeverity.Info
             });
             
             Client.ShardReady += Client_ShardReady;
@@ -95,6 +95,8 @@ namespace Namiko
             Client.ShardConnected += Client_ShardConnected;
             Client.ShardReady += Client_ShardReady_DownloadUsers;
             //Client.GuildAvailable += Client_GuildAvailable_DownloadUsers;
+            if (Debug) 
+                Client.Log += Client_Log1;
 
             // Namiko join/leave
             Client.JoinedGuild += Client_JoinedGuild;
@@ -147,6 +149,12 @@ namespace Namiko
             cts.Dispose();
             Console.WriteLine("Shutting down...");
             await Client.LogoutAsync();
+        }
+
+        private Task Client_Log1(LogMessage arg)
+        {
+            Console.WriteLine(arg);
+            return Task.CompletedTask;
         }
 
         private HashSet<int> ShardsDownloadingUsers = new HashSet<int>();
@@ -248,7 +256,7 @@ namespace Namiko
                 else if (Context.Channel is SocketTextChannel ch
                     && (!ch.Guild.CurrentUser.GetPermissions(ch).Has(ChannelPermission.SendMessages) || !ch.Guild.CurrentUser.GetPermissions(ch).Has(ChannelPermission.EmbedLinks)))
                 {
-                    var dm = await Context.User.GetOrCreateDMChannelAsync();
+                    var dm = await Context.User.CreateDMChannelAsync();
                     await dm.SendMessageAsync(embed: new EmbedBuilderPrepared(Context.Guild.CurrentUser)
                         .WithDescription($"I don't have permission to reply to you in **{ch.Name}**.\n" +
                         $"Make sure I have a role that allows me to send messages and embed links in the channels you want to use me in.")
@@ -299,6 +307,11 @@ namespace Namiko
         }
         private async Task Commands_Log(LogMessage logMessage)
         {
+            if (Debug)
+            {
+                Console.WriteLine(logMessage);
+            }
+
             if (logMessage.Exception is CommandException cmdException)
             {
                 if (cmdException.InnerException is NamikoException ex)
@@ -370,12 +383,12 @@ namespace Namiko
                 return;
             }
         }
-        private async Task Client_ReactionAdded(Cacheable<IUserMessage, ulong> arg1, ISocketMessageChannel arg2, SocketReaction arg3)
+        private async Task Client_ReactionAdded(Cacheable<IUserMessage, ulong> arg1, Cacheable<IMessageChannel, ulong> arg2, SocketReaction arg3)
         {
             if (arg3.MessageId != 700399700196458546)
                 return;
 
-            SocketTextChannel sch = arg2 as SocketTextChannel;
+            SocketTextChannel sch = (await arg2.GetOrDownloadAsync()) as SocketTextChannel;
             var user = sch.Guild.GetUser(arg3.UserId);
             var role = sch.Guild.GetRole(697234413360119808);
 
@@ -433,7 +446,7 @@ namespace Namiko
                 GuildId = arg.Id,
                 JoinDate = now
             };
-            server.LeaveDate = new DateTime(0);
+            server.LeaveDate = null;
             server.Prefix = Config.DefaultPrefix;
             await ServerDb.UpdateServer(server);
 
@@ -482,11 +495,11 @@ namespace Namiko
             if (ch != null)
                 await ch.SendMessageAsync($":hammer: {UserInfo(arg1)} was banned.");
         }
-        private async Task Client_UserLeftLog(SocketGuildUser arg)
+        private async Task Client_UserLeftLog(SocketGuild guild, SocketUser user)
         {
-            var ch = GetJoinLogChannel(arg.Guild);
+            var ch = GetJoinLogChannel(guild);
             if (ch != null)
-                await ch.SendMessageAsync($"<:TickNo:577838859077943306> {UserInfo(arg)} left the server.");
+                await ch.SendMessageAsync($"<:TickNo:577838859077943306> {UserInfo(user)} left the server.");
         }
         private async Task Client_UserJoinedLog(SocketGuildUser arg)
         {
@@ -511,15 +524,15 @@ namespace Namiko
             try
             {
                 ReadyCount++;
-                Console.WriteLine($"{DateTime.Now} - Shard {arg.ShardId} Ready.");
-                _ = WebhookClients.NamikoLogChannel.SendMessageAsync($":european_castle: `{DateTime.Now.ToString("HH:mm:ss")}` - `Shard {arg.ShardId} Ready`");
+                Console.WriteLine($"{DateTime.Now} - Shard {arg.ShardId} ready. {arg.Guilds.Count} guilds.");
+                _ = WebhookClients.NamikoLogChannel.SendMessageAsync($":european_castle: `{DateTime.Now.ToString("HH:mm:ss")}` - `Shard {arg.ShardId} ready - {arg.Guilds.Count} guilds`");
 
                 int res;
                 res = await CheckJoinedGuilds(arg);
                 if (res > 0)
                 {
-                    Console.WriteLine($"{DateTime.Now} - Joined {res} Guilds.");
-                    _ = WebhookClients.NamikoLogChannel.SendMessageAsync($"`{DateTime.Now.ToString("HH:mm:ss")}` <:TickYes:577838859107303424> Joined **{res}** Guilds.");
+                    Console.WriteLine($"{DateTime.Now} - Joined {res} guilds.");
+                    _ = WebhookClients.NamikoLogChannel.SendMessageAsync($"<:TickYes:577838859107303424> `{DateTime.Now.ToString("HH:mm:ss")}` - `Joined {res} guilds`");
                 }
 
                 if (WaitingForAllGuildsReady && ReadyCount >= ShardCount)
@@ -528,17 +541,13 @@ namespace Namiko
                     res = await CheckLeftGuilds();
                     if (res > 0)
                     {
-                        Console.WriteLine($"{DateTime.Now} - Left {res} Guilds.");
-                        _ = WebhookClients.NamikoLogChannel.SendMessageAsync($"`{DateTime.Now.ToString("HH:mm:ss")}` <:TickNo:577838859077943306> Left {res} Guilds.`");
+                        Console.WriteLine($"{DateTime.Now} - Left {res} guilds.");
+                        _ = WebhookClients.NamikoLogChannel.SendMessageAsync($"<:TickNo:577838859077943306> `{DateTime.Now.ToString("HH:mm:ss")}` - `Left {res} guilds`");
                     }
 
-                    //await Task.Delay(1000 * 60 * 15); // 15min
-                    //string report = $":space_invader: `{DateTime.Now.ToString("HH:mm:ss")}` - `Downloaded users:`\n";
-                    //foreach (var shard in Client.Shards.OrderBy(x => x.ShardId))
-                    //{
-                    //    report += $"`Shard {shard.ShardId} downloaded {shard.Guilds.Sum(x => x.Users.Count)} users.`\n";
-                    //}
-                    //_ = WebhookClients.NamikoLogChannel.SendMessageAsync(report);
+                    res = Client.Guilds.Count;
+                    Console.WriteLine($"{DateTime.Now} - Loaded {res} guilds.");
+                    _ = WebhookClients.NamikoLogChannel.SendMessageAsync($"<:TickYes:577838859107303424> `{DateTime.Now.ToString("HH:mm:ss")}` - `{res} guilds ready`");
                 }
             } catch (Exception ex)
             {
@@ -666,7 +675,7 @@ namespace Namiko
             {
                 var zerotime = new DateTime(0);
                 var now = DateTime.Now;
-                IQueryable<Server> servers = db.Servers.AsQueryable().Where(x => x.LeaveDate == zerotime && !existingIds.Contains(x.GuildId));
+                IQueryable<Server> servers = db.Servers.AsQueryable().Where(x => x.LeaveDate == null && !existingIds.Contains(x.GuildId));
 
                 await servers.ForEachAsync(x => x.LeaveDate = now);
 

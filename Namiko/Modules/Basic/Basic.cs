@@ -239,7 +239,7 @@ namespace Namiko
                 string what = $"Blacklisted {id}";
                 if (guild != null)
                 {
-                    var ch = await guild.Owner.GetOrCreateDMChannelAsync();
+                    var ch = await guild.Owner.CreateDMChannelAsync();
                     await ch.SendMessageAsync($"Your guild ({guild.Name} - {id}) has been blacklisted.\n" +
                         $"Please contact taiHen#2839 in {LinkHelper.SupportServerInvite} for more information or if you think this is a mistake.");
                     what = $"Guild ({guild.Name} {id}) Blacklisted.";
@@ -248,7 +248,7 @@ namespace Namiko
                     var user = client.GetUser(id);
                     if (user != null)
                     {
-                        var ch = await user.GetOrCreateDMChannelAsync();
+                        var ch = await user.CreateDMChannelAsync();
                         await ch.SendMessageAsync($"You ({user.Username} - {id}) have been blacklisted.\n" +
                             $"Please contact taiHen#2839 in {LinkHelper.SupportServerInvite} for more information or if you think this is a mistake.");
                         what = $"User ({user.Username} {id}) Blacklisted.";
