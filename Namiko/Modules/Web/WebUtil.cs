@@ -303,7 +303,7 @@ namespace Namiko
                 DblApi = new AuthDiscordBotListApi(id, token);
             } catch
             {
-                Console.WriteLine("No DBL token");
+                Logger.Log("No DBL token", LogSeverity.Warning);
             }
         }
         public static void UpdateGuildCount(int amount)
