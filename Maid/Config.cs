@@ -9,47 +9,13 @@ namespace Maid
     public sealed class Config
     {
         [JsonProperty("token")]
-        public static string Token 
-        { 
-            get
-            {
-                if (Token == null || Token == "")
-                {
-                    return Environment.GetEnvironmentVariable("token");
-                }
-                else
-                {
-                    return Token;
-                }
-            }
-            set 
-            { 
-                Token = value; 
-            } 
-        }
+        public static string Token { get; set; }
 
         [JsonProperty("imageChannelIds")]
         public static HashSet<ulong> ImageChannelIds { get; set; } = new HashSet<ulong>();
 
         [JsonProperty("logChannelId")]
-        public static ulong LogChannelId
-        {
-            get
-            {
-                if (LogChannelId == 0)
-                {
-                    return ulong.Parse(Environment.GetEnvironmentVariable("logChannelId"));
-                }
-                else
-                {
-                    return LogChannelId;
-                }
-            }
-            set
-            {
-                LogChannelId = value;
-            }
-        }
+        public static ulong LogChannelId { get; set; }
 
         static Config()
         {
@@ -79,11 +45,7 @@ namespace Maid
 
         private static string GetPath()
         {
-            return (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")) switch
-            {
-                "Development" => Assembly.GetEntryAssembly().Location.Replace(@"bin\Debug\netcoreapp3.1\Maid.dll", @"appsettings.json"),
-                _ => Directory.GetCurrentDirectory() + @"/appsettings.json",
-            };
+            return Directory.GetCurrentDirectory() + @"/appsettings.json";
         }
     }
 }
