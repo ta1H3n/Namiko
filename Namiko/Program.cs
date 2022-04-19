@@ -69,13 +69,13 @@ namespace Namiko
                 AlwaysDownloadUsers = false,
                 MessageCacheSize = 0,
                 LargeThreshold = 250,
-                GatewayIntents = 
-                    GatewayIntents.Guilds | 
-                    GatewayIntents.GuildMembers | 
+                GatewayIntents =
+                    GatewayIntents.Guilds |
+                    GatewayIntents.GuildMembers |
                     GatewayIntents.GuildVoiceStates |
                     GatewayIntents.GuildMessages |
                     GatewayIntents.GuildMessageReactions |
-                    GatewayIntents.DirectMessages | 
+                    GatewayIntents.DirectMessages |
                     GatewayIntents.DirectMessageReactions
             });
             
@@ -87,13 +87,13 @@ namespace Namiko
             });
             
             Client.ShardReady += Client_ShardReady;
+            Client.ShardReady += Client_ShardReady_DownloadUsers;
             Client.ShardDisconnected += Client_ShardDisconnected;
             Client.ReactionAdded += Client_ReactionAdded;
             Client.ReactionAdded += BanroyaleGame.HandleBanroyaleReactionAsync;
             Client.MessageReceived += Client_ReadCommand;
             Client.UserVoiceStateUpdated += Client_UserVoiceChannel;
             Client.ShardConnected += Client_ShardConnected;
-            Client.ShardReady += Client_ShardReady_DownloadUsers;
             //Client.GuildAvailable += Client_GuildAvailable_DownloadUsers;
             if (Debug) 
                 Client.Log += Client_Log1;
@@ -155,26 +155,6 @@ namespace Namiko
         {
             Console.WriteLine(arg);
             return Task.CompletedTask;
-        }
-
-        private HashSet<int> ShardsDownloadingUsers = new HashSet<int>();
-        private async Task Client_ShardReady_DownloadUsers(DiscordSocketClient arg)
-        {
-            if (ShardsDownloadingUsers.Contains(arg.ShardId))
-                return;
-
-            try
-            {
-                ShardsDownloadingUsers.Add(arg.ShardId);
-
-                await Task.Delay(5000);
-                await arg.DownloadUsersAsync(arg.Guilds);
-                int users = arg.Guilds.Sum(x => x.Users.Count);
-                _ = WebhookClients.NamikoLogChannel.SendMessageAsync($":space_invader: `{DateTime.Now:HH:mm:ss}` - `Shard {arg.ShardId} downloaded {users} users.`");
-            } finally
-            {
-                ShardsDownloadingUsers.Remove(arg.ShardId);
-            }
         }
 
         private async Task Client_GuildAvailable_DownloadUsers(SocketGuild arg)
@@ -519,6 +499,7 @@ namespace Namiko
         // SET-UP / READY
 
         private int ReadyCount = 0;
+        private HashSet<int> ShardsDownloadingUsers = new HashSet<int>();
         private async Task Client_ShardReady(DiscordSocketClient arg)
         {
             try
@@ -552,6 +533,26 @@ namespace Namiko
             } catch (Exception ex)
             {
                 SentrySdk.CaptureException(ex);
+            }
+        }
+        private async Task Client_ShardReady_DownloadUsers(DiscordSocketClient arg)
+        {
+            //method not thread safe, but it's ok.
+            if (ShardsDownloadingUsers.Contains(arg.ShardId))
+                return;
+
+            try
+            {
+                ShardsDownloadingUsers.Add(arg.ShardId);
+
+                await Task.Delay(5000);
+                await arg.DownloadUsersAsync(arg.Guilds);
+                int users = arg.Guilds.Sum(x => x.Users.Count);
+                _ = WebhookClients.NamikoLogChannel.SendMessageAsync($":space_invader: `{DateTime.Now:HH:mm:ss}` - `Shard {arg.ShardId} downloaded {users} users.`");
+            }
+            finally
+            {
+                ShardsDownloadingUsers.Remove(arg.ShardId);
             }
         }
         private async Task Client_ShardConnected(DiscordSocketClient arg)
