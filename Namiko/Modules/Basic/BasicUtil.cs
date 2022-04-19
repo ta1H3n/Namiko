@@ -82,7 +82,7 @@ namespace Namiko
             eb.WithAuthor(client.CurrentUser);
             eb.WithColor(BasicUtil.RandomColor());
             eb.WithFooter("-What are you? Twelve?");
-            eb.WithImageUrl(Config.NamikoBannerUrl);
+            eb.WithImageUrl(AppSettings.NamikoBannerUrl);
             return eb;
         }
         public static EmbedBuilder DonateEmbed(string prefix)
@@ -110,7 +110,7 @@ namespace Namiko
             eb.WithAuthor(client.CurrentUser);
             eb.WithColor(BasicUtil.RandomColor());
             eb.WithFooter("-What are you? Twelve?");
-            eb.WithImageUrl(Config.NamikoBannerUrl);
+            eb.WithImageUrl(AppSettings.NamikoBannerUrl);
             return eb;
         }
         public static EmbedBuilder GuildJoinEmbed(string prefix)
@@ -129,7 +129,7 @@ namespace Namiko
             eb.WithAuthor(client.CurrentUser);
             eb.WithColor(BasicUtil.RandomColor());
             eb.WithFooter("-What are you? Twelve?");
-            eb.WithImageUrl(Config.NamikoBannerUrl);
+            eb.WithImageUrl(AppSettings.NamikoBannerUrl);
             return eb;
         }
         public static string IdToMention(this ulong id)

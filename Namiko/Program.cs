@@ -33,8 +33,7 @@ namespace Namiko
         private static readonly CancellationToken ct = cts.Token;
         public static HashSet<ulong> Blacklist;
         private static bool WaitingForAllGuildsReady = true;
-        public static bool Debug = false;
-        private static bool Diag = false;
+        public static bool Development = false;
         private static bool Pause = false;
         private static int Startup = 0;
         public static bool GuildLeaveEvent = true;
@@ -49,10 +48,9 @@ namespace Namiko
                 return;
             }
 
-            SetUpConfig();
             using (SentrySdk.Init(options => 
             {
-                options.Dsn = new Dsn(Config.SentryWebhook);
+                options.Dsn = new Dsn(AppSettings.SentryWebhook);
                 string env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
                 options.Environment = env == null || env == "" ? "Production" : env;
             }))
@@ -64,7 +62,7 @@ namespace Namiko
         private async Task MainAsync()
         {
             Client = new DiscordShardedClient(new DiscordSocketConfig {
-                LogLevel = Debug ? LogSeverity.Debug : LogSeverity.Info,
+                LogLevel = Development ? LogSeverity.Debug : LogSeverity.Info,
                 DefaultRetryMode = RetryMode.Retry502,
                 AlwaysDownloadUsers = false,
                 MessageCacheSize = 0,
@@ -82,8 +80,8 @@ namespace Namiko
             Commands = new CommandService(new CommandServiceConfig
             {
                 CaseSensitiveCommands = false,
-                DefaultRunMode = Diag ? RunMode.Sync : RunMode.Async,
-                LogLevel = Debug ? LogSeverity.Debug : LogSeverity.Info
+                DefaultRunMode = RunMode.Async,
+                LogLevel = Development ? LogSeverity.Debug : LogSeverity.Info
             });
             
             Client.ShardReady += Client_ShardReady;
@@ -95,7 +93,7 @@ namespace Namiko
             Client.UserVoiceStateUpdated += Client_UserVoiceChannel;
             Client.ShardConnected += Client_ShardConnected;
             //Client.GuildAvailable += Client_GuildAvailable_DownloadUsers;
-            if (Debug) 
+            if (Development) 
                 Client.Log += Client_Log1;
 
             // Namiko join/leave
@@ -103,7 +101,7 @@ namespace Namiko
             Client.LeftGuild += Client_LeftGuild;
 
             // Join/leave logging.
-            if (!Debug)
+            if (!Development)
                 Client.UserJoined += Client_UserJoinedWelcome;
             Client.UserJoined += Client_UserJoinedLog;
             Client.UserLeft += Client_UserLeftLog;
@@ -112,7 +110,7 @@ namespace Namiko
             Commands.CommandExecuted += Commands_CommandExecuted;
             Commands.Log += Commands_Log;
 
-            await Client.LoginAsync(TokenType.Bot, Config.Token);
+            await Client.LoginAsync(TokenType.Bot, AppSettings.Token);
             await Client.StartAsync();
             _ = WebhookClients.NamikoLogChannel.SendMessageAsync(
                 $"------------------------------\n" +
@@ -215,21 +213,9 @@ namespace Namiko
                     return;
                 }
 
-                else if (Pause && Context.User.Id != Config.OwnerId)
+                else if (Pause && Context.User.Id != AppSettings.OwnerId)
                 {
                     await Context.Channel.SendMessageAsync("Commands disabled temporarily. Try again later.");
-                    return;
-                }
-
-                else if (Diag)
-                {
-                    var watch = new Stopwatch();
-                    watch.Start();
-                    var task = Commands.ExecuteAsync(Context, ArgPos, Services).ContinueWith(x =>
-                    {
-                        watch.Stop();
-                        Context.Channel.SendMessageAsync($"Execution time: `{watch.ElapsedMilliseconds}ms`");
-                    });
                     return;
                 }
 
@@ -287,7 +273,7 @@ namespace Namiko
         }
         private async Task Commands_Log(LogMessage logMessage)
         {
-            if (Debug)
+            if (Development)
             {
                 Console.WriteLine(logMessage);
             }
@@ -427,7 +413,7 @@ namespace Namiko
                 JoinDate = now
             };
             server.LeaveDate = null;
-            server.Prefix = Config.DefaultPrefix;
+            server.Prefix = AppSettings.DefaultPrefix;
             await ServerDb.UpdateServer(server);
 
             if(server.JoinDate.Equals(now))
@@ -567,7 +553,7 @@ namespace Namiko
                 {
                     WebUtil.SetUpDbl(arg.CurrentUser.Id);
                     await StartTimers();
-                    if (!Debug)
+                    if (!Development)
                         await Music.Initialize(Client);
                     await Client.SetActivityAsync(new Game($"Chinese Cartoons. Try @{arg.CurrentUser.Username} help", ActivityType.Watching));
                 }
@@ -593,23 +579,6 @@ namespace Namiko
                 SentrySdk.CaptureException(ex);
             }
         }
-        private static void SetUpConfig()
-        {
-            string JSON = "";
-            var JSONLocation = (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")) switch
-            {
-                "Development" => Assembly.GetEntryAssembly().Location.Replace(@"bin\Debug\net6.0\Namiko.dll", @"Data\Settings.json"),
-                _ => Assembly.GetEntryAssembly().Location.Replace(@"Namiko.dll", @"data/Settings.json"),
-            };
-            using (var Stream = new FileStream(JSONLocation, FileMode.Open, FileAccess.Read))
-            using (var ReadSettings = new StreamReader(Stream))
-            {
-                JSON = ReadSettings.ReadToEnd();
-            }
-
-            JsonConvert.DeserializeObject<Config>(JSON);
-            return;
-        }
         public static bool SetPause()
         {
             if (Pause)
@@ -624,28 +593,24 @@ namespace Namiko
             switch (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"))
             {
                 case "Development":
-                    Diag = false;
-                    Debug = true;
+                    Development = true;
                     Pause = true;
-                    Locations.SetUpDebug();
                     break;
                 default:
                     Console.WriteLine("Entry: " + Assembly.GetEntryAssembly().Location);
-                    Locations.SetUpRelease();
-                    RedditAPI.RedditSetup();
                     _ = ImgurAPI.ImgurSetup();
                     break;
             }
-            NamikoDbContext.ConnectionString = Config.ConnectionString;
+            NamikoDbContext.ConnectionString = AppSettings.ConnectionString;
             _ = LootboxStats.Reload(Locations.LootboxStatsJSON);
             Prefixes = ServerDb.GetPrefixes();
             Images.ReactionImageCommands = ImageDb.GetReactionImageCommandHashSet();
             Blacklist = BlacklistDb.GetAll();
-            Waifu.Path = Config.ImageUrlPath + "waifus/";
+            Waifu.Path = AppSettings.ImageUrlPath + "waifus/";
         }
         private async static Task StartTimers()
         {
-            if (Debug)
+            if (Development)
                 await Timers.SetUp();
             else
                 await Timers.SetUpRelease();
@@ -662,7 +627,7 @@ namespace Namiko
             var newIds = guilds.Where(x => !existingIds.Contains(x.Id)).Select(x => x.Id);
 
             int addedBal = await BalanceDb.AddNewServerBotBalance(newIds, Client.CurrentUser.Id);
-            int added = await ServerDb.AddNewServers(newIds, Config.DefaultPrefix);
+            int added = await ServerDb.AddNewServers(newIds, AppSettings.DefaultPrefix);
 
             return added;
         }
@@ -692,19 +657,19 @@ namespace Namiko
 
         public static string GetPrefix(ulong guildId)
         {
-            return Prefixes.GetValueOrDefault(guildId) ?? Config.DefaultPrefix;
+            return Prefixes.GetValueOrDefault(guildId) ?? AppSettings.DefaultPrefix;
         }
         public static string GetPrefix(SocketCommandContext context)
         {
-            return context.Guild == null ? Config.DefaultPrefix : GetPrefix(context.Guild.Id);
+            return context.Guild == null ? AppSettings.DefaultPrefix : GetPrefix(context.Guild.Id);
         }
         public static string GetPrefix(SocketGuildUser user)
         {
-            return user.Guild == null ? Config.DefaultPrefix : GetPrefix(user.Guild.Id);
+            return user.Guild == null ? AppSettings.DefaultPrefix : GetPrefix(user.Guild.Id);
         }
         public static string GetPrefix(IGuild guild)
         {
-            return guild == null ? Config.DefaultPrefix : GetPrefix(guild.Id);
+            return guild == null ? AppSettings.DefaultPrefix : GetPrefix(guild.Id);
         }
         public static bool UpdatePrefix(ulong guildId, string prefix)
         {

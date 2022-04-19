@@ -88,7 +88,7 @@ namespace Namiko
 
         public static async Task<Sauce> SauceNETSearchAsync(string url)
         {
-            SauceNETClient client = new SauceNETClient(Config.SauceNaoApi);
+            SauceNETClient client = new SauceNETClient(AppSettings.SauceNaoApi);
             return await client.GetSauceAsync(url);
         }
         public static EmbedBuilder SauceEmbed(Sauce sauce, string requestUrl)
@@ -299,7 +299,7 @@ namespace Namiko
         {
             try
             {
-                string token = File.ReadAllText(Locations.DblTokenTxt);
+                string token = AppSettings.DiscordBotListToken;
                 DblApi = new AuthDiscordBotListApi(id, token);
             } catch
             {

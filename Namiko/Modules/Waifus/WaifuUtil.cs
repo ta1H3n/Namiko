@@ -49,7 +49,7 @@ namespace Namiko
                 var newShop = await CreateNewShop(guildId, type);
                 await WaifuShopDb.DeleteShop(guildId, type);
                 await WaifuShopDb.AddShop(newShop);
-                if (Program.Debug == false)
+                if (Program.Development == false)
                     _ = Task.Run(() => NotifyWishlist(newShop.ShopWaifus.Select(x => x.Waifu), guildId));
                 return newShop;
             }
@@ -865,7 +865,7 @@ namespace Namiko
             }
             catch (Exception ex)
             {
-                await ch.SendMessageAsync($"{Program.GetClient().GetUser(Config.OwnerId).Mention} Error while downloading waifu image variants to server.");
+                await ch.SendMessageAsync($"{Program.GetClient().GetUser(AppSettings.OwnerId).Mention} Error while downloading waifu image variants to server.");
                 SentrySdk.WithScope(scope =>
                 {
                     scope.SetExtras(waifu.GetProperties());

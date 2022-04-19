@@ -22,7 +22,7 @@ namespace Namiko
         {
             EmbedBuilder embed = new EmbedBuilder();
 
-            string path = $"{Config.ImageUrlPath + "reaction/"}{img.Name}{(img.GuildId > 0 ? "/" + img.GuildId.ToString() : "")}/{img.Id}.{img.ImageFileType}";
+            string path = $"{AppSettings.ImageUrlPath + "reaction/"}{img.Name}{(img.GuildId > 0 ? "/" + img.GuildId.ToString() : "")}/{img.Id}.{img.ImageFileType}";
 
             embed.WithImageUrl(path);
             embed.WithFooter($"{img.Name} id: {img.Id}");
@@ -123,7 +123,7 @@ namespace Namiko
             }
             catch (Exception ex)
             {
-                await ch.SendMessageAsync($"{Program.GetClient().GetUser(Config.OwnerId).Mention} Error while uploading image to host.");
+                await ch.SendMessageAsync($"{Program.GetClient().GetUser(AppSettings.OwnerId).Mention} Error while uploading image to host.");
                 SentrySdk.WithScope(scope =>
                 {
                     scope.SetExtras(img.GetProperties());
@@ -142,13 +142,13 @@ namespace Namiko
 
         public static async Task<string> UploadImage(string path, string name, string imageUrl)
         {
-            using (var request = new HttpRequestMessage(HttpMethod.Post, Config.ImageHost + "Image/Upload"))
+            using (var request = new HttpRequestMessage(HttpMethod.Post, AppSettings.ImageHost + "Image/Upload"))
             {
                 var json = JsonConvert.SerializeObject(new { imageUrl, path, name });
                 using (var stringContent = new StringContent(json, Encoding.UTF8, "application/json"))
                 {
                     request.Content = stringContent;
-                    request.Headers.Add("authorization", Config.ImageHostKey);
+                    request.Headers.Add("authorization", AppSettings.ImageHostKey);
 
                     using (var response = await _client
                         .SendAsync(request, HttpCompletionOption.ResponseHeadersRead)

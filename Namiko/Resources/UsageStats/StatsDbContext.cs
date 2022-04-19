@@ -12,7 +12,7 @@ namespace Namiko
         protected override void OnConfiguring(DbContextOptionsBuilder Options)
         {
             string DbLocation = Locations.SqliteDb;
-            Options.UseSqlite($"Data Source={DbLocation}stats.sqlite");
+            Options.UseSqlite($"Data Source={DbLocation}");
         }
 
         public async static Task<int> ExecuteSQL(string query)

@@ -1,9 +1,6 @@
-﻿using Namiko.Data;
-using Newtonsoft.Json;
-using Reddit;
+﻿using Reddit;
 using Reddit.Controllers;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
 
 namespace Namiko
@@ -12,19 +9,10 @@ namespace Namiko
     {
         private static RedditClient Client;
 
-        public static void RedditSetup()
+        static RedditAPI()
         {
-            string JSON = "";
-            string JSONLocation = Locations.RedditJSON;
-            using (var Stream = new FileStream(JSONLocation, FileMode.Open, FileAccess.Read))
-            using (var ReadSettings = new StreamReader(Stream))
-            {
-                JSON = ReadSettings.ReadToEnd();
-            }
-
-            ApiLogin settings = JsonConvert.DeserializeObject<ApiLogin>(JSON);
-
-            Client = new Reddit.RedditClient(settings.ClientId, settings.RefreshToken, settings.ClientSecret);
+            ApiSettings settings = AppSettings.Reddit;
+            Client = new RedditClient(settings.ClientId, settings.RefreshToken, settings.ClientSecret);
         }
 
         public static async Task<List<Post>> GetHot(string subredditName, int limit = 15)

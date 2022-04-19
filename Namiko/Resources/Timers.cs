@@ -123,8 +123,7 @@ namespace Namiko
                             .Build());
                     }
                     catch { }
-                    using var webhook = new DiscordWebhookClient(Config.PremiumWebhook);
-                    await webhook.SendMessageAsync($"{premium.UserId} - {premium.Type.ToString()} subscription has expired.");
+                    await WebhookClients.PremiumLogChannel.SendMessageAsync($"{premium.UserId} - {premium.Type.ToString()} subscription has expired.");
                 }
 
                 else if (!user.Roles.Any(x => x.Id == (ulong)premium.Type))
@@ -141,16 +140,14 @@ namespace Namiko
                             .Build());
                     }
                     catch { }
-                    using var webhook = new DiscordWebhookClient(Config.PremiumWebhook);
-                    await webhook.SendMessageAsync($"{premium.UserId} - {premium.Type.ToString()} subscription has expired.");
+                    await WebhookClients.PremiumLogChannel.SendMessageAsync($"{premium.UserId} - {premium.Type.ToString()} subscription has expired.");
                 }
 
                 else
                 {
                     premium.ExpiresAt = premium.ExpiresAt.AddMonths(1);
                     await PremiumDb.UpdatePremium(premium);
-                    using var webhook = new DiscordWebhookClient(Config.PremiumWebhook);
-                    await webhook.SendMessageAsync($"{user.Mention} ({premium.UserId}) - {premium.Type.ToString()} subscription extended.");
+                    await WebhookClients.PremiumLogChannel.SendMessageAsync($"{user.Mention} ({premium.UserId}) - {premium.Type.ToString()} subscription extended.");
                 }
             }
         }
@@ -518,7 +515,7 @@ namespace Namiko
 
                     if (add.Count > 500)
                     {
-                        var ch = await Program.GetClient().GetUser(Config.OwnerId).CreateDMChannelAsync();
+                        var ch = await Program.GetClient().GetUser(AppSettings.OwnerId).CreateDMChannelAsync();
                         string er = "```\n";
                         foreach(var id in voters.Take(10))
                         {

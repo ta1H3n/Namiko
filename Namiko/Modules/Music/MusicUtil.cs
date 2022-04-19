@@ -77,7 +77,7 @@ namespace Namiko
 
         public static async Task<bool> PlayLocal(this LavaPlayer player, string folder)
         {
-            if (Program.Debug == true)
+            if (Program.Development == true)
                 return false;
 
             if (player.PlayerState == PlayerState.Playing)

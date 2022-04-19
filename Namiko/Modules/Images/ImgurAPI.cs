@@ -1,16 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.Linq;
-using System.Threading.Tasks;
-using Imgur;
-using Imgur.API.Authentication.Impl;
+﻿using Imgur.API.Authentication.Impl;
 using Imgur.API.Endpoints.Impl;
 using Imgur.API.Models;
-using Namiko.Data;
-using Newtonsoft.Json;
-using Discord.WebSocket;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Namiko
 {
@@ -21,11 +14,11 @@ namespace Namiko
 
         public async static Task ImgurSetup()
         {
-            ApiLogin settings = GetApiLogin();
+            ApiSettings settings = GetApiLogin();
 
             Client = new ImgurClient(settings.ClientId, settings.ClientSecret);
             var endpoint = new OAuth2Endpoint(Client);
-            Imgur.API.Models.IOAuth2Token token = null;
+            IOAuth2Token token = null;
 
             while(token == null)
             {
@@ -92,7 +85,7 @@ namespace Namiko
 
         public static string GetAuthorizationUrl()
         {
-            ApiLogin settings = GetApiLogin();
+            ApiSettings settings = GetApiLogin();
             Client = new ImgurClient(settings.ClientId, settings.ClientSecret);
             var endpoint = new OAuth2Endpoint(Client);
 
@@ -101,27 +94,13 @@ namespace Namiko
 
         public static void SetRefreshToken(string refreshToken)
         {
-            ApiLogin settings = GetApiLogin();
-            settings.RefreshToken = refreshToken;
-
-            var json = JsonConvert.SerializeObject(settings, Formatting.Indented);
-
-            string JSONLocation = Locations.ImgurJSON;
-            using var Stream = new FileStream(JSONLocation, FileMode.OpenOrCreate, FileAccess.Write);
-            Stream.Write(Encoding.ASCII.GetBytes(json));
+            AppSettings.Imgur.RefreshToken = refreshToken;
+            AppSettings.Save();
         }
 
-        public static ApiLogin GetApiLogin()
+        public static ApiSettings GetApiLogin()
         {
-            string JSON = "";
-            string JSONLocation = Locations.ImgurJSON;
-            using (var Stream = new FileStream(JSONLocation, FileMode.Open, FileAccess.Read))
-            using (var ReadSettings = new StreamReader(Stream))
-            {
-                JSON = ReadSettings.ReadToEnd();
-            }
-
-            return JsonConvert.DeserializeObject<ApiLogin>(JSON);
+            return AppSettings.Imgur;
         }
     }
 }

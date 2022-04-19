@@ -302,7 +302,7 @@ namespace Namiko
             }
 
             else
-                eb = AllHelpEmbed(commandService, Context.Guild == null ? false : ((SocketGuildUser)Context.User).Roles.Any(x => x.Id == Config.InsiderRoleId));
+                eb = AllHelpEmbed(commandService, Context.Guild == null ? false : ((SocketGuildUser)Context.User).Roles.Any(x => x.Id == AppSettings.InsiderRoleId));
 
             if(!desc.Equals(""))
             {

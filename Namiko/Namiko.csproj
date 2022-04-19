@@ -33,6 +33,21 @@
   <ItemGroup>
     <Folder Include="Addons\Victoria\" />
   </ItemGroup>
+	
+  <ItemGroup>
+	<None Update="Data/appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</None>
+	<None Update="Data/SpookyLines.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</None>
+	<None Update="Data/stats.sqlite">
+	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</None>
+	<None Update="Data/BoxStats.json">
+	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</None>
+  </ItemGroup>
 
 </Project>
 

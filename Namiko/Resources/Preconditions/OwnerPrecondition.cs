@@ -10,7 +10,7 @@ namespace Namiko
     {
         public override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
         {
-            if (context.User.Id == Config.OwnerId)
+            if (context.User.Id == AppSettings.OwnerId)
                 return Task.FromResult(PreconditionResult.FromSuccess());
             else
             {

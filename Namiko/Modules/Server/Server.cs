@@ -207,8 +207,7 @@ namespace Namiko
             await Context.Channel.SendMessageAsync(text);
             if (log)
             {
-                using var ch = new DiscordWebhookClient(Config.PremiumWebhook);
-                await ch.SendMessageAsync(embeds: new List<Embed>
+                await WebhookClients.PremiumLogChannel.SendMessageAsync(embeds: new List<Embed>
                     {
                         new EmbedBuilderPrepared(Context.User)
                             .WithDescription($"{Context.User.Mention} `{Context.User.Id}`\n{Context.Guild.Name} `{Context.Guild.Id}`\n{text}")
