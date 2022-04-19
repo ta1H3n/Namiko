@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
+using Discord.Interactions;
 using Discord.Net;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
@@ -8,12 +9,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Model;
 using Model.Exceptions;
 using Namiko.Data;
-using Newtonsoft.Json;
 using Sentry;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -27,6 +25,7 @@ namespace Namiko
     {
         private static DiscordShardedClient Client;
         private static CommandService Commands;
+        private static InteractionService Interactions;
         private static IServiceProvider Services;
         private static Dictionary<ulong, string> Prefixes;
         private static readonly CancellationTokenSource cts = new CancellationTokenSource();
@@ -107,11 +106,12 @@ namespace Namiko
             Client.UserJoined += Client_UserJoinedLog;
             Client.UserLeft += Client_UserLeftLog;
             Client.UserBanned += Client_UserBannedLog;
+            Client.SlashCommandExecuted += Client_SlashCommandExecuted;
 
             Commands = new CommandService(new CommandServiceConfig
             {
                 CaseSensitiveCommands = false,
-                DefaultRunMode = RunMode.Async,
+                DefaultRunMode = Discord.Commands.RunMode.Async,
                 LogLevel = LogSeverity.Warning
             });
 
@@ -148,6 +148,16 @@ namespace Namiko
             await Commands.AddModuleAsync(typeof(Web), Services);
             await Commands.AddModuleAsync(typeof(Music), Services);
 
+            Interactions = new InteractionService(Client, new InteractionServiceConfig
+            {
+                LogLevel = LogSeverity.Debug
+            });
+            Interactions.Log += Console_Log;
+            await Interactions.AddModuleAsync(typeof(CurrencyInteraction), Services);
+            await Interactions.RegisterCommandsGloballyAsync(true);
+            Interactions.SlashCommandExecuted += Interactions_SlashCommandExecuted;
+
+
             try
             {
                 await Task.Delay(-1, ct);
@@ -156,6 +166,19 @@ namespace Namiko
             cts.Dispose();
             Console.WriteLine("Shutting down...");
             await Client.LogoutAsync();
+        }
+
+        private async Task Client_SlashCommandExecuted(SocketSlashCommand arg)
+        {
+            var context = new InteractionContext(Client, arg);
+            await arg.DeferAsync();
+            await Interactions.ExecuteCommandAsync(context, Services);
+        }
+
+        private Task Interactions_SlashCommandExecuted(SlashCommandInfo arg1, IInteractionContext arg2, Discord.Interactions.IResult arg3)
+        {
+            Logger.Log("Executed slash");
+            return Task.CompletedTask;
         }
 
         // SET-UP  
@@ -245,60 +268,60 @@ namespace Namiko
             if (!(MessageParam is SocketUserMessage Message))
                 return;
 
-            var Context = new ShardedCommandContext(Client, Message);
-            string prefix = GetPrefix(Context);
+            var context = new ShardedCommandContext(Client, Message);
+            string prefix = GetPrefix(context);
 
-            if (Blacklist.Contains(Context.User.Id) || (Context.Guild != null && Blacklist.Contains(Context.Guild.Id)) || (Context.Channel != null && Blacklist.Contains(Context.Channel.Id)))
+            if (Blacklist.Contains(context.User.Id) || (context.Guild != null && Blacklist.Contains(context.Guild.Id)) || (context.Channel != null && Blacklist.Contains(context.Channel.Id)))
                 return;
-            if (Context.User.IsBot)
+            if (context.User.IsBot)
                 return;
-            if (Context.Message == null || Context.Message.Content == "")
+            if (context.Message == null || context.Message.Content == "")
                 return;
-            if (BlacklistedChannelDb.IsBlacklisted(Context.Channel.Id))
+            if (BlacklistedChannelDb.IsBlacklisted(context.Channel.Id))
                 return;
-            if (RateLimit.InvokeLockout.TryGetValue(Context.Channel.Id, out var time) && time > DateTime.Now)
+            if (RateLimit.InvokeLockout.TryGetValue(context.Channel.Id, out var time) && time > DateTime.Now)
                 return;
 
-            await SpecialModeResponse(Context);
+            await SpecialModeResponse(context);
             await SpecialResponse(Message);
 
             int ArgPos = 0;
             bool isPrefixed = Message.HasStringPrefix(prefix, ref ArgPos) || Message.HasMentionPrefix(Client.CurrentUser, ref ArgPos);
             if (!isPrefixed && !Pause)
             {
-                await Blackjack.BlackjackInput(Context);
+                await Blackjack.BlackjackInput(context);
                 return;
             }
 
             if (!isPrefixed)
                 return;
 
-            var cmds = Commands.Search(Context, ArgPos);
+            var cmds = Commands.Search(context, ArgPos);
             if (cmds.IsSuccess)
             {
-                if (Context.Guild != null && cmds.Commands.Any(x => DisabledCommandHandler.IsDisabled(x.Command.Name, Context.Guild.Id, DisabledCommandType.Command)))
+                if (context.Guild != null && cmds.Commands.Any(x => DisabledCommandHandler.IsDisabled(x.Command.Name, context.Guild.Id, DisabledCommandType.Command)))
                     return;
-                else if (Context.Guild != null && cmds.Commands.Any(x => DisabledCommandHandler.IsDisabled(x.Command.Module.Name, Context.Guild.Id, DisabledCommandType.Module)))
+                else if (context.Guild != null && cmds.Commands.Any(x => DisabledCommandHandler.IsDisabled(x.Command.Module.Name, context.Guild.Id, DisabledCommandType.Module)))
                     return;
 
-                else if (!RateLimit.CanExecute(Context.Channel.Id))
+                else if (!RateLimit.CanExecute(context.Channel.Id))
                 {
-                    await Context.Channel.SendMessageAsync($"Woah there, Senpai, calm down! I locked this channel for **{RateLimit.InvokeLockoutPeriod.Seconds}** seconds <:MeguExploded:627470499278094337>\n" +
+                    await context.Channel.SendMessageAsync($"Woah there, Senpai, calm down! I locked this channel for **{RateLimit.InvokeLockoutPeriod.Seconds}** seconds <:MeguExploded:627470499278094337>\n" +
                         $"You can only use **{RateLimit.InvokeLimit}** commands per **{RateLimit.InvokeLimitPeriod.Seconds}** seconds per channel.");
                     return;
                 }
 
-                else if (Pause && Context.User.Id != AppSettings.OwnerId)
+                else if (Pause && context.User.Id != AppSettings.OwnerId)
                 {
-                    await Context.Channel.SendMessageAsync("Commands disabled temporarily. Try again later.");
+                    await context.Channel.SendMessageAsync("Commands disabled temporarily. Try again later.");
                     return;
                 }
 
-                else if (Context.Channel is SocketTextChannel ch
+                else if (context.Channel is SocketTextChannel ch
                     && (!ch.Guild.CurrentUser.GetPermissions(ch).Has(ChannelPermission.SendMessages) || !ch.Guild.CurrentUser.GetPermissions(ch).Has(ChannelPermission.EmbedLinks)))
                 {
-                    var dm = await Context.User.CreateDMChannelAsync();
-                    await dm.SendMessageAsync(embed: new EmbedBuilderPrepared(Context.Guild.CurrentUser)
+                    var dm = await context.User.CreateDMChannelAsync();
+                    await dm.SendMessageAsync(embed: new EmbedBuilderPrepared(context.Guild.CurrentUser)
                         .WithDescription($"I don't have permission to reply to you in **{ch.Name}**.\n" +
                         $"Make sure I have a role that allows me to send messages and embed links in the channels you want to use me in.")
                         .WithImageUrl("https://i.imgur.com/lrPHjyt.png")
@@ -307,9 +330,9 @@ namespace Namiko
                 }
             }
 
-            _ = Commands.ExecuteAsync(Context, ArgPos, Services);
+            _ = Commands.ExecuteAsync(context, ArgPos, Services);
         }
-        private async Task Commands_CommandExecuted(Optional<CommandInfo> cmd, ICommandContext context, IResult res)
+        private async Task Commands_CommandExecuted(Optional<CommandInfo> cmd, ICommandContext context, Discord.Commands.IResult res)
         {
             string cmdName = cmd.IsSpecified ? cmd.Value.Name : null;
             bool success = res.IsSuccess;
@@ -472,13 +495,17 @@ namespace Namiko
         }
         private Task Console_Log(LogMessage arg)
         {
-            Console.WriteLine(arg);
+            Logger.Log(arg.ToString(), arg.Severity);
             return Task.CompletedTask;
         }
         private async Task Client_ShardConnected(DiscordSocketClient arg)
         {
             Console.WriteLine($"{DateTime.Now} - Shard {arg.ShardId} Connected");
             _ = WebhookClients.NamikoLogChannel.SendMessageAsync($"<:TickYes:577838859107303424> `{DateTime.Now.ToString("HH:mm:ss")}` - `Shard {arg.ShardId} Connected`");
+            if (Development)
+            {
+                await Interactions.RegisterCommandsToGuildAsync(418900885079588884, true);
+            }
         }
         private async Task Client_ShardDisconnected(Exception arg1, DiscordSocketClient arg2)
         {

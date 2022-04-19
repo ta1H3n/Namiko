@@ -282,7 +282,6 @@ namespace Namiko
                     processed = System.DateTime.Now;
                     await Task.Delay(1);
                 }
-                Console.WriteLine("Command debugger");
             }
             commands.CommandExecuted += listen;
 
