@@ -136,20 +136,20 @@ namespace Namiko
                 .AddSingleton<Addons.Handlers.InteractiveService>()
                 .BuildServiceProvider();
 
-            //await Commands.AddModuleAsync(typeof(Banroulettes), Services);
-            //await Commands.AddModuleAsync(typeof(Banroyales), Services);
+            await Commands.AddModuleAsync(typeof(Banroulettes), Services);
+            await Commands.AddModuleAsync(typeof(Banroyales), Services);
             await Commands.AddModuleAsync(typeof(Basic), Services);
-            //await Commands.AddModuleAsync(typeof(Currency), Services);
-            //await Commands.AddModuleAsync(typeof(Images), Services);
-            //await Commands.AddModuleAsync(typeof(Roles), Services);
-            //await Commands.AddModuleAsync(typeof(ServerModule), Services);
-            //await Commands.AddModuleAsync(typeof(Special), Services);
-            //await Commands.AddModuleAsync(typeof(SpecialModes), Services);
-            //await Commands.AddModuleAsync(typeof(User), Services);
-            //await Commands.AddModuleAsync(typeof(Waifus), Services);
-            //await Commands.AddModuleAsync(typeof(WaifuEditing), Services);
-            //await Commands.AddModuleAsync(typeof(Web), Services);
-            //await Commands.AddModuleAsync(typeof(Music), Services);
+            await Commands.AddModuleAsync(typeof(Currency), Services);
+            await Commands.AddModuleAsync(typeof(Images), Services);
+            await Commands.AddModuleAsync(typeof(Roles), Services);
+            await Commands.AddModuleAsync(typeof(ServerModule), Services);
+            await Commands.AddModuleAsync(typeof(Special), Services);
+            await Commands.AddModuleAsync(typeof(SpecialModes), Services);
+            await Commands.AddModuleAsync(typeof(User), Services);
+            await Commands.AddModuleAsync(typeof(Waifus), Services);
+            await Commands.AddModuleAsync(typeof(WaifuEditing), Services);
+            await Commands.AddModuleAsync(typeof(Web), Services);
+            await Commands.AddModuleAsync(typeof(Music), Services);
             await Commands.AddModuleAsync(typeof(CurrencyTestModule), Services);
 
             Interactions = new InteractionService(Client, new InteractionServiceConfig
@@ -157,9 +157,12 @@ namespace Namiko
                 LogLevel = LogSeverity.Debug
             });
             Interactions.Log += Console_Log;
+            await Interactions.AddModuleAsync(typeof(Banroulettes), Services);
             await Interactions.AddModuleAsync(typeof(CurrencyInteraction), Services);
-            await Interactions.AddModuleAsync(typeof(CurrencyTestModule), Services);
-            await Interactions.AddModuleAsync(typeof(Basic), Services);
+            //await Interactions.AddModuleAsync(typeof(CurrencyTestModule), Services);
+            //await Interactions.AddModuleAsync(typeof(Basic), Services);
+
+
             Interactions.SlashCommandExecuted += Interactions_SlashCommandExecuted;
 
             try
@@ -178,11 +181,22 @@ namespace Namiko
             await arg.DeferAsync();
             await Interactions.ExecuteCommandAsync(context, Services);
         }
-
-        private Task Interactions_SlashCommandExecuted(SlashCommandInfo arg1, IInteractionContext arg2, Discord.Interactions.IResult arg3)
+        private async Task Interactions_SlashCommandExecuted(SlashCommandInfo cmd, IInteractionContext con, Discord.Interactions.IResult res)
         {
-            Logger.Log("Executed slash");
-            return Task.CompletedTask;
+            var context = (CustomInteractionContext)con;
+            string cmdName = cmd?.Name;
+
+            if (!res.IsSuccess)
+            {
+                // If the command is found but failed then send help message for said command
+                if (!(res.Error == InteractionCommandError.UnknownCommand || res.Error == InteractionCommandError.Exception))
+                {
+                    string reason = res.ErrorReason + "\n";
+                    if (res.Error != InteractionCommandError.UnmetPrecondition)
+                        reason += CommandHelpString(cmdName, GetPrefix(context.Guild));
+                    await context.ReplyAsync(embed: new EmbedBuilder().WithColor(Color.DarkRed).WithDescription(":x: " + reason).Build());
+                }
+            }
         }
 
         // SET-UP  
@@ -193,7 +207,7 @@ namespace Namiko
             {
                 case "Development":
                     Development = true;
-                    Pause = true;
+                    Pause = false;
                     break;
                 default:
                     Console.WriteLine("Entry: " + Assembly.GetEntryAssembly().Location);
@@ -341,7 +355,7 @@ namespace Namiko
             string cmdName = cmd.IsSpecified ? cmd.Value.Name : null;
             bool success = res.IsSuccess;
 
-            if (!res.IsSuccess)
+            if (!success)
             {
                 // Try sending a reaction image if there is no such command
                 if (await new Images().SendRandomImage(context))

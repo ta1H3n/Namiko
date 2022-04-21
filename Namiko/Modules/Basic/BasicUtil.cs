@@ -4,6 +4,7 @@ using Namiko.Modules.Basic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Namiko
 {
@@ -44,12 +45,12 @@ namespace Namiko
             }
             return new Color(255, 255, 255);
         }
-        public static List<SocketUser> UserList(DiscordShardedClient client, List<ulong> ids)
+        public static async Task<List<IUser>> UserListAsync(IDiscordClient client, List<ulong> ids)
         {
-            var users = new List<SocketUser>();
+            var users = new List<IUser>();
             foreach(var x in ids)
             {
-                var user = client.GetUser(x);
+                var user = await client.GetUserAsync(x);
                 if (user != null)
                     users.Add(user);
             }
@@ -90,23 +91,12 @@ namespace Namiko
             var eb = new EmbedBuilder();
             var client = Program.GetClient();
 
-            string desc = "Support the development of Namiko and get rewards!";
+            string desc =
+                "Support the development of Namiko and get rewards!\n" +
+                "\n" +
+                $":star: [More info]({LinkHelper.GetRedirectUrl(LinkHelper.Pro, "Pro", "cmd-pro")})";
+
             eb.WithDescription(desc);
-
-            string field = "";
-            field += $"**Namiko Pro** -  *5$*\n `{prefix}InfoPro`\n";
-            field += $"**Namiko Pro+** - *10$*\n `{prefix}InfoProPlus`\n";
-            eb.AddField("User Upgrades <:Pro:632544044643516416>", field, true);
-
-            field = "";
-            field += $"**Pro Guild** -  *5$*\n `{prefix}InfoGuild`\n";
-            field += $"**Pro Guild+** - *10$*\n `{prefix}InfoGuildPlus`\n";
-            eb.AddField("Server Wide Upgrades <:Guild:632544044660031498>", field, true);
-
-            field = "";
-            field += $":star: [Patreon]({LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-pro")}) - includes Pro.\n";
-            eb.AddField("Donation Links", field);
-
             eb.WithAuthor(client.CurrentUser);
             eb.WithColor(BasicUtil.RandomColor());
             eb.WithFooter("-What are you? Twelve?");

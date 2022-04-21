@@ -1,4 +1,5 @@
-﻿using Discord.WebSocket;
+﻿using Discord;
+using Discord.WebSocket;
 using Model;
 using System.Collections.Generic;
 
@@ -6,7 +7,7 @@ namespace Namiko
 {
     public static class BanrouletteUtil
     {
-        public static string BanrouletteDetails(Banroulette banroulette, SocketRole role = null, int userCount = 0)
+        public static string BanrouletteDetails(Banroulette banroulette, IRole role = null, int userCount = 0)
         {
             string desc = "";
             desc += $":calendar_spiral: Ban Length: *{banroulette.BanLengthHours} hours.*\n";
@@ -25,7 +26,7 @@ namespace Namiko
             return desc;
         }
 
-        public static string BanrouletteParticipants(List<SocketUser> users)
+        public static string BanrouletteParticipants(List<IUser> users)
         {
             string desc = "```java\n";
             for (int i = 0; i < users.Count; i++) {

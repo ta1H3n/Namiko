@@ -34,6 +34,7 @@ namespace Namiko
         }
 
         [Command("Pro"), Alias("Premium", "Support", "Patreon", "Paypal", "Donate"), Summary("Donation Links.")]
+        [SlashCommand("pro", "Info about pro features")]
         public async Task Donate([Remainder] string str = "")
         {
             await ReplyAsync("", false, BasicUtil.DonateEmbed(Program.GetPrefix(Context)).Build());
@@ -129,6 +130,7 @@ namespace Namiko
         }
 
         [Command("Vote")]
+        [SlashCommand("vote", "Vote for Namiko and get lootboxes!")]
         public async Task Vote([Remainder] string str = "")
         {
             await ReplyAsync(embed: new EmbedBuilderPrepared(Context.User)
@@ -155,7 +157,6 @@ namespace Namiko
         }
 
         [Command("GuildList"), OwnerPrecondition]
-        [SlashCommand("guildlist", "List of guilds")]
         public async Task GuildTest()
         {
             var msg = new PaginatedMessage<SocketGuild>(Program.GetClient().Guilds, 20, (x) => $"`{x.Id}` - **{x.Name}**\n`{x.OwnerId}` - **{x.Owner}**\n");
@@ -260,6 +261,7 @@ namespace Namiko
         }
 
         [Command("Status"), Summary("Bot status.\n **Usage**: `!status`")]
+        [SlashCommand("status", "Namiko <-> Discord connection status")]
         public async Task Status()
         {
             var client = Context.Client as DiscordShardedClient;
