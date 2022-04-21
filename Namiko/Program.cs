@@ -8,7 +8,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Model;
 using Model.Exceptions;
+using Namiko.Addons.Handlers;
 using Namiko.Data;
+using Namiko.Modules.Currency;
 using Sentry;
 using System;
 using System.Collections.Generic;
@@ -112,7 +114,7 @@ namespace Namiko
             {
                 CaseSensitiveCommands = false,
                 DefaultRunMode = Discord.Commands.RunMode.Async,
-                LogLevel = LogSeverity.Warning
+                LogLevel = LogSeverity.Debug
             });
 
             Commands.CommandExecuted += Commands_CommandExecuted;
@@ -130,23 +132,25 @@ namespace Namiko
 
             Services = new ServiceCollection()
                 .AddSingleton(Client)
-                .AddSingleton<InteractiveService>()
+                .AddSingleton<Discord.Addons.Interactive.InteractiveService>()
+                .AddSingleton<Addons.Handlers.InteractiveService>()
                 .BuildServiceProvider();
 
-            await Commands.AddModuleAsync(typeof(Banroulettes), Services);
-            await Commands.AddModuleAsync(typeof(Banroyales), Services);
+            //await Commands.AddModuleAsync(typeof(Banroulettes), Services);
+            //await Commands.AddModuleAsync(typeof(Banroyales), Services);
             await Commands.AddModuleAsync(typeof(Basic), Services);
-            await Commands.AddModuleAsync(typeof(Currency), Services);
-            await Commands.AddModuleAsync(typeof(Images), Services);
-            await Commands.AddModuleAsync(typeof(Roles), Services);
-            await Commands.AddModuleAsync(typeof(ServerModule), Services);
-            await Commands.AddModuleAsync(typeof(Special), Services);
-            await Commands.AddModuleAsync(typeof(SpecialModes), Services);
-            await Commands.AddModuleAsync(typeof(User), Services);
-            await Commands.AddModuleAsync(typeof(Waifus), Services);
-            await Commands.AddModuleAsync(typeof(WaifuEditing), Services);
-            await Commands.AddModuleAsync(typeof(Web), Services);
-            await Commands.AddModuleAsync(typeof(Music), Services);
+            //await Commands.AddModuleAsync(typeof(Currency), Services);
+            //await Commands.AddModuleAsync(typeof(Images), Services);
+            //await Commands.AddModuleAsync(typeof(Roles), Services);
+            //await Commands.AddModuleAsync(typeof(ServerModule), Services);
+            //await Commands.AddModuleAsync(typeof(Special), Services);
+            //await Commands.AddModuleAsync(typeof(SpecialModes), Services);
+            //await Commands.AddModuleAsync(typeof(User), Services);
+            //await Commands.AddModuleAsync(typeof(Waifus), Services);
+            //await Commands.AddModuleAsync(typeof(WaifuEditing), Services);
+            //await Commands.AddModuleAsync(typeof(Web), Services);
+            //await Commands.AddModuleAsync(typeof(Music), Services);
+            await Commands.AddModuleAsync(typeof(CurrencyTestModule), Services);
 
             Interactions = new InteractionService(Client, new InteractionServiceConfig
             {
@@ -154,9 +158,9 @@ namespace Namiko
             });
             Interactions.Log += Console_Log;
             await Interactions.AddModuleAsync(typeof(CurrencyInteraction), Services);
-            await Interactions.RegisterCommandsGloballyAsync(true);
+            await Interactions.AddModuleAsync(typeof(CurrencyTestModule), Services);
+            await Interactions.AddModuleAsync(typeof(Basic), Services);
             Interactions.SlashCommandExecuted += Interactions_SlashCommandExecuted;
-
 
             try
             {
@@ -170,7 +174,7 @@ namespace Namiko
 
         private async Task Client_SlashCommandExecuted(SocketSlashCommand arg)
         {
-            var context = new InteractionContext(Client, arg);
+            var context = new CustomInteractionContext(Client, arg, arg.Channel);
             await arg.DeferAsync();
             await Interactions.ExecuteCommandAsync(context, Services);
         }
@@ -268,8 +272,8 @@ namespace Namiko
             if (!(MessageParam is SocketUserMessage Message))
                 return;
 
-            var context = new ShardedCommandContext(Client, Message);
-            string prefix = GetPrefix(context);
+            var context = new CustomCommandContext(Client, Message);
+            string prefix = GetPrefix(context.Guild);
 
             if (Blacklist.Contains(context.User.Id) || (context.Guild != null && Blacklist.Contains(context.Guild.Id)) || (context.Channel != null && Blacklist.Contains(context.Channel.Id)))
                 return;
@@ -650,7 +654,11 @@ namespace Namiko
         {
             return Prefixes.GetValueOrDefault(guildId) ?? AppSettings.DefaultPrefix;
         }
-        public static string GetPrefix(SocketCommandContext context)
+        public static string GetPrefix(ICustomContext context)
+        {
+            return context.Guild == null ? AppSettings.DefaultPrefix : GetPrefix(context.Guild.Id);
+        }
+        public static string GetPrefix(ICommandContext context)
         {
             return context.Guild == null ? AppSettings.DefaultPrefix : GetPrefix(context.Guild.Id);
         }
@@ -727,7 +735,7 @@ namespace Namiko
             return Pause;
         }
 
-        private async Task SpecialModeResponse(ShardedCommandContext context)
+        private async Task SpecialModeResponse(ICommandContext context)
         {
             if (SpecialModes.ChristmasModeEnable)
                 await new SpecialModes().Christmas(context);

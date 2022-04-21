@@ -274,7 +274,7 @@ namespace Namiko
         }
         private static async void Timer_TimeoutBlackjack(object sender, ElapsedEventArgs e)
         {
-            var games = Blackjack.games;
+            var games = Blackjack.Games;
 
             foreach (var x in games.Where(x => x.Value.Refresh.AddMinutes(1) < DateTime.Now))
             {

@@ -21,9 +21,9 @@ namespace Namiko
             var user = (SocketGuildUser)Context.User;
             var ch = (SocketTextChannel)Context.Channel;
 
-            if (Blackjack.games.ContainsKey(Context.User))
+            if (Blackjack.Games.ContainsKey(Context.User.Id))
             {
-                await Context.Channel.SendMessageAsync("You are already in a game of blackjack. #" + Blackjack.games[user].Channel.Name);
+                await Context.Channel.SendMessageAsync("You are already in a game of blackjack. #" + Blackjack.Games[user.Id].Channel.Name);
                 return;
             }
 
@@ -59,7 +59,7 @@ namespace Namiko
             }
 
             BlackjackGame game = new BlackjackGame(amount, ch);
-            Blackjack.games[user] = game;
+            Blackjack.Games[user.Id] = game;
             await Blackjack.GameContinue(Context, game);
         }
 
@@ -123,7 +123,6 @@ namespace Namiko
         public async Task Weekly()
         {
             var weekly = WeeklyDb.GetWeekly(Context.User.Id, Context.Guild.Id);
-
             if (weekly == null)
             {
                 weekly = new Weekly

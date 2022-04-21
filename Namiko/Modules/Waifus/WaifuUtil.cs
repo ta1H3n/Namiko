@@ -4,6 +4,8 @@ using Discord.Commands;
 using Discord.Rest;
 using Discord.WebSocket;
 using Model;
+using Namiko.Addons.Handlers;
+using Namiko.Addons.Handlers.Select;
 using Namiko.Modules.Basic;
 using Sentry;
 using System;
@@ -833,6 +835,71 @@ namespace Namiko
 
                 _ = interactive.Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared()
                     .WithAuthor("Waifus Found", interactive?.Context.User.GetAvatarUrl(), LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-embed-waifulist"))
+                    .WithDescription("*~ No results ~*")
+                    .WithColor(201, 0, 16)
+                    .Build());
+            }
+
+            return null;
+        }
+        public static async Task<Waifu> ProcessWaifuListAndRespond(List<Waifu> waifus, CustomModuleBase<ICustomContext> module = null)
+        {
+            if (waifus.Count == 1)
+                return waifus[0];
+
+            if (module != null)
+            {
+                if (waifus.Count > 0)
+                {
+                    var ordered = waifus.OrderBy(x => x.Source).ThenBy(x => x.Name).ToList();
+                    var grouped = ordered.GroupBy(x => x.Source);
+                    //IUserMessage msg = null;
+                    //try
+                    //{
+                    //    msg = await module.ReplyAsync(embed: FoundWaifusEmbedBuilder(grouped, (SocketGuildUser)module?.Context.User).Build());
+                    //}
+                    //catch
+                    //{
+                    //    _ = module.Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared()
+                    //        .WithAuthor("Waifus Found", module?.Context.User.GetAvatarUrl(), LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-embed-waifulist"))
+                    //        .WithDescription("*~ Too many results ~*")
+                    //        .WithColor(255, 255, 255)
+                    //        .Build());
+                    //    return null;
+                    //}
+                    //var response = await module.ReplyAsync(
+                    //    new Criteria<IMessage>()
+                    //    .AddCriterion(new EnsureSourceUserCriterion())
+                    //    .AddCriterion(new EnsureSourceChannelCriterion())
+                    //    .AddCriterion(new EnsureRangeCriterion(waifus.Count, Program.GetPrefix(module.Context))),
+                    //    new TimeSpan(0, 0, 23));
+
+                    //_ = msg.DeleteAsync();
+                    //int i = 0;
+                    //try
+                    //{
+                    //    i = int.Parse(response.Content);
+                    //}
+                    //catch
+                    //{
+                    //    _ = module.Context.Message.DeleteAsync();
+                    //    return null;
+                    //}
+                    //_ = response.DeleteAsync();
+
+                    //return ordered[i - 1];
+
+                    var embed = FoundWaifusEmbedBuilder(grouped, (SocketGuildUser)module?.Context.User).Build();
+                    var options = ordered
+                        .Select(x => new SelectMenuOption<Waifu>(new SelectMenuOptionBuilder(x.LongName, x.Name, x.Source), x))
+                        .ToDictionary(x => x.Item.Name, x => x);
+                    Waifu waifu;
+
+                    var msg = await module.SelectMenuReplyAsync(new Addons.Handlers.Select.SelectMenu<Waifu>(embed, options, (w) => Task.CompletedTask));
+                }
+
+                _ = module.ReplyAsync(embed: new EmbedBuilderPrepared()
+                    .WithAuthor("Waifus Found", module?.Context.User.GetAvatarUrl(), LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-embed-waifulist"))
                     .WithDescription("*~ No results ~*")
                     .WithColor(201, 0, 16)
                     .Build());

@@ -10,18 +10,18 @@ namespace Namiko
 {
     public static class Blackjack
     {
-        public static Dictionary<SocketUser, BlackjackGame> games = new Dictionary<SocketUser, BlackjackGame>();
+        public static Dictionary<ulong, BlackjackGame> Games = new();
 
-        public static async Task BlackjackInput(SocketCommandContext Context)
+        public static async Task BlackjackInput(ICommandContext Context)
         {
-            if (!games.ContainsKey(Context.User))
+            if (!Games.ContainsKey(Context.User.Id))
                 return;
 
-            var game = games[Context.User];
+            var game = Games[Context.User.Id];
 
             if (game != null && Context.Channel.Equals(game.Channel))
             {
-                switch(Context.Message.Content.ToLower())
+                switch (Context.Message.Content.ToLower())
                 {
                     case "hit":
                         await Hit(Context, game);
@@ -42,7 +42,7 @@ namespace Namiko
                 }
             }
         }
-        public static async Task DoubleDown(SocketCommandContext Context, BlackjackGame game)
+        public static async Task DoubleDown(ICommandContext Context, BlackjackGame game)
         {
             try
             {
@@ -56,7 +56,7 @@ namespace Namiko
                 await Context.Channel.SendMessageAsync(e.Message);
             }
         }
-        public static async Task Forfeit(SocketCommandContext Context, BlackjackGame game)
+        public static async Task Forfeit(ICommandContext Context, BlackjackGame game)
         {
             var user = Context.User;
 
@@ -74,9 +74,9 @@ namespace Namiko
 
             await Send(game, eb);
 
-            games.Remove(user);
+            Games.Remove(user.Id);
         }
-        public static async Task Hit(SocketCommandContext Context, BlackjackGame game)
+        public static async Task Hit(ICommandContext Context, BlackjackGame game)
         {
             int value = game.Hit();
 
@@ -86,13 +86,13 @@ namespace Namiko
             else
                 await GameEnd(Context, game);
         }
-        public static async Task Stand(SocketCommandContext Context, BlackjackGame game)
+        public static async Task Stand(ICommandContext Context, BlackjackGame game)
         {
             game.Stand();
             await GameEnd(Context, game);
         }
 
-        public static async Task GameEnd(SocketCommandContext Context, BlackjackGame game)
+        public static async Task GameEnd(ICommandContext Context, BlackjackGame game)
         {
             EmbedBuilder eb = new EmbedBuilder();
             var user = Context.User;
@@ -139,9 +139,9 @@ namespace Namiko
 
             await Send(game, eb);
 
-            games.Remove(user);
+            Games.Remove(user.Id);
         }
-        public static async Task GameContinue(SocketCommandContext Context, BlackjackGame game)
+        public static async Task GameContinue(ICommandContext Context, BlackjackGame game)
         {
             EmbedBuilder eb = new EmbedBuilder();
             var user = Context.User;
@@ -174,57 +174,57 @@ namespace Namiko
                 }
             return cards;
         }
-        public static async Task GameTimeout(SocketUser user, BlackjackGame game)
+        public static async Task GameTimeout(ulong userId, BlackjackGame game)
         {
+            var user = Program.GetClient().GetUser(userId);
+
+            EmbedBuilder eb = new EmbedBuilder();
+            var bot = game.Message.Author.Id;
+
+            game.Stand();
+
+            if (game.SumHand(game.Hand) > 21)
             {
-                EmbedBuilder eb = new EmbedBuilder();
-                var bot = game.Message.Author.Id;
-
-                game.Stand();
-
-                if (game.SumHand(game.Hand) > 21)
-                {
-                    await BalanceDb.AddToasties(bot, game.Toasties, game.Channel.Guild.Id);
-                    eb.WithAuthor(user.Username + " | Timeout", user.GetAvatarUrl());
-                    eb.WithDescription("Your hand is a bust. You lose `" + game.Toasties + "` " + ToastieUtil.RandomEmote() + "\n" +
-                    "New balance `" + BalanceDb.GetToasties(user.Id, game.Channel.Guild.Id) + "` " + ToastieUtil.RandomEmote());
-                    eb.WithColor(Color.DarkRed);
-                }
-
-                else if (game.SumHand(game.Hand) > game.SumHand(game.Dealer) || game.SumHand(game.Dealer) > 21)
-                {
-                    await BalanceDb.AddToasties(user.Id, game.Toasties * 2, game.Channel.Guild.Id);
-                    await BalanceDb.AddToasties(bot, -game.Toasties, game.Channel.Guild.Id);
-                    eb.WithAuthor(user.Username + " | Timeout", user.GetAvatarUrl());
-                    eb.WithDescription("Your score is higher than Namiko's. You win `" + game.Toasties + "` " + ToastieUtil.RandomEmote() + "\n" +
-                    "New balance `" + BalanceDb.GetToasties(user.Id, game.Channel.Guild.Id) + "` " + ToastieUtil.RandomEmote());
-                    eb.WithColor(Color.Gold);
-                }
-
-                else if (game.SumHand(game.Hand) == game.SumHand(game.Dealer))
-                {
-                    await BalanceDb.AddToasties(user.Id, game.Toasties, game.Channel.Guild.Id);
-                    eb.WithAuthor(user.Username + " | Timeout", user.GetAvatarUrl());
-                    eb.WithDescription("Your score is tied with Namiko's. You get your " + ToastieUtil.RandomEmote() + " back!\n" +
-                    "Your balance `" + BalanceDb.GetToasties(user.Id, game.Channel.Guild.Id) + "` " + ToastieUtil.RandomEmote());
-                    eb.WithColor(Color.DarkGreen);
-                }
-
-                else
-                {
-                    await BalanceDb.AddToasties(bot, game.Toasties, game.Channel.Guild.Id);
-                    eb.WithAuthor(user.Username + " | Timeout", user.GetAvatarUrl());
-                    eb.WithDescription("Namiko's score is higher. You lose `" + game.Toasties + "` " + ToastieUtil.RandomEmote() + "\n" +
-                    "New balance `" + BalanceDb.GetToasties(user.Id, game.Channel.Guild.Id) + "` " + ToastieUtil.RandomEmote());
-                    eb.WithColor(Color.DarkRed);
-                }
-
-                eb.AddField("Your hand (" + game.SumHand(game.Hand) + ")", HandToString(game.Hand, false), true);
-                eb.AddField("Namiko's hand (" + game.SumHand(game.Dealer) + ")", HandToString(game.Dealer, false), true);
-
-                await Send(game, eb);
-                games.Remove(user);
+                await BalanceDb.AddToasties(bot, game.Toasties, game.Channel.Guild.Id);
+                eb.WithAuthor(user.Username + " | Timeout", user.GetAvatarUrl());
+                eb.WithDescription("Your hand is a bust. You lose `" + game.Toasties + "` " + ToastieUtil.RandomEmote() + "\n" +
+                "New balance `" + BalanceDb.GetToasties(user.Id, game.Channel.Guild.Id) + "` " + ToastieUtil.RandomEmote());
+                eb.WithColor(Color.DarkRed);
             }
+
+            else if (game.SumHand(game.Hand) > game.SumHand(game.Dealer) || game.SumHand(game.Dealer) > 21)
+            {
+                await BalanceDb.AddToasties(user.Id, game.Toasties * 2, game.Channel.Guild.Id);
+                await BalanceDb.AddToasties(bot, -game.Toasties, game.Channel.Guild.Id);
+                eb.WithAuthor(user.Username + " | Timeout", user.GetAvatarUrl());
+                eb.WithDescription("Your score is higher than Namiko's. You win `" + game.Toasties + "` " + ToastieUtil.RandomEmote() + "\n" +
+                "New balance `" + BalanceDb.GetToasties(user.Id, game.Channel.Guild.Id) + "` " + ToastieUtil.RandomEmote());
+                eb.WithColor(Color.Gold);
+            }
+
+            else if (game.SumHand(game.Hand) == game.SumHand(game.Dealer))
+            {
+                await BalanceDb.AddToasties(user.Id, game.Toasties, game.Channel.Guild.Id);
+                eb.WithAuthor(user.Username + " | Timeout", user.GetAvatarUrl());
+                eb.WithDescription("Your score is tied with Namiko's. You get your " + ToastieUtil.RandomEmote() + " back!\n" +
+                "Your balance `" + BalanceDb.GetToasties(user.Id, game.Channel.Guild.Id) + "` " + ToastieUtil.RandomEmote());
+                eb.WithColor(Color.DarkGreen);
+            }
+
+            else
+            {
+                await BalanceDb.AddToasties(bot, game.Toasties, game.Channel.Guild.Id);
+                eb.WithAuthor(user.Username + " | Timeout", user.GetAvatarUrl());
+                eb.WithDescription("Namiko's score is higher. You lose `" + game.Toasties + "` " + ToastieUtil.RandomEmote() + "\n" +
+                "New balance `" + BalanceDb.GetToasties(user.Id, game.Channel.Guild.Id) + "` " + ToastieUtil.RandomEmote());
+                eb.WithColor(Color.DarkRed);
+            }
+
+            eb.AddField("Your hand (" + game.SumHand(game.Hand) + ")", HandToString(game.Hand, false), true);
+            eb.AddField("Namiko's hand (" + game.SumHand(game.Dealer) + ")", HandToString(game.Dealer, false), true);
+
+            await Send(game, eb);
+            Games.Remove(user.Id);
         }
         public static async Task Send(BlackjackGame game, EmbedBuilder eb)
         {

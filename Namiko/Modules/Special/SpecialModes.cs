@@ -113,7 +113,7 @@ namespace Namiko
             await Context.Channel.SendMessageAsync($"Christmas Rate enabled at rate {rate}. *Yaayy.*");
         }
 
-        public async Task Spook(SocketCommandContext context)
+        public async Task Spook(ICommandContext context)
         {
             if (!SpookModeEnable)
                 return;
@@ -129,7 +129,7 @@ namespace Namiko
             await context.Channel.SendMessageAsync(spook);
         }
 
-        public async Task Christmas(SocketCommandContext context)
+        public async Task Christmas(ICommandContext context)
         {
             if (!ChristmasModeEnable)
                 return;
