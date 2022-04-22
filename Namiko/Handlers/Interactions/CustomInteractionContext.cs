@@ -13,6 +13,7 @@ namespace Namiko.Addons.Handlers
         public SocketUser User { get; }
         public IDiscordInteraction Interaction { get; }
 
+        private IUserMessage Response { get; set; }
 
         public DateTimeOffset CreatedAt => Interaction.CreatedAt;
 
@@ -27,8 +28,26 @@ namespace Namiko.Addons.Handlers
         }
 
 
+
+
         public async Task<IUserMessage> ReplyAsync(string text = null, bool isTTS = false, Embed embed = null, RequestOptions options = null, AllowedMentions allowedMentions = null, MessageReference messageReference = null, MessageComponent components = null, ISticker[] stickers = null, Embed[] embeds = null, MessageFlags flags = MessageFlags.None, bool ephemeral = false)
-            => await Interaction.FollowupAsync(text: text, isTTS: isTTS, embed: embed, options: options, allowedMentions: allowedMentions, components: components, embeds: embeds, ephemeral: ephemeral);
+        {
+            if (Response == null)
+            {
+                Response = await Interaction.FollowupAsync(text: text, isTTS: isTTS, embed: embed, options: options, allowedMentions: allowedMentions, components: components, embeds: embeds, ephemeral: ephemeral);
+            }
+            else
+            {
+                await Response.ModifyAsync(x =>
+                {
+                    x.Embed = embed;
+                    x.Content = text;
+                    x.Components = components;
+                    x.AllowedMentions = allowedMentions;
+                });
+            }
+            return Response;
+        }
 
 
         #region Interface lambdas

@@ -38,7 +38,7 @@ namespace Namiko.Addons.Handlers
                 criteria.AddCriterion(new EnsureComponentFromSourceUser());
             return DialogueReplyAsync(dialogue, criteria);
         }
-        public Task<IUserMessage> SelectMenuReplyAsync<T2>(SelectMenu<T2> menu, bool fromSourceUser = true)
+        public Task<T2> SelectMenuReplyAsync<T2>(SelectMenu<T2> menu, bool fromSourceUser = true)
         {
             var criteria = new Criteria<SocketMessageComponent>();
             if (fromSourceUser)
@@ -49,7 +49,7 @@ namespace Namiko.Addons.Handlers
             => Interactive.SendPaginatedMessageAsync(Context, pager, criterion);
         public Task<IUserMessage> DialogueReplyAsync(DialogueBox dialogue, ICriterion<SocketMessageComponent> criterion)
             => Interactive.SendDialogueBoxAsync(Context, dialogue, criterion);
-        public Task<IUserMessage> SelectMenuReplyAsync<T2>(SelectMenu<T2> menu, ICriterion<SocketMessageComponent> criterion)
+        public Task<T2> SelectMenuReplyAsync<T2>(SelectMenu<T2> menu, ICriterion<SocketMessageComponent> criterion)
             => Interactive.SendSelectMenuAsync(Context, menu, criterion);
 
 
@@ -99,11 +99,11 @@ namespace Namiko.Addons.Handlers
         {
             foreach (var cmd in builder.SlashCommands)
             {
-                var desc = cmd.Attributes.FirstOrDefault(x => x is DescriptionAttribute);
-                if (desc != default)
-                {
-                    cmd.WithDescription((desc as DescriptionAttribute).Description);
-                }
+                //var desc = cmd.Attributes.FirstOrDefault(x => x is DescriptionAttribute);
+                //if (desc != default)
+                //{
+                //    cmd.WithSu((desc as DescriptionAttribute).Description);
+                //}
                 var atr = cmd.Attributes.Where(x => x is PreconditionAttribute).Select(x => x as PreconditionAttribute);
                 cmd.WithPreconditions(atr.Select(x => x.ReturnAttribute(Handler.Interactions) as Discord.Interactions.PreconditionAttribute).ToArray());
             }

@@ -10,16 +10,18 @@ namespace Namiko.Addons.Handlers.Select
     public class SelectMenuCallback<T> : CallbackBase<SocketMessageComponent>
     {
         public readonly SelectMenu<T> _selectMenu;
+        public TaskCompletionSource<T> _taskSource;
 
         public SelectMenuCallback(SelectMenu<T> selectMenu, ICustomContext context, ICriterion<SocketMessageComponent> criterion = null) : base(context, criterion)
         {
             _selectMenu = selectMenu;
+            _taskSource = new TaskCompletionSource<T>();
         }
 
         public override async Task<IUserMessage> DisplayAsync()
         {
-            var builder = new ComponentBuilder();
-            builder.WithSelectMenu(nameof(SelectMenu<T>), _selectMenu.Options.Values.Select(x => x.OptionBuilder).ToList());
+            var builder = new ComponentBuilder()
+                .WithSelectMenu(nameof(SelectMenu<T>), _selectMenu.Options.Values.Select(x => x.OptionBuilder).ToList());
 
             var message = await Context.ReplyAsync(embed: _selectMenu.Embed, components: builder.Build()).ConfigureAwait(false);
             Message = message;
@@ -33,8 +35,9 @@ namespace Namiko.Addons.Handlers.Select
                 return null;
             }
 
-            var res = comp.Data.Values.First();
-            await _selectMenu.Continue(_selectMenu.Options[res].Item);
+            var id = comp.Data.Values.First();
+            var res = _selectMenu.Options[id].Item;
+            _taskSource.TrySetResult(res);
             return true;
         }
     }

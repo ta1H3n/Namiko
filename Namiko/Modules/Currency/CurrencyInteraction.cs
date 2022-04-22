@@ -1,5 +1,9 @@
 ﻿using Discord;
+using Discord.Commands;
 using Discord.Interactions;
+using Model;
+using Namiko.Addons.Handlers;
+using Namiko.Addons.Handlers.Select;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,19 +12,32 @@ using System.Threading.Tasks;
 
 namespace Namiko
 {
-    public class CurrencyInteraction : InteractionModuleBase
+    public class CurrencyInteraction : CustomModuleBase<ICustomContext>
     {
         [SlashCommand("echo", "Echo an input")]
         public async Task Echo(string input)
         {
-            await Context.Channel.SendMessageAsync(input);
-            var res = await FollowupAsync(input);
+            await ReplyAsync(input);
+        }
+        [SlashCommand("select", "asdf")]
+        public async Task Select([Remainder] string search)
+        {
+            var waifus = await WaifuDb.SearchWaifus(search);
 
-            await Task.Delay(3000);
+            var menu = new SelectMenu<Waifu>(
+                new EmbedBuilderPrepared("Select waifu loosser").Build(),
+                waifus.ToDictionary(
+                    x => x.Name, 
+                    x => new SelectMenuOption<Waifu>(
+                        new SelectMenuOptionBuilder(x.LongName, x.Name),
+                        x
+            )));
 
-            var builder = new ComponentBuilder().WithButton("asdf", "123");
-            await FollowupAsync(components: builder.Build());
-            
+            var task = SelectMenuReplyAsync(menu);
+
+            var res = await task;
+
+            await ReplyAsync(embed: WaifuUtil.WaifuEmbedBuilder(res).Build());
         }
     }
 }

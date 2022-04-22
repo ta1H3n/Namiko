@@ -36,8 +36,15 @@ namespace Namiko.Addons.Handlers
         public async Task<IUserMessage> SendDialogueBoxAsync(ICustomContext context, DialogueBox dialogue, ICriterion<SocketMessageComponent> criterion = null)
             => await ExecuteCallbackAsync(new DialogueBoxCallback(dialogue, context, criterion));
 
-        public async Task<IUserMessage> SendSelectMenuAsync<T>(ICustomContext context, SelectMenu<T> select, ICriterion<SocketMessageComponent> criterion = null)
-            => await ExecuteCallbackAsync(new SelectMenuCallback<T>(select, context, criterion));
+        public Task<T> SendSelectMenuAsync<T>(ICustomContext context, SelectMenu<T> select, ICriterion<SocketMessageComponent> criterion = null)
+        {
+            var callback = new SelectMenuCallback<T>(select, context, criterion);
+            var message = callback.DisplayAsync().ContinueWith(x => 
+            {
+                RegisterCallback(callback);
+            });
+            return callback._taskSource.Task;
+        }
 
         public async Task<IUserMessage> ExecuteCallbackAsync(CallbackBase<SocketMessageComponent> callback)
         {

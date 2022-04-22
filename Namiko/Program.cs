@@ -197,6 +197,12 @@ namespace Namiko
                     await context.ReplyAsync(embed: new EmbedBuilder().WithColor(Color.DarkRed).WithDescription(":x: " + reason).Build());
                 }
             }
+
+            // prevent doing "Bot is thinking..." for 15min if command fails
+            //if (await context.Interaction.GetOriginalResponseAsync() == null)
+            //{
+            //    await context.ReplyAsync(embed: new EmbedBuilderPrepared(":x: Unkown error occured").Build());
+            //}
         }
 
         // SET-UP  

@@ -10,13 +10,11 @@ namespace Namiko.Addons.Handlers.Select
     {
         public Embed Embed { get; }
         public IDictionary<string, SelectMenuOption<T>> Options { get; } = new Dictionary<string, SelectMenuOption<T>>();
-        public Func<T, Task> Continue { get; }
 
-        public SelectMenu(Embed embed, IDictionary<string, SelectMenuOption<T>> options, Func<T, Task> continueWith)
+        public SelectMenu(Embed embed, IDictionary<string, SelectMenuOption<T>> options)
         {
             Embed = embed;
             Options = options;
-            Continue = continueWith;
         }
     }
 }

@@ -70,11 +70,6 @@ namespace Namiko.Addons.Handlers.Paginator
             return null;
         }
 
-        public async override Task TimeoutAsync()
-        {
-            await Message.ModifyAsync(x => x.Components = null);
-        }
-
         protected Embed BuildEmbed()
         {
             var eb = new EmbedBuilder()

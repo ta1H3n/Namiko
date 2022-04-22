@@ -895,7 +895,7 @@ namespace Namiko
                         .ToDictionary(x => x.Item.Name, x => x);
                     Waifu waifu;
 
-                    var msg = await module.SelectMenuReplyAsync(new Addons.Handlers.Select.SelectMenu<Waifu>(embed, options, (w) => Task.CompletedTask));
+                    var msg = await module.SelectMenuReplyAsync(new SelectMenu<Waifu>(embed, options));
                 }
 
                 _ = module.ReplyAsync(embed: new EmbedBuilderPrepared()
