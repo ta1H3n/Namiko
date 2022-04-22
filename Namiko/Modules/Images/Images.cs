@@ -2,6 +2,7 @@
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Model;
+using Namiko.Handlers.Attributes.Preconditions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -111,7 +112,7 @@ namespace Namiko
             await Context.Channel.SendMessageAsync("", false, embed);
         }
 
-        [Command("NewImage"), Alias("ni"), Summary("Adds a new image to the database.\n**Usage**: `!ni [name] [url_or_attachment]`"), HomeOrT1GuildPrecondition, CustomUserPermission(GuildPermission.ManageMessages)]
+        [Command("NewImage"), Alias("ni"), Summary("Adds a new image to the database.\n**Usage**: `!ni [name] [url_or_attachment]`"), HomeOrT1GuildPrecondition, UserPermission(GuildPermission.ManageMessages)]
         public async Task NewImage(string name, string url = null, [Remainder] string str = "")
         {
             await Context.Channel.TriggerTypingAsync();
@@ -169,7 +170,7 @@ namespace Namiko
             await Context.Channel.SendMessageAsync($"{rl.ClientRemaining-20}/{rl.ClientLimit} imgur credits remaining.", false, ImageUtil.ToEmbed(img).Build());
         }
 
-        [Command("DeleteImage"), Alias("di"), Summary("Deletes image from the database using the id.\n**Usage**: `di [id]`"), HomeOrT1GuildPrecondition, CustomUserPermission(GuildPermission.ManageMessages)]
+        [Command("DeleteImage"), Alias("di"), Summary("Deletes image from the database using the id.\n**Usage**: `di [id]`"), HomeOrT1GuildPrecondition, UserPermission(GuildPermission.ManageMessages)]
         public async Task DeleteImage(int id, [Remainder] string str = "")
         {
             bool insider = Context.Guild.Id == 418900885079588884;

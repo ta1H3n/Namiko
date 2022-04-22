@@ -3,6 +3,7 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Model;
+using Namiko.Handlers.Attributes.Preconditions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +14,7 @@ namespace Namiko
     [RequireGuild]
     public class Roles : InteractiveBase<ShardedCommandContext>
     {
-        [Command("Role"), Alias("r", "iam"), Summary("Adds or removes a public role from the user.\n**Usage**: `!r [name]`"), CustomBotPermission(GuildPermission.ManageRoles)]
+        [Command("Role"), Alias("r", "iam"), Summary("Adds or removes a public role from the user.\n**Usage**: `!r [name]`"), BotPermission(GuildPermission.ManageRoles)]
         public async Task Role([Remainder] string name = "")
         {
             var role = await this.SelectRole(name, PublicRoleDb.GetAll(Context.Guild.Id).Select(x => x.RoleId), false);
@@ -52,7 +53,7 @@ namespace Namiko
             }
         }
 
-        [Command("SetPublicRole"), Alias("spr"), Summary("Sets or unsets a role as a public role.\n**Usage**: `!spr [name]`"), CustomUserPermission(GuildPermission.ManageRoles)]
+        [Command("SetPublicRole"), Alias("spr"), Summary("Sets or unsets a role as a public role.\n**Usage**: `!spr [name]`"), UserPermission(GuildPermission.ManageRoles)]
         public async Task NewRole([Remainder] string name = "")
         {
             var role = await this.SelectRole(name);
@@ -82,7 +83,7 @@ namespace Namiko
             }
         }
 
-        [Command("ClearRole"), Alias("cr"), Summary("Removes all users from a role.\n**Usage**: `!cr [name]`"), CustomUserPermission(GuildPermission.ManageRoles), CustomBotPermission(GuildPermission.ManageRoles)]
+        [Command("ClearRole"), Alias("cr"), Summary("Removes all users from a role.\n**Usage**: `!cr [name]`"), UserPermission(GuildPermission.ManageRoles), BotPermission(GuildPermission.ManageRoles)]
         public async Task ClearRole([Remainder] string name = "")
         {
             var role = await this.SelectRole(name);
@@ -123,7 +124,7 @@ namespace Namiko
                 eb.WithDescription(CustomPaginatedMessage.PagesArray(roles.OrderByDescending(x => x.Price), 100, (r) => $"<@&{r.RoleId}> - **{r.Price:n0}**\n").First()).Build());
         }
 
-        [Command("BuyRole"), Summary("Buy a role from the role shop.\n**Usage**: `!buyrole [role_name]`"), CustomBotPermission(GuildPermission.ManageRoles)]
+        [Command("BuyRole"), Summary("Buy a role from the role shop.\n**Usage**: `!buyrole [role_name]`"), BotPermission(GuildPermission.ManageRoles)]
         public async Task RoleShopAddRole([Remainder] string name = "")
         {
             var roles = await ShopRoleDb.GetRoles(Context.Guild.Id);
@@ -153,7 +154,7 @@ namespace Namiko
             }
         }
 
-        [Command("RoleShopAddRole"), Alias("rsar"), Summary("Add a role to the role shop.\n**Usage**: `!rsar [price] [role_name]`"), CustomUserPermission(GuildPermission.ManageRoles), CustomBotPermission(GuildPermission.ManageRoles)]
+        [Command("RoleShopAddRole"), Alias("rsar"), Summary("Add a role to the role shop.\n**Usage**: `!rsar [price] [role_name]`"), UserPermission(GuildPermission.ManageRoles), BotPermission(GuildPermission.ManageRoles)]
         public async Task RoleShopAddRole(int price, [Remainder] string name = "")
         {
             if (price < 0)
@@ -189,7 +190,7 @@ namespace Namiko
             await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared($"~ **{role.Name}** added to the shop ~").Build());
         }
 
-        [Command("RoleShopRemoveRole"), Alias("rsrr"), Summary("Remove a role from the role shop.\n**Usage**: `!rsrr [role_name]`"), CustomUserPermission(GuildPermission.Administrator)]
+        [Command("RoleShopRemoveRole"), Alias("rsrr"), Summary("Remove a role from the role shop.\n**Usage**: `!rsrr [role_name]`"), UserPermission(GuildPermission.Administrator)]
         public async Task RoleShopRemoveRole([Remainder] string name = "")
         {
             var roles = await ShopRoleDb.GetRoles(Context.Guild.Id);
@@ -250,7 +251,7 @@ namespace Namiko
             await ch.SendMessageAsync($"<:KannaHype:571690048001671238> `{Context.User}` invited `{user}` to **{teamRole.Name}**.");
         }
 
-        [Command("JoinTeam"), Summary("Accept an invite to a team.\n**Usage**: `!jointeam [team_name]`"), CustomBotPermission(GuildPermission.ManageRoles)]
+        [Command("JoinTeam"), Summary("Accept an invite to a team.\n**Usage**: `!jointeam [team_name]`"), BotPermission(GuildPermission.ManageRoles)]
         public async Task Join([Remainder] string teamName)
         {
             var role = await this.SelectRole(teamName, TeamDb.Teams(Context.Guild.Id).Select(x => x.MemberRoleId), respond: false);
@@ -281,7 +282,7 @@ namespace Namiko
             await Context.Channel.SendMessageAsync($"You're not invited to **{role.Name}**! What a shame ^^");
         }
 
-        [Command("LeaveTeam"), Alias("lt"), Summary("Leave your team.\n**Usage**: `!lt`"), CustomBotPermission(GuildPermission.ManageRoles)]
+        [Command("LeaveTeam"), Alias("lt"), Summary("Leave your team.\n**Usage**: `!lt`"), BotPermission(GuildPermission.ManageRoles)]
         public async Task Leave([Remainder] string str = "")
         {
             var role = RoleUtil.GetMemberRole(Context.Guild, Context.User);
@@ -307,7 +308,7 @@ namespace Namiko
             await ch.SendMessageAsync($"<:TickNo:577838859077943306> `{Context.User}` left **{role.Name}**.");
         }
 
-        [Command("TeamKick"), Alias("tk"), Summary("Kicks a user from your team.\n**Usage**: `!tk [user]`"), CustomBotPermission(GuildPermission.ManageRoles)]
+        [Command("TeamKick"), Alias("tk"), Summary("Kicks a user from your team.\n**Usage**: `!tk [user]`"), BotPermission(GuildPermission.ManageRoles)]
         public async Task TeamKick(IUser user, [Remainder] string str = "")
         {
             var leader = RoleUtil.GetLeaderRole(Context.Guild, Context.User);
@@ -333,7 +334,7 @@ namespace Namiko
             await ch.SendMessageAsync($":hammer: `{Context.User}` kicked `{user}` from **{userteam.Name}**.");
         }
 
-        [Command("NewTeam"), Alias("nt"), Summary("Creates a new team.\n**Usage**: `!nt [LeaderRoleName] [MemberRoleName]`\n Note: if a role has a space in it's name it has to be put in quotes. \n For example: `!nt \"Role One\" \"Role Two\"`"), CustomUserPermission(GuildPermission.ManageRoles)]
+        [Command("NewTeam"), Alias("nt"), Summary("Creates a new team.\n**Usage**: `!nt [LeaderRoleName] [MemberRoleName]`\n Note: if a role has a space in it's name it has to be put in quotes. \n For example: `!nt \"Role One\" \"Role Two\"`"), UserPermission(GuildPermission.ManageRoles)]
         public async Task NewTeam(string leader, string member)
         {
             var leaderR = await this.SelectRole(leader, msg: "Select team leader role");
@@ -353,7 +354,7 @@ namespace Namiko
             await Context.Channel.SendMessageAsync($"Added Leader role: '{leaderR.Name}' and Team role: '{memberR.Name}'");
         }
 
-        [Command("DeleteTeam"), Alias("dt"), Summary("Deletes a team.\n**Usage**: `!dt [Leader or Team RoleName]`"), CustomUserPermission(GuildPermission.ManageRoles)]
+        [Command("DeleteTeam"), Alias("dt"), Summary("Deletes a team.\n**Usage**: `!dt [Leader or Team RoleName]`"), UserPermission(GuildPermission.ManageRoles)]
         public async Task DeleteTeam([Remainder] string teamName = "")
         {
             var role = await this.SelectRole(teamName);

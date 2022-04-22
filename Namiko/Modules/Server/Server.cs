@@ -1,9 +1,9 @@
 ﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
-using Discord.Webhook;
 using Discord.WebSocket;
 using Model;
+using Namiko.Handlers.Attributes.Preconditions;
 using Namiko.Modules.Basic;
 using System;
 using System.Collections.Generic;
@@ -22,7 +22,7 @@ namespace Namiko
             await Context.Channel.SendMessageAsync("", false, (await ServerUtil.ServerInfo(Context.Guild)).Build());
         }
 
-        [Command("SetPrefix"), Alias("sp", "sbp", "setbotprefix"), Summary("Sets a prefix for the bot in the server.\n**Usage**: `!sp [prefix]`"), CustomUserPermission(GuildPermission.ManageMessages)]
+        [Command("SetPrefix"), Alias("sp", "sbp", "setbotprefix"), Summary("Sets a prefix for the bot in the server.\n**Usage**: `!sp [prefix]`"), UserPermission(GuildPermission.ManageMessages)]
         public async Task SetBotPrefix(string prefix)
         {
             if (prefix.Length < 1)
@@ -43,7 +43,7 @@ namespace Namiko
             await Context.Channel.SendMessageAsync($"My current prefix is `{prefix}`.\nYou can change it by typing `{prefix}sp [new_prefix]` without the brackets :fox:");
         }
 
-        [Command("SetJoinLogChannel"), Alias("jch", "jlch", "sjch", "sjlch"), Summary("Sets a channel to log users joining/leaving the guild.\n**Usage**: `!jlch`"), CustomUserPermission(GuildPermission.ManageChannels)]
+        [Command("SetJoinLogChannel"), Alias("jch", "jlch", "sjch", "sjlch"), Summary("Sets a channel to log users joining/leaving the guild.\n**Usage**: `!jlch`"), UserPermission(GuildPermission.ManageChannels)]
         public async Task SetJoinLogChannel()
         {
             var server = ServerDb.GetServer(Context.Guild.Id);
@@ -61,7 +61,7 @@ namespace Namiko
             await Context.Channel.SendMessageAsync("Join Log channel set.");
         }
 
-        [Command("SetTeamLogChannel"), Alias("tch"), Summary("Sets a channel to log users joining/leaving teams.\n**Usage**: `!tlch`"), CustomUserPermission(GuildPermission.ManageChannels)]
+        [Command("SetTeamLogChannel"), Alias("tch"), Summary("Sets a channel to log users joining/leaving teams.\n**Usage**: `!tlch`"), UserPermission(GuildPermission.ManageChannels)]
         public async Task SetTeamLogChannel()
         {
             var server = ServerDb.GetServer(Context.Guild.Id);
@@ -79,7 +79,7 @@ namespace Namiko
             await Context.Channel.SendMessageAsync("Team Log channel set.");
         }
 
-        [Command("SetWelcomeChannel"), Alias("wch"), Summary("Sets a channel to welcome members.\n**Usage**: `!wch`"), CustomUserPermission(GuildPermission.ManageChannels)]
+        [Command("SetWelcomeChannel"), Alias("wch"), Summary("Sets a channel to welcome members.\n**Usage**: `!wch`"), UserPermission(GuildPermission.ManageChannels)]
         public async Task SetWelcomeChannel()
         {
             var server = ServerDb.GetServer(Context.Guild.Id);
@@ -97,7 +97,7 @@ namespace Namiko
             await Context.Channel.SendMessageAsync("Welcome channel set.");
         }
 
-        [Command("BlacklistChannel"), Alias("blch"), Summary("Disables or enables bot commands in a channel.\n**Usage**: `!blch [optional_channel_id]`"), CustomUserPermission(GuildPermission.ManageChannels)]
+        [Command("BlacklistChannel"), Alias("blch"), Summary("Disables or enables bot commands in a channel.\n**Usage**: `!blch [optional_channel_id]`"), UserPermission(GuildPermission.ManageChannels)]
         public async Task BlacklistChannel(ulong channelId = 0)
         {
             if (channelId == 0)
@@ -217,7 +217,7 @@ namespace Namiko
             }
         }
 
-        [Command("ToggleModule"), Alias("tm"), Summary("Disables or enables a command module.\n**Usage**: `!tm [module_name]`"), CustomUserPermission(GuildPermission.Administrator)]
+        [Command("ToggleModule"), Alias("tm"), Summary("Disables or enables a command module.\n**Usage**: `!tm [module_name]`"), UserPermission(GuildPermission.Administrator)]
         public async Task ToggleModule([Remainder] string name)
         {
             var cmdService = Program.GetCommands();
@@ -248,7 +248,7 @@ namespace Namiko
             }
         }
 
-        [Command("ToggleCommand"), Alias("tc"), Summary("Disables or enables a command.\n**Usage**: `!tc [command_name]`"), CustomUserPermission(GuildPermission.Administrator)]
+        [Command("ToggleCommand"), Alias("tc"), Summary("Disables or enables a command.\n**Usage**: `!tc [command_name]`"), UserPermission(GuildPermission.Administrator)]
         public async Task ToggleCommand([Remainder] string name)
         {
             var cmdService = Program.GetCommands();
@@ -282,7 +282,7 @@ namespace Namiko
             }
         }
 
-        [Command("ToggleReactionImages"), Alias("tri"), Summary("Disables or enables reaction images.\n**Usage**: `!tri`"), CustomUserPermission(GuildPermission.Administrator)]
+        [Command("ToggleReactionImages"), Alias("tri"), Summary("Disables or enables reaction images.\n**Usage**: `!tri`"), UserPermission(GuildPermission.Administrator)]
         public async Task ToggleReactionImages([Remainder] string name = "")
         {
             if (await DisabledCommandHandler.AddNew(name, Context.Guild.Id, DisabledCommandType.Images))

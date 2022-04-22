@@ -1,11 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
-using Discord.Rest;
 using Discord.WebSocket;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Namiko.Addons.Handlers
@@ -39,13 +35,9 @@ namespace Namiko.Addons.Handlers
         #region Interface lambdas
 
         IDiscordClient ICommandContext.Client => Client;
-        IDiscordClient ICustomContext.Client => Client;
         IGuild ICommandContext.Guild => Guild;
-        IGuild ICustomContext.Guild => Guild;
         IMessageChannel ICommandContext.Channel => Channel;
-        IMessageChannel ICustomContext.Channel => Channel;
         IUser ICommandContext.User => User;
-        IUser ICustomContext.User => User;
         IUserMessage ICommandContext.Message => Message;
 
         #endregion Interface lambas

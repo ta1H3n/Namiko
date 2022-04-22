@@ -3,18 +3,17 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Model;
+using Namiko.Handlers.Attributes.Preconditions;
 using Namiko.Modules.Basic;
 using Sentry;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Timers;
 using Victoria;
 using Victoria.Decoder;
 using Victoria.Enums;
 using Victoria.EventArgs;
-using Victoria.Interfaces;
 using Victoria.Resolvers;
 
 namespace Namiko
@@ -869,7 +868,7 @@ namespace Namiko
             }
         }
 
-        [Command("SetMusicRole"), Alias("smr"), Summary("Adds or removes a role that is required for controlling music.\n**Usage**: `!smr [role_name]`"), CustomUserPermission(GuildPermission.Administrator)]
+        [Command("SetMusicRole"), Alias("smr"), Summary("Adds or removes a role that is required for controlling music.\n**Usage**: `!smr [role_name]`"), UserPermission(GuildPermission.Administrator)]
         public async Task MusicRole([Remainder]string roleName = "")
         {
             var role = await this.SelectRole(roleName);

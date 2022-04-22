@@ -5,10 +5,12 @@ using Discord.WebSocket;
 using Model;
 using Namiko.Addons.Handlers;
 using Namiko.Addons.Handlers.Paginator;
+using Namiko.Handlers.Attributes.Preconditions;
 using Namiko.Modules.Basic;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using PreconditionAttribute = Namiko.Handlers.Attributes.PreconditionAttribute;
 using SummaryAttribute = Discord.Commands.SummaryAttribute;
 
 namespace Namiko
@@ -150,7 +152,7 @@ namespace Namiko
             await ReplyAsync("Hi! Please take good care of me!", false, BasicUtil.GuildJoinEmbed("!").Build());
         }
 
-        [Command("PermTest"), CustomBotPermission(GuildPermission.Administrator)]
+        [Command("PermTest"), BotPermission(GuildPermission.Administrator)]
         public async Task PermTest()
         {
             await ReplyAsync("???");
@@ -419,20 +421,23 @@ namespace Namiko
                 desc += $"`{x}` ";
             desc += "\n";
             if(commandInfo.Preconditions.Count > 0)
-                desc += $"**Permissions**: ";
-            foreach (var x in commandInfo.Preconditions)
+                desc += $"**Conditions**: ";
+            foreach (var x in commandInfo.Attributes)
             {
-                if (x is Discord.Commands.RequireUserPermissionAttribute)
+                if (x is UserPermissionAttribute)
                 { 
-                    var prec = x as Discord.Commands.RequireUserPermissionAttribute;
-                    desc += prec.ChannelPermission != null ? $"{prec.ChannelPermission} " : "";
-                    desc += prec.GuildPermission != null ? $"{prec.GuildPermission} " : "";
+                    var prec = x as UserPermissionAttribute;
+                    desc += $"`User:{prec.Name}` ";
                 }
-
-                else if (x is CustomPrecondition)
+                else if (x is BotPermissionAttribute)
                 {
-                    var prec = x as CustomPrecondition;
-                    desc += $"{prec.GetName()} ";
+                    var prec = x as BotPermissionAttribute;
+                    desc += $"`Bot:{prec.Name}` ";
+                }
+                else if (x is PreconditionAttribute)
+                {
+                    var prec = x as PreconditionAttribute;
+                    desc += $"`{prec.Name}` ";
                 }
             }
 

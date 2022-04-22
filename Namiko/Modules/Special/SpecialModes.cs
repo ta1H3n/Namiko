@@ -1,18 +1,11 @@
-﻿using System;
+﻿using Discord;
+using Discord.Addons.Interactive;
+using Discord.Commands;
+using Namiko.Handlers.Attributes.Preconditions;
+using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
-using Discord.Commands;
-using Discord.WebSocket;
-
-
-
-
-
-
-using Discord.Addons.Interactive;
 
 namespace Namiko
 {

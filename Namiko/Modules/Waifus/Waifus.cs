@@ -3,6 +3,7 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Model;
+using Namiko.Handlers.Attributes.Preconditions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -393,7 +394,7 @@ namespace Namiko
             await Context.Channel.SendMessageAsync("You don't want her anymore, huh...");
         }
 
-        [Command("ModShopAddWaifu"), Alias("msaddwaifu", "msaw"), Summary("Adds a waifu to the mod shop. Available for everyone to purchase.\n**Usage**: `!msaw [waifu]`"), CustomUserPermission(GuildPermission.ManageGuild)]
+        [Command("ModShopAddWaifu"), Alias("msaddwaifu", "msaw"), Summary("Adds a waifu to the mod shop. Available for everyone to purchase.\n**Usage**: `!msaw [waifu]`"), UserPermission(GuildPermission.ManageGuild)]
         public async Task ModShopAddWaifu([Remainder] string name)
         {
             var prefix = Program.GetPrefix(Context);
@@ -448,7 +449,7 @@ namespace Namiko
             return;
         }
 
-        [Command("ModShopRemoveWaifu"), Alias("msremovewaifu", "msrw"), Summary("Removes a waifu from the mod shop.\n**Usage**: `!msrw [waifu]`"), CustomUserPermission(GuildPermission.ManageGuild)]
+        [Command("ModShopRemoveWaifu"), Alias("msremovewaifu", "msrw"), Summary("Removes a waifu from the mod shop.\n**Usage**: `!msrw [waifu]`"), UserPermission(GuildPermission.ManageGuild)]
         public async Task ModShopRemoveWaifu([Remainder] string name = "")
         {
             var shop = await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Mod);
@@ -466,7 +467,7 @@ namespace Namiko
             return;
         }
 
-        [Command("ShipWaifu"), Summary("Gives any waifu to a user.\n**Usage**: `!shipwaifu [user] [waifu_search]`"), HomeOrT1GuildPrecondition, CustomUserPermission(GuildPermission.Administrator)]
+        [Command("ShipWaifu"), Summary("Gives any waifu to a user.\n**Usage**: `!shipwaifu [user] [waifu_search]`"), HomeOrT1GuildPrecondition, UserPermission(GuildPermission.Administrator)]
         public async Task ShipWaifu(IUser user, [Remainder] string name)
         {
             var waifu = await WaifuUtil.ProcessWaifuListAndRespond(await WaifuDb.SearchWaifus(name), this);

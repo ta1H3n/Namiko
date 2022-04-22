@@ -5,6 +5,7 @@ using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Model;
 using Model.Models.Users;
+using Namiko.Handlers.Attributes.Preconditions;
 using Namiko.Modules.Basic;
 using Newtonsoft.Json;
 using Sentry;
@@ -16,6 +17,7 @@ using System.Net;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using PreconditionAttribute = Namiko.Handlers.Attributes.PreconditionAttribute;
 
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 
@@ -517,19 +519,22 @@ namespace Namiko
                         }
                     }
 
-                    foreach (var x in command.Preconditions)
+                    foreach (var x in command.Attributes)
                     {
-                        if (x is RequireUserPermissionAttribute)
+                        if (x is UserPermissionAttribute)
                         {
-                            var prec = x as RequireUserPermissionAttribute;
-                            cmd.Conditions += prec.ChannelPermission != null ? $"{prec.ChannelPermission}," : "";
-                            cmd.Conditions += prec.GuildPermission != null ? $"{prec.GuildPermission}," : "";
+                            var prec = x as UserPermissionAttribute;
+                            cmd.Conditions += $"User:{prec.Name},";
                         }
-
-                        else if (x is CustomPrecondition)
+                        else if (x is BotPermissionAttribute)
                         {
-                            var prec = x as CustomPrecondition;
-                            cmd.Conditions += $"{prec.GetName()},";
+                            var prec = x as BotPermissionAttribute;
+                            cmd.Conditions += $"Bot:{prec.Name},";
+                        }
+                        else if (x is PreconditionAttribute)
+                        {
+                            var prec = x as PreconditionAttribute;
+                            cmd.Conditions += $"{prec.Name},";
                         }
                     }
 

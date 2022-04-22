@@ -1,5 +1,4 @@
 ﻿using Discord;
-using Discord.WebSocket;
 using Model;
 using System;
 using System.Collections.Generic;
@@ -11,7 +10,7 @@ namespace Namiko
     {
         public static List<Emote> Emotes;
 
-        public static EmbedBuilder BanroyaleDetailsEmbed(Banroyale banroyale, SocketRole role, SocketRole reqRole, int userCount = 0)
+        public static EmbedBuilder BanroyaleDetailsEmbed(Banroyale banroyale, IRole role, IRole reqRole, int userCount = 0)
         {
             string desc = "";
             if (banroyale.BanLengthHours > 0)

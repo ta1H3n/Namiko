@@ -3,6 +3,7 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Model;
+using Namiko.Handlers.Attributes.Preconditions;
 using Namiko.Modules.Basic;
 using System;
 using System.Collections.Generic;
@@ -272,14 +273,14 @@ namespace Namiko
             await Give(recipient, sAmount, str);
         }
 
-        [Command("SetToasties"), Alias("st", "sett"), Summary("Sets the amount of toasties.\n**Usage**: `!st [user] [amount]`"), CustomUserPermission(GuildPermission.Administrator)]
+        [Command("SetToasties"), Alias("st", "sett"), Summary("Sets the amount of toasties.\n**Usage**: `!st [user] [amount]`"), UserPermission(GuildPermission.Administrator)]
         public async Task Set(IUser user, int amount, [Remainder] string str = "")
         {
             await BalanceDb.SetToasties(user.Id, amount, Context.Guild.Id);
             await Context.Channel.SendMessageAsync("", false, ToastieUtil.ToastieEmbed(user, BalanceDb.GetToasties(user.Id, Context.Guild.Id)).Build());
         }
 
-        [Command("AddToasites"), Alias("at", "addt"), Summary("Adds toasties to a user.\n**Usage**: `!at [user] [amount]`"), CustomUserPermission(GuildPermission.Administrator)]
+        [Command("AddToasites"), Alias("at", "addt"), Summary("Adds toasties to a user.\n**Usage**: `!at [user] [amount]`"), UserPermission(GuildPermission.Administrator)]
         public async Task Add(IUser user, int amount, [Remainder] string str = "")
         {
             await BalanceDb.AddToasties(user.Id, amount, Context.Guild.Id);

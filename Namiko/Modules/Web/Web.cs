@@ -3,6 +3,7 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Model;
+using Namiko.Handlers.Attributes.Preconditions;
 using Reddit.Controllers;
 using System;
 using System.Linq;
@@ -180,7 +181,7 @@ namespace Namiko
         }
 
         [RequireGuild]
-        [Command("Subreddit"), Alias("sub"), Summary("Set a subreddit for Namiko to post hot posts from.\n**Usage**: `!sub [subreddit_name] [min_upvotes]`"), CustomUserPermission(GuildPermission.ManageChannels)]
+        [Command("Subreddit"), Alias("sub"), Summary("Set a subreddit for Namiko to post hot posts from.\n**Usage**: `!sub [subreddit_name] [min_upvotes]`"), UserPermission(GuildPermission.ManageChannels)]
         public async Task Subreddit(string name, int upvotes)
         {
             var subs = SpecialChannelDb.GetChannelsByGuild(Context.Guild.Id, Model.ChannelType.Reddit);
@@ -238,7 +239,7 @@ namespace Namiko
         }
 
         [RequireGuild]
-        [Command("Unsubscribe"), Alias("unsub"), Summary("Unsubscribe from a subreddit.\n**Usage**: `!unsub [subreddit_name]`"), CustomUserPermission(GuildPermission.ManageChannels)]
+        [Command("Unsubscribe"), Alias("unsub"), Summary("Unsubscribe from a subreddit.\n**Usage**: `!unsub [subreddit_name]`"), UserPermission(GuildPermission.ManageChannels)]
         public async Task Unsubscribe(string name)
         {
             await Context.Channel.TriggerTypingAsync();

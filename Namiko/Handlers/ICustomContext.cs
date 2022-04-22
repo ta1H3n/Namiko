@@ -1,5 +1,5 @@
 ﻿using Discord;
-using Discord.Commands;
+using Discord.WebSocket;
 using System;
 using System.Threading.Tasks;
 
@@ -7,10 +7,10 @@ namespace Namiko.Addons.Handlers
 {
     public interface ICustomContext
     {
-        IDiscordClient Client { get; }
-        IGuild Guild { get; }
-        IMessageChannel Channel { get; }
-        IUser User { get; }
+        DiscordShardedClient Client { get; }
+        SocketGuild Guild { get; }
+        ISocketMessageChannel Channel { get; }
+        SocketUser User { get; }
 
 
         DateTimeOffset CreatedAt { get; }

@@ -7,8 +7,12 @@ using Namiko.Addons.Handlers.Criteria;
 using Namiko.Addons.Handlers.Dialogue;
 using Namiko.Addons.Handlers.Paginator;
 using Namiko.Addons.Handlers.Select;
+using Namiko.Handlers;
+using Namiko.Handlers.Attributes;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
+using PreconditionAttribute = Namiko.Handlers.Attributes.PreconditionAttribute;
 
 namespace Namiko.Addons.Handlers
 {
@@ -50,25 +54,26 @@ namespace Namiko.Addons.Handlers
 
 
         #region IModuleBase
-        protected virtual void SetContext(ICustomContext context)
+        public virtual void BeforeExecute(CommandInfo command)
         {
-            if (context is not T)
+        }
+        public virtual void AfterExecute(CommandInfo command)
+        {
+        }
+        public virtual void OnModuleBuilding(CommandService commandService, ModuleBuilder builder)
+        {
+            foreach (var cmd in builder.Commands)
             {
-                throw new InvalidOperationException($"Invalid context type. Expected {typeof(T).Name}, got {context.GetType().Name}.");
+                var desc = cmd.Attributes.FirstOrDefault(x => x is DescriptionAttribute);
+                if (desc != default)
+                {
+                    cmd.WithSummary((desc as DescriptionAttribute).Description);
+                }
+                foreach (var prec in cmd.Attributes.Where(x => x is PreconditionAttribute).Select(x => x as PreconditionAttribute))
+                {
+                    cmd.AddPrecondition(prec.ReturnAttribute(Handler.Commands) as Discord.Commands.PreconditionAttribute);
+                }
             }
-            else
-            {
-                Context = (T)context;
-            }
-        }
-        protected virtual void BeforeExecute(CommandInfo command)
-        {
-        }
-        protected virtual void AfterExecute(CommandInfo command)
-        {
-        }
-        protected virtual void OnModuleBuilding(CommandService commandService, ModuleBuilder builder)
-        {
         }
 
         void IModuleBase.SetContext(ICommandContext context)
@@ -82,9 +87,6 @@ namespace Namiko.Addons.Handlers
                 Context = (T)context;
             }
         }
-        void IModuleBase.BeforeExecute(CommandInfo command) => BeforeExecute(command);
-        void IModuleBase.AfterExecute(CommandInfo command) => AfterExecute(command);
-        void IModuleBase.OnModuleBuilding(CommandService commandService, ModuleBuilder builder) => OnModuleBuilding(commandService, builder);
         #endregion IModuleBase
 
         #region IInteractionModuleBase
@@ -93,7 +95,19 @@ namespace Namiko.Addons.Handlers
         public virtual Task BeforeExecuteAsync(ICommandInfo command) => Task.CompletedTask;
         public virtual Task AfterExecuteAsync(ICommandInfo command) => Task.CompletedTask;
         public virtual void OnModuleBuilding(InteractionService commandService, Discord.Interactions.ModuleInfo module) { }
-        public virtual void Construct(Discord.Interactions.Builders.ModuleBuilder builder, InteractionService commandService) { }
+        public virtual void Construct(Discord.Interactions.Builders.ModuleBuilder builder, InteractionService commandService)
+        {
+            foreach (var cmd in builder.SlashCommands)
+            {
+                var desc = cmd.Attributes.FirstOrDefault(x => x is DescriptionAttribute);
+                if (desc != default)
+                {
+                    cmd.WithDescription((desc as DescriptionAttribute).Description);
+                }
+                var atr = cmd.Attributes.Where(x => x is PreconditionAttribute).Select(x => x as PreconditionAttribute);
+                cmd.WithPreconditions(atr.Select(x => x.ReturnAttribute(Handler.Interactions) as Discord.Interactions.PreconditionAttribute).ToArray());
+            }
+        }
 
         void IInteractionModuleBase.SetContext(IInteractionContext context)
         {

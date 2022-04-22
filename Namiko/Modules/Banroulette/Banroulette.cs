@@ -4,27 +4,23 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using Model;
 using Namiko.Addons.Handlers;
+using Namiko.Handlers.Attributes;
+using Namiko.Handlers.Attributes.Preconditions;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using ContextType = Discord.Interactions.ContextType;
-using RequireBotPermissionAttribute = Discord.Interactions.RequireBotPermissionAttribute;
-using RequireContextAttribute = Discord.Interactions.RequireContextAttribute;
-using RequireUserPermissionAttribute = Discord.Interactions.RequireUserPermissionAttribute;
-using SummaryAttribute = Namiko.Resources.Attributes.SummaryAttribute;
 
 namespace Namiko
 {
-    [RequireGuild, RequireContext(ContextType.Guild)]
+    [RequireGuild]
     [Name("Banroulette")]
     public class Banroulettes : CustomModuleBase<ICustomContext>
     {
-        [CustomBotPermission(GuildPermission.BanMembers), CustomUserPermission(GuildPermission.BanMembers)]
-        [RequireBotPermission(GuildPermission.BanMembers), RequireUserPermission(GuildPermission.BanMembers)]
-        [Command("NewBanroulette"), Alias("nbr"), Summary("Starts a new game of ban roulette, where one participant is randomly banned from the server. Winners split toasties from the reward pool.\n" +
+        [BotPermission(GuildPermission.BanMembers), UserPermission(GuildPermission.BanMembers)]
+        [Command("NewBanroulette"), Alias("nbr"), Description("Starts a new game of ban roulette, where one participant is randomly banned from the server. Winners split toasties from the reward pool.\n" +
             "**Usage**: `!nbr [ban_length_in_hours] [required_role_name-optional]`\n")]
         [SlashCommand("new-banroulette", "Starts a new game of ban roulette, where one participant is randomly banned from the server")]
-        public async Task NewBanroulette([Summary(description: "Ban length in hours")] int hours, [Summary(description: "Only allow members with this role to join")][Remainder] IRole role = null)
+        public async Task NewBanroulette([Description("Ban length in hours")] int hours, [Description("Only allow members with this role to join")][Remainder] IRole role = null)
         {
             if (hours < 0)
                 throw new IndexOutOfRangeException();
@@ -58,7 +54,7 @@ namespace Namiko
                 $"\n\n*Type `{prefix}jbr` to join the game.*");
         }
 
-        [Command("Banroulette"), Alias("br"), Summary("Shows details of the current Ban Roulette.\n**Usage**: `!br`")]
+        [Command("Banroulette"), Alias("br"), Description("Shows details of the current Ban Roulette.\n**Usage**: `!br`")]
         [SlashCommand("banroulette", "Check current banroulette details")]
         public async Task Banroulette()
         {
@@ -75,7 +71,7 @@ namespace Namiko
             await ReplyAsync($"{BanrouletteUtil.BanrouletteDetails(banroulette, role, users.Count)}" + participants);
         }
 
-        [Command("JoinBanroulette"), Alias("jbr"), Summary("Join the current Ban Roulette. Must be in the same channel.\n**Usage**: `!jbr`")]
+        [Command("JoinBanroulette"), Alias("jbr"), Description("Join the current Ban Roulette. Must be in the same channel.\n**Usage**: `!jbr`")]
         [SlashCommand("join-banroulette", "Join the current banroulette")]
         public async Task JoinBanroulette()
         {
@@ -117,8 +113,9 @@ namespace Namiko
             await ReplyAsync(response);
         }
 
-        [Command("CancelBanroulette"), Alias("cbr"), Summary("Cancels the current Ban Roulette.\n**Usage**: `!cbr`"), CustomUserPermission(GuildPermission.BanMembers)]
-        [SlashCommand("cancel-banroulette", "Cancel the current banroulette"), RequireUserPermission(GuildPermission.BanMembers)]
+        [UserPermission(GuildPermission.BanMembers)]
+        [Command("CancelBanroulette"), Alias("cbr"), Description("Cancels the current Ban Roulette.\n**Usage**: `!cbr`")]
+        [SlashCommand("cancel-banroulette", "Cancel the current banroulette")]
         public async Task CancelBanroulette()
         {
             var banroulette = BanrouletteDb.GetBanroulette(Context.Channel.Id);
@@ -132,8 +129,9 @@ namespace Namiko
             await ReplyAsync("*Tch...* Cancelling ban roulette.");
         }
 
-        [Command("RunBanroulette"), Alias("ebr", "EndBanroulette"), Summary("Ends the current Ban Roulette, banning a random participant and splitting the reward pool between the others.\n**Usage**: `!ebr`"), CustomBotPermission(GuildPermission.BanMembers), CustomUserPermission(GuildPermission.BanMembers)]
-        [SlashCommand("run-banroulette", "Runs the current banroulette"), RequireBotPermission(GuildPermission.BanMembers), RequireUserPermission(GuildPermission.BanMembers)]
+        [BotPermission(GuildPermission.BanMembers), UserPermission(GuildPermission.BanMembers)]
+        [Command("RunBanroulette"), Alias("ebr", "EndBanroulette"), Description("Ends the current Ban Roulette, banning a random participant and splitting the reward pool between the others.\n**Usage**: `!ebr`")]
+        [SlashCommand("run-banroulette", "Runs the current banroulette")]
         public async Task EndBanroulette()
         {
             var banroulette = BanrouletteDb.GetBanroulette(Context.Channel.Id);
@@ -193,9 +191,9 @@ namespace Namiko
             }
         }
 
-        [Command("BrRewardPool"), Alias("brrp"), Summary("Add toasties to the reward pool from your account.\n**Usage**: `!brrp [amount]`")]
+        [Command("BrRewardPool"), Alias("brrp"), Description("Add toasties to the reward pool from your account.\n**Usage**: `!brrp [amount]`")]
         [SlashCommand("banroulette-reward-pool", "Add to the reward pool from your balance")]
-        public async Task BRRewardPool([Summary("amount")] string amountStr)
+        public async Task BRRewardPool([Description("amount")] string amountStr)
         {
             int amount = ToastieUtil.ParseAmount(amountStr, (SocketGuildUser)Context.User);
             if (amount < 0)
@@ -231,8 +229,9 @@ namespace Namiko
             await ReplyAsync($"Added {amount} to the reward pool!");
         }
 
-        [Command("SetBrRewardPool"), Alias("sbrrp"), Summary("Set the reward pool.\n**Usage**: `!sbrrp [amount]`"), CustomUserPermission(GuildPermission.Administrator)]
-        [SlashCommand("banroulette-set-reward-pool", "Set the reward pool"), RequireUserPermission(GuildPermission.Administrator)]
+        [UserPermission(GuildPermission.Administrator)]
+        [Command("SetBrRewardPool"), Alias("sbrrp"), Description("Set the reward pool.\n**Usage**: `!sbrrp [amount]`")]
+        [SlashCommand("banroulette-set-reward-pool", "Set the reward pool")]
         public async Task SetBRRewardPool(int amount)
         {
             var banroulette = BanrouletteDb.GetBanroulette(Context.Channel.Id);
@@ -247,8 +246,9 @@ namespace Namiko
             await ReplyAsync($"Set the reward pool to {amount}!");
         }
 
-        [Command("SetBrMinParticipants"), Alias("sbrmin"), Summary("Set minimum participants.\n**Usage**: `!sbrmin [amount]`"), CustomUserPermission(GuildPermission.BanMembers)]
-        [SlashCommand("banroulette-set-min-participants", "Set minimum participants"), RequireUserPermission(GuildPermission.BanMembers)]
+        [UserPermission(GuildPermission.BanMembers)]
+        [Command("SetBrMinParticipants"), Alias("sbrmin"), Description("Set minimum participants.\n**Usage**: `!sbrmin [amount]`")]
+        [SlashCommand("banroulette-set-min-participants", "Set minimum participants")]
         public async Task SetBRMinParticipants(int amount)
         {
             var banroulette = BanrouletteDb.GetBanroulette(Context.Channel.Id);
@@ -263,8 +263,9 @@ namespace Namiko
             await ReplyAsync($"Set the minimum participants to {amount}!");
         }
 
-        [Command("SetBrMaxParticipants"), Alias("sbrmax"), Summary("Set maximum participants.\n**Usage**: `!sbrmax [amount]`"), CustomUserPermission(GuildPermission.BanMembers)]
-        [SlashCommand("banroulette-set-max-participants", "Set maximum participants"), RequireUserPermission(GuildPermission.BanMembers)]
+        [UserPermission(GuildPermission.BanMembers)]
+        [Command("SetBrMaxParticipants"), Alias("sbrmax"), Description("Set maximum participants.\n**Usage**: `!sbrmax [amount]`")]
+        [SlashCommand("banroulette-set-max-participants", "Set maximum participants")]
         public async Task SetBRMaxParticipants(int amount)
         {
             var banroulette = BanrouletteDb.GetBanroulette(Context.Channel.Id);
