@@ -5,19 +5,19 @@ using Discord.WebSocket;
 using Model;
 using Namiko.Addons.Handlers;
 using Namiko.Addons.Handlers.Paginator;
+using Namiko.Handlers.Attributes;
 using Namiko.Handlers.Attributes.Preconditions;
 using Namiko.Modules.Basic;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 using PreconditionAttribute = Namiko.Handlers.Attributes.PreconditionAttribute;
-using SummaryAttribute = Discord.Commands.SummaryAttribute;
 
 namespace Namiko
 {
     public class Basic : CustomModuleBase<ICustomContext>
     {
-        [Command("Hi Namiko"), Alias("Hi", "ping", "Awoo"), Summary("Hi Namiko command. Counts response time.")]
+        [Command("Hi Namiko"), Alias("Hi", "ping", "Awoo"), Description("Hi Namiko command. Counts response time.")]
         [SlashCommand("ping", "Test command response time")]
         public async Task HiNamiko([Remainder] string str = "")
         {
@@ -28,21 +28,21 @@ namespace Namiko
             await msg.ModifyAsync(a => a.Content = $"Hi {Context.User.Mention} :fox: `{ping.TotalMilliseconds}ms`");
         }
         
-        [Command("Info"), Alias("About"), Summary("Bot info.")]
+        [Command("Info"), Alias("About"), Description("Bot info.")]
         [SlashCommand("info", "Info command")]
         public async Task Info([Remainder] string str = "")
         {
             await ReplyAsync("", false, BasicUtil.InfoEmbed().Build());
         }
 
-        [Command("Pro"), Alias("Premium", "Support", "Patreon", "Paypal", "Donate"), Summary("Donation Links.")]
+        [Command("Pro"), Alias("Premium", "Support", "Patreon", "Paypal", "Donate"), Description("Donation Links.")]
         [SlashCommand("pro", "Info about pro features")]
         public async Task Donate([Remainder] string str = "")
         {
             await ReplyAsync("", false, BasicUtil.DonateEmbed(Program.GetPrefix(Context)).Build());
         }
 
-        [Command("InfoPro"), Summary("Donation Links.")]
+        [Command("InfoPro"), Description("Donation Links.")]
         public async Task InfoPro([Remainder] string str = "")
         {
             string prefix = Program.GetPrefix(Context);
@@ -63,7 +63,7 @@ namespace Namiko
             await ReplyAsync("", false, eb.Build());
         }
 
-        [Command("InfoProPlus"), Summary("Donation Links.")]
+        [Command("InfoProPlus"), Description("Donation Links.")]
         public async Task InfoProPlus([Remainder] string str = "")
         {
             string prefix = Program.GetPrefix(Context);
@@ -87,7 +87,7 @@ namespace Namiko
             await ReplyAsync("", false, eb.Build());
         }
 
-        [Command("InfoGuild"), Summary("Donation Links.")]
+        [Command("InfoGuild"), Description("Donation Links.")]
         public async Task InfoGuild([Remainder] string str = "")
         {
             string prefix = Program.GetPrefix(Context);
@@ -108,7 +108,7 @@ namespace Namiko
             await ReplyAsync("", false, eb.Build());
         }
 
-        [Command("InfoGuildPlus"), Summary("Donation Links.")]
+        [Command("InfoGuildPlus"), Description("Donation Links.")]
         public async Task InfoGuildPlus([Remainder] string str = "")
         {
             var eb = new EmbedBuilder()
@@ -193,7 +193,7 @@ namespace Namiko
             await ReplyAsync("Done.");
         }
 
-        [Command("SShipWaifu"), Summary("\n **Usage**: `!shipwaifu [waifu] [userid] [guildid_optional]`"), OwnerPrecondition]
+        [Command("SShipWaifu"), Description("\n **Usage**: `!shipwaifu [waifu] [userid] [guildid_optional]`"), OwnerPrecondition]
         public async Task ShipWaifu(string name, ulong userId, ulong guildId = 0)
         {
             Program.GetPrefix(Context);
@@ -262,7 +262,7 @@ namespace Namiko
             }
         }
 
-        [Command("Status"), Summary("Bot status.\n **Usage**: `!status`")]
+        [Command("Status"), Description("Bot status.\n **Usage**: `!status`")]
         [SlashCommand("status", "Namiko <-> Discord connection status")]
         public async Task Status()
         {
@@ -290,7 +290,7 @@ namespace Namiko
 
         // HELP COMMAND STUFF
 
-        [Command("Help"), Alias("h"), Summary("Shows more information about a command.\n**Usage**: `!help [command/module_name]`")]
+        [Command("Help"), Alias("h"), Description("Shows more information about a command.\n**Usage**: `!help [command/module_name]`")]
         public async Task Help([Remainder] string cmd = "")
         {
             var commandService = Program.GetCommands();

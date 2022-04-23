@@ -3,6 +3,7 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Model;
+using Namiko.Handlers.Attributes;
 using Namiko.Handlers.Attributes.Preconditions;
 using Namiko.Modules.Basic;
 using System;
@@ -16,7 +17,7 @@ namespace Namiko
     [Name("Currency & Gambling")]
     public class Currency : InteractiveBase<ShardedCommandContext>
     {
-        [Command("Blackjack"), Alias("bj"), Summary("Starts a game of blackjack.\n**Usage**: `!bj [amount]`")]
+        [Command("Blackjack"), Alias("bj"), Description("Starts a game of blackjack.\n**Usage**: `!bj [amount]`")]
         public async Task BlackjackCommand(string sAmount, [Remainder] string str = "")
         {
             var user = (SocketGuildUser)Context.User;
@@ -24,19 +25,19 @@ namespace Namiko
 
             if (Blackjack.Games.ContainsKey(Context.User.Id))
             {
-                await Context.Channel.SendMessageAsync("You are already in a game of blackjack. #" + Blackjack.Games[user.Id].Channel.Name);
+                await ReplyAsync("You are already in a game of blackjack. #" + Blackjack.Games[user.Id].Channel.Name);
                 return;
             }
 
             int amount = ToastieUtil.ParseAmount(sAmount, user);
             if (amount < 0)
             {
-                await Context.Channel.SendMessageAsync("Pick an amount! number, all, half, or x/y.");
+                await ReplyAsync("Pick an amount! number, all, half, or x/y.");
                 return;
             }
             if (amount == 0)
             {
-                await Context.Channel.SendMessageAsync("You have no toasties...");
+                await ReplyAsync("You have no toasties...");
                 return;
             }
 
@@ -53,7 +54,7 @@ namespace Namiko
             if (BalanceDb.GetToasties(Context.Client.CurrentUser.Id, Context.Guild.Id) < amount)
             {
                 string prefix = Program.GetPrefix(Context);
-                await Context.Channel.SendMessageAsync("Tch, I don't have enough toasties... I will recover eventually by stealing toasties from all of you. :fox:" +
+                await ReplyAsync("Tch, I don't have enough toasties... I will recover eventually by stealing toasties from all of you. :fox:" +
                     $"But if you want to speed up the process you can give me some using the `{prefix}give` or `{prefix}at` commands.");
                 await BalanceDb.AddToasties(user.Id, amount, Context.Guild.Id);
                 return;
@@ -64,7 +65,7 @@ namespace Namiko
             await Blackjack.GameContinue(Context, game);
         }
 
-        [Command("Daily"), Alias("dailies", "daywy", "daiwy"), Summary("Gives daily toasties.")]
+        [Command("Daily"), Alias("dailies", "daywy", "daiwy"), Description("Gives daily toasties.")]
         public async Task DailyCmd()
         {
             bool newDaily = false;
@@ -108,7 +109,7 @@ namespace Namiko
                 await BalanceDb.AddToasties(Context.User.Id, amount, Context.Guild.Id);
                 await BalanceDb.AddToasties(Context.Client.CurrentUser.Id, tax, Context.Guild.Id);
 
-                await Context.Channel.SendMessageAsync("", false, ToastieUtil.DailyGetEmbed(Context.User, daily.Streak, amount, BalanceDb.GetToasties(Context.User.Id, Context.Guild.Id), Program.GetPrefix(Context)).Build());
+                await ReplyAsync("", false, ToastieUtil.DailyGetEmbed(Context.User, daily.Streak, amount, BalanceDb.GetToasties(Context.User.Id, Context.Guild.Id), Program.GetPrefix(Context)).Build());
             }
             else
             {
@@ -116,11 +117,11 @@ namespace Namiko
                 int hours = (int)wait / 3600;
                 int minutes = (int)wait % 3600 / 60;
                 int seconds = (int)wait % 60;
-                await Context.Channel.SendMessageAsync("", false, ToastieUtil.DailyWaitEmbed(Context.User, hours, minutes, seconds, Program.GetPrefix(Context)).Build());
+                await ReplyAsync("", false, ToastieUtil.DailyWaitEmbed(Context.User, hours, minutes, seconds, Program.GetPrefix(Context)).Build());
             }
         }
 
-        [Command("Weekly"), Alias("weeklies", "weekwy"), Summary("Gives weekly toasties.")]
+        [Command("Weekly"), Alias("weeklies", "weekwy"), Description("Gives weekly toasties.")]
         public async Task Weekly()
         {
             var weekly = WeeklyDb.GetWeekly(Context.User.Id, Context.Guild.Id);
@@ -157,14 +158,14 @@ namespace Namiko
                 await BalanceDb.AddToasties(Context.Client.CurrentUser.Id, tax / 2, Context.Guild.Id);
                 weekly.Date = DateTime.Now;
                 await WeeklyDb.SetWeekly(weekly);
-                await Context.Channel.SendMessageAsync(text, false, ToastieUtil.WeeklyGetEmbed(amount, BalanceDb.GetToasties(Context.User.Id, Context.Guild.Id), Context.User, Program.GetPrefix(Context)).Build());
+                await ReplyAsync(text, false, ToastieUtil.WeeklyGetEmbed(amount, BalanceDb.GetToasties(Context.User.Id, Context.Guild.Id), Context.User, Program.GetPrefix(Context)).Build());
                 return;
             }
 
-            await Context.Channel.SendMessageAsync("", false, ToastieUtil.WeeklyWaitEmbed(weekly.Date.AddHours(hours), Context.User, Program.GetPrefix(Context)).Build());
+            await ReplyAsync("", false, ToastieUtil.WeeklyWaitEmbed(weekly.Date.AddHours(hours), Context.User, Program.GetPrefix(Context)).Build());
         }
 
-        [Command("Flip"), Alias("f", "fwip"), Summary("Flip a coin for toasties, defaults to tails.\n**Usage**: `!flip [amount] [heads_or_tails]`")]
+        [Command("Flip"), Alias("f", "fwip"), Description("Flip a coin for toasties, defaults to tails.\n**Usage**: `!flip [amount] [heads_or_tails]`")]
         public async Task Flip(string sAmount, string side = "t", [Remainder] string str = "")
         {
             var user = (SocketGuildUser)Context.User;
@@ -173,19 +174,19 @@ namespace Namiko
 
             if (!(side.Equals("t") || side.Equals("h") || side.Equals("tails") || side.Equals("heads")))
             {
-                await Context.Channel.SendMessageAsync("Pick heads or tails!");
+                await ReplyAsync("Pick heads or tails!");
                 return;
             }
 
             int amount = ToastieUtil.ParseAmount(sAmount, user);
             if (amount < 0)
             {
-                await Context.Channel.SendMessageAsync("Pick an amount! number, all, half, or x/y.");
+                await ReplyAsync("Pick an amount! number, all, half, or x/y.");
                 return;
             }
             if (amount == 0)
             {
-                await Context.Channel.SendMessageAsync("You have no toasties...");
+                await ReplyAsync("You have no toasties...");
                 return;
             }
 
@@ -195,14 +196,14 @@ namespace Namiko
             }
             catch (Exception ex)
             {
-                await Context.Channel.SendMessageAsync(ex.Message);
+                await ReplyAsync(ex.Message);
                 return;
             }
 
             if (BalanceDb.GetToasties(Context.Client.CurrentUser.Id, Context.Guild.Id) < amount)
             {
                 string prefix = Program.GetPrefix(Context);
-                await Context.Channel.SendMessageAsync("Tch, I don't have enough toasties... I will recover eventually by stealing toasties from all of you. :fox:" +
+                await ReplyAsync("Tch, I don't have enough toasties... I will recover eventually by stealing toasties from all of you. :fox:" +
                     $"But if you want to speed up the process you can give me some using the `{prefix}give` or `{prefix}at` commands.");
                 await BalanceDb.AddToasties(user.Id, amount, Context.Guild.Id);
                 return;
@@ -215,7 +216,7 @@ namespace Namiko
                 string resp = "";
                 if (amount >= 50000 && rnd.Next(5) == 1)
                     resp = "Tch... I'll get you next time.";
-                await Context.Channel.SendMessageAsync(resp, false, ToastieUtil.FlipWinEmbed(user, amount).Build());
+                await ReplyAsync(resp, false, ToastieUtil.FlipWinEmbed(user, amount).Build());
             }
             else
             {
@@ -223,32 +224,32 @@ namespace Namiko
                 string resp = "";
                 if (amount >= 50000 && rnd.Next(5) == 1)
                     resp = "I'll take those.";
-                await Context.Channel.SendMessageAsync(resp, false, ToastieUtil.FlipLoseEmbed(user, amount).Build());
+                await ReplyAsync(resp, false, ToastieUtil.FlipLoseEmbed(user, amount).Build());
             }
         }
 
-        [Command("Balance"), Alias("toastie", "bal", "toasties"), Summary("Shows amount of toasties.\n**Usage**: `!bal [user_optional]`")]
+        [Command("Balance"), Alias("toastie", "bal", "toasties"), Description("Shows amount of toasties.\n**Usage**: `!bal [user_optional]`")]
         public async Task Toastie([Remainder] IUser user = null)
         {
             if (user == null)
             {
                 user = Context.User;
             }
-            await Context.Channel.SendMessageAsync("", false, ToastieUtil.ToastieEmbed(user, BalanceDb.GetToasties(user.Id, Context.Guild.Id)).Build());
+            await ReplyAsync("", false, ToastieUtil.ToastieEmbed(user, BalanceDb.GetToasties(user.Id, Context.Guild.Id)).Build());
         }
 
-        [Command("Give"), Summary("Give a user some of your toasties.\n**Usage**: `!give [user] [amount]`")]
+        [Command("Give"), Description("Give a user some of your toasties.\n**Usage**: `!give [user] [amount]`")]
         public async Task Give(IUser recipient, string sAmount, [Remainder] string str = "")
         {
             int amount = ToastieUtil.ParseAmount(sAmount, (SocketGuildUser)Context.User);
             if (amount < 0)
             {
-                await Context.Channel.SendMessageAsync("Pick an amount! number, all, half, or x/y.");
+                await ReplyAsync("Pick an amount! number, all, half, or x/y.");
                 return;
             }
             if (amount == 0)
             {
-                await Context.Channel.SendMessageAsync("You have no toasties...");
+                await ReplyAsync("You have no toasties...");
                 return;
             }
 
@@ -258,49 +259,49 @@ namespace Namiko
             }
             catch (Exception ex)
             {
-                await Context.Channel.SendMessageAsync(ex.Message);
+                await ReplyAsync(ex.Message);
                 return;
             }
 
             await BalanceDb.AddToasties(recipient.Id, amount, Context.Guild.Id);
 
-            await Context.Channel.SendMessageAsync("", false, ToastieUtil.GiveEmbed(Context.User, recipient, amount).Build());
+            await ReplyAsync("", false, ToastieUtil.GiveEmbed(Context.User, recipient, amount).Build());
         }
         
-        [Command("Give"), Summary("Give a user some of your toasties.\n**Usage**: `!give [user] [amount]`")]
+        [Command("Give"), Description("Give a user some of your toasties.\n**Usage**: `!give [user] [amount]`")]
         public async Task Give(string sAmount, IUser recipient, [Remainder] string str = "")
         {
             await Give(recipient, sAmount, str);
         }
 
-        [Command("SetToasties"), Alias("st", "sett"), Summary("Sets the amount of toasties.\n**Usage**: `!st [user] [amount]`"), UserPermission(GuildPermission.Administrator)]
+        [Command("SetToasties"), Alias("st", "sett"), Description("Sets the amount of toasties.\n**Usage**: `!st [user] [amount]`"), UserPermission(GuildPermission.Administrator)]
         public async Task Set(IUser user, int amount, [Remainder] string str = "")
         {
             await BalanceDb.SetToasties(user.Id, amount, Context.Guild.Id);
-            await Context.Channel.SendMessageAsync("", false, ToastieUtil.ToastieEmbed(user, BalanceDb.GetToasties(user.Id, Context.Guild.Id)).Build());
+            await ReplyAsync("", false, ToastieUtil.ToastieEmbed(user, BalanceDb.GetToasties(user.Id, Context.Guild.Id)).Build());
         }
 
-        [Command("AddToasites"), Alias("at", "addt"), Summary("Adds toasties to a user.\n**Usage**: `!at [user] [amount]`"), UserPermission(GuildPermission.Administrator)]
+        [Command("AddToasites"), Alias("at", "addt"), Description("Adds toasties to a user.\n**Usage**: `!at [user] [amount]`"), UserPermission(GuildPermission.Administrator)]
         public async Task Add(IUser user, int amount, [Remainder] string str = "")
         {
             await BalanceDb.AddToasties(user.Id, amount, Context.Guild.Id);
-            await Context.Channel.SendMessageAsync("", false, ToastieUtil.ToastieEmbed(user, BalanceDb.GetToasties(user.Id, Context.Guild.Id)).Build());
+            await ReplyAsync("", false, ToastieUtil.ToastieEmbed(user, BalanceDb.GetToasties(user.Id, Context.Guild.Id)).Build());
         }
 
-        [Command("LootboxShop"), Alias("ls"), Summary("Lootbox shop.\n**Usage**: `!ls`")]
+        [Command("LootboxShop"), Alias("ls"), Description("Lootbox shop.\n**Usage**: `!ls`")]
         public async Task LootboxShop([Remainder] string str = "")
         {
-            await Context.Channel.SendMessageAsync(embed: ToastieUtil.BoxShopEmbed(Context.User).Build());
+            await ReplyAsync(embed: ToastieUtil.BoxShopEmbed(Context.User).Build());
         }
 
-        [Command("BuyLootbox"), Alias("bl"), Summary("Buy a lootbox.\n**Usage**: `!bl [name]`")]
+        [Command("BuyLootbox"), Alias("bl"), Description("Buy a lootbox.\n**Usage**: `!bl [name]`")]
         public async Task BuyLootbox([Remainder] string str = "")
         {
             var prefix = Program.GetPrefix(Context);
 
             if (!PremiumDb.IsPremium(Context.Guild.Id, ProType.GuildPlus))
             {
-                await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared(Context.User)
+                await ReplyAsync(embed: new EmbedBuilderPrepared(Context.User)
                     .WithDescription($"*~ This command requires Pro Guild+ ~*\n" +
                     $"Try `{prefix}lootboxstats` to see drop rates.")
                     .WithFooter($"`{prefix}pro`")
@@ -318,7 +319,7 @@ namespace Namiko
             }
             if (box == null)
             {
-                var listMsg = await Context.Channel.SendMessageAsync(embed: ToastieUtil.BoxShopEmbed(Context.User)
+                var listMsg = await ReplyAsync(embed: ToastieUtil.BoxShopEmbed(Context.User)
                     .WithFooter("Times out in 23 seconds. Try the `lootboxstats` command")
                     .WithDescription("Enter the number of the lootbox you wish to purchase.")
                     .Build());
@@ -345,7 +346,7 @@ namespace Namiko
                 box = boxes[i - 1];
             }
 
-            var msg = await Context.Channel.SendMessageAsync($"How many **{box.Name}** lootboxes do you wish to buy? (max 100)");
+            var msg = await ReplyAsync($"How many **{box.Name}** lootboxes do you wish to buy? (max 100)");
             var resp = await NextMessageAsync(
                 new Criteria<IMessage>()
                 .AddCriterion(new EnsureSourceUserCriterion())
@@ -371,23 +372,23 @@ namespace Namiko
                 await BalanceDb.AddToasties(Context.User.Id, -box.Price * amount, Context.Guild.Id);
             } catch (Exception ex)
             {
-                await Context.Channel.SendMessageAsync(ex.Message);
+                await ReplyAsync(ex.Message);
                 return;
             }
 
             await LootBoxDb.AddLootbox(Context.User.Id, (LootBoxType)box.TypeId, amount, Context.Guild.Id);
-            await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared(Context.User)
+            await ReplyAsync(embed: new EmbedBuilderPrepared(Context.User)
                 .WithDescription($"You bought {amount}x **{box.Name}**!\nType `{Program.GetPrefix(Context)}open` to open it!")
                 .Build());
         }
 
-        [Command("LootboxStats"), Summary("Shows the stats of all lootboxes.\n**Usage**: `!lootboxstats`")]
+        [Command("LootboxStats"), Description("Shows the stats of all lootboxes.\n**Usage**: `!lootboxstats`")]
         public async Task ShowLootboxStats([Remainder] string str = "")
         {
             await ReplyAsync(embed: ToastieUtil.BoxStatsEmbed(Context.User).Build());
         }
 
-        [Command("ToastieLeaderboard"), Alias("tlb"), Summary("Toastie Leaderboard.\n**Usage**: `!tlb`")]
+        [Command("ToastieLeaderboard"), Alias("tlb"), Description("Toastie Leaderboard.\n**Usage**: `!tlb`")]
         public async Task ToastieLeaderboard([Remainder] string str = "")
         {
             var toasties = await BalanceDb.GetAllToasties(Context.Guild.Id);
@@ -423,7 +424,7 @@ namespace Namiko
             await PagedReplyAsync(msg);
         }
 
-        [Command("DailyLeaderboard"), Alias("dlb"), Summary("Daily Leaderboard.\n**Usage**: `!dlb`")]
+        [Command("DailyLeaderboard"), Alias("dlb"), Description("Daily Leaderboard.\n**Usage**: `!dlb`")]
         public async Task DailyLeaderboard([Remainder] string str = "")
         {
             var dailies = await DailyDb.GetLeaderboard(Context.Guild.Id);
@@ -451,35 +452,35 @@ namespace Namiko
             await PagedReplyAsync(msg);
         }
 
-        [Command("Beg"), Summary("Beg Namiko for toasties.\n**Usage**: `!beg`")]
+        [Command("Beg"), Description("Beg Namiko for toasties.\n**Usage**: `!beg`")]
         public async Task Beg([Remainder] string str = "")
         {
             var amount = BalanceDb.GetToasties(Context.User.Id, Context.Guild.Id);
             if (amount > 0)
             {
-                await Context.Channel.SendMessageAsync("You already have toasties, you snob.");
+                await ReplyAsync("You already have toasties, you snob.");
                 return;
             }
 
             if (!Constants.beg)
             {
-                await Context.Channel.SendMessageAsync(ToastieUtil.GetFalseBegMessage());
+                await ReplyAsync(ToastieUtil.GetFalseBegMessage());
                 return;
             }
 
             amount = Constants.begAmount;
             await BalanceDb.AddToasties(Context.User.Id, amount, Context.Guild.Id);
 
-            await Context.Channel.SendMessageAsync("Fine. Just leave me alone.", false, ToastieUtil.GiveEmbed(Context.Client.CurrentUser, Context.User, amount).Build());
+            await ReplyAsync("Fine. Just leave me alone.", false, ToastieUtil.GiveEmbed(Context.Client.CurrentUser, Context.User, amount).Build());
         }
 
-        [Command("Open"), Alias("OpenLootbox", "Lootbox", "Lootwox"), Summary("Open a lootbox if you have one.\n**Usage**: `!open`"), RequireGuild]
+        [Command("Open"), Alias("OpenLootbox", "Lootbox", "Lootwox"), Description("Open a lootbox if you have one.\n**Usage**: `!open`"), RequireGuild]
         public async Task Open([Remainder] string str = "")
         {
             var boxes = await LootBoxDb.GetAll(Context.User.Id, Context.Guild.Id);
             if(boxes.Count == 0)
             {
-                await Context.Channel.SendMessageAsync("", false, ToastieUtil.NoBoxEmbed(Context.User).Build());
+                await ReplyAsync("", false, ToastieUtil.NoBoxEmbed(Context.User).Build());
                 return;
             }
 
@@ -489,7 +490,7 @@ namespace Namiko
 
             else
             {
-                var listMsg = await Context.Channel.SendMessageAsync(embed: ToastieUtil.BoxListEmbed(boxes, Context.User)
+                var listMsg = await ReplyAsync(embed: ToastieUtil.BoxListEmbed(boxes, Context.User)
                     .WithFooter("Times out in 23 seconds")
                     .WithDescription("Enter the number of the Lootbox you wish to open.")
                     .Build());
@@ -523,10 +524,10 @@ namespace Namiko
                 await LootBoxDb.AddLootbox(Context.User.Id, box.Type, -1, box.GuildId);
             } catch
             {
-                await Context.Channel.SendMessageAsync("You tried.");
+                await ReplyAsync("You tried.");
                 return;
             }
-            var msg = await Context.Channel.SendMessageAsync("", false, ToastieUtil.BoxOpeningEmbed(Context.User).Build());
+            var msg = await ReplyAsync("", false, ToastieUtil.BoxOpeningEmbed(Context.User).Build());
             await ProfileDb.IncrementLootboxOpened(Context.User.Id);
             int waitms = 4200;
 
@@ -561,13 +562,13 @@ namespace Namiko
             });
         }
 
-        [Command("BulkOpen"), Summary("Open multiple lootboxes at a time.\n**Usage**: `!open`"), RequireGuild]
+        [Command("BulkOpen"), Description("Open multiple lootboxes at a time.\n**Usage**: `!open`"), RequireGuild]
         public async Task BulkOpen([Remainder] string str = "")
         {
             var boxes = await LootBoxDb.GetAll(Context.User.Id, Context.Guild.Id);
             if (boxes.Count == 0)
             {
-                await Context.Channel.SendMessageAsync("", false, ToastieUtil.NoBoxEmbed(Context.User).Build());
+                await ReplyAsync("", false, ToastieUtil.NoBoxEmbed(Context.User).Build());
                 return;
             }
 
@@ -577,7 +578,7 @@ namespace Namiko
 
             else
             {
-                var listMsg = await Context.Channel.SendMessageAsync(embed: ToastieUtil.BoxListEmbed(boxes, Context.User)
+                var listMsg = await ReplyAsync(embed: ToastieUtil.BoxListEmbed(boxes, Context.User)
                     .WithFooter("Times out in 23 seconds")
                     .WithDescription("Enter the number of the Lootbox type you wish to open.")
                     .Build());
@@ -630,12 +631,12 @@ namespace Namiko
             }
             catch
             {
-                await Context.Channel.SendMessageAsync("You tried.");
+                await ReplyAsync("You tried.");
                 return;
             }
             _ = amountMsg.DeleteAsync();
 
-            var msg = await Context.Channel.SendMessageAsync("", false, ToastieUtil.BoxOpeningEmbed(Context.User).Build());
+            var msg = await ReplyAsync("", false, ToastieUtil.BoxOpeningEmbed(Context.User).Build());
             await ProfileDb.IncrementLootboxOpened(Context.User.Id, amount);
             int waitms = 4200;
 
@@ -686,7 +687,7 @@ namespace Namiko
             });
         }
 
-        [Command("Lootboxes"), Summary("Lists your lootboxes.\n**Usage**: `!Lootboxes`")]
+        [Command("Lootboxes"), Description("Lists your lootboxes.\n**Usage**: `!Lootboxes`")]
         public async Task Lootboxes([Remainder] IUser user = null)
         {
             user ??= Context.User;
@@ -694,11 +695,11 @@ namespace Namiko
             var boxes = await LootBoxDb.GetAll(user.Id, Context.Guild.Id);
             if (boxes.Count == 0)
             {
-                await Context.Channel.SendMessageAsync("", false, ToastieUtil.NoBoxEmbed(user).Build());
+                await ReplyAsync("", false, ToastieUtil.NoBoxEmbed(user).Build());
                 return;
             }
 
-            await Context.Channel.SendMessageAsync(embed: ToastieUtil.BoxListEmbed(boxes, user).WithDescription("").Build());
+            await ReplyAsync(embed: ToastieUtil.BoxListEmbed(boxes, user).WithDescription("").Build());
         }
     }
 }

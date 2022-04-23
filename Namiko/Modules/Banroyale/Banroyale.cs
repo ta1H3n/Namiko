@@ -3,6 +3,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Model;
 using Namiko.Addons.Handlers;
+using Namiko.Handlers.Attributes;
 using Namiko.Handlers.Attributes.Preconditions;
 using System;
 using System.Linq;
@@ -15,14 +16,14 @@ namespace Namiko
     public class Banroyales : CustomModuleBase<ICustomContext>
     {
         [BotPermission(GuildPermission.ManageRoles), UserPermission(GuildPermission.ManageMessages)]
-        [Command("NewBanroyale"), Alias("nbrl"), Summary("Starts a new game of Ban Royale, where participants play a reaction game until last one standing. Losers can get optionally kicked/banned and winners can get toasties as a reward.\n" +
+        [Command("NewBanroyale"), Alias("nbrl"), Description("Starts a new game of Ban Royale, where participants play a reaction game until last one standing. Losers can get optionally kicked/banned and winners can get toasties as a reward.\n" +
             "**Usage**: `!nbrl [entry_fee-default_0] [required_role_name-optional]`\n")]
         public async Task NewBanroyale([Remainder] IRole role = null)
         {
             var banroyale = await BanroyaleDb.GetBanroyale(Context.Channel.Id);
             if (banroyale != null)
             {
-                await Context.Channel.SendMessageAsync($":x: There is already a running Ban Royale in this channel. Type `{Program.GetPrefix(Context)}cbrl` to cancel it.");
+                await ReplyAsync($":x: There is already a running Ban Royale in this channel. Type `{Program.GetPrefix(Context)}cbrl` to cancel it.");
                 return;
             }
 
@@ -65,7 +66,7 @@ namespace Namiko
 
             string prefix = Program.GetPrefix(Context);
             await BanroyaleDb.AddBanroyale(banroyale);
-            await Context.Channel.SendMessageAsync("Setting up a new game of Ban Royale! It's on." +
+            await ReplyAsync("Setting up a new game of Ban Royale! It's on." +
                 $"\n\n**More settings:**" +
                 $"\n`{prefix}sbrlrp` - set reward pool" +
                 $"\n`{prefix}sbrlw` - set amount of winners" +
@@ -81,13 +82,13 @@ namespace Namiko
                 embed: BanroyaleUtil.BanroyaleDetailsEmbed(banroyale, Context.Guild.GetRole(banroyale.ParticipantRoleId), Context.Guild.GetRole(banroyale.RoleReqId)).Build());
         }
 
-        [Command("Banroyale"), Alias("brl"), Summary("Shows details of the current Ban Royale.\n**Usage**: `!brl`")]
+        [Command("Banroyale"), Alias("brl"), Description("Shows details of the current Ban Royale.\n**Usage**: `!brl`")]
         public async Task Banroyale([Remainder] string str = "")
         {
             var banroyale = await BanroyaleDb.GetBanroyale(Context.Channel.Id);
             if (banroyale == null)
             {
-                await Context.Channel.SendMessageAsync($"There is no running Ban Royale in this channel. `{Program.GetPrefix(Context)}nbrl` to start a new one.");
+                await ReplyAsync($"There is no running Ban Royale in this channel. `{Program.GetPrefix(Context)}nbrl` to start a new one.");
                 return;
             }
 
@@ -95,22 +96,22 @@ namespace Namiko
             var role = Context.Guild.GetRole(banroyale.ParticipantRoleId);
             var users = role.Members.ToList();
             string participants = users.Count > 0 ? $"\n\nParticipants:\n{BanroyaleUtil.BanroyaleParticipants(users.Select(x => x.Username).ToList())}" : "";
-            await Context.Channel.SendMessageAsync(embed: BanroyaleUtil.BanroyaleDetailsEmbed(banroyale, Context.Guild.GetRole(banroyale.ParticipantRoleId), Context.Guild.GetRole(banroyale.RoleReqId), users.Count).Build());
+            await ReplyAsync(embed: BanroyaleUtil.BanroyaleDetailsEmbed(banroyale, Context.Guild.GetRole(banroyale.ParticipantRoleId), Context.Guild.GetRole(banroyale.RoleReqId), users.Count).Build());
         }
 
-        [Command("JoinBanroyale"), Alias("jbrl"), Summary("Join the current Ban Royale. Must be in the same channel.\n**Usage**: `!jbrl`"), BotPermission(GuildPermission.ManageRoles)]
+        [Command("JoinBanroyale"), Alias("jbrl"), Description("Join the current Ban Royale. Must be in the same channel.\n**Usage**: `!jbrl`"), BotPermission(GuildPermission.ManageRoles)]
         public async Task JoinBanroyale([Remainder] string str = "")
         {
             var user = Context.User as SocketGuildUser;
             var banroyale = await BanroyaleDb.GetBanroyale(Context.Channel.Id);
             if (banroyale == null)
             {
-                await Context.Channel.SendMessageAsync(":x: There is no running Ban Royale in this channel.");
+                await ReplyAsync(":x: There is no running Ban Royale in this channel.");
                 return;
             }
             if (banroyale.Running == true)
             {
-                await Context.Channel.SendMessageAsync(":x: The ban royale already started. You're late to the party.");
+                await ReplyAsync(":x: The ban royale already started. You're late to the party.");
                 return;
             }
 
@@ -118,7 +119,7 @@ namespace Namiko
             {
                 if (!user.Roles.Any(x => x.Id == banroyale.RoleReqId))
                 {
-                    await Context.Channel.SendMessageAsync(":x: You do not have the required role to join!");
+                    await ReplyAsync(":x: You do not have the required role to join!");
                     return;
                 }
             }
@@ -127,62 +128,62 @@ namespace Namiko
             var users = role.Members.ToList();
             if (users.Count >= banroyale.MaxParticipants - 1 && banroyale.MaxParticipants != 0)
             {
-                await Context.Channel.SendMessageAsync("Ban Royale is full!");
+                await ReplyAsync("Ban Royale is full!");
                 return;
             }
 
             if (users.Contains(user))
             {
-                await Context.Channel.SendMessageAsync("You are already participating! Eager to get smoked, aren't you?");
+                await ReplyAsync("You are already participating! Eager to get smoked, aren't you?");
                 return;
             }
 
             await user.AddRoleAsync(role);
             users.Add(user);
             string response = "You joined the Ban Royale. *Heh.*" + (users.Count > 10 ? "" : "\n\nList of Participants:\n" + BanroyaleUtil.BanroyaleParticipants(users.Select(x => x.Username).ToList()));
-            await Context.Channel.SendMessageAsync(response);
+            await ReplyAsync(response);
         }
 
-        [Command("LeaveBanroyale"), Alias("lbrl"), Summary("Leave the current Ban Royale. Must be in the same channel.\n**Usage**: `!lbrl`"), BotPermission(GuildPermission.ManageRoles)]
+        [Command("LeaveBanroyale"), Alias("lbrl"), Description("Leave the current Ban Royale. Must be in the same channel.\n**Usage**: `!lbrl`"), BotPermission(GuildPermission.ManageRoles)]
         public async Task LeaveBanroyale([Remainder] string str = "")
         {
             var user = Context.User as SocketGuildUser;
             var banroyale = await BanroyaleDb.GetBanroyale(Context.Channel.Id);
             if (banroyale == null)
             {
-                await Context.Channel.SendMessageAsync(":x: There is no running Ban Royale in this channel.");
+                await ReplyAsync(":x: There is no running Ban Royale in this channel.");
                 return;
             }
             if (banroyale.Running == true)
             {
-                await Context.Channel.SendMessageAsync(":x: The ban royale already started. You can't leave now ^^");
+                await ReplyAsync(":x: The ban royale already started. You can't leave now ^^");
                 return;
             }
 
             var role = Context.Guild.GetRole(banroyale.ParticipantRoleId);
             if (!role.Members.Contains(user))
             {
-                await Context.Channel.SendMessageAsync($"You're not a participant!");
+                await ReplyAsync($"You're not a participant!");
                 return;
             }
 
             await user.RemoveRoleAsync(role);
-            await Context.Channel.SendMessageAsync($"Tch... You left the Ban Royale...");
+            await ReplyAsync($"Tch... You left the Ban Royale...");
         }
 
         [UserPermission(GuildPermission.ManageMessages)]
-        [Command("StartBanroyale"), Alias("sbrl"), Summary("Starts the current Ban Royale. Must be in the same channel.\n**Usage**: `!sbrl`")]
+        [Command("StartBanroyale"), Alias("sbrl"), Description("Starts the current Ban Royale. Must be in the same channel.\n**Usage**: `!sbrl`")]
         public async Task StartBanroyale([Remainder] string str = "")
         {
             var banroyale = await BanroyaleDb.GetBanroyale(Context.Channel.Id);
             if (banroyale == null)
             {
-                await Context.Channel.SendMessageAsync(":x: There is no running Ban Royale in this channel.");
+                await ReplyAsync(":x: There is no running Ban Royale in this channel.");
                 return;
             }
             if (banroyale.Running == true)
             {
-                await Context.Channel.SendMessageAsync(":x: The Ban Royale has already started.");
+                await ReplyAsync(":x: The Ban Royale has already started.");
                 return;
             }
 
@@ -195,212 +196,212 @@ namespace Namiko
         }
 
         [UserPermission(GuildPermission.ManageMessages)]
-        [Command("CancelBanroyale"), Alias("cbrl"), Summary("Cancels the current Ban Royale.\n**Usage**: `!cbrl`")]
+        [Command("CancelBanroyale"), Alias("cbrl"), Description("Cancels the current Ban Royale.\n**Usage**: `!cbrl`")]
         public async Task CancelBanroyale([Remainder] string str = "")
         {
             var banroyale = await BanroyaleDb.GetBanroyale(Context.Channel.Id);
             if (banroyale == null)
             {
-                await Context.Channel.SendMessageAsync(":x: There is no running Ban Royale in this channel.");
+                await ReplyAsync(":x: There is no running Ban Royale in this channel.");
                 return;
             }
 
             await BanroyaleDb.EndBanroyale(banroyale.Id);
-            await Context.Channel.SendMessageAsync("*Tch...* Cancelling ban royale.");
+            await ReplyAsync("*Tch...* Cancelling ban royale.");
         }
 
         [UserPermission(GuildPermission.ManageMessages)]
-        [Command("SetBrlWinners"), Alias("sbrlw"), Summary("Set the amount of winners.\n**Usage**: `!sbrlw [amount]`")]
+        [Command("SetBrlWinners"), Alias("sbrlw"), Description("Set the amount of winners.\n**Usage**: `!sbrlw [amount]`")]
         public async Task SetBrlWinners(int amount, [Remainder] string str = "")
         {
             var banroyale = await BanroyaleDb.GetBanroyale(Context.Channel.Id);
             if (banroyale == null)
             {
-                await Context.Channel.SendMessageAsync(":x: There is no running Ban Royale in this channel.");
+                await ReplyAsync(":x: There is no running Ban Royale in this channel.");
                 return;
             }
             if (banroyale.Running == true)
             {
-                await Context.Channel.SendMessageAsync(":x: Cannot change settings after the ban royale has started.");
+                await ReplyAsync(":x: Cannot change settings after the ban royale has started.");
                 return;
             }
 
             banroyale.WinnerAmount = amount;
             await BanroyaleDb.UpdateBanroyale(banroyale);
-            await Context.Channel.SendMessageAsync($"Set the amount of winners to **{amount}**!");
+            await ReplyAsync($"Set the amount of winners to **{amount}**!");
         }
 
         [UserPermission(GuildPermission.Administrator)]
-        [Command("SetBrlRewardPool"), Alias("sbrlrp"), Summary("Set the reward pool.\n**Usage**: `!sbrlrp [amount]`")]
+        [Command("SetBrlRewardPool"), Alias("sbrlrp"), Description("Set the reward pool.\n**Usage**: `!sbrlrp [amount]`")]
         public async Task SetBrlRewardPool(int amount, [Remainder] string str = "")
         {
             var banroyale = await BanroyaleDb.GetBanroyale(Context.Channel.Id);
             if (banroyale == null)
             {
-                await Context.Channel.SendMessageAsync(":x: There is no running Ban Royale in this channel.");
+                await ReplyAsync(":x: There is no running Ban Royale in this channel.");
                 return;
             }
 
             banroyale.RewardPool = amount;
             await BanroyaleDb.UpdateBanroyale(banroyale);
-            await Context.Channel.SendMessageAsync($"Set the reward pool to **{amount}**!");
+            await ReplyAsync($"Set the reward pool to **{amount}**!");
         }
 
         [UserPermission(GuildPermission.ManageMessages)]
-        [Command("SetBrlMinParticipants"), Alias("sbrlminp"), Summary("Set minimum participants.\n**Usage**: `!sbrlminp [amount]`")]
+        [Command("SetBrlMinParticipants"), Alias("sbrlminp"), Description("Set minimum participants.\n**Usage**: `!sbrlminp [amount]`")]
         public async Task SetBrlMinParticipants(int amount, [Remainder] string str = "")
         {
             var banroyale = await BanroyaleDb.GetBanroyale(Context.Channel.Id);
             if (banroyale == null)
             {
-                await Context.Channel.SendMessageAsync(":x: There is no running Ban Royale in this channel.");
+                await ReplyAsync(":x: There is no running Ban Royale in this channel.");
                 return;
             }
             if (banroyale.Running == true)
             {
-                await Context.Channel.SendMessageAsync(":x: Cannot change settings after the ban royale has started.");
+                await ReplyAsync(":x: Cannot change settings after the ban royale has started.");
                 return;
             }
 
             banroyale.MinParticipants = amount;
             await BanroyaleDb.UpdateBanroyale(banroyale);
-            await Context.Channel.SendMessageAsync($"Set the minimum participants to **{amount}**!");
+            await ReplyAsync($"Set the minimum participants to **{amount}**!");
         }
 
         [UserPermission(GuildPermission.ManageMessages)]
-        [Command("SetBrlMaxParticipants"), Alias("sbrlmaxp"), Summary("Set maximum participants.\n**Usage**: `!sbrlmaxp [amount]`")]
+        [Command("SetBrlMaxParticipants"), Alias("sbrlmaxp"), Description("Set maximum participants.\n**Usage**: `!sbrlmaxp [amount]`")]
         public async Task SetBrlMaxParticipants(int amount, [Remainder] string str = "")
         {
             if (amount > 80)
             {
-                await Context.Channel.SendMessageAsync(":x: There is an upper limit of 80 players.");
+                await ReplyAsync(":x: There is an upper limit of 80 players.");
                 return;
             }
 
             var banroyale = await BanroyaleDb.GetBanroyale(Context.Channel.Id);
             if (banroyale == null)
             {
-                await Context.Channel.SendMessageAsync(":x: There is no running Ban Royale in this channel.");
+                await ReplyAsync(":x: There is no running Ban Royale in this channel.");
                 return;
             }
             if (banroyale.Running == true)
             {
-                await Context.Channel.SendMessageAsync(":x: Cannot change settings after the ban royale has started.");
+                await ReplyAsync(":x: Cannot change settings after the ban royale has started.");
                 return;
             }
 
             banroyale.MaxParticipants = amount;
             await BanroyaleDb.UpdateBanroyale(banroyale);
-            await Context.Channel.SendMessageAsync($"Set the maximum participants to **{amount}**!");
+            await ReplyAsync($"Set the maximum participants to **{amount}**!");
         }
 
         [UserPermission(GuildPermission.BanMembers), BotPermission(GuildPermission.BanMembers)]
-        [Command("SetBrlBanDuration"), Alias("sbrlban"), Summary("Set ban duration in hours.\n**Usage**: `!sbrlban [hours]`")]
+        [Command("SetBrlBanDuration"), Alias("sbrlban"), Description("Set ban duration in hours.\n**Usage**: `!sbrlban [hours]`")]
         public async Task SetBrlBanDuration(int amount, [Remainder] string str = "")
         {
             var banroyale = await BanroyaleDb.GetBanroyale(Context.Channel.Id);
             if (banroyale == null)
             {
-                await Context.Channel.SendMessageAsync(":x: There is no running Ban Royale in this channel.");
+                await ReplyAsync(":x: There is no running Ban Royale in this channel.");
                 return;
             }
             if (banroyale.Running == true)
             {
-                await Context.Channel.SendMessageAsync(":x: Cannot change settings after the ban royale has started.");
+                await ReplyAsync(":x: Cannot change settings after the ban royale has started.");
                 return;
             }
             if (amount < 0)
             {
-                await Context.Channel.SendMessageAsync(":x: Ban duration can't be less than 0, baaaaka.");
+                await ReplyAsync(":x: Ban duration can't be less than 0, baaaaka.");
                 return;
             }
 
             banroyale.BanLengthHours = amount;
             await BanroyaleDb.UpdateBanroyale(banroyale);
-            await Context.Channel.SendMessageAsync($"Set the ban duration to **{amount} hours**!");
+            await ReplyAsync($"Set the ban duration to **{amount} hours**!");
         }
 
         [UserPermission(GuildPermission.KickMembers), BotPermission(GuildPermission.KickMembers)]
-        [Command("SetBrlKick"), Alias("sbrlkick"), Summary("Set maximum participants.\n**Usage**: `!sbrlkick [amount]`")]
+        [Command("SetBrlKick"), Alias("sbrlkick"), Description("Set maximum participants.\n**Usage**: `!sbrlkick [amount]`")]
         public async Task SetBrlKick([Remainder] string str = "")
         {
             var banroyale = await BanroyaleDb.GetBanroyale(Context.Channel.Id);
             if (banroyale == null)
             {
-                await Context.Channel.SendMessageAsync(":x: There is no running Ban Royale in this channel.");
+                await ReplyAsync(":x: There is no running Ban Royale in this channel.");
                 return;
             }
             if (banroyale.Running == true)
             {
-                await Context.Channel.SendMessageAsync(":x: Cannot change settings after the ban royale has started.");
+                await ReplyAsync(":x: Cannot change settings after the ban royale has started.");
                 return;
             }
 
             banroyale.Kick = banroyale.Kick ? false : true;
             await BanroyaleDb.UpdateBanroyale(banroyale);
-            await Context.Channel.SendMessageAsync(banroyale.Kick ? "Losers will be kicked from the server!" : "Losers will not be kicked...");
+            await ReplyAsync(banroyale.Kick ? "Losers will be kicked from the server!" : "Losers will not be kicked...");
         }
 
         [UserPermission(GuildPermission.ManageMessages)]
-        [Command("SetBrlMinFrequency"), Alias("sbrlminf"), Summary("Set maximum participants.\n**Usage**: `!sbrlminf [amount]`")]
+        [Command("SetBrlMinFrequency"), Alias("sbrlminf"), Description("Set maximum participants.\n**Usage**: `!sbrlminf [amount]`")]
         public async Task SetBrlMinFrequency(int amount, [Remainder] string str = "")
         {
             var banroyale = await BanroyaleDb.GetBanroyale(Context.Channel.Id);
             if (banroyale == null)
             {
-                await Context.Channel.SendMessageAsync(":x: There is no running Ban Royale in this channel.");
+                await ReplyAsync(":x: There is no running Ban Royale in this channel.");
                 return;
             }
             if (banroyale.Running == true)
             {
-                await Context.Channel.SendMessageAsync(":x: Cannot change settings after the ban royale has started.");
+                await ReplyAsync(":x: Cannot change settings after the ban royale has started.");
                 return;
             }
             if (banroyale.MaxFrequency < amount)
             {
-                await Context.Channel.SendMessageAsync($":x: Minimum frequency can't be higher than the maximum, baaaaka. Current max frequency: **{banroyale.MaxFrequency}**.");
+                await ReplyAsync($":x: Minimum frequency can't be higher than the maximum, baaaaka. Current max frequency: **{banroyale.MaxFrequency}**.");
                 return;
             }
             if (amount < 10 || amount > 21600)
             {
-                await Context.Channel.SendMessageAsync($":x: Minimum frequency must be in the range of **10** (1m) to **21600** (6h) seconds.");
+                await ReplyAsync($":x: Minimum frequency must be in the range of **10** (1m) to **21600** (6h) seconds.");
                 return;
             }
 
             banroyale.MinFrequency = amount;
             await BanroyaleDb.UpdateBanroyale(banroyale);
-            await Context.Channel.SendMessageAsync($"Set the minimum message frequency to **{amount} seconds**!");
+            await ReplyAsync($"Set the minimum message frequency to **{amount} seconds**!");
         }
 
         [UserPermission(GuildPermission.ManageMessages)]
-        [Command("SetBrlMaxFrequency"), Alias("sbrlmaxf"), Summary("Set maximum participants.\n**Usage**: `!sbrlmaxf [amount]`")]
+        [Command("SetBrlMaxFrequency"), Alias("sbrlmaxf"), Description("Set maximum participants.\n**Usage**: `!sbrlmaxf [amount]`")]
         public async Task SetBrlMaxFrequency(int amount, [Remainder] string str = "")
         {
             var banroyale = await BanroyaleDb.GetBanroyale(Context.Channel.Id);
             if (banroyale == null)
             {
-                await Context.Channel.SendMessageAsync(":x: There is no running Ban Royale in this channel.");
+                await ReplyAsync(":x: There is no running Ban Royale in this channel.");
                 return;
             }
             if (banroyale.Running == true)
             {
-                await Context.Channel.SendMessageAsync(":x: Cannot change settings after the ban royale has started.");
+                await ReplyAsync(":x: Cannot change settings after the ban royale has started.");
                 return;
             }
             if (banroyale.MinFrequency > amount)
             {
-                await Context.Channel.SendMessageAsync($":x: Minimum frequency can't be higher than the maximum, baaaaka. Current min frequency: **{banroyale.MinFrequency}**.");
+                await ReplyAsync($":x: Minimum frequency can't be higher than the maximum, baaaaka. Current min frequency: **{banroyale.MinFrequency}**.");
                 return;
             }
             if (amount < 20 || amount > 21600)
             {
-                await Context.Channel.SendMessageAsync($":x: Maximum frequency must be in the range of **20** (2m) to **21600** (6h) seconds.");
+                await ReplyAsync($":x: Maximum frequency must be in the range of **20** (2m) to **21600** (6h) seconds.");
                 return;
             }
 
             banroyale.MaxFrequency = amount;
             await BanroyaleDb.UpdateBanroyale(banroyale);
-            await Context.Channel.SendMessageAsync($"Set the maximum message frequency to **{amount} seconds**!");
+            await ReplyAsync($"Set the maximum message frequency to **{amount} seconds**!");
         }
     }
 }
