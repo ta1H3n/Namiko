@@ -1,5 +1,4 @@
 ﻿using Discord;
-using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.Interactions;
 using Discord.Net;
@@ -10,7 +9,6 @@ using Model;
 using Model.Exceptions;
 using Namiko.Addons.Handlers;
 using Namiko.Data;
-using Namiko.Modules.Currency;
 using Sentry;
 using System;
 using System.Collections.Generic;
@@ -132,8 +130,7 @@ namespace Namiko
 
             Services = new ServiceCollection()
                 .AddSingleton(Client)
-                .AddSingleton<Discord.Addons.Interactive.InteractiveService>()
-                .AddSingleton<Addons.Handlers.InteractiveService>()
+                .AddSingleton<InteractiveService>()
                 .BuildServiceProvider();
 
             await Commands.AddModuleAsync(typeof(Banroulettes), Services);
@@ -150,7 +147,6 @@ namespace Namiko
             await Commands.AddModuleAsync(typeof(WaifuEditing), Services);
             await Commands.AddModuleAsync(typeof(Web), Services);
             await Commands.AddModuleAsync(typeof(Music), Services);
-            await Commands.AddModuleAsync(typeof(CurrencyTestModule), Services);
 
             Interactions = new InteractionService(Client, new InteractionServiceConfig
             {
@@ -158,7 +154,7 @@ namespace Namiko
             });
             Interactions.Log += Console_Log;
             await Interactions.AddModuleAsync(typeof(Banroulettes), Services);
-            await Interactions.AddModuleAsync(typeof(CurrencyInteraction), Services);
+            await Interactions.AddModuleAsync(typeof(Currency), Services);
             //await Interactions.AddModuleAsync(typeof(CurrencyTestModule), Services);
             //await Interactions.AddModuleAsync(typeof(Basic), Services);
 
@@ -311,11 +307,6 @@ namespace Namiko
 
             int ArgPos = 0;
             bool isPrefixed = Message.HasStringPrefix(prefix, ref ArgPos) || Message.HasMentionPrefix(Client.CurrentUser, ref ArgPos);
-            if (!isPrefixed && !Pause)
-            {
-                await Blackjack.BlackjackInput(context);
-                return;
-            }
 
             if (!isPrefixed)
                 return;

@@ -1,8 +1,9 @@
 ﻿using Discord;
-using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Model;
+using Namiko.Addons.Handlers;
+using Namiko.Addons.Handlers.Criteria;
 using Namiko.Handlers.Attributes;
 using Namiko.Handlers.Attributes.Preconditions;
 using Reddit.Controllers;
@@ -13,15 +14,14 @@ using System.Threading.Tasks;
 namespace Namiko
 {
     [Name("Web Services")]
-    public class Web : InteractiveBase<ShardedCommandContext>
+    public class Web : CustomModuleBase<ICustomContext>
     {
         [Command("IQDB"), Description("Finds the source of an image in iqdb.\n**Usage**: `!iqdb [image_url]` or `!iqdb` with attached image.")]
-        public async Task Iqdb(string url = null, [Remainder] string str = "")
+        public async Task Iqdb(string url)
+            => await Iqdb(url ?? ((ICommandContext)Context).Message.Attachments.FirstOrDefault()?.Url);
+        public async Task Iqdb(string url, [Remainder] string str = "")
         {
             await Context.Channel.TriggerTypingAsync();
-
-            url ??= Context.Message.Attachments.FirstOrDefault()?.Url;
-
             if (url == null)
             {
                 await ReplyAsync("Can't get your attachment, there probably isn't one. *Heh, dummy...*");
@@ -41,10 +41,11 @@ namespace Namiko
 
         [Command("Source"), Alias("SauceNao", "Sauce"), Description("Finds the source of an image with SauceNao.\n**Usage**: `!source [image_url]` or `!source` with attached image.")]
         public async Task SauceNao(string url = null, [Remainder] string str = "")
+            => await SauceNao(url ?? ((ICommandContext)Context).Message.Attachments.FirstOrDefault()?.Url);
+
+        public async Task SauceNao(string url)
         {
             await Context.Channel.TriggerTypingAsync();
-
-            url ??= Context.Message.Attachments.FirstOrDefault()?.Url;
 
             if (url == null)
             {
@@ -84,40 +85,16 @@ namespace Namiko
             //Quick If to see if manga had results
             if (animeSearch == null || animeSearch.Results == null || animeSearch.Results.Count <= 0)
             {
-                await ReplyAsync($"Gomen, Senpai... No results.");
+                await ReplyAsync($"Gomen, senpai... No results.");
                 return;
             }
 
-            //Sends embed of manga titles from results
-            var listMsg = await ReplyAsync("", false, WebUtil.AnimeListEmbed(animeSearch).Build());
+            var response = await Select(animeSearch.Results, "Result", WebUtil.AnimeListEmbed(animeSearch).Build());
 
-            //Sets a timeout of 20 seconds, changeable if needed
-            var response = await NextMessageAsync(
-                new Criteria<IMessage>()
-                    .AddCriterion(new EnsureSourceUserCriterion())
-                    .AddCriterion(new EnsureSourceChannelCriterion())
-                    .AddCriterion(new EnsureRangeCriterion(7, Program.GetPrefix(Context))),
-                new TimeSpan(0, 0, 23));
+            await Context.Channel.TriggerTypingAsync();
+            var anime = await WebUtil.GetAnime(response.MalId); //EndManga becomes the manga, it uses ID to get propa page umu
 
-            long id;
-            try
-            {
-                int i = int.Parse(response.Content);
-                id = animeSearch.Results.Skip(i - 1).FirstOrDefault().MalId;
-            }
-            catch
-            {
-                _ = Context.Message.DeleteAsync();
-                return;
-            }
-            _ = response.DeleteAsync();
-
-            if (response != null)
-            {
-                await Context.Channel.TriggerTypingAsync();
-                var endAnime = await WebUtil.GetAnime(id); //EndManga becomes the manga, it uses ID to get propa page umu
-                await listMsg.ModifyAsync(x => x.Embed = WebUtil.AnimeEmbed(endAnime).Build());
-            }
+            await ReplyAsync(WebUtil.AnimeEmbed(anime).Build());
         }
 
         [Command("Manga"), Alias("MangaSearch", "SearchManga"), Description("Searches MAL for an manga and the following details.\n**Usage**: `!Manga [manga_title]`")]
@@ -133,35 +110,12 @@ namespace Namiko
                 return;
             }
 
-            //Sends embed of manga titles from results
-            var listMsg = await ReplyAsync("", false, WebUtil.MangaListEmbed(mangaSearch).Build());
+            var response = await Select(mangaSearch.Results, "Result", WebUtil.MangaListEmbed(mangaSearch).Build());
 
-            var response = await NextMessageAsync(
-                new Criteria<IMessage>()
-                    .AddCriterion(new EnsureSourceUserCriterion())
-                    .AddCriterion(new EnsureSourceChannelCriterion())
-                    .AddCriterion(new EnsureRangeCriterion(7, Program.GetPrefix(Context))),
-                new TimeSpan(0, 0, 23));
+            await Context.Channel.TriggerTypingAsync();
+            var manga = await WebUtil.GetManga(response.MalId); //EndManga becomes the manga, it uses ID to get propa page umu
 
-            long id;
-            try
-            {
-                int i = int.Parse(response.Content);
-                id = mangaSearch.Results.Skip(i - 1).FirstOrDefault().MalId;
-            }
-            catch
-            {
-                _ = Context.Message.DeleteAsync();
-                return;
-            }
-            _ = response.DeleteAsync();
-
-            if (mangaSearch != null)
-            {
-                await Context.Channel.TriggerTypingAsync();
-                var endManga = await WebUtil.GetManga(id); //EndManga becomes the manga, it uses ID to get propa page umu
-                await listMsg.ModifyAsync(x => x.Embed = WebUtil.MangaEmbed(endManga).Build());
-            }
+            await ReplyAsync(WebUtil.MangaEmbed(manga).Build());
         }
         
         [Command("MALWaifu"), Alias("malw"), Description("Searches MAL for characters.\n**Usage**: `!malw [query]`"), Insider]

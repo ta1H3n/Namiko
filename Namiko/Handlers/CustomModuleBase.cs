@@ -10,6 +10,7 @@ using Namiko.Addons.Handlers.Select;
 using Namiko.Handlers;
 using Namiko.Handlers.Attributes;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using PreconditionAttribute = Namiko.Handlers.Attributes.PreconditionAttribute;
@@ -21,36 +22,76 @@ namespace Namiko.Addons.Handlers
         public T Context { get; private set; }
         public InteractiveService Interactive { get; set; }
 
+
+
         public async Task<IUserMessage> ReplyAsync(string text = null, bool isTTS = false, Embed embed = null, RequestOptions options = null, AllowedMentions allowedMentions = null, MessageReference messageReference = null, MessageComponent components = null, ISticker[] stickers = null, Embed[] embeds = null, MessageFlags flags = MessageFlags.None, bool ephemeral = false)
             => await Context.ReplyAsync(text, isTTS, embed, options, allowedMentions, messageReference, components, stickers, embeds, flags, ephemeral);
+        public async Task<IUserMessage> ReplyAsync(string text, Color color)
+            => await ReplyAsync(embed: new EmbedBuilderPrepared(Context.User).WithDescription(text).WithColor(color).Build());
+        public async Task<IUserMessage> ReplyAsync(string text)
+            => await ReplyAsync(embed: new EmbedBuilderPrepared(Context.User).WithDescription(text).Build());
+        public async Task<IUserMessage> ReplyAsync(Embed embed)
+            => await ReplyAsync(embed: embed);
 
-        public Task<IUserMessage> PagedReplyAsync(PaginatedMessage pager, bool fromSourceUser = true)
-        {
-            var criteria = new Criteria<SocketMessageComponent>();
-            if (fromSourceUser)
-                criteria.AddCriterion(new EnsureComponentFromSourceUser());
-            return PagedReplyAsync(pager, criteria);
-        }
-        public Task<IUserMessage> DialogueReplyAsync(DialogueBox dialogue, bool fromSourceUser = true)
-        {
-            var criteria = new Criteria<SocketMessageComponent>();
-            if (fromSourceUser)
-                criteria.AddCriterion(new EnsureComponentFromSourceUser());
-            return DialogueReplyAsync(dialogue, criteria);
-        }
+
+
+        public Task<IUserMessage> DialogueReplyAsync(DialogueBox dialogue, bool fromSourceUser = true, int timeout = 60)
+            => DialogueReplyAsync(dialogue, GetSourceUserCriterion(fromSourceUser), timeout);
+        public Task<IUserMessage> DialogueReplyAsync(DialogueBox dialogue, ICriterion<SocketMessageComponent> criterion, int timeout = 60)
+            => Interactive.SendDialogueBoxAsync(Context, dialogue, criterion, timeout);
+        public Task<bool> Confirm(string question)
+            => Interactive.Confirm(Context, question, GetSourceUserCriterion(true));
+
+
         public Task<T2> SelectMenuReplyAsync<T2>(SelectMenu<T2> menu, bool fromSourceUser = true)
-        {
-            var criteria = new Criteria<SocketMessageComponent>();
-            if (fromSourceUser)
-                criteria.AddCriterion(new EnsureComponentFromSourceUser());
-            return SelectMenuReplyAsync(menu, criteria);
-        }
-        public Task<IUserMessage> PagedReplyAsync(PaginatedMessage pager, ICriterion<SocketMessageComponent> criterion)
-            => Interactive.SendPaginatedMessageAsync(Context, pager, criterion);
-        public Task<IUserMessage> DialogueReplyAsync(DialogueBox dialogue, ICriterion<SocketMessageComponent> criterion)
-            => Interactive.SendDialogueBoxAsync(Context, dialogue, criterion);
+            => SelectMenuReplyAsync(menu, GetSourceUserCriterion(fromSourceUser));
         public Task<T2> SelectMenuReplyAsync<T2>(SelectMenu<T2> menu, ICriterion<SocketMessageComponent> criterion)
             => Interactive.SendSelectMenuAsync(Context, menu, criterion);
+        public Task<T2> Select<T2>(IEnumerable<T2> items, string name = null, Embed embed = null, Func<T2, SelectMenuOptionBuilder> optionGuiBuilder = null, bool fromSourceUser = true)
+        {
+            optionGuiBuilder ??= (x) => new SelectMenuOptionBuilder(x.ToString(), x.ToString());
+
+            var menu = new SelectMenu<T2>(
+                embed, 
+                items.ToDictionary(
+                    x => x.ToString(),
+                    x => new SelectMenuOption<T2>(optionGuiBuilder(x), x)),
+                name == null ? null : ("Choose a " + name));
+
+            return SelectMenuReplyAsync(menu, fromSourceUser);
+        }
+        public Task<T2> Select<T2>(IEnumerable<T2> items, string message, string name = null, Func<T2, SelectMenuOptionBuilder> optionGuiBuilder = null, bool fromSourceUser = true)
+            => Select(items, name, new EmbedBuilderPrepared(Context.User).WithDescription(message).Build(), optionGuiBuilder, fromSourceUser);
+        public Task<SocketRole> SelectRole(IEnumerable<SocketRole> roles, string roleNameFilter = null, IEnumerable<ulong> roleIdsFilter = null, string msg = "Role")
+        {
+            if (roleIdsFilter != null)
+            {
+                roles = roles.Where(x => roleIdsFilter.Contains(x.Id));
+            }
+            if (roleNameFilter != null)
+            {
+                roles = roles.Where(x => x.Name.Contains(roleNameFilter));
+            }
+
+            return Select(roles, name: msg);
+        }
+        public Task<SocketRole> SelectRole(IEnumerable<ulong> roleIds, string roleNameFilter = null, string msg = "Role")
+            => SelectRole(roleIds.Select(x => Context.Guild.GetRole(x)), roleNameFilter, null, msg);
+
+
+        public Task<IUserMessage> PagedReplyAsync(Paginator.PaginatedMessage pager, ICriterion<SocketMessageComponent> criterion)
+            => Interactive.SendPaginatedMessageAsync(Context, pager, criterion);
+        public Task<IUserMessage> PagedReplyAsync(Paginator.PaginatedMessage pager, bool fromSourceUser = true)
+            => PagedReplyAsync(pager, GetSourceUserCriterion(fromSourceUser));
+
+
+        private ICriterion<SocketMessageComponent> GetSourceUserCriterion(bool sourceUser)
+        {
+            var criteria = new Criteria<SocketMessageComponent>();
+            if (sourceUser)
+                criteria.AddCriterion(new EnsureComponentFromSourceUser());
+            return criteria;
+        }
 
 
         #region IModuleBase

@@ -143,7 +143,7 @@ namespace Namiko
         [Command("Burn")]
         public async Task Burn([Remainder] string str = "")
         {
-            await ReplyAsync(ToastieUtil.GetFalseBegMessage());
+            await ReplyAsync(CurrencyUtil.GetFalseBegMessage());
         }
 
         [Command("JoinMessageTest"), OwnerPrecondition]

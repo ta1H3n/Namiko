@@ -1,7 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using Namiko.Addons.Handlers.Criteria;
-using System;
 using System.Threading.Tasks;
 
 namespace Namiko.Addons.Handlers.Dialogue
@@ -10,7 +9,7 @@ namespace Namiko.Addons.Handlers.Dialogue
     {
         public readonly DialogueBox _dialogue;
 
-        public DialogueBoxCallback(DialogueBox dialogue, ICustomContext context, ICriterion<SocketMessageComponent> criterion = null) : base(context, criterion)
+        public DialogueBoxCallback(DialogueBox dialogue, ICustomContext context, ICriterion<SocketMessageComponent> criterion = null, int timeout = 60) : base(context, criterion, timeout)
         {
             _dialogue = dialogue;
         }

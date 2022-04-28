@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
+using Discord.Interactions;
 using Discord.WebSocket;
 using Model;
 using Namiko.Addons.Handlers;
@@ -17,8 +18,9 @@ namespace Namiko
     {
         [BotPermission(GuildPermission.ManageRoles), UserPermission(GuildPermission.ManageMessages)]
         [Command("NewBanroyale"), Alias("nbrl"), Description("Starts a new game of Ban Royale, where participants play a reaction game until last one standing. Losers can get optionally kicked/banned and winners can get toasties as a reward.\n" +
-            "**Usage**: `!nbrl [entry_fee-default_0] [required_role_name-optional]`\n")]
-        public async Task NewBanroyale([Remainder] IRole role = null)
+            "**Usage**: `!nbrl [required_role_name-optional]`\n")]
+        [SlashCommand("new-banroyale", "Starts a new game of Ban Royale, where participants play a reaction game until last one standing")]
+        public async Task NewBanroyale([Description("Only allow members with this role to join")][Remainder] IRole role = null)
         {
             var banroyale = await BanroyaleDb.GetBanroyale(Context.Channel.Id);
             if (banroyale != null)
@@ -74,8 +76,8 @@ namespace Namiko
                 $"\n`{prefix}sbrlmaxp` - maximum participants" +
                 $"\n`{prefix}sbrlban` - set loser ban duration" +
                 $"\n`{prefix}sbrlkick` - set loser kick" +
-                $"\n`{prefix}sbrlminf` - set min message frequency in seconds" +
-                $"\n`{prefix}sbrlmaxf` - set max message frequency in seconds" +
+                $"\n`{prefix}sbrlmind` - set min delay in seconds" +
+                $"\n`{prefix}sbrlmaxd` - set max delay in seconds" +
                 $"\n\n*Type `{prefix}jbrl` to join the game.*" +
                 $"\n*Type `{prefix}startbrl` to start the game after some players join.*" +
                 $"\n*Type `{prefix}brl` to view current settings.*",
@@ -83,6 +85,7 @@ namespace Namiko
         }
 
         [Command("Banroyale"), Alias("brl"), Description("Shows details of the current Ban Royale.\n**Usage**: `!brl`")]
+        [SlashCommand("banroyale", "View banroyale details")]
         public async Task Banroyale([Remainder] string str = "")
         {
             var banroyale = await BanroyaleDb.GetBanroyale(Context.Channel.Id);
@@ -99,7 +102,9 @@ namespace Namiko
             await ReplyAsync(embed: BanroyaleUtil.BanroyaleDetailsEmbed(banroyale, Context.Guild.GetRole(banroyale.ParticipantRoleId), Context.Guild.GetRole(banroyale.RoleReqId), users.Count).Build());
         }
 
-        [Command("JoinBanroyale"), Alias("jbrl"), Description("Join the current Ban Royale. Must be in the same channel.\n**Usage**: `!jbrl`"), BotPermission(GuildPermission.ManageRoles)]
+        [BotPermission(GuildPermission.ManageRoles)]
+        [Command("JoinBanroyale"), Alias("jbrl"), Description("Join the current Ban Royale. Must be in the same channel.\n**Usage**: `!jbrl`")]
+        [SlashCommand("join-banroyale", "Join the current game of banroyale")]
         public async Task JoinBanroyale([Remainder] string str = "")
         {
             var user = Context.User as SocketGuildUser;
@@ -144,7 +149,9 @@ namespace Namiko
             await ReplyAsync(response);
         }
 
-        [Command("LeaveBanroyale"), Alias("lbrl"), Description("Leave the current Ban Royale. Must be in the same channel.\n**Usage**: `!lbrl`"), BotPermission(GuildPermission.ManageRoles)]
+        [BotPermission(GuildPermission.ManageRoles)]
+        [Command("LeaveBanroyale"), Alias("lbrl"), Description("Leave the current Ban Royale. Must be in the same channel.\n**Usage**: `!lbrl`")]
+        [SlashCommand("leave-banroyale", "Leave the current game of banroyale")]
         public async Task LeaveBanroyale([Remainder] string str = "")
         {
             var user = Context.User as SocketGuildUser;
@@ -173,6 +180,7 @@ namespace Namiko
 
         [UserPermission(GuildPermission.ManageMessages)]
         [Command("StartBanroyale"), Alias("sbrl"), Description("Starts the current Ban Royale. Must be in the same channel.\n**Usage**: `!sbrl`")]
+        [SlashCommand("start-banroyale", "Start the banroyale")]
         public async Task StartBanroyale([Remainder] string str = "")
         {
             var banroyale = await BanroyaleDb.GetBanroyale(Context.Channel.Id);
@@ -197,6 +205,7 @@ namespace Namiko
 
         [UserPermission(GuildPermission.ManageMessages)]
         [Command("CancelBanroyale"), Alias("cbrl"), Description("Cancels the current Ban Royale.\n**Usage**: `!cbrl`")]
+        [SlashCommand("cancel-banroyale", "Cancel the game of banroyale")]
         public async Task CancelBanroyale([Remainder] string str = "")
         {
             var banroyale = await BanroyaleDb.GetBanroyale(Context.Channel.Id);
@@ -212,6 +221,7 @@ namespace Namiko
 
         [UserPermission(GuildPermission.ManageMessages)]
         [Command("SetBrlWinners"), Alias("sbrlw"), Description("Set the amount of winners.\n**Usage**: `!sbrlw [amount]`")]
+        [SlashCommand("banroyale-set-winners", "How many winners can there be in the banroyale")]
         public async Task SetBrlWinners(int amount, [Remainder] string str = "")
         {
             var banroyale = await BanroyaleDb.GetBanroyale(Context.Channel.Id);
@@ -233,6 +243,7 @@ namespace Namiko
 
         [UserPermission(GuildPermission.Administrator)]
         [Command("SetBrlRewardPool"), Alias("sbrlrp"), Description("Set the reward pool.\n**Usage**: `!sbrlrp [amount]`")]
+        [SlashCommand("banroyale-set-rewardpool", "Set the reward pool")]
         public async Task SetBrlRewardPool(int amount, [Remainder] string str = "")
         {
             var banroyale = await BanroyaleDb.GetBanroyale(Context.Channel.Id);
@@ -249,6 +260,7 @@ namespace Namiko
 
         [UserPermission(GuildPermission.ManageMessages)]
         [Command("SetBrlMinParticipants"), Alias("sbrlminp"), Description("Set minimum participants.\n**Usage**: `!sbrlminp [amount]`")]
+        [SlashCommand("banroyale-min-participants", "Minimum amount of people required to start the game")]
         public async Task SetBrlMinParticipants(int amount, [Remainder] string str = "")
         {
             var banroyale = await BanroyaleDb.GetBanroyale(Context.Channel.Id);
@@ -270,6 +282,7 @@ namespace Namiko
 
         [UserPermission(GuildPermission.ManageMessages)]
         [Command("SetBrlMaxParticipants"), Alias("sbrlmaxp"), Description("Set maximum participants.\n**Usage**: `!sbrlmaxp [amount]`")]
+        [SlashCommand("banroyale-max-participants", "Maximum amount of people allowed to join the game")]
         public async Task SetBrlMaxParticipants(int amount, [Remainder] string str = "")
         {
             if (amount > 80)
@@ -296,8 +309,9 @@ namespace Namiko
         }
 
         [UserPermission(GuildPermission.BanMembers), BotPermission(GuildPermission.BanMembers)]
-        [Command("SetBrlBanDuration"), Alias("sbrlban"), Description("Set ban duration in hours.\n**Usage**: `!sbrlban [hours]`")]
-        public async Task SetBrlBanDuration(int amount, [Remainder] string str = "")
+        [Command("SetBrlBanDuration"), Alias("sbrlban"), Description("Set loser ban duration.\n**Usage**: `!sbrlban [hours]`")]
+        [SlashCommand("banroyale-ban-duration", "Set loser ban duration")]
+        public async Task SetBrlBanDuration(int hours, [Remainder] string str = "")
         {
             var banroyale = await BanroyaleDb.GetBanroyale(Context.Channel.Id);
             if (banroyale == null)
@@ -310,19 +324,20 @@ namespace Namiko
                 await ReplyAsync(":x: Cannot change settings after the ban royale has started.");
                 return;
             }
-            if (amount < 0)
+            if (hours < 0)
             {
                 await ReplyAsync(":x: Ban duration can't be less than 0, baaaaka.");
                 return;
             }
 
-            banroyale.BanLengthHours = amount;
+            banroyale.BanLengthHours = hours;
             await BanroyaleDb.UpdateBanroyale(banroyale);
-            await ReplyAsync($"Set the ban duration to **{amount} hours**!");
+            await ReplyAsync($"Set the ban duration to **{hours} hours**!");
         }
 
         [UserPermission(GuildPermission.KickMembers), BotPermission(GuildPermission.KickMembers)]
-        [Command("SetBrlKick"), Alias("sbrlkick"), Description("Set maximum participants.\n**Usage**: `!sbrlkick [amount]`")]
+        [Command("SetBrlKick"), Alias("sbrlkick"), Description("Kick people who lose.\n**Usage**: `!sbrlkick [amount]`")]
+        [SlashCommand("banroyale-set-kick", "Kick people who lose")]
         public async Task SetBrlKick([Remainder] string str = "")
         {
             var banroyale = await BanroyaleDb.GetBanroyale(Context.Channel.Id);
@@ -343,8 +358,9 @@ namespace Namiko
         }
 
         [UserPermission(GuildPermission.ManageMessages)]
-        [Command("SetBrlMinFrequency"), Alias("sbrlminf"), Description("Set maximum participants.\n**Usage**: `!sbrlminf [amount]`")]
-        public async Task SetBrlMinFrequency(int amount, [Remainder] string str = "")
+        [Command("SetBrlMinDelay"), Alias("sbrlmind"), Description("set min delay in seconds.\n**Usage**: `!sbrlminf [amount]`")]
+        [SlashCommand("banroyale-min-delay", "Kick people who lose")]
+        public async Task SetBrlMinFrequency(int sec, [Remainder] string str = "")
         {
             var banroyale = await BanroyaleDb.GetBanroyale(Context.Channel.Id);
             if (banroyale == null)
@@ -357,25 +373,26 @@ namespace Namiko
                 await ReplyAsync(":x: Cannot change settings after the ban royale has started.");
                 return;
             }
-            if (banroyale.MaxFrequency < amount)
+            if (banroyale.MaxFrequency < sec)
             {
                 await ReplyAsync($":x: Minimum frequency can't be higher than the maximum, baaaaka. Current max frequency: **{banroyale.MaxFrequency}**.");
                 return;
             }
-            if (amount < 10 || amount > 21600)
+            if (sec < 10 || sec > 21600)
             {
                 await ReplyAsync($":x: Minimum frequency must be in the range of **10** (1m) to **21600** (6h) seconds.");
                 return;
             }
 
-            banroyale.MinFrequency = amount;
+            banroyale.MinFrequency = sec;
             await BanroyaleDb.UpdateBanroyale(banroyale);
-            await ReplyAsync($"Set the minimum message frequency to **{amount} seconds**!");
+            await ReplyAsync($"Set the minimum message frequency to **{sec} seconds**!");
         }
 
         [UserPermission(GuildPermission.ManageMessages)]
-        [Command("SetBrlMaxFrequency"), Alias("sbrlmaxf"), Description("Set maximum participants.\n**Usage**: `!sbrlmaxf [amount]`")]
-        public async Task SetBrlMaxFrequency(int amount, [Remainder] string str = "")
+        [Command("SetBrlMaxDelay"), Alias("sbrlmaxd"), Description("set max delay in seconds.\n**Usage**: `!sbrlmaxf [amount]`")]
+        [SlashCommand("banroyale-max-delay", "Kick people who lose")]
+        public async Task SetBrlMaxFrequency(int sec, [Remainder] string str = "")
         {
             var banroyale = await BanroyaleDb.GetBanroyale(Context.Channel.Id);
             if (banroyale == null)
@@ -388,20 +405,20 @@ namespace Namiko
                 await ReplyAsync(":x: Cannot change settings after the ban royale has started.");
                 return;
             }
-            if (banroyale.MinFrequency > amount)
+            if (banroyale.MinFrequency > sec)
             {
                 await ReplyAsync($":x: Minimum frequency can't be higher than the maximum, baaaaka. Current min frequency: **{banroyale.MinFrequency}**.");
                 return;
             }
-            if (amount < 20 || amount > 21600)
+            if (sec < 20 || sec > 21600)
             {
                 await ReplyAsync($":x: Maximum frequency must be in the range of **20** (2m) to **21600** (6h) seconds.");
                 return;
             }
 
-            banroyale.MaxFrequency = amount;
+            banroyale.MaxFrequency = sec;
             await BanroyaleDb.UpdateBanroyale(banroyale);
-            await ReplyAsync($"Set the maximum message frequency to **{amount} seconds**!");
+            await ReplyAsync($"Set the maximum message frequency to **{sec} seconds**!");
         }
     }
 }

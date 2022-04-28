@@ -34,7 +34,6 @@ namespace Namiko
             Minute = new Timer(1000 * 60);
             Minute.AutoReset = true;
             Minute.Enabled = true;
-            Minute.Elapsed += Timer_TimeoutBlackjack;
 
             Minute5 = new Timer(1000 * 60 * 5);
             Minute5.AutoReset = true;
@@ -271,15 +270,6 @@ namespace Namiko
         private static async void Timer_ExpireTeamInvites(object sender, ElapsedEventArgs e)
         {
             await InviteDb.DeleteOlder(DateTime.Now.AddDays(-1));
-        }
-        private static async void Timer_TimeoutBlackjack(object sender, ElapsedEventArgs e)
-        {
-            var games = Blackjack.Games;
-
-            foreach (var x in games.Where(x => x.Value.Refresh.AddMinutes(1) < DateTime.Now))
-            {
-                await Blackjack.GameTimeout(x.Key, x.Value);
-            }
         }
         private static async void Timer_Unban(object sender, ElapsedEventArgs e)
         {

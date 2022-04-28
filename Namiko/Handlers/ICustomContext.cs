@@ -12,7 +12,6 @@ namespace Namiko.Addons.Handlers
         ISocketMessageChannel Channel { get; }
         SocketUser User { get; }
 
-
         DateTimeOffset CreatedAt { get; }
 
 

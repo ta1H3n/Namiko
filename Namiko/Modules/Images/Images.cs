@@ -1,7 +1,8 @@
 ﻿using Discord;
-using Discord.Addons.Interactive;
 using Discord.Commands;
+using Discord.Interactions;
 using Model;
+using Namiko.Addons.Handlers;
 using Namiko.Handlers.Attributes;
 using Namiko.Handlers.Attributes.Preconditions;
 using System;
@@ -12,7 +13,7 @@ using System.Threading.Tasks;
 namespace Namiko
 {
     [Name("Reaction Images")]
-    public class Images : InteractiveBase<ShardedCommandContext>
+    public class Images : CustomModuleBase<ICustomContext>
     {
         public static HashSet<string> ReactionImageCommands { get; set; }
 
@@ -113,13 +114,22 @@ namespace Namiko
             await ReplyAsync("", false, embed);
         }
 
-        [Command("NewImage"), Alias("ni"), Description("Adds a new image to the database.\n**Usage**: `!ni [name] [url_or_attachment]`"), HomeOrT1GuildPrecondition, UserPermission(GuildPermission.ManageMessages)]
+        [HomeOrT1GuildPrecondition, UserPermission(GuildPermission.ManageMessages)]
+        [Command("NewImage"), Alias("ni"), Description("Adds a new image to the database.\n**Usage**: `!ni [name] [url_or_attachment]`")]
         public async Task NewImage(string name, string url = null, [Remainder] string str = "")
+            => await NewImage(name, url ?? ((ICommandContext)Context).Message.Attachments.FirstOrDefault()?.Url);
+
+        [HomeOrT1GuildPrecondition, UserPermission(GuildPermission.ManageMessages)]
+        [SlashCommand("NewImage", "Adds a new image to the database."), Alias("ni"), Description("Adds a new image to the database.\n**Usage**: `!ni [name] [url_or_attachment]`")]
+        public async Task NewImageSlash(string name, string url)
+            => await NewImage(name, url);
+
+        public async Task NewImage(string name, string url)
         {
             await Context.Channel.TriggerTypingAsync();
             bool insider = Context.Guild.Id == 418900885079588884;
 
-            url ??= Context.Message.Attachments.FirstOrDefault()?.Url;
+            url ??= ((ICommandContext)Context).Message.Attachments.FirstOrDefault()?.Url;
 
             if (!insider)
             {

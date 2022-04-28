@@ -18,5 +18,7 @@ namespace Model
                 Lootboxes.Add((LootBoxType)item.TypeId, item);
             }
         }
+
+        public static LootboxStat GetLootboxStats(this LootBoxType type) => LootboxStats.Lootboxes[type];
     }
 }

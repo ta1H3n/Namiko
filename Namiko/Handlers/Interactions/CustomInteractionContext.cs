@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Namiko.Addons.Handlers
@@ -12,6 +13,7 @@ namespace Namiko.Addons.Handlers
         public ISocketMessageChannel Channel { get; }
         public SocketUser User { get; }
         public IDiscordInteraction Interaction { get; }
+        public IReadOnlyCollection<Attachment> Attachments => throw new NotImplementedException();
 
         private IUserMessage Response { get; set; }
 

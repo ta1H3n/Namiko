@@ -1,6 +1,6 @@
 ﻿using Discord;
-using Discord.Addons.Interactive;
 using Discord.Commands;
+using Namiko.Addons.Handlers;
 using Namiko.Handlers.Attributes.Preconditions;
 using System;
 using System.Collections.Generic;
@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Namiko
 {
-    public class SpecialModes : InteractiveBase<ShardedCommandContext>
+    public class SpecialModes : CustomModuleBase<ICustomContext>
     {
         public static bool ChristmasModeEnable { get; set; }
         public static int ChristmasModeRate { get; set; }

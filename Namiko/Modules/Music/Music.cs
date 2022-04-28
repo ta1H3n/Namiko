@@ -1,8 +1,10 @@
 ﻿using Discord;
-using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Model;
+using Namiko.Addons.Handlers;
+using Namiko.Addons.Handlers.Dialogue;
+using Namiko.Addons.Handlers.Paginator;
 using Namiko.Handlers.Attributes;
 using Namiko.Handlers.Attributes.Preconditions;
 using Namiko.Modules.Basic;
@@ -20,7 +22,7 @@ using Victoria.Resolvers;
 namespace Namiko
 {
     [RequireGuild]
-    public class Music : InteractiveBase<ShardedCommandContext>
+    public class Music : CustomModuleBase<ICustomContext>
     {
         public static readonly LavaNode Node;
         public static readonly HashSet<LavaPlayer> ReconnectPlayer;
@@ -650,14 +652,14 @@ namespace Namiko
                 return;
             }
 
-            var msg = new CustomPaginatedMessage();
+            var msg = new PaginatedMessage();
             msg.Author = new EmbedAuthorBuilder
             {
                 Name = $"Song Queue",
                 IconUrl = Context.User.GetAvatarUrl(),
                 Url = LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-embed-queue")
             };
-            var pages = CustomPaginatedMessage.PagesArray(player.Queue.Items, 10, x => $"[{x.Title.ShortenString(70, 65)}]({x.Url})\n");
+            var pages = PaginatedMessage.PagesArray(player.Queue.Items, 10, x => $"[{x.Title.ShortenString(70, 65)}]({x.Url})\n");
             if (player.Loop)
                 msg.Title = "Looping Playlist - :repeat:";
 
@@ -788,51 +790,14 @@ namespace Namiko
             var playlists = await MusicDb.GetPlaylists(Context.Guild.Id);
             playlists.AddRange(await MusicDb.GetPlaylists(0));
 
-            var playlist = await this.SelectItem(playlists, MusicUtil.PlaylistListEmbed(playlists, Context.User, true));
+            var playlist = await Select(playlists, "Playlist", MusicUtil.PlaylistListEmbed(playlists, Context.User, true).Build());
             if (playlist == null)
                 return;
 
             playlist = await MusicDb.GetPlaylist(playlist.Id);
             var tracks = new List<LavaTrack>();
-            if (player.Queue.Count > 0)
-            {
-                var load = new DialogueBoxOption();
-                load.Action = async (IUserMessage message) =>
-                {
-                    player.Queue.Clear();
-                    foreach (var x in playlist.Tracks)
-                    {
-                        var track = TrackDecoder.Decode($"{x.SongHash}");
-                        track.User = Context.Guild.GetUser(x.UserId);
-                        tracks.Add(track);
-                    }
-                    player.Queue.EnqueueRange(tracks);
-                    await message.ModifyAsync(x => {
-                        x.Embed = new EmbedBuilderLava(Context.User).WithDescription($"Loaded **{playlist.Tracks.Count}** songs from **{playlist.Name}**").Build();
-                    });
 
-                    if (player.PlayerState != PlayerState.Playing && player.Queue.Count > 0)
-                    {
-                        await player.PlayAsync(player.Queue.Dequeue() as LavaTrack);
-                        await player.TextChannel.SendMessageAsync(embed: (await MusicUtil.NowPlayingEmbed(player)).Build());
-                    }
-                };
-                load.After = OnExecute.RemoveReactions;
-
-                var cancel = new DialogueBoxOption();
-                cancel.After = OnExecute.Delete;
-
-                var dia = new DialogueBox();
-                dia.Options.Add(Emote.Parse("<:TickYes:577838859107303424>"), load);
-                dia.Options.Add(Emote.Parse("<:TickNo:577838859077943306>"), cancel);
-                dia.Timeout = new TimeSpan(0, 1, 0);
-                dia.Embed = new EmbedBuilderLava(Context.User)
-                    .WithDescription($"Are you sure, senpai?\nLoading **{playlist.Name}** will overwrite the current queue.")
-                    .Build();
-
-                await DialogueReplyAsync(dia);
-            }
-            else
+            if (player.Queue.Count == 0 || await Confirm($"Are you sure, senpai?\nLoading **{playlist.Name}** will overwrite the current queue."))
             {
                 foreach (var x in playlist.Tracks)
                 {
@@ -856,7 +821,7 @@ namespace Namiko
         {
             var playlists = await MusicDb.GetPlaylists(Context.Guild.Id);
 
-            var playlist = await this.SelectItem(playlists, MusicUtil.PlaylistListEmbed(playlists, Context.User, true));
+            var playlist = await Select(playlists, "Playlist", MusicUtil.PlaylistListEmbed(playlists, Context.User, true).Build());
             if (playlist == null)
                 return;
 
@@ -870,9 +835,8 @@ namespace Namiko
         }
 
         [Command("SetMusicRole"), Alias("smr"), Description("Adds or removes a role that is required for controlling music.\n**Usage**: `!smr [role_name]`"), UserPermission(GuildPermission.Administrator)]
-        public async Task MusicRole([Remainder]string roleName = "")
+        public async Task MusicRole(IRole role)
         {
-            var role = await this.SelectRole(roleName);
             if (role == null)
             {
                 return;

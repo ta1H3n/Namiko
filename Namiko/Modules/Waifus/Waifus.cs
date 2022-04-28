@@ -1,8 +1,10 @@
 ﻿using Discord;
-using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Model;
+using Namiko.Addons.Handlers;
+using Namiko.Addons.Handlers.Dialogue;
+using Namiko.Addons.Handlers.Paginator;
 using Namiko.Handlers.Attributes;
 using Namiko.Handlers.Attributes.Preconditions;
 using System;
@@ -14,7 +16,7 @@ using System.Threading.Tasks;
 namespace Namiko
 {
     [RequireGuild]
-    public class Waifus : InteractiveBase<ShardedCommandContext>
+    public class Waifus : CustomModuleBase<ICustomContext>
     {
         private static readonly Dictionary<ulong, Object> slideLock = new Dictionary<ulong, Object>();
 
@@ -152,25 +154,23 @@ namespace Namiko
         }
 
         [Command("SellWaifu"), Alias("sw"), Description("Sells a waifu you already own for a discounted price.\n**Usage**: `!sw [name]`")]
-        public async Task SellWaifu([Remainder] string str = "") 
+        public async Task SellWaifu([Remainder] string str = "")
         {
             var waifu = await WaifuUtil.ProcessWaifuListAndRespond(await WaifuDb.SearchWaifus(str, false, UserInventoryDb.GetWaifus(Context.User.Id, Context.Guild.Id)), this);
 
             //waifus existance
-            if (waifu == null) {
+            if (waifu == null)
+            {
                 return;
             }
 
             int worth = WaifuUtil.GetSalePrice(waifu.Tier);
 
-            var sell = new DialogueBoxOption();
-            sell.Action = async (IUserMessage message) =>
+            if (await Confirm($"Sell **{waifu.Name}** for **{worth.ToString("n0")}** toasties?"))
             {
-                if (!UserInventoryDb.OwnsWaifu(Context.User.Id, waifu, Context.Guild.Id)) 
+                if (!UserInventoryDb.OwnsWaifu(Context.User.Id, waifu, Context.Guild.Id))
                 {
-                    await message.ModifyAsync(x => {
-                        x.Embed = new EmbedBuilderPrepared(Context.User).WithDescription("You tried :star:").Build();
-                    });
+                    await ReplyAsync(new EmbedBuilderPrepared(Context.User).WithDescription("You tried :star:").Build());
                     return;
                 }
 
@@ -179,27 +179,8 @@ namespace Namiko
 
                 //removing waifu + confirmation
                 await UserInventoryDb.DeleteWaifu(Context.User.Id, waifu, Context.Guild.Id);
-                await message.ModifyAsync(x => {
-                    x.Content = $"You sold **{waifu.Name}** for **{worth.ToString("n0")}** toasties.";
-                    x.Embed = ToastieUtil.ToastieEmbed(Context.User, BalanceDb.GetToasties(Context.User.Id, Context.Guild.Id)).Build();
-                });
-            };
-            sell.After = OnExecute.RemoveReactions;
-
-            var cancel = new DialogueBoxOption();
-            cancel.After = OnExecute.Delete;
-
-            var dia = new DialogueBox();
-            dia.Options.Add(Emote.Parse("<:TickYes:577838859107303424>"), sell);
-            dia.Options.Add(Emote.Parse("<:TickNo:577838859077943306>"), cancel);
-            dia.Timeout = new TimeSpan(0, 1, 0);
-            dia.Embed = new EmbedBuilder()
-                .WithAuthor(Context.User)
-                .WithColor(BasicUtil.RandomColor())
-                .WithDescription($"Sell **{waifu.Name}** for **{worth.ToString("n0")}** toasties?").Build();
-
-            await DialogueReplyAsync(dia);
-            return;
+                await ReplyAsync($"You sold **{waifu.Name}** for **{worth.ToString("n0")}** toasties.", embed: CurrencyUtil.ToastieEmbed(Context.User, BalanceDb.GetToasties(Context.User.Id, Context.Guild.Id)).Build());
+            }
         }
 
         [Command("GiveWaifu"), Alias("gw"), Description("Transfers waifu to another user.\n**Usage**: `!gw [user] [waifu_name]`")]
@@ -249,7 +230,7 @@ namespace Namiko
         public async Task TopWaifus([Remainder] string str = "")
         {
             var waifus = await UserInventoryDb.CountWaifus(0, str.Split(' '));
-            var msg = new CustomPaginatedMessage();
+            var msg = new PaginatedMessage();
 
             msg.Title = ":two_hearts: Waifu Leaderboards";
             var fields = new List<FieldPages>
@@ -257,7 +238,7 @@ namespace Namiko
                 new FieldPages
                 {
                     Title = "Globally Bought",
-                    Pages = CustomPaginatedMessage.PagesArray(waifus, 10, (x) => $"**{x.Key}** - {x.Value}\n")
+                    Pages = PaginatedMessage.PagesArray(waifus, 10, (x) => $"**{x.Key}** - {x.Value}\n")
                 }
             };
             msg.Fields = fields;
@@ -273,7 +254,7 @@ namespace Namiko
         public async Task ServerTopWaifus([Remainder] string str = "")
         {
             var waifus = await UserInventoryDb.CountWaifus(Context.Guild.Id, str.Split(' '));
-            var msg = new CustomPaginatedMessage();
+            var msg = new PaginatedMessage();
 
             msg.Title = ":two_hearts: Waifu Leaderboards";
             var fields = new List<FieldPages>
@@ -281,7 +262,7 @@ namespace Namiko
                 new FieldPages
                 {
                     Title = "Bought Here",
-                    Pages = CustomPaginatedMessage.PagesArray(waifus, 10, (x) => $"**{x.Key}** - {x.Value}\n")
+                    Pages = PaginatedMessage.PagesArray(waifus, 10, (x) => $"**{x.Key}** - {x.Value}\n")
                 }
             };
             msg.Fields = fields;
@@ -306,7 +287,7 @@ namespace Namiko
 
             var ordUsers = users.OrderByDescending(x => x.Value);
 
-            var msg = new CustomPaginatedMessage();
+            var msg = new PaginatedMessage();
 
             msg.Title = "User Leaderboards";
             var fields = new List<FieldPages>
@@ -314,7 +295,7 @@ namespace Namiko
                 new FieldPages
                 {
                     Title = "Waifu Value <:toastie3:454441133876183060>",
-                    Pages = CustomPaginatedMessage.PagesArray(ordUsers, 10, (x) => $"{x.Key.Mention} - {x.Value}\n")
+                    Pages = PaginatedMessage.PagesArray(ordUsers, 10, (x) => $"{x.Key.Mention} - {x.Value}\n")
                 }
             };
             msg.Fields = fields;
@@ -354,14 +335,14 @@ namespace Namiko
                 return;
             }
 
-            if(UserInventoryDb.OwnsWaifu(user.Id, waifu, Context.Guild.Id))
+            if (UserInventoryDb.OwnsWaifu(user.Id, waifu, Context.Guild.Id))
             {
                 await ReplyAsync($"You already own **{waifu.Name}**. Baka.");
                 return;
             }
 
             await WaifuWishlistDb.AddWaifuWish(Context.User.Id, waifu, Context.Guild.Id);
-            
+
             waifus = await WaifuWishlistDb.GetWishlist(user.Id, Context.Guild.Id);
             await ReplyAsync($"Added **{waifu.Name}** to your wishlist!", false, WaifuUtil.WishlistEmbed(waifus, (SocketGuildUser)user).Build());
         }
@@ -385,7 +366,7 @@ namespace Namiko
                 return;
             }
             var waifus = await WaifuWishlistDb.GetWishlist(user.Id, Context.Guild.Id);
-            if(!waifus.Any(x => x.Name == waifu.Name))
+            if (!waifus.Any(x => x.Name == waifu.Name))
             {
                 await ReplyAsync($"**{waifu.Name}** is not in your wishlist. Baka.");
                 return;
@@ -497,10 +478,13 @@ namespace Namiko
         }
     }
 
-    public class WaifuEditing : InteractiveBase<ShardedCommandContext>
+    public class WaifuEditing : CustomModuleBase<ICustomContext>
     {
-        [Command("NewWaifu"), Alias("nw"), Description("Adds a waifu to the database.\n**Usage**: `!nw [name] [tier(1-3)] [image_url]`"), Insider]
-        public async Task NewWaifu(string name, int tier, string url = null)
+        [Insider]
+        [Command("NewWaifu"), Alias("nw"), Description("Adds a waifu to the database.\n**Usage**: `!nw [name] [tier(1-3)] [image_url]`")]
+        public async Task NewWaifuCommand(string name, int tier, string url = "")
+            => await NewWaifu(name, tier, url ?? ((ICommandContext)Context).Message.Attachments.FirstOrDefault()?.Url);
+        public async Task NewWaifu(string name, int tier, string url)
         {
             var exists = await WaifuDb.GetWaifu(name);
             if (exists != null)
@@ -510,8 +494,6 @@ namespace Namiko
             }
 
             await Context.Channel.TriggerTypingAsync();
-
-            url ??= Context.Message.Attachments.FirstOrDefault()?.Url;
 
             if (url != null)
             {
@@ -536,7 +518,7 @@ namespace Namiko
                 url = iImage.Link;
             }
 
-            var waifu = new Waifu { Name = name, Tier = tier, ImageUrl = url, Description = null, LongName = null};
+            var waifu = new Waifu { Name = name, Tier = tier, ImageUrl = url, Description = null, LongName = null };
             await WaifuUtil.UploadWaifuImage(waifu, Context.Channel);
 
             if (await WaifuDb.AddWaifu(waifu) > 0)
@@ -630,8 +612,11 @@ namespace Namiko
                 await ReplyAsync($":x: Failed to update {name}");
         }
 
-        [Command("WaifuImage"), Alias("wi"), Description("Changes the image of a waifu.\n**Usage**: `!wi [name] [image_url]`"), Insider]
-        public async Task WaifuImage(string name, string url = null)
+        [Insider]
+        [Command("WaifuImage"), Alias("wi"), Description("Changes the image of a waifu.\n**Usage**: `!wi [name] [image_url]`")]
+        public async Task WaifuImageCommand(string name, string url = null)
+            => await WaifuImage(name, url ?? ((ICommandContext)Context).Message.Attachments.FirstOrDefault()?.Url);
+        public async Task WaifuImage(string name, string url)
         {
             var waifu = await WaifuUtil.ProcessWaifuListAndRespond(await WaifuDb.SearchWaifus(name, true), this);
             if (waifu == null)
@@ -640,8 +625,6 @@ namespace Namiko
             }
 
             await Context.Channel.TriggerTypingAsync();
-
-            url ??= Context.Message.Attachments.FirstOrDefault()?.Url;
 
             if (url == null)
             {
@@ -745,7 +728,7 @@ namespace Namiko
         public async Task RenameWaifu(string oldName, string newName)
         {
             var waifu = await WaifuDb.GetWaifu(oldName);
-            if(waifu == null)
+            if (waifu == null)
             {
                 await ReplyAsync($"**{oldName}** doesn't exist. *BAAAAAAAAAAAAAAAAAAKA*");
                 return;
@@ -797,7 +780,9 @@ namespace Namiko
         }
 
         [Command("NewWaifuAutocomplete"), Alias("nwac"), Description("Creates a new waifu and auto completes using MAL.\n**Usage**: `!nwac [name] [MAL_ID] [image_url_optional]`"), Insider]
-        public async Task NewWaifuAutocomplete(string name, long malId, string url = null)
+        public async Task NewWaifuAutocompleteCommand(string name, long malId, string url = null)
+            => await NewWaifuAutocompleteCommand(name, malId, url ?? ((ICommandContext)Context).Message.Attachments.FirstOrDefault()?.Url);
+        public async Task NewWaifuAutocomplete(string name, long malId, string url)
         {
             var exists = await WaifuDb.GetWaifu(name);
             if (exists != null)
@@ -807,8 +792,6 @@ namespace Namiko
             }
 
             await Context.Channel.TriggerTypingAsync();
-
-            url ??= Context.Message.Attachments.FirstOrDefault()?.Url;
 
             if (url != null)
             {
@@ -857,7 +840,8 @@ namespace Namiko
             try
             {
                 waifu.Tier = WaifuUtil.FavoritesToTier(mal.MemberFavorites.Value);
-            } catch { }
+            }
+            catch { }
 
             if (waifu.Tier == 0)
             {

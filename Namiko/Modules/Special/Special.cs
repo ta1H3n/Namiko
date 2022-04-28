@@ -1,10 +1,10 @@
 ﻿using Discord;
-using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Model;
 using Model.Models.Users;
+using Namiko.Addons.Handlers;
 using Namiko.Handlers.Attributes;
 using Namiko.Handlers.Attributes.Preconditions;
 using Namiko.Modules.Basic;
@@ -24,7 +24,7 @@ using PreconditionAttribute = Namiko.Handlers.Attributes.PreconditionAttribute;
 
 namespace Namiko
 {
-    public class Special : InteractiveBase<ShardedCommandContext>
+    public class Special : CustomModuleBase<ICustomContext>
     {
         static ISocketMessageChannel ch;
 
@@ -51,13 +51,6 @@ namespace Namiko
             ISocketMessageChannel ch = Context.Client.GetChannel(id) as ISocketMessageChannel;
             await ch.SendMessageAsync(str);
             await ReplyAsync($"Saying in {ch.Name}:\n\n{str}");
-        }
-
-        [Command("Sayd"), Alias("sd"), OwnerPrecondition]
-        public async Task SayDelete([Remainder] string str)
-        {
-            await Context.Message.DeleteAsync();
-            await ReplyAsync(str);
         }
 
         [Command("Playing"), Description("Sets the playing status."), OwnerPrecondition]
@@ -276,11 +269,12 @@ namespace Namiko
         public async Task Debug([Remainder] string msg = "")
         {
             var commands = Program.GetCommands();
-            var processed = System.DateTime.Now.AddMinutes(-10);
+            var processed = DateTime.Now.AddMinutes(-10);
+            var context = (ICommandContext)Context;
 
             async Task listen(Optional<CommandInfo> arg1, ICommandContext arg2, IResult arg3)
             {
-                if (arg2.Message.Equals(Context.Message) && arg1.Value.Name != "Debug")
+                if (arg2.Message.Equals(context.Message) && arg1.Value.Name != "Debug")
                 {
                     processed = System.DateTime.Now;
                     await Task.Delay(1);
@@ -291,8 +285,8 @@ namespace Namiko
             var received = System.DateTime.Now;
             string prefix = Program.GetPrefix(Context);
             int ArgPos = 0;
-            bool isPrefixed = Context.Message.HasStringPrefix(prefix + "debug ", ref ArgPos);
-            var result = await commands.ExecuteAsync(Context, ArgPos, Program.GetServices());
+            bool isPrefixed = context.Message.HasStringPrefix(prefix + "debug ", ref ArgPos);
+            var result = await commands.ExecuteAsync(context, ArgPos, Program.GetServices());
 
             //var processed = System.DateTime.Now;
             var message = await ReplyAsync("`Counting...`");
@@ -415,7 +409,9 @@ namespace Namiko
         [Command("DownloadFiles"), Description("Downloads files from a channel.\n**Usage**: `!DownloadImages [path] [amount] [skip] [channel_id}`"), OwnerPrecondition]
         public async Task DownloadFiles(string path, int amount, int skip = 0, ulong channelId = 0)
         {
-            await Context.Message.DeleteAsync();
+            var context = (ICommandContext)Context;
+
+            await context.Message.DeleteAsync();
             var ch = channelId == 0 ? Context.Channel : (ISocketMessageChannel) Context.Client.GetChannel(channelId);
             var messages = await ch.GetMessagesAsync(amount, CacheMode.AllowDownload).FlattenAsync();
 

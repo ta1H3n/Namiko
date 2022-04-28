@@ -18,30 +18,32 @@ namespace Namiko.Addons.Handlers
 
         public TimeSpan? Timeout { get; set; } = TimeSpan.FromSeconds(60);
 
-        public CallbackBase(ICustomContext sourceContext, ICriterion<T> criterion = null, DisposeLevel disposeLevel = DisposeLevel.RemoveComponents)
+        public CallbackBase(ICustomContext sourceContext, ICriterion<T> criterion = null, int timeout = 60, DisposeLevel disposeLevel = DisposeLevel.RemoveComponents)
         {
             Context = sourceContext;
             Criterion = criterion ?? new EmptyCriterion<T>();
             DisposeLevel = disposeLevel;
+            Timeout = TimeSpan.FromSeconds(timeout);
         }
 
         public abstract Task<IUserMessage> DisplayAsync();
         public abstract Task<object> HandleCallbackAsync(T response);
-        public async virtual Task TimeoutAsync()
+        public virtual Task TimeoutAsync()
         {
             switch (DisposeLevel)
             {
                 case DisposeLevel.Delete:
-                    _ = Message.DeleteAsync();
+                    Message.DeleteAsync();
                     break;
                 case DisposeLevel.RemoveComponents:
-                    _ = Message.ModifyAsync(m => m.Components = null);
+                    Message.ModifyAsync(m => m.Components = null);
                     break;
                 case DisposeLevel.RemoveCallback:
                     break;
                 default:
                     break;
             }
+            return Task.CompletedTask;
         }
     }
 

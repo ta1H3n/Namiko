@@ -195,7 +195,7 @@ namespace Namiko
         [SlashCommand("banroulette-reward-pool", "Add to the reward pool from your balance")]
         public async Task BRRewardPool([Description("amount")] string amountStr)
         {
-            int amount = ToastieUtil.ParseAmount(amountStr, (SocketGuildUser)Context.User);
+            int amount = CurrencyUtil.ParseAmount(amountStr, (SocketGuildUser)Context.User);
             if (amount < 0)
             {
                 await ReplyAsync("Pick an amount! number, all, half, or x/y.");

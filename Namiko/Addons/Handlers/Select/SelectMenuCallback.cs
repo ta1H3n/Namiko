@@ -21,7 +21,7 @@ namespace Namiko.Addons.Handlers.Select
         public override async Task<IUserMessage> DisplayAsync()
         {
             var builder = new ComponentBuilder()
-                .WithSelectMenu(nameof(SelectMenu<T>), _selectMenu.Options.Values.Select(x => x.OptionBuilder).ToList());
+                .WithSelectMenu(nameof(SelectMenu<T>), _selectMenu.Options.Values.Select(x => x.OptionBuilder).ToList(), _selectMenu.Label);
 
             var message = await Context.ReplyAsync(embed: _selectMenu.Embed, components: builder.Build()).ConfigureAwait(false);
             Message = message;

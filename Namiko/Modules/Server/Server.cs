@@ -1,8 +1,8 @@
 ﻿using Discord;
-using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Model;
+using Namiko.Addons.Handlers;
 using Namiko.Handlers.Attributes;
 using Namiko.Handlers.Attributes.Preconditions;
 using Namiko.Modules.Basic;
@@ -15,7 +15,7 @@ namespace Namiko
 {
     [RequireGuild]
     [Name("Server")]
-    public class ServerModule : InteractiveBase<ShardedCommandContext>
+    public class ServerModule : CustomModuleBase<ICustomContext>
     {
         [Command("Server"), Alias("serverinfo", "guild", "stats"), Description("Stats about the server.\n**Usage**: `!server`")] 
         public async Task ServerInfo([Remainder] string str = "")
