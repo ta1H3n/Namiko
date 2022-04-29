@@ -74,16 +74,12 @@ namespace Namiko.Addons.Handlers.Paginator
         {
             int count = 0;
 
-            try
-            {
-                count = Fields.Max(x => x.Pages.Count());
+            count = Fields.Where(x => x.Pages != null).Max(x => x.Pages.Count());
+
+            if (Pages != null && Pages.Count() > count) 
+            { 
+                count = Pages.Count();
             }
-            catch { }
-            try
-            {
-                count = count > Pages.Count() ? count : Pages.Count();
-            }
-            catch { }
 
             return count;
         }

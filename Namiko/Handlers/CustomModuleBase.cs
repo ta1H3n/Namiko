@@ -26,12 +26,12 @@ namespace Namiko.Addons.Handlers
 
         public async Task<IUserMessage> ReplyAsync(string text = null, bool isTTS = false, Embed embed = null, RequestOptions options = null, AllowedMentions allowedMentions = null, MessageReference messageReference = null, MessageComponent components = null, ISticker[] stickers = null, Embed[] embeds = null, MessageFlags flags = MessageFlags.None, bool ephemeral = false)
             => await Context.ReplyAsync(text, isTTS, embed, options, allowedMentions, messageReference, components, stickers, embeds, flags, ephemeral);
-        public async Task<IUserMessage> ReplyAsync(string text, Color color)
-            => await ReplyAsync(embed: new EmbedBuilderPrepared(Context.User).WithDescription(text).WithColor(color).Build());
-        public async Task<IUserMessage> ReplyAsync(string text)
-            => await ReplyAsync(embed: new EmbedBuilderPrepared(Context.User).WithDescription(text).Build());
         public async Task<IUserMessage> ReplyAsync(Embed embed)
-            => await ReplyAsync(embed: embed);
+            => await ReplyAsync(null, false, embed);
+        public async Task<IUserMessage> ReplyAsync(string text, Color color)
+            => await ReplyAsync(new EmbedBuilderPrepared(Context.User).WithDescription(text).WithColor(color).Build());
+        public async Task<IUserMessage> ReplyAsync(string text)
+            => await ReplyAsync(new EmbedBuilderPrepared(Context.User).WithDescription(text).Build());
 
 
 
@@ -46,22 +46,31 @@ namespace Namiko.Addons.Handlers
         public Task<T2> SelectMenuReplyAsync<T2>(SelectMenu<T2> menu, bool fromSourceUser = true)
             => SelectMenuReplyAsync(menu, GetSourceUserCriterion(fromSourceUser));
         public Task<T2> SelectMenuReplyAsync<T2>(SelectMenu<T2> menu, ICriterion<SocketMessageComponent> criterion)
-            => Interactive.SendSelectMenuAsync(Context, menu, criterion);
-        public Task<T2> Select<T2>(IEnumerable<T2> items, string name = null, Embed embed = null, Func<T2, SelectMenuOptionBuilder> optionGuiBuilder = null, bool fromSourceUser = true)
+            => Interactive.SendSelectMenuAsync(Context, menu, criterion); 
+        public Task<T2> Select<T2>(IEnumerable<T2> items, string placeholder = null, Embed embed = null, Func<T2, string> label = null, Func<T2, string> description = null, Func<T2, IEmote> emote = null, bool fromSourceUser = true)
         {
-            optionGuiBuilder ??= (x) => new SelectMenuOptionBuilder(x.ToString(), x.ToString());
+            label ??= (x) => x.ToString();
 
-            var menu = new SelectMenu<T2>(
-                embed, 
-                items.ToDictionary(
-                    x => x.ToString(),
-                    x => new SelectMenuOption<T2>(optionGuiBuilder(x), x)),
-                name == null ? null : ("Choose a " + name));
+            int i = 0;
+            var options = new Dictionary<string, SelectMenuOption<T2>>();
+            foreach (var item in items)
+            {
+                var builder = new SelectMenuOptionBuilder(label(item), i.ToString());
+                builder.WithLabel(label(item));
+                if (description != null)
+                    builder.WithDescription(description(item));
+                if (emote != null)
+                    builder.WithEmote(emote(item));
+
+                options.Add(i++.ToString(), new SelectMenuOption<T2>(builder, item));
+            }
+
+            var menu = new SelectMenu<T2>(embed, options, placeholder);
 
             return SelectMenuReplyAsync(menu, fromSourceUser);
         }
-        public Task<T2> Select<T2>(IEnumerable<T2> items, string message, string name = null, Func<T2, SelectMenuOptionBuilder> optionGuiBuilder = null, bool fromSourceUser = true)
-            => Select(items, name, new EmbedBuilderPrepared(Context.User).WithDescription(message).Build(), optionGuiBuilder, fromSourceUser);
+        public Task<T2> Select<T2>(IEnumerable<T2> items, string message, string name = null, Func<T2, string> label = null, Func<T2, string> description = null, Func<T2, IEmote> emote = null, bool fromSourceUser = true)
+            => Select(items, name, new EmbedBuilderPrepared(Context.User).WithDescription(message).Build(), label, description, emote, fromSourceUser);
         public Task<SocketRole> SelectRole(IEnumerable<SocketRole> roles, string roleNameFilter = null, IEnumerable<ulong> roleIdsFilter = null, string msg = "Role")
         {
             if (roleIdsFilter != null)
@@ -73,15 +82,15 @@ namespace Namiko.Addons.Handlers
                 roles = roles.Where(x => x.Name.Contains(roleNameFilter));
             }
 
-            return Select(roles, name: msg);
+            return Select(roles, placeholder: msg);
         }
         public Task<SocketRole> SelectRole(IEnumerable<ulong> roleIds, string roleNameFilter = null, string msg = "Role")
             => SelectRole(roleIds.Select(x => Context.Guild.GetRole(x)), roleNameFilter, null, msg);
 
 
-        public Task<IUserMessage> PagedReplyAsync(Paginator.PaginatedMessage pager, ICriterion<SocketMessageComponent> criterion)
+        public Task<IUserMessage> PagedReplyAsync(PaginatedMessage pager, ICriterion<SocketMessageComponent> criterion)
             => Interactive.SendPaginatedMessageAsync(Context, pager, criterion);
-        public Task<IUserMessage> PagedReplyAsync(Paginator.PaginatedMessage pager, bool fromSourceUser = true)
+        public Task<IUserMessage> PagedReplyAsync(PaginatedMessage pager, bool fromSourceUser = true)
             => PagedReplyAsync(pager, GetSourceUserCriterion(fromSourceUser));
 
 

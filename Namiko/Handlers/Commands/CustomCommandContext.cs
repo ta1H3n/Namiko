@@ -15,6 +15,7 @@ namespace Namiko.Addons.Handlers
         public SocketUser User { get; }
         public SocketUserMessage Message { get; }
 
+        private IUserMessage Response { get; set; }
 
         public DateTimeOffset CreatedAt => Message.CreatedAt;
 
@@ -30,7 +31,23 @@ namespace Namiko.Addons.Handlers
 
 
         public async Task<IUserMessage> ReplyAsync(string text = null, bool isTTS = false, Embed embed = null, RequestOptions options = null, AllowedMentions allowedMentions = null, MessageReference messageReference = null, MessageComponent components = null, ISticker[] stickers = null, Embed[] embeds = null, MessageFlags flags = MessageFlags.None, bool ephemeral = false)
-            => await Channel.SendMessageAsync(text, isTTS, embed, options, allowedMentions, messageReference, components, stickers, embeds, flags);
+        {
+            if (Response == null)
+            {
+                Response = await Channel.SendMessageAsync(text, isTTS, embed, options, allowedMentions, messageReference, components, stickers, embeds, flags);
+            }
+            else
+            {
+                await Response.ModifyAsync(x =>
+                {
+                    x.Embed = embed;
+                    x.Content = text;
+                    x.Components = components;
+                    x.AllowedMentions = allowedMentions;
+                });
+            }
+            return Response;
+        }
 
 
         #region Interface lambdas

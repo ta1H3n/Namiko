@@ -384,7 +384,7 @@ namespace Namiko
             var eb = BoxListEmbed(boxes, module.Context.User).Build();
             Func<LootBox, SelectMenuOptionBuilder> func = x => new SelectMenuOptionBuilder(x.Type.ToString(), x.Type.ToString(), emote: Emote.Parse(x.Type.GetLootboxStats().Emote));
 
-            return await module.Select(boxes, "Lootbox to open", eb, func);
+            return await module.Select(boxes, "Lootbox to open", eb, x => x.Type.GetLootboxStats().Name, null, x => Emote.Parse(x.Type.GetLootboxStats().Emote));
         }
         public static EmbedBuilder NoBoxEmbed(IUser author)
         {

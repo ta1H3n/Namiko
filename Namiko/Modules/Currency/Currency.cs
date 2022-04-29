@@ -337,10 +337,10 @@ namespace Namiko
 
             var eb = CurrencyUtil.BoxShopEmbed(Context.User).Build();
             Func<LootboxStat, SelectMenuOptionBuilder> func = x => new SelectMenuOptionBuilder(x.TypeId.ToString(), x.TypeId.ToString(), emote: Emote.Parse(x.Emote));
-            box = await Select(boxes, "Lootbox", eb, func);
+            box = await Select(boxes, "Lootbox", eb, x => x.Name, null, x => Emote.Parse(x.Emote));
 
             var type = LootboxStats.Lootboxes[box.TypeId];
-            int amount = await Select(new int[] { 1, 2, 3, 4, 5, 10, 20, 50, 100 }, $"How many {type.Emote} **{box.Name}** lootboxes do you wish to buy?", "");
+            int amount = await Select(new List<int> { 1, 2, 3, 4, 5, 10, 20, 50, 100 }, $"How many {type.Emote} **{box.Name}** lootboxes do you wish to buy?", "Select amount");
 
             try
             {

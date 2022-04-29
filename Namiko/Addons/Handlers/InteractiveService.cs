@@ -80,14 +80,11 @@ namespace Namiko.Addons.Handlers
             if (!await callback.Criterion.JudgeAsync(callback.Context, arg).ConfigureAwait(false))
                 return;
 
-            _ = Task.Run(async () =>
+            var res = await callback.HandleCallbackAsync(arg).ConfigureAwait(false);
+            if (res is bool && (bool)res == true)
             {
-                var res = await callback.HandleCallbackAsync(arg).ConfigureAwait(false);
-                if (res is bool && (bool)res == true)
-                {
-                    DisposeCallback(callback);
-                }
-            });
+                DisposeCallback(callback);
+            }
         }
 
         private void RegisterCallback(CallbackBase<SocketMessageComponent> callback)
