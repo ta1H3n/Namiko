@@ -155,7 +155,7 @@ namespace Namiko
             Interactions.Log += Console_Log;
             await Interactions.AddModuleAsync(typeof(Banroulettes), Services);
             await Interactions.AddModuleAsync(typeof(Currency), Services);
-            //await Interactions.AddModuleAsync(typeof(CurrencyTestModule), Services);
+            await Interactions.AddModuleAsync(typeof(Waifus), Services);
             //await Interactions.AddModuleAsync(typeof(Basic), Services);
 
 

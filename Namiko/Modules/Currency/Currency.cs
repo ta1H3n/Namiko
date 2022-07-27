@@ -31,7 +31,7 @@ namespace Namiko
             int amount = CurrencyUtil.ParseAmount(sAmount, user);
             if (amount < 0)
             {
-                await ReplyAsync("Pick an amount! number, all, half, or x/y.");
+                await ReplyAsync("Pick an amount! some number, 'all', 'half', or x/y.");
                 return;
             }
             if (amount == 0)
@@ -62,10 +62,10 @@ namespace Namiko
             BlackjackGame game = new BlackjackGame(amount, Context, Interactive);
 
             var box = new DialogueBox(Blackjack.StartEmbed(Context, game).Build());
-            box.Options.Add("hit", new DialogueBoxOption(new ButtonBuilder("Hit", "hit", ButtonStyle.Secondary), x => Blackjack.Hit(Context, game), DisposeLevel.Continue));
-            box.Options.Add("stand", new DialogueBoxOption(new ButtonBuilder("Stand", "stand", ButtonStyle.Secondary), x => Blackjack.Stand(Context, game), DisposeLevel.RemoveComponents));
-            box.Options.Add("forfeit", new DialogueBoxOption(new ButtonBuilder("Forfeit", "forfeit", ButtonStyle.Secondary), x => Blackjack.Forfeit(Context, game), DisposeLevel.RemoveComponents));
-            box.Options.Add("double", new DialogueBoxOption(new ButtonBuilder("Double", "double", ButtonStyle.Secondary), x => Blackjack.DoubleDown(Context, game), DisposeLevel.RemoveComponents));
+            box.Options.Add("hit", new DialogueBoxOption(new ButtonBuilder("Hit", "hit", ButtonStyle.Primary), x => Blackjack.Hit(Context, game), DisposeLevel.Continue));
+            box.Options.Add("stand", new DialogueBoxOption(new ButtonBuilder("Stand", "stand", ButtonStyle.Primary), x => Blackjack.Stand(Context, game), DisposeLevel.RemoveComponents));
+            box.Options.Add("forfeit", new DialogueBoxOption(new ButtonBuilder("Forfeit", "forfeit", ButtonStyle.Danger), x => Blackjack.Forfeit(Context, game), DisposeLevel.RemoveComponents));
+            box.Options.Add("double", new DialogueBoxOption(new ButtonBuilder("Double", "double", ButtonStyle.Success), x => Blackjack.DoubleDown(Context, game), DisposeLevel.RemoveComponents));
 
             var msg = await DialogueReplyAsync(box, timeout: 0);
             game.Message = msg;
@@ -93,15 +93,15 @@ namespace Namiko
             if (PremiumDb.IsPremium(Context.User.Id, ProType.ProPlus))
                 ms /= 2;
 
+            long dayslate = 0;
             if ((daily.Date + ms) < timeNow)
             {
                 if ((daily.Date + 172800000) < timeNow && !newDaily)
                 {
                     long mslate = timeNow - (daily.Date + 172800000);
-                    long dayslate = (mslate / (1000 * 60 * 60 * 24)) + 1;
+                    dayslate = (mslate / (1000 * 60 * 60 * 24)) + 1;
                     double multiplier = dayslate > 3 ? 0 : 1 - dayslate * 0.25;
                     daily.Streak = (int)(daily.Streak * multiplier);
-                    await ReplyAsync($"You are **{dayslate}** days late to claim your daily. For every day missed, you lose 25% of your streak.");
                 }
 
                 daily.Streak++;
@@ -116,7 +116,7 @@ namespace Namiko
                 await BalanceDb.AddToasties(Context.User.Id, amount, Context.Guild.Id);
                 await BalanceDb.AddToasties(Context.Client.CurrentUser.Id, tax, Context.Guild.Id);
 
-                await ReplyAsync("", false, CurrencyUtil.DailyGetEmbed(Context.User, daily.Streak, amount, BalanceDb.GetToasties(Context.User.Id, Context.Guild.Id), Program.GetPrefix(Context)).Build());
+                await ReplyAsync(dayslate == 0 ? "" : $"You are **{dayslate}** days late to claim your daily. For every day missed, you lose 25% of your streak.", false, CurrencyUtil.DailyGetEmbed(Context.User, daily.Streak, amount, BalanceDb.GetToasties(Context.User.Id, Context.Guild.Id), Program.GetPrefix(Context)).Build());
             }
             else
             {
