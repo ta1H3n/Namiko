@@ -21,7 +21,7 @@ namespace Namiko.Modules.Leaderboard
     public class Leaderboards : CustomModuleBase<ICustomContext>
     {
 
-        [SlashCommand("leaderboard-rep", "Show rep leaderboard")]
+        [SlashCommand("leaderboard", "Show various leaderboards")]
         public async Task RepLeaderboard(LeaderboardType type, LeaderboardScope scope = LeaderboardScope.Server,
             [Discord.Interactions.Summary(description: "Filter by waifu name or source in the TopWaifus leaderboard")] string filter = "")
         {

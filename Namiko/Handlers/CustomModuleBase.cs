@@ -87,7 +87,7 @@ namespace Namiko.Addons.Handlers
         public Task<SocketRole> SelectRole(IEnumerable<ulong> roleIds, string roleNameFilter = null, string msg = "Role")
             => SelectRole(roleIds.Select(x => Context.Guild.GetRole(x)), roleNameFilter, null, msg);
 
-
+    
         public Task<IUserMessage> PagedReplyAsync(PaginatedMessage pager, ICriterion<SocketMessageComponent> criterion)
             => Interactive.SendPaginatedMessageAsync(Context, pager, criterion);
         public Task<IUserMessage> PagedReplyAsync(PaginatedMessage pager, bool fromSourceUser = true)

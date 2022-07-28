@@ -13,15 +13,12 @@ namespace Namiko.Addons.Handlers.Paginator
         private readonly PaginatedMessage _pager;
 
         private PaginatedAppearanceOptions options => _pager.Options;
-        private readonly int pages;
         private int page = 1;
 
         public PaginatedMessageCallback(PaginatedMessage pager, ICustomContext context, ICriterion<SocketMessageComponent> criterion = null) : base(context, criterion)
         {
             _pager = pager;
-
-            pages = _pager.CountPages();
-            _pager.PageCount = pages;
+            _pager.CountPages();
         }
 
         public override async Task<IUserMessage> DisplayAsync()
@@ -31,8 +28,11 @@ namespace Namiko.Addons.Handlers.Paginator
                 builder = builder.WithButton(options.BackHundred);
             if (_pager.PageCount > 4)
                 builder = builder.WithButton(options.BackTen);
-            builder = builder.WithButton(options.Back);
-            builder = builder.WithButton(options.Next);
+            if (_pager.PageCount > 1)
+            {
+                builder = builder.WithButton(options.Back);
+                builder = builder.WithButton(options.Next);
+            }
             if (_pager.PageCount > 4)
                 builder = builder.WithButton(options.NextTen);
             if (_pager.PageCount > 100)
@@ -75,7 +75,7 @@ namespace Namiko.Addons.Handlers.Paginator
             var eb = new EmbedBuilder()
                 .WithAuthor(_pager.Author)
                 .WithColor(_pager.Color)
-                .WithFooter(_pager.Footer + string.Format(options.FooterFormat, page, pages))
+                .WithFooter(_pager.Footer + string.Format(options.FooterFormat, page, _pager.PageCount))
                 .WithTitle(_pager.Title)
                 .WithImageUrl(_pager.ImageUrl)
                 .WithThumbnailUrl(_pager.ThumbnailUrl);

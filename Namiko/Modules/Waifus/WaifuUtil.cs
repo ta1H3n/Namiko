@@ -421,7 +421,6 @@ namespace Namiko
             paginatedMessage.Fields = fieldList;
             paginatedMessage.Footer = $"Resets in {11 - DateTime.Now.Hour % 12} Hours {60 - DateTime.Now.Minute} Minutes | ";
             paginatedMessage.Color = BasicUtil.RandomColor();
-            paginatedMessage.PageCount = pages;
             if (guildId != 0)
                 paginatedMessage.Pages = new List<string> { $"Open in [browser](https://namiko.moe/WaifuShop/{guildId})" };
             paginatedMessage.Author = new EmbedAuthorBuilder()

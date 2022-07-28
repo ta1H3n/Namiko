@@ -18,7 +18,7 @@ namespace Namiko.Addons.Handlers.Paginator
         public string ThumbnailUrl { get; set; } = "";
         public string Title { get; set; } = "";
         public string Footer { get; set; } = "";
-        public int PageCount { get; set; }
+        public int PageCount { get; private set; }
 
         public PaginatedAppearanceOptions Options { get; set; } = PaginatedAppearanceOptions.Default;
 
@@ -26,6 +26,7 @@ namespace Namiko.Addons.Handlers.Paginator
         {
             Options = new PaginatedAppearanceOptions();
             Color = BasicUtil.RandomColor();
+            PageCount = CountPages();
         }
         public PaginatedMessage(List<string> pages) : this()
         {
@@ -74,13 +75,14 @@ namespace Namiko.Addons.Handlers.Paginator
         {
             int count = 0;
 
-            count = Fields.Where(x => x.Pages != null).Max(x => x.Pages.Count());
+            count = Fields?.Where(x => x.Pages != null).Max(x => x.Pages.Count()) ?? 0;
 
             if (Pages != null && Pages.Count() > count) 
             { 
                 count = Pages.Count();
             }
 
+            PageCount = count;
             return count;
         }
     }

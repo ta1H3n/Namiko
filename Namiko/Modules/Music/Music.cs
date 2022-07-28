@@ -695,7 +695,6 @@ namespace Namiko
                 msg.Title = "Looping Playlist - :repeat:";
 
             msg.Pages = pages;
-            msg.PageCount = pages.Count();
             msg.Footer = $"Volume: {player.Volume} ⚬ Powered by: 🌋 Victoria - Lavalink ⚬ ";
 
             await PagedReplyAsync(msg);
