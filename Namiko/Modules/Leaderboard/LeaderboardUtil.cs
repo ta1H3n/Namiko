@@ -1,6 +1,5 @@
 ﻿namespace Namiko.Modules.Leaderboard
 {
-
     public class LeaderboardUtil
     {
         
