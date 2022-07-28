@@ -10,13 +10,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord.Interactions;
 
 namespace Namiko
 {
     [RequireGuild]
     public class Roles : CustomModuleBase<ICustomContext>
     {
-        [Command("Role"), Alias("r", "iam"), Description("Adds or removes a public role from the user.\n**Usage**: `!r [name]`"), BotPermission(GuildPermission.ManageRoles)]
+        [BotPermission(GuildPermission.ManageRoles)]
+        [Command("Role"), Alias("r", "iam"), Description("Adds or removes a public role from the user.\n**Usage**: `!r [name]`")]
+        [SlashCommand("role", "Get or lose a public role")]
         public async Task Role([Remainder] string name = "")
         {
             var role = await this.SelectRole(PublicRoleDb.GetAll(Context.Guild.Id).Select(x => x.RoleId), name);
@@ -55,7 +58,23 @@ namespace Namiko
             }
         }
 
-        [Command("SetPublicRole"), Alias("spr"), Description("Sets or unsets a role as a public role.\n**Usage**: `!spr [name]`"), UserPermission(GuildPermission.ManageRoles)]
+        [Command("PublicRoleList"), Alias("prl", "roles"), Description("Lists all public roles.\n**Usage**: `!prl`")]
+        [SlashCommand("role-list", "Lists all public roles that can be received with the role command")]
+        public async Task PublicRoleList([Remainder] string str = "")
+        {
+            var roles = new List<SocketRole>();
+            foreach (var x in PublicRoleDb.GetAll(Context.Guild.Id))
+            {
+                roles.Add(Context.Guild.GetRole(x.RoleId));
+            }
+
+            var eb = RoleUtil.PublicRoleListEmbed(roles);
+            await ReplyAsync("", false, eb.Build());
+        }
+
+        [UserPermission(GuildPermission.ManageRoles)]
+        [Command("SetPublicRole"), Alias("spr"), Description("Sets or unsets a role as a public role.\n**Usage**: `!spr [name]`")]
+        [SlashCommand("set-public-role", "Make or undo a role as public, to add with the role command")]
         public async Task NewRole([Remainder] IRole role)
         {
             if (role == null)
@@ -84,29 +103,8 @@ namespace Namiko
             }
         }
 
-        [Command("ClearRole"), Alias("cr"), Description("Removes all users from a role.\n**Usage**: `!cr [name]`"), UserPermission(GuildPermission.ManageRoles), BotPermission(GuildPermission.ManageRoles)]
-        public async Task ClearRole([Remainder] IRole role)
-        {
-            if (role == null)
-            {
-                return;
-            }
-
-            var users = Context.Guild.Users.Where(x => x.Roles.Contains(role)).ToList();
-            if (users.Count >= 3)
-                await ReplyAsync($"Clearing **{role.Name}**... This might take a while, Senpai.");
-
-            var tasks = new List<Task>();
-            foreach (var user in users)
-            {
-                tasks.Add(user.RemoveRoleAsync(role));
-            }
-
-            await Task.WhenAll(tasks);
-            await ReplyAsync($"There are now **{users.Count}** less weebs in the `{role.Name}` role. Can I have them?");
-        }
-
         [Command("RoleShop"), Alias("rs"), Description("Open a role shop managed by the server admins.\n**Usage**: `!rs`")]
+        [SlashCommand("role-shop", "Open the role shop")]
         public async Task RoleShop([Remainder] string str = "")
         {
             var roles = await ShopRoleDb.GetRoles(Context.Guild.Id);
@@ -124,7 +122,9 @@ namespace Namiko
                 eb.WithDescription(PaginatedMessage.PagesArray(roles.OrderByDescending(x => x.Price), 100, (r) => $"<@&{r.RoleId}> - **{r.Price:n0}**\n").First()).Build());
         }
 
-        [Command("BuyRole"), Description("Buy a role from the role shop.\n**Usage**: `!buyrole [role_name]`"), BotPermission(GuildPermission.ManageRoles)]
+        [BotPermission(GuildPermission.ManageRoles)]
+        [Command("BuyRole"), Description("Buy a role from the role shop.\n**Usage**: `!buyrole [role_name]`")]
+        [SlashCommand("role-buy", "Buy a role from the role shop")]
         public async Task RoleShopAddRole([Remainder] string name = "")
         {
             var roles = await ShopRoleDb.GetRoles(Context.Guild.Id);
@@ -154,7 +154,9 @@ namespace Namiko
             }
         }
 
-        [Command("RoleShopAddRole"), Alias("rsar"), Description("Add a role to the role shop.\n**Usage**: `!rsar [price] [role_name]`"), UserPermission(GuildPermission.ManageRoles), BotPermission(GuildPermission.ManageRoles)]
+        [UserPermission(GuildPermission.ManageRoles), BotPermission(GuildPermission.ManageRoles)]
+        [Command("RoleShopAddRole"), Alias("rsar"), Description("Add a role to the role shop.\n**Usage**: `!rsar [price] [role_name]`")]
+        [SlashCommand("role-shop-add", "Add a role to the role shop")]
         public async Task RoleShopAddRole(int price, [Remainder] IRole role)
         {
             if (price < 0)
@@ -188,7 +190,9 @@ namespace Namiko
             await ReplyAsync(embed: new EmbedBuilderPrepared($"~ **{role.Name}** added to the shop ~").Build());
         }
 
-        [Command("RoleShopRemoveRole"), Alias("rsrr"), Description("Remove a role from the role shop.\n**Usage**: `!rsrr [role_name]`"), UserPermission(GuildPermission.Administrator)]
+        [UserPermission(GuildPermission.Administrator)]
+        [Command("RoleShopRemoveRole"), Alias("rsrr"), Description("Remove a role from the role shop.\n**Usage**: `!rsrr [role_name]`")]
+        [SlashCommand("role-shop-remove", "Remove a role from the role shop")]
         public async Task RoleShopRemoveRole([Remainder] string name = "")
         {
             var roles = await ShopRoleDb.GetRoles(Context.Guild.Id);
@@ -210,6 +214,7 @@ namespace Namiko
         }
 
         [Command("Invite"), Description("Invites a user to your team.\n**Usage**: `!inv [user]`")]
+        [SlashCommand("invite", "Invite a user to your team")]
         public async Task Invite([Remainder] IUser user = null)
         {
             var channel = Context.Channel;
@@ -243,7 +248,9 @@ namespace Namiko
             await ch.SendMessageAsync($"<:KannaHype:571690048001671238> `{Context.User}` invited `{user}` to **{teamRole.Name}**.");
         }
 
-        [Command("JoinTeam"), Description("Accept an invite to a team.\n**Usage**: `!jointeam [team_name]`"), BotPermission(GuildPermission.ManageRoles)]
+        [BotPermission(GuildPermission.ManageRoles)]
+        [Command("JoinTeam"), Description("Accept an invite to a team.\n**Usage**: `!jointeam [team_name]`")]
+        [SlashCommand("team-join", "Accept a team invite")]
         public async Task Join([Remainder] string teamName)
         {
             var role = await SelectRole(TeamDb.Teams(Context.Guild.Id).Select(x => x.MemberRoleId), teamName);
@@ -274,7 +281,9 @@ namespace Namiko
             await ReplyAsync($"You're not invited to **{role.Name}**! What a shame ^^");
         }
 
-        [Command("LeaveTeam"), Alias("lt"), Description("Leave your team.\n**Usage**: `!lt`"), BotPermission(GuildPermission.ManageRoles)]
+        [BotPermission(GuildPermission.ManageRoles)]
+        [Command("LeaveTeam"), Alias("lt"), Description("Leave your team.\n**Usage**: `!lt`")]
+        [SlashCommand("team-leave", "Leave your team")]
         public async Task Leave([Remainder] string str = "")
         {
             var role = RoleUtil.GetMemberRole(Context.Guild, Context.User);
@@ -300,7 +309,9 @@ namespace Namiko
             await ch.SendMessageAsync($"<:TickNo:577838859077943306> `{Context.User}` left **{role.Name}**.");
         }
 
-        [Command("TeamKick"), Alias("tk"), Description("Kicks a user from your team.\n**Usage**: `!tk [user]`"), BotPermission(GuildPermission.ManageRoles)]
+        [BotPermission(GuildPermission.ManageRoles)]
+        [Command("TeamKick"), Alias("tk"), Description("Kicks a user from your team.\n**Usage**: `!tk [user]`")]
+        [SlashCommand("team-kick", "Kick a member from your team")]
         public async Task TeamKick(IUser user, [Remainder] string str = "")
         {
             var leader = RoleUtil.GetLeaderRole(Context.Guild, Context.User);
@@ -326,7 +337,9 @@ namespace Namiko
             await ch.SendMessageAsync($":hammer: `{Context.User}` kicked `{user}` from **{userteam.Name}**.");
         }
 
-        [Command("NewTeam"), Alias("nt"), Description("Creates a new team.\n**Usage**: `!nt [LeaderRoleName] [MemberRoleName]`\n Note: if a role has a space in it's name it has to be put in quotes. \n For example: `!nt \"Role One\" \"Role Two\"`"), UserPermission(GuildPermission.ManageRoles)]
+        [UserPermission(GuildPermission.ManageRoles)]
+        [Command("NewTeam"), Alias("nt"), Description("Creates a new team.\n**Usage**: `!nt [LeaderRoleName] [MemberRoleName]`\n Note: if a role has a space in it's name it has to be put in quotes. \n For example: `!nt \"Role One\" \"Role Two\"`")]
+        [SlashCommand("team-new", "Create a new team")]
         public async Task NewTeam(IRole leader, [Remainder] IRole member)
         {
             if (leader == null)
@@ -344,7 +357,9 @@ namespace Namiko
             await ReplyAsync($"Added Leader role: '{leader.Name}' and Team role: '{member.Name}'");
         }
 
-        [Command("DeleteTeam"), Alias("dt"), Description("Deletes a team.\n**Usage**: `!dt [Leader or Team RoleName]`"), UserPermission(GuildPermission.ManageRoles)]
+        [UserPermission(GuildPermission.ManageRoles)]
+        [Command("DeleteTeam"), Alias("dt"), Description("Deletes a team.\n**Usage**: `!dt [Leader or Team RoleName]`")]
+        [SlashCommand("team-delete", "Delete a team")]
         public async Task DeleteTeam([Remainder] IRole role)
         {
             var team = TeamDb.TeamByMember(role.Id);
@@ -362,26 +377,15 @@ namespace Namiko
         }
 
         [Command("TeamList"), Alias("tl", "teams"), Description("Lists all teams.\n**Usage**: `!tl`")]
+        [SlashCommand("teams", "Lists all teams")]
         public async Task TeamList([Remainder] string str = "")
         {
             var eb = await RoleUtil.TeamListEmbed(TeamDb.Teams(Context.Guild.Id), Context.Guild);
             await ReplyAsync("", false, eb.Build());
         }
 
-        [Command("PublicRoleList"), Alias("prl", "roles"), Description("Lists all public roles.\n**Usage**: `!prl`")]
-        public async Task PublicRoleList([Remainder] string str = "")
-        {
-            var roles = new List<SocketRole>();
-            foreach (var x in PublicRoleDb.GetAll(Context.Guild.Id))
-            {
-                roles.Add(Context.Guild.GetRole(x.RoleId));
-            }
-
-            var eb = RoleUtil.PublicRoleListEmbed(roles);
-            await ReplyAsync("", false, eb.Build());
-        }
-
         [Command("Team"), Description("Info about a team.\n**Usage**: `!team [team_role_name]`")]
+        [SlashCommand("team", "See team stats")]
         public async Task Team([Remainder] string teamName = "")
         {
             var role = await SelectRole(TeamDb.Teams(Context.Guild.Id).Select(x => x.MemberRoleId), teamName);

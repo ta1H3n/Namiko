@@ -53,6 +53,7 @@ namespace Namiko
         }
 
         [Command("List"), Alias("ListAll", "Images", "Albums"), Description("List of all image commands and how many images there are.\n**Usage**: `!list`")]
+        [SlashCommand("image-list", "List of all image commands")]
         public async Task List([Remainder] string str = "")
         {
             var images = await ImageDb.GetImages();
@@ -83,6 +84,7 @@ namespace Namiko
         }
 
         [Command("Album"), Alias("All"), Description("All reaction images from a single command.\n**Usage**: `!all [image_name]`")]
+        [SlashCommand("album", "All images from a single command")]
         public async Task All(string name, [Remainder] string str = "")
         {
             var album = Context.Guild == null ? null : ImageDb.GetAlbum(name + Context.Guild.Id);
@@ -102,6 +104,7 @@ namespace Namiko
         }
 
         [Command("Image"), Alias("i"), Description("Sends a reaction image by id.\n**Usage**: `!i [id]`")]
+        [SlashCommand("image", "Send image by id")]
         public async Task Image(int id, [Remainder] string str = "")
         {
             var image = ImageDb.GetImage(id);
@@ -116,15 +119,8 @@ namespace Namiko
 
         [HomeOrT1GuildPrecondition, UserPermission(GuildPermission.ManageMessages)]
         [Command("NewImage"), Alias("ni"), Description("Adds a new image to the database.\n**Usage**: `!ni [name] [url_or_attachment]`")]
-        public async Task NewImage(string name, string url = null, [Remainder] string str = "")
-            => await NewImage(name, url ?? ((ICommandContext)Context).Message.Attachments.FirstOrDefault()?.Url);
-
-        [HomeOrT1GuildPrecondition, UserPermission(GuildPermission.ManageMessages)]
-        [SlashCommand("NewImage", "Adds a new image to the database."), Alias("ni"), Description("Adds a new image to the database.\n**Usage**: `!ni [name] [url_or_attachment]`")]
-        public async Task NewImageSlash(string name, string url)
-            => await NewImage(name, url);
-
-        public async Task NewImage(string name, string url)
+        [SlashCommand("image-new", "Add a new image with a url or attachment")]
+        public async Task NewImage(string name, string url = null)
         {
             await Context.Channel.TriggerTypingAsync();
             bool insider = Context.Guild.Id == 418900885079588884;
@@ -181,7 +177,9 @@ namespace Namiko
             await ReplyAsync($"{rl.ClientRemaining-20}/{rl.ClientLimit} imgur credits remaining.", false, ImageUtil.ToEmbed(img).Build());
         }
 
-        [Command("DeleteImage"), Alias("di"), Description("Deletes image from the database using the id.\n**Usage**: `di [id]`"), HomeOrT1GuildPrecondition, UserPermission(GuildPermission.ManageMessages)]
+        [HomeOrT1GuildPrecondition, UserPermission(GuildPermission.ManageMessages)]
+        [Command("DeleteImage"), Alias("di"), Description("Deletes image from the database using the id.\n**Usage**: `di [id]`")]
+        [SlashCommand("image-delete", "Delete an image by id")]
         public async Task DeleteImage(int id, [Remainder] string str = "")
         {
             bool insider = Context.Guild.Id == 418900885079588884;

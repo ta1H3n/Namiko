@@ -289,7 +289,6 @@ namespace Namiko
         }
 
         // HELP COMMAND STUFF
-
         [Command("Help"), Alias("h"), Description("Shows more information about a command.\n**Usage**: `!help [command/module_name]`")]
         public async Task Help([Remainder] string cmd = "")
         {

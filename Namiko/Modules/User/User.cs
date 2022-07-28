@@ -22,7 +22,8 @@ namespace Namiko
     public class User : CustomModuleBase<ICustomContext>
     {
 
-        [Command("Profile"), Description("Showsa a users profile.\n**Usage**: `!profile [user_optional]`")]
+        [Command("Profile"), Description("Shows a users profile.\n**Usage**: `!profile [user_optional]`")]
+        [SlashCommand("profile", "Show user profile")]
         public async Task Profile([Remainder] IUser user = null)
         {
             if (user == null) user = Context.User;
@@ -30,6 +31,7 @@ namespace Namiko
         }
 
         [Command("Waifus"), Alias("inv"), Description("Shows a users waifu list.\n**Usage**: `!waifus [user_optional]`")]
+        [SlashCommand("waifus", "Show waifu inventory")]
         public async Task Waifus([Remainder] IUser user = null)
         {
             user ??= Context.User;
@@ -61,7 +63,8 @@ namespace Namiko
         }
 
         [Command("Marry"), Alias("Propose"), Description("Propose to a user.\n**Usage**:  `!m [user]`")]
-        public async Task Marriage(IUser wife = null, [Remainder] string str = "")
+        [SlashCommand("marry", "Propose/marry a user")]
+        public async Task Marriage(IUser wife = null)
         {
 
             //commonly used variables + embed basics
@@ -130,9 +133,9 @@ namespace Namiko
         }
 
         [Command("Decline"), Alias("DeclineMarriage", "dm"), Description("Decline marriage proposal.\n**Usage**: `!decline`")]
-        public async Task Decline([Remainder] string str = "")
+        [SlashCommand("decline", "Decline marriage proposal")]
+        public async Task Decline()
         {
-
             //common variables
             IUser user = Context.User;
             EmbedBuilder eb = new EmbedBuilder();
@@ -161,6 +164,7 @@ namespace Namiko
         }
 
         [Command("Divorce"), Description("Divorce a user.\n**Usage**: `!divorce`")]
+        [SlashCommand("divorce", "Divorce a user")]
         public async Task Divorce([Remainder] string str = "")
         {
             //common variables
@@ -190,50 +194,39 @@ namespace Namiko
         }
 
         [Command("Proposals"), Alias("ShowProposals", "Proposal"), Description("Displays sent & received proposals.\n**Usage**: `!proposals`")]
+        [SlashCommand("proposals", "Show proposals")]
         public async Task Proposals([Remainder] IUser user = null)
         {
             await ReplyAsync("", false, UserUtil.ProposalsEmbed(user ?? Context.User, Context.Guild).Build());
         }
 
         [Command("Marriages"), Alias("ShowMarriages", "Marraiges", "Marriage", "sm"), Description("Displays marriages.\n**Usage**: `!sm`")]
+        [SlashCommand("marriages", "Show marital details")]
         public async Task Marriages([Remainder] IUser user = null)
         {
             await ReplyAsync("", false, UserUtil.MarriagesEmbed(user ?? Context.User, Context.Guild).Build());
         }
 
         [Command("SetColour"), Alias("SetColor", "sc"), Description("Set your profile colour.\n**Usage**: `!sc [colour_name or hex_value]`")]
-        public async Task SetPersonalColour(string shade = "", string colour = "", [Remainder] string str = "")
+        [SlashCommand("profile-colour", "Set your profile colour")]
+        public async Task SetPersonalColour([Discord.Interactions.Summary(description: "e.g. #ffc0cb")] string hexValue = "")
         {
-
-            //
             //way to set it back to default
-            if (shade.Equals(""))
+            if (hexValue.Equals(""))
             {
                 await ProfileDb.HexDefault(Context.User.Id);
 
-                //sending embed + exception & error confermations 
                 EmbedBuilder embed = UserUtil.SetColourEmbed(Context.User);
                 embed.WithDescription($"{ Context.User.Username } set colour to **Default**");
                 await ReplyAsync("", false, embed.Build());
                 return;
-
-
-                //if no shade specified but colour value exists
             }
-            if (colour.Equals("")) colour = shade;
-
-
-
-            //
-            //setting start values & checking for possible name or hex value
+            
             System.Drawing.Color color = System.Drawing.Color.White;
-            if (UserUtil.GetNamedColour(ref color, colour, shade) || UserUtil.GetHexColour(ref color, colour))
+            if (UserUtil.GetHexColour(ref color, hexValue))
             {
-
-                //toastie + saving hex colour
                 try
                 {
-                    await BalanceDb.AddToasties(Context.User.Id, -Constants.colour, Context.Guild.Id);
                     await ProfileDb.SetHex(color, Context.User.Id);
                     await ReplyAsync("", false, UserUtil.SetColourEmbed(Context.User).Build());
                 }
@@ -242,6 +235,7 @@ namespace Namiko
         }
 
         [Command("SetQuote"), Alias("sq"), Description("Sets your quote on profile.\n**Usage**: `!sq [quote]`")]
+        [SlashCommand("profile-quote", "Set your profile quote")]
         public async Task SetPersonalQuote([Remainder] string quote = null)
         {
 
@@ -266,15 +260,11 @@ namespace Namiko
         }
 
         [Command("SetImage"), Alias("si"), Description("Sets thumbnail image on profile. \n**Usage**: `!si [image_url_or_attachment]`")]
-        public async Task SetPersonalImageCommand([Remainder] string url = null)
-            => await SetPersonalImage(url ?? ((ICommandContext)Context).Message.Attachments.FirstOrDefault()?.Url);
-
-        [SlashCommand("SetImage", "Add an image to your profile")]
-        public async Task SetPersonalImageSlash([Remainder] string url = null)
-            => await SetPersonalImage(url);
-
-        public async Task SetPersonalImage(string url)
+        [SlashCommand("profile-image", "Set your profile image")]
+        public async Task SetPersonalImageCommand(string url = null)
         {
+            url ??= ((ICommandContext)Context).Message.Attachments.FirstOrDefault()?.Url;
+            
             //to delete image
             if (url == null)
             {
@@ -304,6 +294,7 @@ namespace Namiko
         }
 
         [Command("Quote"), Alias("q"), Description("Allows user to see their personal quote and Image.\n**Usage**: `!q [user(s)_optional]`")]
+        [SlashCommand("quote", "Show quote and image")]
         public async Task DisplayPersonalQuote(IUser user = null, [Remainder] string str = "")
         {
             //variables
@@ -340,6 +331,7 @@ namespace Namiko
         }
 
         [Command("SetFeaturedWaifu"), Alias("sfw"), Description("Sets your waifu image on your profile.\n**Usage**: `!sfw [waifu_name]`")]
+        [SlashCommand("set-favorite-waifu", "Choose your favorite waifu to display on your profile")]
         public async Task SetFeaturedWaifu([Remainder] string str = "")
         {
             if (str == "")
@@ -365,7 +357,8 @@ namespace Namiko
         }
 
         [Command("FeaturedWaifu"), Alias("fw"), Description("Views Featured Waifu.\n**Usage**: `!fw`")]
-        public async Task DisplayFeaturedWaifu([Remainder] IUser user = null)
+        [SlashCommand("favorite-waifu", "Show favorite waifu")]
+        public async Task DisplayFeaturedWaifu(IUser user = null)
         {
             //variables
             bool isMe = false;
@@ -386,71 +379,42 @@ namespace Namiko
             await ReplyAsync((isMe ? $"You have { waifu.Name } as your" : $"{ user.Username } has { waifu.Name } as his") + " Featured waifu!", false, WaifuUtil.WaifuEmbedBuilder(waifu, Context).Build());
         }
 
-        [Command("UndoColour"), Alias("uc", "UndoColor"), Description("Switch back to a previous color.\n**Usage**: `!scp`")]
-        public async Task SetColourPrior([Remainder] string str = "")
-        {
-
-            //previous colour command names are pretty dumb
-            //reason: named for ease of use i.e 
-            //!sc is colour, so !scp & !scpl are easy mental additions
-            //apposed to seperate command letters, looks kind of dumb, but simpler for users
-
-            //stack check, dumb as fuck imo
-            IUser user = Context.User;
-            string stack = ProfileDb.GetHexStack(user.Id);
-            if (stack.Length < 6)
-            {
-                await ReplyAsync("You have no colours in the stack.");
-                return;
-
-                //if they do
-            }
-            await ProfileDb.PopStack(user.Id);
-
-            //creating comfermation embed
-            EmbedBuilder embed = UserUtil.SetColourEmbed(user);
-            await ReplyAsync("", false, embed.Build());
-        }
-
-        [Command("ColourHistory"), Alias("clrh", "ColorHistory"), Description("List of your previous colors.\n**Usage**: `!scpl`")]
-        public async Task ColourPriorList([Remainder] string str = "")
-        {
-
-            //stack check, dumb as fuck imo
-            string stack = ProfileDb.GetHexStack(Context.User.Id);
-            if (stack.Length < 6)
-            {
-                await ReplyAsync("You have no Colour List.");
-                return;
-            }
-
-            //making message
-            string message = "";
-            string[] stackItems = stack.Split(";");
-            foreach (string item in stackItems) message += item + "\n";
-
-            //getting embed
-            EmbedBuilder embed = UserUtil.SetColourEmbed(Context.User);
-            embed.WithDescription(message);
-            embed.WithAuthor("Colour History");
-            await ReplyAsync("", false, embed.Build());
-        }
-
         [Command("Avatar"), Alias("pfp"), Description("View a users profile picture.\n**Usage**: `!pfp [user]`")]
+        [SlashCommand("avatar", "Show someones profile picture")]
         public async Task Avatar([Remainder] IUser user = null)
         {
             if (user == null)
             {
                 user = Context.User;
             }
+
+            string guildAvatar = null;
+            if (user is SocketGuildUser)
+            {
+                var guildUser = user as SocketGuildUser;
+                guildAvatar = guildUser.GetGuildAvatarUrl(ImageFormat.Auto, 2048);
+            }
             string avatar = user.GetAvatarUrl(ImageFormat.Auto, 2048);
-            await ReplyAsync(embed: new EmbedBuilderPrepared(user)
-                .WithAuthor(user.Username + "'s Profile Picture", avatar, avatar)
-                .WithImageUrl(avatar)
-                .Build());
+
+            if (guildAvatar == null)
+            {
+                await ReplyAsync(embed: new EmbedBuilderPrepared(user)
+                    .WithAuthor(user.Username + "'s Profile Picture", avatar, avatar)
+                    .WithImageUrl(avatar)
+                    .Build());
+            }
+            else
+            {
+                await ReplyAsync(embed: new EmbedBuilderPrepared(user)
+                    .WithAuthor(user.Username + "'s Profile Picture", guildAvatar, guildAvatar)
+                    .WithThumbnailUrl(avatar)
+                    .WithImageUrl(guildAvatar)
+                    .Build());
+            }
         }
 
         [Command("Rep"), Description("Gives rep to a user.\n**Usage**: `!rep [user]`")]
+        [SlashCommand("rep", "Give rep to your fren :)")]
         public async Task Rep([Remainder] IUser user = null)
         {
             var author = await ProfileDb.GetProfile(Context.User.Id);
@@ -502,109 +466,8 @@ namespace Namiko
             }
         }
 
-        [Command("ServerRepLeaderboard"), Alias("srlb"), Description("Highest rep users in this server.\n**Usage**: `!tw`")]
-        public async Task ServerRepLeaderboard([Remainder] string str = "")
-        {
-            IEnumerable<KeyValuePair<ulong, int>> rep = await ProfileDb.GetAllRep();
-            rep = rep.Where(x => Context.Guild.Users.Select(u => u.Id).Contains(x.Key)).OrderByDescending(x => x.Value);
-            var msg = new PaginatedMessage();
-
-            msg.Title = ":star: Rep Leaderboards";
-            var fields = new List<FieldPages>
-            {
-                new FieldPages
-                {
-                    Title = "Users Here",
-                    Pages = PaginatedMessage.PagesArray(rep, 10, (x) => $"**{BasicUtil.IdToMention(x.Key)}** - {x.Value}\n")
-                }
-            };
-            msg.Fields = fields;
-
-            await PagedReplyAsync(msg);
-        }
-
-        [Command("RepLeaderboard"), Alias("rlb"), Description("Highest rep users.\n**Usage**: `!tw`")]
-        public async Task RepLeaderboard([Remainder] string str = "")
-        {
-            IEnumerable<KeyValuePair<ulong, int>> repRaw = await ProfileDb.GetAllRep();
-            List<KeyValuePair<string, int>> rep = new List<KeyValuePair<string, int>>();
-            int i = 0;
-            foreach (var x in repRaw)
-            {
-                SocketUser user = Context.Client.GetUser(x.Key);
-                if (user == null)
-                    continue;
-
-                rep.Add(new KeyValuePair<string, int>(user.Username + "#" + user.Discriminator, x.Value));
-            }
-            rep = rep.OrderByDescending(x => x.Value).ToList();
-            var msg = new PaginatedMessage();
-
-            msg.Title = ":star: Rep Leaderboards";
-            var fields = new List<FieldPages>
-            {
-                new FieldPages
-                {
-                    Title = "All Users",
-                    Pages = PaginatedMessage.PagesArray(rep, 10, (x) => $"`#{++i}` {x.Key} - {x.Value}\n", false)
-                }
-            };
-            msg.Fields = fields;
-
-            await PagedReplyAsync(msg);
-        }
-
-        [Command("ServerVoteLeaderboard"), Alias("svlb"), Description("Highest rep users in this server.\n**Usage**: `!tw`")]
-        public async Task ServerVoteLeaderboard([Remainder] string str = "")
-        {
-            IEnumerable<KeyValuePair<ulong, int>> votes = await VoteDb.GetAllVotes();
-            votes = votes.Where(x => Context.Guild.Users.Select(u => u.Id).Contains(x.Key)).OrderByDescending(x => x.Value);
-            var msg = new PaginatedMessage();
-
-            msg.Title = ":star: Vote Leaderboards";
-            var fields = new List<FieldPages>
-            {
-                new FieldPages
-                {
-                    Title = "Users Here",
-                    Pages = PaginatedMessage.PagesArray(votes, 10, (x) => $"**{BasicUtil.IdToMention(x.Key)}** - {x.Value}\n")
-                }
-            };
-            msg.Fields = fields;
-
-            await PagedReplyAsync(msg);
-        }
-
-        [Command("VoteLeaderboard"), Alias("vlb"), Description("Highest rep users.\n**Usage**: `!tw`")]
-        public async Task VoteLeaderboard([Remainder] string str = "")
-        {
-            IEnumerable<KeyValuePair<ulong, int>> votesRaw = await VoteDb.GetAllVotes();
-            List<KeyValuePair<string, int>> votes = new List<KeyValuePair<string, int>>();
-            foreach (var x in votesRaw)
-            {
-                SocketUser user = Context.Client.GetUser(x.Key);
-                if (user == null)
-                    continue;
-
-                votes.Add(new KeyValuePair<string, int>(user.Username + "#" + user.Discriminator, x.Value));
-            }
-            votes = votes.OrderByDescending(x => x.Value).ToList();
-            var msg = new PaginatedMessage();
-
-            msg.Title = ":star: Vote Leaderboards";
-            var fields = new List<FieldPages>();
-            int i = 0;
-            fields.Add(new FieldPages
-            {
-                Title = "All Users",
-                Pages = PaginatedMessage.PagesArray(votes, 10, (x) => $"`#{++i}` {x.Key} - {x.Value}\n", false)
-            });
-            msg.Fields = fields;
-
-            await PagedReplyAsync(msg);
-        }
-
         [Command("ActivatePro"), Alias("ap", "ActivatePremium"), Description("Activates premium subscriptions associated with this account.\n**Usage**: `!ap`")]
+        [SlashCommand("", "")]
         public async Task ActivatePremium([Remainder] string str = "")
         {
             var ntr = Context.Client.GetGuild((ulong)ProType.HomeGuildId_NOTAPREMIUMTYPE);
@@ -662,7 +525,8 @@ namespace Namiko
             }
         }
 
-        [Command("RedeemCode"), Alias("Redeem"), Description("Redeem a premium trial code.\n**Usage**: `!redeem [code]`"), RequireGuild]
+        [Command("RedeemCode"), Alias("Redeem"), Description("Redeem a premium trial code.\n**Usage**: `!redeem [code]`")]
+        [SlashCommand("", "")]
         public async Task RedeemCode(string code, [Remainder] string str = "")
         {
             Premium res = await PremiumCodeDb.RedeemCode(code, Context.User.Id, Context.Guild.Id);

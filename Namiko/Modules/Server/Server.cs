@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord.Interactions;
 
 namespace Namiko
 {
@@ -18,12 +19,14 @@ namespace Namiko
     public class ServerModule : CustomModuleBase<ICustomContext>
     {
         [Command("Server"), Alias("serverinfo", "guild", "stats"), Description("Stats about the server.\n**Usage**: `!server`")] 
+        [SlashCommand("server", "Show server stats")]
         public async Task ServerInfo([Remainder] string str = "")
         {
             await ReplyAsync("", false, (await ServerUtil.ServerInfo(Context.Guild)).Build());
         }
 
-        [Command("SetPrefix"), Alias("sp", "sbp", "setbotprefix"), Description("Sets a prefix for the bot in the server.\n**Usage**: `!sp [prefix]`"), UserPermission(GuildPermission.ManageMessages)]
+        [UserPermission(GuildPermission.ManageMessages)]
+        [Command("SetPrefix"), Alias("sp", "sbp", "setbotprefix"), Description("Sets a prefix for the bot in the server.\n**Usage**: `!sp [prefix]`")]
         public async Task SetBotPrefix(string prefix)
         {
             if (prefix.Length < 1)
@@ -44,7 +47,9 @@ namespace Namiko
             await ReplyAsync($"My current prefix is `{prefix}`.\nYou can change it by typing `{prefix}sp [new_prefix]` without the brackets :fox:");
         }
 
-        [Command("SetJoinLogChannel"), Alias("jch", "jlch", "sjch", "sjlch"), Description("Sets a channel to log users joining/leaving the guild.\n**Usage**: `!jlch`"), UserPermission(GuildPermission.ManageChannels)]
+        [UserPermission(GuildPermission.ManageChannels)]
+        [Command("SetJoinLogChannel"), Alias("jch", "jlch", "sjch", "sjlch"), Description("Sets a channel to log users joining/leaving the guild.\n**Usage**: `!jlch`")]
+        [SlashCommand("channel-join-log", "Set a channel to log users joining and leaving")]
         public async Task SetJoinLogChannel()
         {
             var server = ServerDb.GetServer(Context.Guild.Id);
@@ -62,7 +67,9 @@ namespace Namiko
             await ReplyAsync("Join Log channel set.");
         }
 
-        [Command("SetTeamLogChannel"), Alias("tch"), Description("Sets a channel to log users joining/leaving teams.\n**Usage**: `!tlch`"), UserPermission(GuildPermission.ManageChannels)]
+        [UserPermission(GuildPermission.ManageChannels)]
+        [Command("SetTeamLogChannel"), Alias("tch"), Description("Sets a channel to log users joining/leaving teams.\n**Usage**: `!tlch`")]
+        [SlashCommand("channel-team-log", "Set a channel to log users joining and leaving teams")]
         public async Task SetTeamLogChannel()
         {
             var server = ServerDb.GetServer(Context.Guild.Id);
@@ -80,7 +87,9 @@ namespace Namiko
             await ReplyAsync("Team Log channel set.");
         }
 
-        [Command("SetWelcomeChannel"), Alias("wch"), Description("Sets a channel to welcome members.\n**Usage**: `!wch`"), UserPermission(GuildPermission.ManageChannels)]
+        [UserPermission(GuildPermission.ManageChannels)]
+        [Command("SetWelcomeChannel"), Alias("wch"), Description("Sets a channel to welcome members.\n**Usage**: `!wch`")]
+        [SlashCommand("channel-welcome", "")]
         public async Task SetWelcomeChannel()
         {
             var server = ServerDb.GetServer(Context.Guild.Id);
@@ -98,7 +107,8 @@ namespace Namiko
             await ReplyAsync("Welcome channel set.");
         }
 
-        [Command("BlacklistChannel"), Alias("blch"), Description("Disables or enables bot commands in a channel.\n**Usage**: `!blch [optional_channel_id]`"), UserPermission(GuildPermission.ManageChannels)]
+        [UserPermission(GuildPermission.ManageChannels)]
+        [Command("BlacklistChannel"), Alias("blch"), Description("Disables or enables bot commands in a channel.\n**Usage**: `!blch [optional_channel_id]`")]
         public async Task BlacklistChannel(ulong channelId = 0)
         {
             if (channelId == 0)
@@ -121,23 +131,8 @@ namespace Namiko
             await ReplyAsync($"Channel blacklisted. Use `{Program.GetPrefix(Context)}blch [channel_id]` in another channel to undo.\n The ID of this channel is `{Context.Channel.Id}`.");
         }
 
-        //[Command("ListWelcomes"), Alias("lw"), Description("Lists all welcomes and their IDs.")]
-        //public async Task ListWelcome()
-        //{
-
-        //    List<WelcomeMessage> messages = WelcomeMessageDb.GetMessages();
-        //    string list = @"```";
-        //    foreach (WelcomeMessage x in messages)
-        //    {
-        //        list += x.Id + ". ";
-        //        list += x.Message;
-        //        list += '\n';
-        //    }
-        //    list += "```";
-        //    await ReplyAsync(list);
-        //}
-
         [Command("ActivateProGuild"), Alias("asp", "ActivateServerPremium", "apg"), Description("Activates pro guild in the current server.\n**Usage**: `!asp [tier]`")]
+        [SlashCommand("", "")]
         public async Task ActivateServerPremium([Remainder] string str = "")
         {
             var ntr = Context.Client.GetGuild((ulong)ProType.HomeGuildId_NOTAPREMIUMTYPE);
@@ -218,7 +213,9 @@ namespace Namiko
             }
         }
 
-        [Command("ToggleModule"), Alias("tm"), Description("Disables or enables a command module.\n**Usage**: `!tm [module_name]`"), UserPermission(GuildPermission.Administrator)]
+        [UserPermission(GuildPermission.Administrator)]
+        [Command("ToggleModule"), Alias("tm"), Description("Disables or enables a command module.\n**Usage**: `!tm [module_name]`")]
+        [SlashCommand("toggle-module", "Turn a command module on/off")]
         public async Task ToggleModule([Remainder] string name)
         {
             var cmdService = Program.GetCommands();
@@ -249,7 +246,9 @@ namespace Namiko
             }
         }
 
-        [Command("ToggleCommand"), Alias("tc"), Description("Disables or enables a command.\n**Usage**: `!tc [command_name]`"), UserPermission(GuildPermission.Administrator)]
+        [UserPermission(GuildPermission.Administrator)]
+        [Command("ToggleCommand"), Alias("tc"), Description("Disables or enables a command.\n**Usage**: `!tc [command_name]`")]
+        [SlashCommand("toggle-command", "Turn a command on/off")]
         public async Task ToggleCommand([Remainder] string name)
         {
             var cmdService = Program.GetCommands();
@@ -283,23 +282,26 @@ namespace Namiko
             }
         }
 
-        [Command("ToggleReactionImages"), Alias("tri"), Description("Disables or enables reaction images.\n**Usage**: `!tri`"), UserPermission(GuildPermission.Administrator)]
-        public async Task ToggleReactionImages([Remainder] string name = "")
+        [UserPermission(GuildPermission.Administrator)]
+        [Command("ToggleReactionImages"), Alias("tri"), Description("Disables or enables reaction images.\n**Usage**: `!tri`")]
+        [SlashCommand("toggle-reaction-images", "Turn reaction images on/off")]
+        public async Task ToggleReactionImages()
         {
-            if (await DisabledCommandHandler.AddNew(name, Context.Guild.Id, DisabledCommandType.Images))
+            if (await DisabledCommandHandler.AddNew("ReactionImages", Context.Guild.Id, DisabledCommandType.Images))
             {
                 await ReplyAsync($":star: **Reaction images** disabled... Use the same command again to re-enable");
                 return;
             }
             else
             {
-                await DisabledCommandHandler.Remove(name, Context.Guild.Id, DisabledCommandType.Images);
+                await DisabledCommandHandler.Remove("ReactionImages", Context.Guild.Id, DisabledCommandType.Images);
                 await ReplyAsync($":star: **Reaction images** re-enabled.");
                 return;
             }
         }
 
         [Command("ListDisabledCommands"), Alias("ldc"), Description("Lists all disabled modules and commands.\n**Usage**: `!ldc`")]
+        [SlashCommand("disabled-commands", "Shows which commands are disabled")]
         public async Task ListDisabledCommands([Remainder] string name = "")
         {
             string modules = "-";

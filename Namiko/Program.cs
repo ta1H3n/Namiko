@@ -16,6 +16,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Namiko.Modules.Leaderboard;
 
 #pragma warning disable CS1998
 
@@ -119,14 +120,6 @@ namespace Namiko
             Commands.Log += Console_Log;
             Commands.Log += Error_Log;
 
-            await Client.LoginAsync(TokenType.Bot, AppSettings.Token);
-            await Client.StartAsync();
-            _ = WebhookClients.NamikoLogChannel.SendMessageAsync(
-                $"------------------------------\n" +
-                $"<:TickYes:577838859107303424> `{DateTime.Now.ToString("HH:mm:ss")}` - `Logged in`\n" +
-                $"------------------------------");
-
-            ShardCount = Client.Shards.Count;
 
             Services = new ServiceCollection()
                 .AddSingleton(Client)
@@ -147,6 +140,7 @@ namespace Namiko
             await Commands.AddModuleAsync(typeof(WaifuEditing), Services);
             await Commands.AddModuleAsync(typeof(Web), Services);
             await Commands.AddModuleAsync(typeof(Music), Services);
+            await Commands.AddModuleAsync(typeof(Leaderboards), Services);
 
             Interactions = new InteractionService(Client, new InteractionServiceConfig
             {
@@ -156,11 +150,20 @@ namespace Namiko
             await Interactions.AddModuleAsync(typeof(Banroulettes), Services);
             await Interactions.AddModuleAsync(typeof(Currency), Services);
             await Interactions.AddModuleAsync(typeof(Waifus), Services);
+            await Interactions.AddModuleAsync(typeof(Leaderboards), Services);
             //await Interactions.AddModuleAsync(typeof(Basic), Services);
-
-
             Interactions.SlashCommandExecuted += Interactions_SlashCommandExecuted;
 
+            
+            await Client.LoginAsync(TokenType.Bot, AppSettings.Token);
+            await Client.StartAsync();
+            _ = WebhookClients.NamikoLogChannel.SendMessageAsync(
+                $"------------------------------\n" +
+                $"<:TickYes:577838859107303424> `{DateTime.Now.ToString("HH:mm:ss")}` - `Logged in`\n" +
+                $"------------------------------");
+
+            ShardCount = Client.Shards.Count;
+            
             try
             {
                 await Task.Delay(-1, ct);
