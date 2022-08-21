@@ -149,7 +149,7 @@ namespace Namiko
             Interactions.Log += Console_Log;
             await Interactions.AddModuleAsync(typeof(Banroulettes), Services);
             await Interactions.AddModuleAsync(typeof(Currency), Services);
-            await Interactions.AddModuleAsync(typeof(Waifus), Services);
+            await Interactions.AddModuleAsync(typeof(WaifuEditing), Services);
             await Interactions.AddModuleAsync(typeof(Leaderboards), Services);
             //await Interactions.AddModuleAsync(typeof(Basic), Services);
             Interactions.SlashCommandExecuted += Interactions_SlashCommandExecuted;

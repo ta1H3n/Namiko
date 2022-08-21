@@ -43,6 +43,20 @@ namespace Namiko.Addons.Handlers
             => Interactive.Confirm(Context, question, GetSourceUserCriterion(true));
 
 
+
+        public async Task SendModal<T>(T modal) where T : IModalBase
+        {
+            if (Context is not IInteractionContext)
+            {
+                throw new InvalidCastException("Modal sender does not support context type");
+            }
+
+            var context = Context as IInteractionContext;
+            await context.Interaction.RespondWithModalAsync(modal.ToModal());
+        }
+
+            
+            
         public Task<T2> SelectMenuReplyAsync<T2>(SelectMenu<T2> menu, bool fromSourceUser = true)
             => SelectMenuReplyAsync(menu, GetSourceUserCriterion(fromSourceUser));
         public Task<T2> SelectMenuReplyAsync<T2>(SelectMenu<T2> menu, ICriterion<SocketMessageComponent> criterion)
@@ -161,6 +175,7 @@ namespace Namiko.Addons.Handlers
 
         void IInteractionModuleBase.SetContext(IInteractionContext context)
         {
+            context.Interaction.RespondWithModalAsync(new ModalBuilder("modal", "modal_id", new ModalComponentBuilder()).Build(), RequestOptions.Default);
             if (context is not T)
             {
                 throw new InvalidOperationException($"Invalid context type. Expected {typeof(T).Name}, got {context.GetType().Name}.");

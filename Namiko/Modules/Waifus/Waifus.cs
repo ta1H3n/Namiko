@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Discord.Interactions;
 
 namespace Namiko
 {
@@ -20,7 +21,9 @@ namespace Namiko
     {
         private static readonly Dictionary<ulong, Object> slideLock = new Dictionary<ulong, Object>();
 
+        
         [Command("WaifuShop"), Alias("ws"), Description("Opens the waifu shop.")]
+        [SlashCommand("", "")]
         public async Task WaifuShop([Remainder] string str = "")
         {
             WaifuShop shop = await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Waifu);
@@ -39,6 +42,7 @@ namespace Namiko
         }
 
         [Command("GachaShop"), Alias("gs"), Description("Opens the gacha shop.")]
+        [SlashCommand("", "")]
         public async Task GachaShop([Remainder] string str = "")
         {
             WaifuShop shop = await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Gacha);
@@ -50,6 +54,7 @@ namespace Namiko
         }
 
         [Command("ModShop"), Alias("ms"), Description("Opens the mod shop. A waifu shop controlled by server moderators.")]
+        [SlashCommand("", "")]
         public async Task ModShop([Remainder] string str = "")
         {
             WaifuShop shop = await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Mod);
@@ -105,6 +110,7 @@ namespace Namiko
         }
 
         [Command("BuyWaifu"), Alias("bw"), Description("Buys a waifu, must be in a shop.\n**Usage**: `!bw [name]`")]
+        [SlashCommand("", "")]
         public async Task BuyWaifu([Remainder] string str = "")
         {
             var shopwaifus = (await WaifuShopDb.GetAllShopWaifus(Context.Guild.Id)).DistinctBy(x => x.WaifuName);
@@ -154,6 +160,7 @@ namespace Namiko
         }
 
         [Command("SellWaifu"), Alias("sw"), Description("Sells a waifu you already own for a discounted price.\n**Usage**: `!sw [name]`")]
+        [SlashCommand("", "")]
         public async Task SellWaifu([Remainder] string str = "")
         {
             var waifu = await WaifuUtil.ProcessWaifuListAndRespond(await WaifuDb.SearchWaifus(str, false, UserInventoryDb.GetWaifus(Context.User.Id, Context.Guild.Id)), this);
@@ -184,6 +191,7 @@ namespace Namiko
         }
 
         [Command("GiveWaifu"), Alias("gw"), Description("Transfers waifu to another user.\n**Usage**: `!gw [user] [waifu_name]`")]
+        [SlashCommand("", "")]
         public async Task GiveWaifu(IUser recipient, [Remainder] string str = "")
         {
             var waifu = await WaifuUtil.ProcessWaifuListAndRespond(await WaifuDb.SearchWaifus(str, false, UserInventoryDb.GetWaifus(Context.User.Id, Context.Guild.Id)), this);
@@ -211,6 +219,7 @@ namespace Namiko
         }
 
         [Command("Waifu"), Alias("Husbando", "Trap", "w"), Description("Shows waifu details.\n**Usage**: `!waifu [search]`")]
+        [SlashCommand("", "")]
         public async Task ShowWaifu([Remainder] string name)
         {
             var waifu = await WaifuUtil.ProcessWaifuListAndRespond(await WaifuDb.SearchWaifus(name), this);
@@ -227,6 +236,7 @@ namespace Namiko
         }
 
         [Command("Wish"), Alias("ww", "aww", "WishWaifu", "AddWaifuWish"), Description("Add a waifu to your wishlist to be notified when it appears in shop.\nLimited to 5.\n**Usage**: `!ww [waifu]`")]
+        [SlashCommand("", "")]
         public async Task WishWaifu([Remainder] string str = "")
         {
             var user = Context.User;
@@ -271,6 +281,7 @@ namespace Namiko
         }
 
         [Command("WaifuWishlist"), Alias("wwl"), Description("Shows yours or someone's waifu wishlist.\n**Usage**: `!wwl [user_optional]`")]
+        [SlashCommand("", "")]
         public async Task WaifuWishlist([Remainder] IUser user = null)
         {
             user ??= Context.User;
@@ -280,6 +291,7 @@ namespace Namiko
         }
 
         [Command("RemoveWish"), Alias("rww", "RemoveWaifuWish"), Description("Removes a waifu from your wishlist.\n**Usage**: `!rww [waifu]`")]
+        [SlashCommand("", "")]
         public async Task RemoveWaifuWish([Remainder] string str = "")
         {
             var user = Context.User;
@@ -299,7 +311,9 @@ namespace Namiko
             await ReplyAsync("You don't want her anymore, huh...");
         }
 
-        [Command("ModShopAddWaifu"), Alias("msaddwaifu", "msaw"), Description("Adds a waifu to the mod shop. Available for everyone to purchase.\n**Usage**: `!msaw [waifu]`"), UserPermission(GuildPermission.ManageGuild)]
+        [UserPermission(GuildPermission.ManageGuild)]
+        [Command("ModShopAddWaifu"), Alias("msaddwaifu", "msaw"), Description("Adds a waifu to the mod shop. Available for everyone to purchase.\n**Usage**: `!msaw [waifu]`")]
+        [SlashCommand("", "")]
         public async Task ModShopAddWaifu([Remainder] string name)
         {
             var prefix = Program.GetPrefix(Context);
@@ -354,7 +368,9 @@ namespace Namiko
             return;
         }
 
-        [Command("ModShopRemoveWaifu"), Alias("msremovewaifu", "msrw"), Description("Removes a waifu from the mod shop.\n**Usage**: `!msrw [waifu]`"), UserPermission(GuildPermission.ManageGuild)]
+        [UserPermission(GuildPermission.ManageGuild)]
+        [SlashCommand("", "")]
+        [Command("ModShopRemoveWaifu"), Alias("msremovewaifu", "msrw"), Description("Removes a waifu from the mod shop.\n**Usage**: `!msrw [waifu]`")]
         public async Task ModShopRemoveWaifu([Remainder] string name = "")
         {
             var shop = await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Mod);
@@ -372,7 +388,9 @@ namespace Namiko
             return;
         }
 
-        [Command("ShipWaifu"), Description("Gives any waifu to a user.\n**Usage**: `!shipwaifu [user] [waifu_search]`"), HomeOrT1GuildPrecondition, UserPermission(GuildPermission.Administrator)]
+        [HomeOrT1GuildPrecondition, UserPermission(GuildPermission.Administrator)]
+        [SlashCommand("", "")]
+        [Command("ShipWaifu"), Description("Gives any waifu to a user.\n**Usage**: `!shipwaifu [user] [waifu_search]`")]
         public async Task ShipWaifu(IUser user, [Remainder] string name)
         {
             var waifu = await WaifuUtil.ProcessWaifuListAndRespond(await WaifuDb.SearchWaifus(name), this);
@@ -453,7 +471,24 @@ namespace Namiko
             await WaifuUtil.FindAndUpdateWaifuImageSource(waifu, Context.Channel);
         }
 
-        [Command("DeleteWaifu"), Alias("dw"), Description("Removes a waifu from the database.\n**Usage**: `!dw [name]`"), OwnerPrecondition]
+        [Insider]
+        [SlashCommand("waifu-edit", "Edit a waifu")]
+        public async Task EditWaifu(string name)
+        {
+            var waifu = await WaifuDb.GetWaifu(name);
+
+            await SendModal(new WaifuEditModal($"Edit {waifu.Name}", waifu));
+        }
+        
+        [ModalInteraction(nameof(WaifuEditModal))]
+        public async Task ModalResponse(WaifuEditModal modal)
+        {
+            var waifu = await WaifuDb.GetWaifu(modal.Title);
+            await ReplyAsync(embed: WaifuUtil.WaifuEmbedBuilder(modal.ToWaifu(waifu)).Build());
+        }
+
+        [OwnerPrecondition]
+        [Command("DeleteWaifu"), Alias("dw"), Description("Removes a waifu from the database.\n**Usage**: `!dw [name]`")]
         public async Task DeleteWaifu(string name)
         {
             if (await WaifuDb.DeleteWaifu(name) > 0)
@@ -462,7 +497,8 @@ namespace Namiko
                 await ReplyAsync($"Failed to delete {name}");
         }
 
-        [Command("WaifuFullName"), Alias("wfn"), Description("Changes the full name of a waifu.\n**Usage**: `!wfn [name] [fullname]`"), Insider]
+        [Insider]
+        [Command("WaifuFullName"), Alias("wfn"), Description("Changes the full name of a waifu.\n**Usage**: `!wfn [name] [fullname]`")]
         public async Task WaifuFullName(string name, [Remainder] string fullname = null)
         {
             var waifu = await WaifuUtil.ProcessWaifuListAndRespond(await WaifuDb.SearchWaifus(name, true), this);
@@ -480,7 +516,8 @@ namespace Namiko
                 await ReplyAsync($":x: Failed to update {name}");
         }
 
-        [Command("WaifuDescription"), Alias("wd"), Description("Changes the description of a waifu.\n**Usage**: `!wd [name] [description]`"), Insider]
+        [Insider]
+        [Command("WaifuDescription"), Alias("wd"), Description("Changes the description of a waifu.\n**Usage**: `!wd [name] [description]`")]
         public async Task WaifuDescription(string name, [Remainder] string description = null)
         {
 
@@ -499,7 +536,8 @@ namespace Namiko
                 await ReplyAsync($":x: Failed to update {name}");
         }
 
-        [Command("WaifuSource"), Alias("wsrc"), Description("Changes the source of a waifu.\n**Usage**: `!ws [name] [source]`"), Insider]
+        [Insider]
+        [Command("WaifuSource"), Alias("wsrc"), Description("Changes the source of a waifu.\n**Usage**: `!ws [name] [source]`")]
         public async Task WaifuSource(string name, [Remainder] string source = null)
         {
             var waifu = await WaifuUtil.ProcessWaifuListAndRespond(await WaifuDb.SearchWaifus(name, true), this);
@@ -517,7 +555,8 @@ namespace Namiko
                 await ReplyAsync($":x: Failed to update {name}");
         }
 
-        [Command("WaifuTier"), Alias("wt"), Description("Changes the tier of a waifu.\n**Usage**: `!wt [name] [tier(1-3)]`"), Insider]
+        [Insider]
+        [Command("WaifuTier"), Alias("wt"), Description("Changes the tier of a waifu.\n**Usage**: `!wt [name] [tier(1-3)]`")]
         public async Task WaifuTier(string name, int tier)
         {
             var waifu = await WaifuUtil.ProcessWaifuListAndRespond(await WaifuDb.SearchWaifus(name, true), this);
@@ -590,7 +629,8 @@ namespace Namiko
             await WaifuUtil.FindAndUpdateWaifuImageSource(waifu, Context.Channel);
         }
 
-        [Command("WaifuImageSource"), Alias("wis"), Description("Set waifu image source.\n**Usage**: `!wis [name] [image_sauce]`"), Insider]
+        [Insider]
+        [Command("WaifuImageSource"), Alias("wis"), Description("Set waifu image source.\n**Usage**: `!wis [name] [image_sauce]`")]
         public async Task WaifuImageSource(string name, string url = null)
         {
             var waifu = await WaifuUtil.ProcessWaifuListAndRespond(await WaifuDb.SearchWaifus(name, true), this);
@@ -613,14 +653,16 @@ namespace Namiko
             }
         }
 
-        [Command("ImageSauceRequest"), Alias("isr"), Description("Get a request for missing image sauce.\n**Usage**: `!isr`"), Insider]
+        [Insider]
+        [Command("ImageSauceRequest"), Alias("isr"), Description("Get a request for missing image sauce.\n**Usage**: `!isr`")]
         public async Task ImageSauceRequest(string url = null)
         {
             await Timers.Timer_RequestSauce(null, null);
             await ReplyAsync("<#728729035986829342>");
         }
 
-        [Command("GetWaifu"), Description("Get details about a waifu.\n**Usage**: `!wi [name] [image_url]`"), Insider]
+        [Insider]
+        [Command("GetWaifu"), Description("Get details about a waifu.\n**Usage**: `!wi [name] [image_url]`")]
         public async Task WaifuImageSource([Remainder] string name)
         {
             var waifu = await WaifuUtil.ProcessWaifuListAndRespond(await WaifuDb.SearchWaifus(name, true, null, true), this);
@@ -647,7 +689,8 @@ namespace Namiko
         }
 
 
-        [Command("RenameWaifu"), Alias("rw"), Description("Change a waifu's primary name.\n**Usage**: `!rw [oldName] [newName]`"), Insider]
+        [Insider]
+        [Command("RenameWaifu"), Alias("rw"), Description("Change a waifu's primary name.\n**Usage**: `!rw [oldName] [newName]`")]
         public async Task RenameWaifu(string oldName, string newName)
         {
             var waifu = await WaifuDb.GetWaifu(oldName);
@@ -668,7 +711,8 @@ namespace Namiko
             await ReplyAsync($"Replaced **{res}** **{oldName}** with their **{newName}** clones and burned the originals. *That was wild...*");
         }
 
-        [Command("AutocompleteWaifu"), Alias("acw"), Description("Auto completes a waifu using MAL.\n**Usage**: `!acw [name] [MAL_ID]`"), Insider]
+        [Insider]
+        [Command("AutocompleteWaifu"), Alias("acw"), Description("Auto completes a waifu using MAL.\n**Usage**: `!acw [name] [MAL_ID]`")]
         public async Task AutocompleteWaifu(string name, long malId)
         {
             var waifu = await WaifuDb.GetWaifu(name);
@@ -702,7 +746,8 @@ namespace Namiko
             await ReplyAsync($"Autocompleted **{waifu.Name}**. Has **{mal.MemberFavorites}** favorites.", false, WaifuUtil.WaifuEmbedBuilder(waifu, Context).Build());
         }
 
-        [Command("NewWaifuAutocomplete"), Alias("nwac"), Description("Creates a new waifu and auto completes using MAL.\n**Usage**: `!nwac [name] [MAL_ID] [image_url_optional]`"), Insider]
+        [Insider]
+        [Command("NewWaifuAutocomplete"), Alias("nwac"), Description("Creates a new waifu and auto completes using MAL.\n**Usage**: `!nwac [name] [MAL_ID] [image_url_optional]`")]
         public async Task NewWaifuAutocompleteCommand(string name, long malId, string url = null)
             => await NewWaifuAutocompleteCommand(name, malId, url ?? ((ICommandContext)Context).Message.Attachments.FirstOrDefault()?.Url);
         public async Task NewWaifuAutocomplete(string name, long malId, string url)
@@ -797,7 +842,8 @@ namespace Namiko
             await WaifuUtil.FindAndUpdateWaifuImageSource(waifu, Context.Channel);
         }
 
-        [Command("WaifuMal"), Alias("wm"), Description("Sets waifus MAL Id.\n**Usage**: `!wm [name] [MAL_ID]`"), Insider]
+        [Insider]
+        [Command("WaifuMal"), Alias("wm"), Description("Sets waifus MAL Id.\n**Usage**: `!wm [name] [MAL_ID]`")]
         public async Task WaifuMal(string name, long malId)
         {
             var waifu = await WaifuUtil.ProcessWaifuListAndRespond(await WaifuDb.SearchWaifus(name, true, includeMAL: true), this);
@@ -817,7 +863,8 @@ namespace Namiko
                 await ReplyAsync($":x: Failed to update {name}");
         }
 
-        [Command("ResetWaifuShop"), Alias("rws"), Description("Resets the waifu shop contents."), Insider]
+        [Insider]
+        [Command("ResetWaifuShop"), Alias("rws"), Description("Resets the waifu shop contents.")]
         public async Task ResetWaifuShop()
         {
             await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Waifu, true);
