@@ -23,7 +23,7 @@ namespace Namiko
     {
         [Command("Blackjack"), Alias("bj"), Description("Starts a game of blackjack.\n**Usage**: `!bj [amount]`")]
         [SlashCommand("blackjack", "Start a game of blackjack")]
-        public async Task BlackjackCommand(string sAmount, [Remainder] string str = "")
+        public async Task BlackjackCommand(string sAmount)
         {
             var user = (SocketGuildUser)Context.User;
             var ch = (SocketTextChannel)Context.Channel;
@@ -175,7 +175,7 @@ namespace Namiko
 
         [Command("Flip"), Alias("f", "fwip"), Description("Flip a coin for toasties, defaults to tails.\n**Usage**: `!flip [amount] [heads_or_tails]`")]
         [SlashCommand("flip", "Flip a coin for toasties, defaults to tails")]
-        public async Task Flip(string sAmount, string side = "t", [Remainder] string str = "")
+        public async Task Flip(string sAmount, string side = "t")
         {
             var user = (SocketGuildUser)Context.User;
             var rnd = new Random();
@@ -250,7 +250,7 @@ namespace Namiko
 
         [Command("Give"), Description("Give a user some of your toasties.\n**Usage**: `!give [user] [amount]`")]
         [SlashCommand("give", "Give someone toasties")]
-        public async Task Give(IUser recipient, string sAmount, [Remainder] string str = "")
+        public async Task Give(IUser recipient, string sAmount)
         {
             int amount = CurrencyUtil.ParseAmount(sAmount, (SocketGuildUser)Context.User);
             if (amount < 0)
@@ -280,15 +280,15 @@ namespace Namiko
         }
         
         [Command("Give"), Description("Give a user some of your toasties.\n**Usage**: `!give [user] [amount]`")]
-        public async Task Give(string sAmount, IUser recipient, [Remainder] string str = "")
+        public async Task Give(string sAmount, IUser recipient)
         {
-            await Give(recipient, sAmount, str);
+            await Give(recipient, sAmount);
         }
 
         [UserPermission(GuildPermission.Administrator)]
         [Command("SetToasties"), Alias("st", "sett"), Description("Sets the amount of toasties.\n**Usage**: `!st [user] [amount]`")]
         [SlashCommand("set-toasties", "Set balance")]
-        public async Task Set(IUser user, int amount, [Remainder] string str = "")
+        public async Task Set(IUser user, int amount)
         {
             await BalanceDb.SetToasties(user.Id, amount, Context.Guild.Id);
             await ReplyAsync("", false, CurrencyUtil.ToastieEmbed(user, BalanceDb.GetToasties(user.Id, Context.Guild.Id)).Build());
@@ -297,7 +297,7 @@ namespace Namiko
         [UserPermission(GuildPermission.Administrator)]
         [Command("AddToasites"), Alias("at", "addt"), Description("Adds toasties to a user.\n**Usage**: `!at [user] [amount]`")]
         [SlashCommand("add-toasties", "Add balance")]
-        public async Task Add(IUser user, int amount, [Remainder] string str = "")
+        public async Task Add(IUser user, int amount)
         {
             await BalanceDb.AddToasties(user.Id, amount, Context.Guild.Id);
             await ReplyAsync("", false, CurrencyUtil.ToastieEmbed(user, BalanceDb.GetToasties(user.Id, Context.Guild.Id)).Build());
@@ -305,14 +305,14 @@ namespace Namiko
 
         [Command("LootboxShop"), Alias("ls"), Description("Lootbox shop.\n**Usage**: `!ls`")]
         [SlashCommand("lootbox-shop", "Lootbox shop")]
-        public async Task LootboxShop([Remainder] string str = "")
+        public async Task LootboxShop()
         {
             await ReplyAsync(embed: CurrencyUtil.BoxShopEmbed(Context.User).Build());
         }
 
         [Command("BuyLootbox"), Alias("bl"), Description("Buy a lootbox.\n**Usage**: `!bl [name]`")]
         [SlashCommand("buy-lootbox", "Buy a lootbox")]
-        public async Task BuyLootbox([Remainder] string str = "")
+        public async Task BuyLootbox()
         {
             var prefix = Program.GetPrefix(Context);
 
@@ -328,12 +328,6 @@ namespace Namiko
 
             LootboxStat box = null;
             var boxes = LootboxStats.Lootboxes.Where(x => x.Value.Price >= 0).Select(x => x.Value).ToList();
-            if (str != "")
-            {
-                var matches = boxes.Where(x => x.Name.Contains(str, StringComparison.OrdinalIgnoreCase));
-                if (matches.Count() == 1)
-                    box = matches.First();
-            }
 
             var eb = CurrencyUtil.BoxShopEmbed(Context.User).Build();
             Func<LootboxStat, SelectMenuOptionBuilder> func = x => new SelectMenuOptionBuilder(x.TypeId.ToString(), x.TypeId.ToString(), emote: Emote.Parse(x.Emote));
@@ -359,14 +353,14 @@ namespace Namiko
 
         [Command("LootboxStats"), Description("Shows the stats of all lootboxes.\n**Usage**: `!lootboxstats`")]
         [SlashCommand("lootbox-stats", "See lootbox drop rates")]
-        public async Task ShowLootboxStats([Remainder] string str = "")
+        public async Task ShowLootboxStats()
         {
             await ReplyAsync(embed: CurrencyUtil.BoxStatsEmbed(Context.User).Build());
         }
 
         [Command("Beg"), Description("Beg Namiko for toasties.\n**Usage**: `!beg`")]
         [SlashCommand("beg", "Beg Namiko for toasties, loser")]
-        public async Task Beg([Remainder] string str = "")
+        public async Task Beg()
         {
             var amount = BalanceDb.GetToasties(Context.User.Id, Context.Guild.Id);
             if (amount > 0)
@@ -388,8 +382,7 @@ namespace Namiko
         }
 
         [Command("Open"), Alias("OpenLootbox", "Lootbox", "Lootwox"), Description("Open a lootbox if you have one.\n**Usage**: `!open`")]
-        [SlashCommand("open", "Open a lootbox")]
-        public async Task Open([Remainder] string str = "")
+        public async Task Open()
         {
             var boxes = await LootBoxDb.GetAll(Context.User.Id, Context.Guild.Id);
             if(boxes.Count == 0)
@@ -445,8 +438,8 @@ namespace Namiko
         }
 
         [Command("BulkOpen"), Description("Open multiple lootboxes at a time.\n**Usage**: `!open`")]
-        [SlashCommand("open-bulk", "Open many lootboxes")]
-        public async Task BulkOpen([Remainder] string str = "")
+        [SlashCommand("open", "Open lootboxes")]
+        public async Task BulkOpen()
         {
             var boxes = await LootBoxDb.GetAll(Context.User.Id, Context.Guild.Id);
             if (boxes.Count == 0)
@@ -460,7 +453,7 @@ namespace Namiko
             var type = LootboxStats.Lootboxes[box.Type];
             var options = new List<int>{ 1, 2, 3, 4, 5, 10, 20, 50, 100 }.Where(x => x < box.Amount).ToList();
             options.Add(box.Amount);
-            int amount = await Select(options, $"How many {type.Emote} **{type.Name}** lootboxes do you wish to open?", "Amount");
+            int amount = await Select(options.Distinct(), $"How many {type.Emote} **{type.Name}** lootboxes do you wish to open?", "Amount");
 
             try
             {

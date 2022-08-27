@@ -16,6 +16,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Namiko.Handlers.TypeConverters;
 using Namiko.Modules.Leaderboard;
 
 #pragma warning disable CS1998
@@ -52,7 +53,7 @@ namespace Namiko
                 return;
             }
 
-            using (SentrySdk.Init(options => 
+            using (SentrySdk.Init(options =>
             {
                 options.Dsn = new Dsn(AppSettings.SentryWebhook);
                 string env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
@@ -65,7 +66,8 @@ namespace Namiko
         }
         private async Task MainAsync()
         {
-            Client = new DiscordShardedClient(new DiscordSocketConfig {
+            Client = new DiscordShardedClient(new DiscordSocketConfig
+            {
                 LogLevel = LogSeverity.Warning,
                 DefaultRetryMode = RetryMode.Retry502,
                 AlwaysDownloadUsers = false,
@@ -80,7 +82,7 @@ namespace Namiko
                     GatewayIntents.GuildScheduledEvents |
                     GatewayIntents.GuildInvites |
                     GatewayIntents.DirectMessages |
-                    GatewayIntents.DirectMessageReactions 
+                    GatewayIntents.DirectMessageReactions
             });
 
             Client.Log += Console_Log;
@@ -107,7 +109,9 @@ namespace Namiko
             Client.UserJoined += Client_UserJoinedLog;
             Client.UserLeft += Client_UserLeftLog;
             Client.UserBanned += Client_UserBannedLog;
-            Client.SlashCommandExecuted += Client_SlashCommandExecuted;
+
+            //Client.SlashCommandExecuted += Client_SlashCommandExecuted;
+            Client.InteractionCreated += Client_InteractionCreated;
 
             Commands = new CommandService(new CommandServiceConfig
             {
@@ -144,17 +148,30 @@ namespace Namiko
 
             Interactions = new InteractionService(Client, new InteractionServiceConfig
             {
-                LogLevel = LogSeverity.Debug
+                LogLevel = LogSeverity.Debug,
+                WildCardExpression = "*",
             });
+            
+            Interactions.AddTypeConverter<Waifu>(new WaifuConverter());
+            Interactions.AddTypeConverter<ShopWaifu>(new ShopWaifuConverter());
+            
             Interactions.Log += Console_Log;
-            await Interactions.AddModuleAsync(typeof(Banroulettes), Services);
-            await Interactions.AddModuleAsync(typeof(Currency), Services);
-            await Interactions.AddModuleAsync(typeof(WaifuEditing), Services);
-            await Interactions.AddModuleAsync(typeof(Leaderboards), Services);
+            //await Interactions.AddModuleAsync(typeof(Banroulettes), Services);
+            //await Interactions.AddModuleAsync(typeof(Banroyales), Services);
             //await Interactions.AddModuleAsync(typeof(Basic), Services);
+            await Interactions.AddModuleAsync(typeof(Currency), Services);
+            await Interactions.AddModuleAsync(typeof(Images), Services);
+            await Interactions.AddModuleAsync(typeof(Roles), Services);
+            await Interactions.AddModuleAsync(typeof(ServerModule), Services);
+            await Interactions.AddModuleAsync(typeof(User), Services);
+            await Interactions.AddModuleAsync(typeof(Waifus), Services);
+            await Interactions.AddModuleAsync(typeof(WaifuEditing), Services);
+            await Interactions.AddModuleAsync(typeof(Web), Services);
+            await Interactions.AddModuleAsync(typeof(Music), Services);
+            await Interactions.AddModuleAsync(typeof(Leaderboards), Services);
             Interactions.SlashCommandExecuted += Interactions_SlashCommandExecuted;
 
-            
+
             await Client.LoginAsync(TokenType.Bot, AppSettings.Token);
             await Client.StartAsync();
             _ = WebhookClients.NamikoLogChannel.SendMessageAsync(
@@ -163,7 +180,7 @@ namespace Namiko
                 $"------------------------------");
 
             ShardCount = Client.Shards.Count;
-            
+
             try
             {
                 await Task.Delay(-1, ct);
@@ -172,6 +189,30 @@ namespace Namiko
             cts.Dispose();
             Console.WriteLine("Shutting down...");
             await Client.LogoutAsync();
+        }
+
+        private async Task Client_InteractionCreated(SocketInteraction interaction)
+        {
+            try
+            {
+                // Create an execution context that matches the generic type parameter of your InteractionModuleBase<T> modules.
+                var context = new CustomInteractionContext(Client, interaction);
+                if (interaction.Type == InteractionType.ApplicationCommand)
+                {
+                    if (((SocketSlashCommand)interaction).CommandName != "waifu-edit")
+                    {
+                        await interaction.DeferAsync();
+                    }
+                }
+                var result = await Interactions.ExecuteCommandAsync(context, Services);
+            }
+            catch
+            {
+                // If Slash Command execution fails it is most likely that the original interaction acknowledgement will persist. It is a good idea to delete the original
+                // response, or at least let the user know that something went wrong during the command execution.
+                if (interaction.Type is InteractionType.ApplicationCommand)
+                    await interaction.GetOriginalResponseAsync().ContinueWith(async (msg) => await msg.Result.DeleteAsync());
+            }
         }
 
         private async Task Client_SlashCommandExecuted(SocketSlashCommand arg)
@@ -689,7 +730,7 @@ namespace Namiko
             if (guildId == 0 || prefix == null || prefix == "")
                 return false;
 
-            if(Prefixes.GetValueOrDefault(guildId) != null)
+            if (Prefixes.GetValueOrDefault(guildId) != null)
                 Prefixes.Remove(guildId);
 
             Prefixes.Add(guildId, prefix);
@@ -707,7 +748,8 @@ namespace Namiko
                 string result = "**Description**: " + str;
                 result = result.Replace("!", prefix);
                 return result;
-            } catch
+            }
+            catch
             {
                 return "";
             }

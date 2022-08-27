@@ -667,7 +667,7 @@ namespace Namiko
             text += "```";
             return text;
         }
-        public static EmbedBuilder FoundWaifusEmbedBuilder(IEnumerable<IGrouping<string, Waifu>> waifus, SocketGuildUser user = null)
+        public static EmbedBuilder SelectWaifuEmbedBuilder(IEnumerable<IGrouping<string, Waifu>> waifus, SocketGuildUser user = null)
         {
             var eb = new EmbedBuilderPrepared();
 
@@ -717,6 +717,67 @@ namespace Namiko
             eb.WithFooter("Times out in 23 seconds.");
             return eb;
         }
+        public static EmbedBuilder FoundWaifusEmbedBuilder(IEnumerable<Waifu> waifus, IGuildUser user = null)
+        {
+            var eb = new EmbedBuilderPrepared();
+            
+            if (!waifus.Any())
+            {
+                eb.WithTitle("Waifus found")
+                    .WithDescription("*~ No results ~*")
+                    .WithColor(Color.DarkRed);
+
+                return eb;
+            }
+            
+            var ordered = waifus.OrderBy(x => x.Source).ThenBy(x => x.Name).ToList();
+            var grouped = ordered.GroupBy(x => x.Source);
+
+            int i = 1;
+            foreach (var x in grouped)
+            {
+                if (x.Count() > 15)
+                {
+                    var split = x.GroupBy(10);
+                    foreach (var y in split)
+                    {
+                        string list = "";
+                        foreach (var waifu in y)
+                        {
+                            list += $"`#{i++}` ";
+                            try
+                            {
+                                if (user != null && UserInventoryDb.OwnsWaifu(user.Id, waifu, user.Guild.Id))
+                                    list += "✓ ";
+                            }
+                            catch { }
+                            list += $"**{waifu.Name}** - *{BasicUtil.ShortenString(waifu.LongName, 28, 27, "-")}*\n";
+                        }
+                        eb.AddField(x.Key + "#" + (y.Key + 1), list);
+                    }
+                }
+                else
+                {
+                    string list = "";
+                    foreach (var waifu in x)
+                    {
+                        list += $"`#{i++}` ";
+                        try
+                        {
+                            if (user != null && UserInventoryDb.OwnsWaifu(user.Id, waifu, user.Guild.Id))
+                                list += "✓ ";
+                        }
+                        catch { }
+                        list += $"**{waifu.Name}** - *{BasicUtil.ShortenString(waifu.LongName, 28, 27, "-")}*\n";
+                    }
+                    eb.AddField(x.Key, list);
+                }
+            }
+
+            eb.WithAuthor("Waifus Found", user?.GetAvatarUrl(), LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-embed-waifulist"));
+            return eb;
+        }
+        
         public static EmbedBuilder WaifuLeaderboardEmbed(IOrderedEnumerable<KeyValuePair<Waifu, int>> waifus, IOrderedEnumerable<KeyValuePair<SocketUser, int>> users, int page)
         {
             var eb = new EmbedBuilder();
@@ -796,7 +857,7 @@ namespace Namiko
                 {
                     var ordered = waifus.OrderBy(x => x.Source).ThenBy(x => x.Name).ToList();
                     var grouped = ordered.GroupBy(x => x.Source);
-                    var embed = FoundWaifusEmbedBuilder(grouped, (SocketGuildUser)module?.Context.User).Build();
+                    var embed = SelectWaifuEmbedBuilder(grouped, (SocketGuildUser)module?.Context.User).Build();
                     var options = ordered
                         .Select(x => new SelectMenuOption<Waifu>(new SelectMenuOptionBuilder(x.LongName, x.Name, x.Source), x))
                         .ToDictionary(x => x.Item.Name, x => x);

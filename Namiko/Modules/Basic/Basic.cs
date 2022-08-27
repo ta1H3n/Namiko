@@ -18,8 +18,7 @@ namespace Namiko
     public class Basic : CustomModuleBase<ICustomContext>
     {
         [Command("Hi Namiko"), Alias("Hi", "ping", "Awoo"), Description("Hi Namiko command. Counts response time.")]
-        [SlashCommand("ping", "Test command response time")]
-        public async Task HiNamiko([Remainder] string str = "")
+        public async Task HiNamiko()
         {
             var msgTime = Context.CreatedAt;
             var msg = await ReplyAsync($"Hi {Context.User.Mention} :fox: `Counting...`");
@@ -29,15 +28,14 @@ namespace Namiko
         }
         
         [Command("Info"), Alias("About"), Description("Bot info.")]
-        [SlashCommand("info", "Info command")]
-        public async Task Info([Remainder] string str = "")
+        public async Task Info()
         {
             await ReplyAsync("", false, BasicUtil.InfoEmbed().Build());
         }
 
         [Command("Vote")]
         [SlashCommand("vote", "Vote for Namiko and get lootboxes!")]
-        public async Task Vote([Remainder] string str = "")
+        public async Task Vote()
         {
             await ReplyAsync(embed: new EmbedBuilderPrepared(Context.User)
                 .WithDescription($"Vote for Namiko on [Discord Bots]({LinkHelper.GetRedirectUrl(LinkHelper.Vote, "Vote", "cmd-vote")}) and receive a lootbox!")
@@ -45,13 +43,13 @@ namespace Namiko
         }
 
         [Command("Burn")]
-        public async Task Burn([Remainder] string str = "")
+        public async Task Burn()
         {
             await ReplyAsync(CurrencyUtil.GetFalseBegMessage());
         }
 
         [Command("JoinMessageTest"), OwnerPrecondition]
-        public async Task JoinMessageTest([Remainder] string str = "")
+        public async Task JoinMessageTest()
         {
             await ReplyAsync("Hi! Please take good care of me!", false, BasicUtil.GuildJoinEmbed("!").Build());
         }
@@ -167,7 +165,7 @@ namespace Namiko
         }
 
         [Command("Status"), Description("Bot status.\n **Usage**: `!status`")]
-        [SlashCommand("status", "Namiko <-> Discord connection status")]
+        // [SlashCommand("status", "Namiko <-> Discord connection status")]
         public async Task Status()
         {
             var client = Context.Client as DiscordShardedClient;

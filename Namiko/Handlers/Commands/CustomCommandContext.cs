@@ -49,6 +49,8 @@ namespace Namiko.Addons.Handlers
             return Response;
         }
 
+        public async Task TriggerTypingAsync() => await Channel.TriggerTypingAsync();
+
 
         #region Interface lambdas
 

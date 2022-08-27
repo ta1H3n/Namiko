@@ -165,7 +165,7 @@ namespace Namiko
 
         [Command("Divorce"), Description("Divorce a user.\n**Usage**: `!divorce`")]
         [SlashCommand("divorce", "Divorce a user")]
-        public async Task Divorce([Remainder] string str = "")
+        public async Task Divorce()
         {
             //common variables
             IUser user = Context.User;
@@ -295,7 +295,7 @@ namespace Namiko
 
         [Command("Quote"), Alias("q"), Description("Allows user to see their personal quote and Image.\n**Usage**: `!q [user(s)_optional]`")]
         [SlashCommand("quote", "Show quote and image")]
-        public async Task DisplayPersonalQuote(IUser user = null, [Remainder] string str = "")
+        public async Task DisplayPersonalQuote(IUser user = null)
         {
             //variables
             EmbedBuilder embed;
@@ -332,16 +332,16 @@ namespace Namiko
 
         [Command("SetFeaturedWaifu"), Alias("sfw"), Description("Sets your waifu image on your profile.\n**Usage**: `!sfw [waifu_name]`")]
         [SlashCommand("set-favorite-waifu", "Choose your favorite waifu to display on your profile")]
-        public async Task SetFeaturedWaifu([Remainder] string str = "")
+        public async Task SetFeaturedWaifu([Remainder] string waifuSearch = "")
         {
-            if (str == "")
+            if (waifuSearch == "")
             {
                 await FeaturedWaifuDb.Delete(Context.User.Id, Context.Guild.Id);
                 await ReplyAsync("Removed your featured waifu. Now your last bought will appear! The betrayal...");
                 return;
             }
 
-            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(await WaifuDb.SearchWaifus(str, false, UserInventoryDb.GetWaifus(Context.User.Id, Context.Guild.Id)), this);
+            var waifu = await WaifuUtil.ProcessWaifuListAndRespond(await WaifuDb.SearchWaifus(waifuSearch, false, UserInventoryDb.GetWaifus(Context.User.Id, Context.Guild.Id)), this);
             if (waifu == null)
             {
                 return;

@@ -46,7 +46,7 @@ namespace Namiko.Modules.Leaderboard
         
         
         [Command("ServerRepLeaderboard"), Alias("srlb"), Description("Highest rep users in this server.\n**Usage**: `!tw`")]
-        public async Task ServerRepLeaderboard([Remainder] string str = "")
+        public async Task ServerRepLeaderboard()
         {
             IEnumerable<KeyValuePair<ulong, int>> rep = await ProfileDb.GetAllRep();
             rep = rep.Where(x => Context.Guild.Users.Select(u => u.Id).Contains(x.Key)).OrderByDescending(x => x.Value);
@@ -67,7 +67,7 @@ namespace Namiko.Modules.Leaderboard
         }
 
         [Command("RepLeaderboard"), Alias("rlb"), Description("Highest rep users.\n**Usage**: `!tw`")]
-        public async Task RepLeaderboard([Remainder] string str = "")
+        public async Task RepLeaderboard()
         {
             IEnumerable<KeyValuePair<ulong, int>> repRaw = await ProfileDb.GetAllRep();
             List<KeyValuePair<string, int>> rep = new List<KeyValuePair<string, int>>();
@@ -98,7 +98,7 @@ namespace Namiko.Modules.Leaderboard
         }
 
         [Command("ServerVoteLeaderboard"), Alias("svlb"), Description("Highest rep users in this server.\n**Usage**: `!tw`")]
-        public async Task ServerVoteLeaderboard([Remainder] string str = "")
+        public async Task ServerVoteLeaderboard()
         {
             IEnumerable<KeyValuePair<ulong, int>> votes = await VoteDb.GetAllVotes();
             votes = votes.Where(x => Context.Guild.Users.Select(u => u.Id).Contains(x.Key)).OrderByDescending(x => x.Value);
@@ -119,7 +119,7 @@ namespace Namiko.Modules.Leaderboard
         }
 
         [Command("VoteLeaderboard"), Alias("vlb"), Description("Highest rep users.\n**Usage**: `!tw`")]
-        public async Task VoteLeaderboard([Remainder] string str = "")
+        public async Task VoteLeaderboard()
         {
             IEnumerable<KeyValuePair<ulong, int>> votesRaw = await VoteDb.GetAllVotes();
             List<KeyValuePair<string, int>> votes = new List<KeyValuePair<string, int>>();
@@ -150,7 +150,7 @@ namespace Namiko.Modules.Leaderboard
         
 
         [Command("ToastieLeaderboard"), Alias("tlb"), Description("Toastie Leaderboard.\n**Usage**: `!tlb`")]
-        public async Task ToastieLeaderboard([Remainder] string str = "")
+        public async Task ToastieLeaderboard()
         {
             var toasties = await BalanceDb.GetAllToasties(Context.Guild.Id);
             var parsed = toasties.Select(x => 
@@ -186,7 +186,7 @@ namespace Namiko.Modules.Leaderboard
         }
 
         [Command("DailyLeaderboard"), Alias("dlb"), Description("Daily Leaderboard.\n**Usage**: `!dlb`")]
-        public async Task DailyLeaderboard([Remainder] string str = "")
+        public async Task DailyLeaderboard()
         {
             var dailies = await DailyDb.GetLeaderboard(Context.Guild.Id);
             var parsed = dailies.Select(x =>
@@ -214,7 +214,7 @@ namespace Namiko.Modules.Leaderboard
         }
 
         [Command("WaifuLeaderboard"), Alias("wlb"), Description("Shows waifu worth of each person.\n**Usage**: `!wlb`")]
-        public async Task WaifuLeaderboard([Remainder] string str = "")
+        public async Task WaifuLeaderboard()
         {
             var AllWaifus = await UserInventoryDb.GetAllWaifuItems(Context.Guild.Id);
             var users = new Dictionary<SocketUser, int>();
@@ -248,9 +248,9 @@ namespace Namiko.Modules.Leaderboard
         
 
         [Command("TopWaifus"), Alias("tw"), Description("Shows most popular waifus.\n**Usage**: `!tw`")]
-        public async Task TopWaifus([Remainder] string str = "")
+        public async Task TopWaifus([Remainder] string search = "")
         {
-            var waifus = await UserInventoryDb.CountWaifus(0, str.Split(' '));
+            var waifus = await UserInventoryDb.CountWaifus(0, search.Split(' '));
             var msg = new PaginatedMessage();
 
             msg.Title = ":two_hearts: Waifu Leaderboards";
@@ -272,9 +272,9 @@ namespace Namiko.Modules.Leaderboard
         }
 
         [Command("ServerTopWaifus"), Alias("stw"), Description("Shows most popular waifus in the server.\n**Usage**: `!stw`")]
-        public async Task ServerTopWaifus([Remainder] string str = "")
+        public async Task ServerTopWaifus([Remainder] string search = "")
         {
-            var waifus = await UserInventoryDb.CountWaifus(Context.Guild.Id, str.Split(' '));
+            var waifus = await UserInventoryDb.CountWaifus(Context.Guild.Id, search.Split(' '));
             var msg = new PaginatedMessage();
 
             msg.Title = ":two_hearts: Waifu Leaderboards";

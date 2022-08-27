@@ -60,7 +60,7 @@ namespace Namiko
         }
 
         [Command("Freeze"), Description("Pauses or Unpauses the bot"), OwnerPrecondition]
-        public async Task Pause([Remainder] string str = "")
+        public async Task Pause()
         {
             var pause = Program.SetPause();
             await ReplyAsync($"Pause = {pause}");
@@ -188,7 +188,7 @@ namespace Namiko
         }
 
         [Command("GetInvite"), Description("Gets an invite to a server"), OwnerPrecondition]
-        public async Task GetInvite(ulong id, [Remainder] string str = "")
+        public async Task GetInvite(ulong id)
         {
             var guild = Context.Client.GetGuild(id);
             var invite = (await guild.GetInvitesAsync()).FirstOrDefault();
@@ -196,7 +196,7 @@ namespace Namiko
         }
 
         [Command("CreateInvite"), Description("Creates an invite to a server"), OwnerPrecondition]
-        public async Task CreateInvite(ulong id, [Remainder] string str = "")
+        public async Task CreateInvite(ulong id)
         {
             var guild = Context.Client.GetGuild(id);
             var invite = guild.TextChannels.FirstOrDefault();
@@ -483,7 +483,7 @@ namespace Namiko
         }
 
         [Command("CreateCommandSchema"), Description("Copies command info to the database"), OwnerPrecondition]
-        public async Task CreateCommandSchema([Remainder] string str = "")
+        public async Task CreateCommandSchema()
         {
             var cmds = Program.GetCommands();
 
@@ -682,14 +682,14 @@ namespace Namiko
         }
 
         [Command("GuildLeaveEvent"), Description("Set guild leave tracking."), OwnerPrecondition]
-        public async Task GuildLeaveEvent([Remainder] string str = "")
+        public async Task GuildLeaveEvent()
         {
             Program.GuildLeaveEvent = !Program.GuildLeaveEvent;
             await ReplyAsync(Program.GuildLeaveEvent.ToString());
         }
 
         [Command("TestCode"), Description("Test code."), OwnerPrecondition]
-        public async Task GenerateCode(string code, [Remainder] string str = "")
+        public async Task GenerateCode(string code)
         {
             string desc = "```yaml\n";
             var example = await PremiumCodeDb.TestCode(code);
@@ -703,7 +703,7 @@ namespace Namiko
         }
 
         [Command("GenerateCodes"), Description("Generate trial codes. 0 to pass null into optionals.\n**Usage**: `!GenerateCodes ProType type, int durationDays, int useAmount, int codeAmount, string prefix, string id, int codeExpiresInDays`"), OwnerPrecondition]
-        public async Task GenerateCode(ProType type, int durationDays, int useAmount, int codeAmount, string prefix, string id, int codeExpiresInDays, [Remainder] string str = "")
+        public async Task GenerateCode(ProType type, int durationDays, int useAmount, int codeAmount, string prefix, string id, int codeExpiresInDays)
         {
             prefix = prefix == "0" ? null : prefix;
             id = id == "0" ? null : id;

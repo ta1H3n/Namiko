@@ -20,7 +20,7 @@ namespace Namiko
     {
         [Command("Server"), Alias("serverinfo", "guild", "stats"), Description("Stats about the server.\n**Usage**: `!server`")] 
         [SlashCommand("server", "Show server stats")]
-        public async Task ServerInfo([Remainder] string str = "")
+        public async Task ServerInfo()
         {
             await ReplyAsync("", false, (await ServerUtil.ServerInfo(Context.Guild)).Build());
         }
@@ -41,7 +41,7 @@ namespace Namiko
         }
 
         [Command("Prefix"), Alias("sp", "sbp", "setbotprefix"), Description("View the current prefix.\n**Usage**: `!sp [prefix]`")]
-        public async Task Prefix([Remainder] string str = "")
+        public async Task Prefix()
         {
             var prefix = Program.GetPrefix(Context);
             await ReplyAsync($"My current prefix is `{prefix}`.\nYou can change it by typing `{prefix}sp [new_prefix]` without the brackets :fox:");
@@ -89,7 +89,7 @@ namespace Namiko
 
         [UserPermission(GuildPermission.ManageChannels)]
         [Command("SetWelcomeChannel"), Alias("wch"), Description("Sets a channel to welcome members.\n**Usage**: `!wch`")]
-        [SlashCommand("channel-welcome", "")]
+        [SlashCommand("channel-welcome", "Sets a channel to welcome members")]
         public async Task SetWelcomeChannel()
         {
             var server = ServerDb.GetServer(Context.Guild.Id);
@@ -133,7 +133,6 @@ namespace Namiko
 
         [UserPermission(GuildPermission.Administrator)]
         [Command("ToggleModule"), Alias("tm"), Description("Disables or enables a command module.\n**Usage**: `!tm [module_name]`")]
-        [SlashCommand("toggle-module", "Turn a command module on/off")]
         public async Task ToggleModule([Remainder] string name)
         {
             var cmdService = Program.GetCommands();
@@ -166,7 +165,6 @@ namespace Namiko
 
         [UserPermission(GuildPermission.Administrator)]
         [Command("ToggleCommand"), Alias("tc"), Description("Disables or enables a command.\n**Usage**: `!tc [command_name]`")]
-        [SlashCommand("toggle-command", "Turn a command on/off")]
         public async Task ToggleCommand([Remainder] string name)
         {
             var cmdService = Program.GetCommands();
@@ -202,7 +200,6 @@ namespace Namiko
 
         [UserPermission(GuildPermission.Administrator)]
         [Command("ToggleReactionImages"), Alias("tri"), Description("Disables or enables reaction images.\n**Usage**: `!tri`")]
-        [SlashCommand("toggle-reaction-images", "Turn reaction images on/off")]
         public async Task ToggleReactionImages()
         {
             if (await DisabledCommandHandler.AddNew("ReactionImages", Context.Guild.Id, DisabledCommandType.Images))
@@ -219,7 +216,6 @@ namespace Namiko
         }
 
         [Command("ListDisabledCommands"), Alias("ldc"), Description("Lists all disabled modules and commands.\n**Usage**: `!ldc`")]
-        [SlashCommand("disabled-commands", "Shows which commands are disabled")]
         public async Task ListDisabledCommands([Remainder] string name = "")
         {
             string modules = "-";

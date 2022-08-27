@@ -86,7 +86,7 @@ namespace Namiko
 
         [Command("Banroyale"), Alias("brl"), Description("Shows details of the current Ban Royale.\n**Usage**: `!brl`")]
         [SlashCommand("banroyale", "View banroyale details")]
-        public async Task Banroyale([Remainder] string str = "")
+        public async Task Banroyale()
         {
             var banroyale = await BanroyaleDb.GetBanroyale(Context.Channel.Id);
             if (banroyale == null)
@@ -105,7 +105,7 @@ namespace Namiko
         [BotPermission(GuildPermission.ManageRoles)]
         [Command("JoinBanroyale"), Alias("jbrl"), Description("Join the current Ban Royale. Must be in the same channel.\n**Usage**: `!jbrl`")]
         [SlashCommand("join-banroyale", "Join the current game of banroyale")]
-        public async Task JoinBanroyale([Remainder] string str = "")
+        public async Task JoinBanroyale()
         {
             var user = Context.User as SocketGuildUser;
             var banroyale = await BanroyaleDb.GetBanroyale(Context.Channel.Id);
@@ -152,7 +152,7 @@ namespace Namiko
         [BotPermission(GuildPermission.ManageRoles)]
         [Command("LeaveBanroyale"), Alias("lbrl"), Description("Leave the current Ban Royale. Must be in the same channel.\n**Usage**: `!lbrl`")]
         [SlashCommand("leave-banroyale", "Leave the current game of banroyale")]
-        public async Task LeaveBanroyale([Remainder] string str = "")
+        public async Task LeaveBanroyale()
         {
             var user = Context.User as SocketGuildUser;
             var banroyale = await BanroyaleDb.GetBanroyale(Context.Channel.Id);
@@ -181,7 +181,7 @@ namespace Namiko
         [UserPermission(GuildPermission.ManageMessages)]
         [Command("StartBanroyale"), Alias("sbrl"), Description("Starts the current Ban Royale. Must be in the same channel.\n**Usage**: `!sbrl`")]
         [SlashCommand("start-banroyale", "Start the banroyale")]
-        public async Task StartBanroyale([Remainder] string str = "")
+        public async Task StartBanroyale()
         {
             var banroyale = await BanroyaleDb.GetBanroyale(Context.Channel.Id);
             if (banroyale == null)
@@ -206,7 +206,7 @@ namespace Namiko
         [UserPermission(GuildPermission.ManageMessages)]
         [Command("CancelBanroyale"), Alias("cbrl"), Description("Cancels the current Ban Royale.\n**Usage**: `!cbrl`")]
         [SlashCommand("cancel-banroyale", "Cancel the game of banroyale")]
-        public async Task CancelBanroyale([Remainder] string str = "")
+        public async Task CancelBanroyale()
         {
             var banroyale = await BanroyaleDb.GetBanroyale(Context.Channel.Id);
             if (banroyale == null)
@@ -222,7 +222,7 @@ namespace Namiko
         [UserPermission(GuildPermission.ManageMessages)]
         [Command("SetBrlWinners"), Alias("sbrlw"), Description("Set the amount of winners.\n**Usage**: `!sbrlw [amount]`")]
         [SlashCommand("banroyale-set-winners", "How many winners can there be in the banroyale")]
-        public async Task SetBrlWinners(int amount, [Remainder] string str = "")
+        public async Task SetBrlWinners(int amount)
         {
             var banroyale = await BanroyaleDb.GetBanroyale(Context.Channel.Id);
             if (banroyale == null)
@@ -244,7 +244,7 @@ namespace Namiko
         [UserPermission(GuildPermission.Administrator)]
         [Command("SetBrlRewardPool"), Alias("sbrlrp"), Description("Set the reward pool.\n**Usage**: `!sbrlrp [amount]`")]
         [SlashCommand("banroyale-set-rewardpool", "Set the reward pool")]
-        public async Task SetBrlRewardPool(int amount, [Remainder] string str = "")
+        public async Task SetBrlRewardPool(int amount)
         {
             var banroyale = await BanroyaleDb.GetBanroyale(Context.Channel.Id);
             if (banroyale == null)
@@ -261,7 +261,7 @@ namespace Namiko
         [UserPermission(GuildPermission.ManageMessages)]
         [Command("SetBrlMinParticipants"), Alias("sbrlminp"), Description("Set minimum participants.\n**Usage**: `!sbrlminp [amount]`")]
         [SlashCommand("banroyale-min-participants", "Minimum amount of people required to start the game")]
-        public async Task SetBrlMinParticipants(int amount, [Remainder] string str = "")
+        public async Task SetBrlMinParticipants(int amount)
         {
             var banroyale = await BanroyaleDb.GetBanroyale(Context.Channel.Id);
             if (banroyale == null)
@@ -283,7 +283,7 @@ namespace Namiko
         [UserPermission(GuildPermission.ManageMessages)]
         [Command("SetBrlMaxParticipants"), Alias("sbrlmaxp"), Description("Set maximum participants.\n**Usage**: `!sbrlmaxp [amount]`")]
         [SlashCommand("banroyale-max-participants", "Maximum amount of people allowed to join the game")]
-        public async Task SetBrlMaxParticipants(int amount, [Remainder] string str = "")
+        public async Task SetBrlMaxParticipants(int amount)
         {
             if (amount > 80)
             {
@@ -311,7 +311,7 @@ namespace Namiko
         [UserPermission(GuildPermission.BanMembers), BotPermission(GuildPermission.BanMembers)]
         [Command("SetBrlBanDuration"), Alias("sbrlban"), Description("Set loser ban duration.\n**Usage**: `!sbrlban [hours]`")]
         [SlashCommand("banroyale-ban-duration", "Set loser ban duration")]
-        public async Task SetBrlBanDuration(int hours, [Remainder] string str = "")
+        public async Task SetBrlBanDuration(int hours)
         {
             var banroyale = await BanroyaleDb.GetBanroyale(Context.Channel.Id);
             if (banroyale == null)
@@ -338,7 +338,7 @@ namespace Namiko
         [UserPermission(GuildPermission.KickMembers), BotPermission(GuildPermission.KickMembers)]
         [Command("SetBrlKick"), Alias("sbrlkick"), Description("Kick people who lose.\n**Usage**: `!sbrlkick [amount]`")]
         [SlashCommand("banroyale-set-kick", "Kick people who lose")]
-        public async Task SetBrlKick([Remainder] string str = "")
+        public async Task SetBrlKick()
         {
             var banroyale = await BanroyaleDb.GetBanroyale(Context.Channel.Id);
             if (banroyale == null)
@@ -360,7 +360,7 @@ namespace Namiko
         [UserPermission(GuildPermission.ManageMessages)]
         [Command("SetBrlMinDelay"), Alias("sbrlmind"), Description("set min delay in seconds.\n**Usage**: `!sbrlminf [amount]`")]
         [SlashCommand("banroyale-min-delay", "Kick people who lose")]
-        public async Task SetBrlMinFrequency(int sec, [Remainder] string str = "")
+        public async Task SetBrlMinFrequency(int sec)
         {
             var banroyale = await BanroyaleDb.GetBanroyale(Context.Channel.Id);
             if (banroyale == null)
@@ -392,7 +392,7 @@ namespace Namiko
         [UserPermission(GuildPermission.ManageMessages)]
         [Command("SetBrlMaxDelay"), Alias("sbrlmaxd"), Description("set max delay in seconds.\n**Usage**: `!sbrlmaxf [amount]`")]
         [SlashCommand("banroyale-max-delay", "Kick people who lose")]
-        public async Task SetBrlMaxFrequency(int sec, [Remainder] string str = "")
+        public async Task SetBrlMaxFrequency(int sec)
         {
             var banroyale = await BanroyaleDb.GetBanroyale(Context.Channel.Id);
             if (banroyale == null)

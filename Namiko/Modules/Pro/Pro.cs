@@ -189,7 +189,7 @@ namespace Namiko.Modules.Pro
         }
 
         [Command("InfoPro"), Description("Donation Links.")]
-        public async Task InfoPro([Remainder] string str = "")
+        public async Task InfoPro()
         {
             string prefix = Program.GetPrefix(Context);
             var eb = new EmbedBuilder()
@@ -210,7 +210,7 @@ namespace Namiko.Modules.Pro
         }
 
         [Command("InfoProPlus"), Description("Donation Links.")]
-        public async Task InfoProPlus([Remainder] string str = "")
+        public async Task InfoProPlus()
         {
             string prefix = Program.GetPrefix(Context);
             var eb = new EmbedBuilder()
@@ -234,7 +234,7 @@ namespace Namiko.Modules.Pro
         }
 
         [Command("InfoGuild"), Description("Donation Links.")]
-        public async Task InfoGuild([Remainder] string str = "")
+        public async Task InfoGuild()
         {
             string prefix = Program.GetPrefix(Context);
             var eb = new EmbedBuilder()
@@ -255,7 +255,7 @@ namespace Namiko.Modules.Pro
         }
 
         [Command("InfoGuildPlus"), Description("Donation Links.")]
-        public async Task InfoGuildPlus([Remainder] string str = "")
+        public async Task InfoGuildPlus()
         {
             var eb = new EmbedBuilder()
                 .WithAuthor(Program.GetClient().CurrentUser)

@@ -175,7 +175,6 @@ namespace Namiko.Addons.Handlers
 
         void IInteractionModuleBase.SetContext(IInteractionContext context)
         {
-            context.Interaction.RespondWithModalAsync(new ModalBuilder("modal", "modal_id", new ModalComponentBuilder()).Build(), RequestOptions.Default);
             if (context is not T)
             {
                 throw new InvalidOperationException($"Invalid context type. Expected {typeof(T).Name}, got {context.GetType().Name}.");

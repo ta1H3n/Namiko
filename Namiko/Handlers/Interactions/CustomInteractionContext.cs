@@ -2,6 +2,7 @@
 using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
+using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
 
 namespace Namiko.Addons.Handlers
@@ -20,12 +21,16 @@ namespace Namiko.Addons.Handlers
         public DateTimeOffset CreatedAt => Interaction.CreatedAt;
 
 
-        public CustomInteractionContext(DiscordShardedClient client, SocketSlashCommand interaction, ISocketMessageChannel channel = null)
+        public CustomInteractionContext(DiscordShardedClient client, IDiscordInteraction interaction, ISocketMessageChannel channel = null)
         {
+            if (interaction is SocketInteraction)
+            {
+                Guild = (((SocketInteraction)interaction).User as SocketGuildUser)?.Guild;
+                User = ((SocketInteraction)interaction).User;
+            }
+
             Client = client;
-            Guild = (interaction.User as SocketGuildUser)?.Guild;
             Channel = channel;
-            User = interaction.User;
             Interaction = interaction;
         }
 
@@ -34,7 +39,11 @@ namespace Namiko.Addons.Handlers
 
         public async Task<IUserMessage> ReplyAsync(string text = null, bool isTTS = false, Embed embed = null, RequestOptions options = null, AllowedMentions allowedMentions = null, MessageReference messageReference = null, MessageComponent components = null, ISticker[] stickers = null, Embed[] embeds = null, MessageFlags flags = MessageFlags.None, bool ephemeral = false)
         {
-            if (Response == null)
+            if (Interaction.Type == InteractionType.ModalSubmit)
+            {
+                await Interaction.RespondAsync(text: text, isTTS: isTTS, embed: embed, options: options, allowedMentions: allowedMentions, components: components, embeds: embeds, ephemeral: ephemeral);
+            }
+            else if (Response == null)
             {
                 Response = await Interaction.FollowupAsync(text: text, isTTS: isTTS, embed: embed, options: options, allowedMentions: allowedMentions, components: components, embeds: embeds, ephemeral: ephemeral);
             }
@@ -50,6 +59,8 @@ namespace Namiko.Addons.Handlers
             }
             return Response;
         }
+
+        public Task TriggerTypingAsync() => Task.CompletedTask;
 
 
         #region Interface lambdas

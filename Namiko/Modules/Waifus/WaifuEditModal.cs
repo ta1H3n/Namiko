@@ -8,6 +8,9 @@ namespace Namiko
     public class WaifuEditModal : IModalBase
     {
         public string Title { get; }
+
+
+        public string Name { get; set; }
         
         [InputLabel($"Full name (with kanji)")]
         [ModalTextInput($"{nameof(LongName)}")]
@@ -46,6 +49,7 @@ namespace Namiko
 
         public WaifuEditModal FromWaifu(Waifu waifu)
         {
+            Name = waifu.Name;
             LongName = waifu.LongName;
             Description = waifu.Description;
             Source = waifu.Source;
@@ -68,12 +72,12 @@ namespace Namiko
         {
             return new ModalBuilder()
                 .WithTitle(Title)
-                .WithCustomId(nameof(WaifuEditModal))
+                .WithCustomId($"waifu-edit-modal:{Name}")
                 .AddTextInput("Full name (with kanji)", 
                     nameof(LongName), value: LongName)
-                .AddTextInput("Character source (Show/Game title)", 
-                    nameof(Description), TextInputStyle.Paragraph, value: Description)
                 .AddTextInput("Description", 
+                    nameof(Description), TextInputStyle.Paragraph, value: Description)
+                .AddTextInput("Character source (Show/Game title)", 
                     nameof(Source), value: Source)
                 .AddTextInput($"{nameof(Tier)} - usually 1, 2 or 3", 
                     nameof(Tier), value: Tier.ToString())

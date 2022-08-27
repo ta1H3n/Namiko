@@ -30,7 +30,7 @@ namespace Namiko
         private static List<string> Lines { get; set; }
         
         [Command("ToggleSpookMode"), Alias("tsm"), Summary("Enables spook mode, 0 to disable.\n**Usage**: `!tsm [chance per message 1/n]`"), OwnerPrecondition]
-        public async Task ToggleSpookMode(int rate, [Remainder] string str = "")
+        public async Task ToggleSpookMode(int rate)
         {
             if(rate == 0)
             {
@@ -75,7 +75,7 @@ namespace Namiko
         }
 
         [Command("DeleteSpook"), Alias("ds"), Summary("Deletes a spook.\n**Usage**: `!ds [no.]`"), OwnerPrecondition]
-        public async Task DeleteSpook(int id, [Remainder] string str = "")
+        public async Task DeleteSpook(int id)
         {
             var lines = XmlHelper.GetSpookLines();
             lines.RemoveAt(id);

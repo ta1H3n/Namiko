@@ -68,7 +68,7 @@ namespace Namiko
         [PermissionRole(RoleType.Music)]
         [Command("Join"), Alias("Music"), Description("Namiko joins your voice channel.\n**Usage**: `!join`")]
         [SlashCommand("join", "Namiko joins your voice channel")]
-        public async Task Join([Remainder]string str = "")
+        public async Task Join()
         {
             if (!(PremiumDb.IsPremium(Context.Guild.Id, ProType.GuildPlus) || PremiumDb.IsPremium(Context.Guild.Id, ProType.Guild)))
             {
@@ -137,7 +137,7 @@ namespace Namiko
         [PermissionRole(RoleType.Music)]
         [Command("Leave"), Description("Namiko leaves your voice channel.\n**Usage**: `!leave`")]
         [SlashCommand("leave", "Namiko leaves your voice channel")]
-        public async Task Leave([Remainder]string str = "")
+        public async Task Leave()
         {
             var player = Player;
             var current = (Context.Guild.CurrentUser as IGuildUser)?.VoiceChannel;
@@ -152,7 +152,7 @@ namespace Namiko
             {
                 if (await player.PlayLocal("leave"))
                 {
-                    await Context.Channel.TriggerTypingAsync();
+                    await Context.TriggerTypingAsync();
                     await Task.Delay(2000);
                 }
             }
@@ -169,10 +169,20 @@ namespace Namiko
             await ReplyAsync($"Bye bye! <:NekoHi:620711213826834443>");
             return;
         }
+        
+        
+        public enum PlayOption { ToStartOfQueue, ToEndOfQueue, PickFirstResult }
+
+        [SlashCommand("play", "Play a song/playlist or add it to the end of a queue")]
+        public Task Play(string song, PlayOption option = PlayOption.ToEndOfQueue) => option switch
+        {
+            PlayOption.PickFirstResult => PlayFirst(song),
+            PlayOption.ToEndOfQueue => Play(song),
+            PlayOption.ToStartOfQueue => PlayNext(song)
+        };
 
         [PermissionRole(RoleType.Music)]
         [Command("Play"), Alias("p"), Description("Play a song/playlist or add it to the end of a queue.\n**Usage**: `!play [link_or_search]`")]
-        [SlashCommand("play", "Play a song/playlist or add it to the end of a queue")]
         public async Task Play([Remainder]string query)
         {
             if (!(PremiumDb.IsPremium(Context.Guild.Id, ProType.GuildPlus) || PremiumDb.IsPremium(Context.Guild.Id, ProType.Guild)))
@@ -222,7 +232,7 @@ namespace Namiko
                 return;
             }
 
-            await Context.Channel.TriggerTypingAsync();
+            await Context.TriggerTypingAsync();
             var tracks = await Node.SearchAndSelect(query, this, max);
             if (tracks == null)
                 return;
@@ -247,7 +257,6 @@ namespace Namiko
 
         [PermissionRole(RoleType.Music)]
         [Command("PlayNext"), Alias("pn"), Description("Play a song/playlist or add it to the start of a queue.\n**Usage**: `!playnext [link_or_search]`")]
-        [SlashCommand("play-next", "Add song to start of queue")]
         public async Task PlayNext([Remainder]string query)
         {
             if (!(PremiumDb.IsPremium(Context.Guild.Id, ProType.GuildPlus) || PremiumDb.IsPremium(Context.Guild.Id, ProType.Guild)))
@@ -297,7 +306,7 @@ namespace Namiko
                 return;
             }
 
-            await Context.Channel.TriggerTypingAsync();
+            await Context.TriggerTypingAsync();
             var tracks = await Node.SearchAndSelect(query, this, max);
             if (tracks == null)
                 return;
@@ -338,7 +347,6 @@ namespace Namiko
 
         [PermissionRole(RoleType.Music)]
         [Command("QuickPlay"), Alias("qp"), Description("Play a song/playlist or add it to the end of a queue. Automatically selects the first result from the search.\n**Usage**: `!qp [link_or_search]`")]
-        [SlashCommand("play-quick", "Skip song selection and choose first result automatically")]
         public async Task PlayFirst([Remainder]string query)
         {
             if (!(PremiumDb.IsPremium(Context.Guild.Id, ProType.GuildPlus) || PremiumDb.IsPremium(Context.Guild.Id, ProType.Guild)))
@@ -388,7 +396,7 @@ namespace Namiko
                 return;
             }
 
-            await Context.Channel.TriggerTypingAsync();
+            await Context.TriggerTypingAsync();
             var res = await Node.SearchYouTubeAsync(query);
             if (res.LoadStatus == LoadStatus.NoMatches)
             {
@@ -409,7 +417,7 @@ namespace Namiko
         [PermissionRole(RoleType.Music), PlayerChannel]
         [Command("Skip"), Description("Skip the current song.\n**Usage**: `!skip`")]
         [SlashCommand("skip", "skips the current playing song")]
-        public async Task Skip([Remainder]string str = "")
+        public async Task Skip()
         {
             var player = Player;
 
@@ -440,7 +448,7 @@ namespace Namiko
         [PermissionRole(RoleType.Music), PlayerChannel]
         [Command("Remove"), Description("Remove a song/songs in the specified position from the queue. Works with a range.\n**Usage**: `!remove [from] [to]`")]
         [SlashCommand("remove", "Remove a song/songs in the specified position from the queue. Works with a range.")]
-        public async Task Remove(int from, int to = -1, [Remainder]string str = "")
+        public async Task Remove(int from, int to = -1)
         {
             var player = Player;
             if (player?.Queue == null)
@@ -480,7 +488,7 @@ namespace Namiko
         [PermissionRole(RoleType.Music), PlayerChannel]
         [Command("Pause"), Description("Pauses music playback.\n**Usage**: `!pause`")]
         [SlashCommand("pause", "Pause music player")]
-        public async Task Pause([Remainder]string str = "")
+        public async Task Pause()
         {
             var player = Player;
             if (player is null)
@@ -506,7 +514,7 @@ namespace Namiko
         [PermissionRole(RoleType.Music), PlayerChannel]
         [Command("Resume"), Description("Resumes music playback.\n**Usage**: `!resume`")]
         [SlashCommand("resume", "Resume music player")]
-        public async Task Resume([Remainder]string str = "")
+        public async Task Resume()
         {
             var player = Player;
             if (player is null)
@@ -531,7 +539,7 @@ namespace Namiko
         [PermissionRole(RoleType.Music), PlayerChannel]
         [Command("Repeat"), Description("Repeats the current song.\n**Usage**: `!repeat`")]
         [SlashCommand("repeat", "Play the current song on repeat on/off")]
-        public async Task Repeat([Remainder]string str = "")
+        public async Task Repeat()
         {
             var player = Player;
             if (player?.Track == null)
@@ -556,7 +564,7 @@ namespace Namiko
         [PermissionRole(RoleType.Music), PlayerChannel]
         [Command("Loop"), Description("Loops the current playlist.\n**Usage**: `!loop`")]
         [SlashCommand("loop", "Loop the playlist on/off")]
-        public async Task Loop([Remainder]string str = "")
+        public async Task Loop()
         {
             var player = Player;
             if (player == null)
@@ -579,7 +587,7 @@ namespace Namiko
         [PermissionRole(RoleType.Music), PlayerChannel]
         [Command("Shuffle"), Description("Shuffles the playlist.\n**Usage**: `!shuffle`")]
         [SlashCommand("shuffle", "Shuffle the playlist")]
-        public async Task Shuffle([Remainder]string str = "")
+        public async Task Shuffle()
         {
             var player = Player;
             if (player?.Queue == null || player.Queue.Count <= 1)
@@ -595,7 +603,7 @@ namespace Namiko
         [PermissionRole(RoleType.Music), PlayerChannel]
         [Command("Volume"), Description("Sets the volume of the music playback, default is 40.\n**Usage**: `!volume [2-150]`")]
         [SlashCommand("volume", "Set player volume. Default - 40.")]
-        public async Task Volume(ushort vol, [Remainder]string str = "")
+        public async Task Volume(ushort vol)
         {
             if (vol > 150 || vol < 2)
             {
@@ -655,7 +663,7 @@ namespace Namiko
 
         [Command("NowPlaying"), Alias("Playing", "np"), Description("Shows the current playing song.\n**Usage**: `!np`")]
         [SlashCommand("now-playing", "Currently playing song")]
-        public async Task NowPlaying([Remainder]string str = "")
+        public async Task NowPlaying()
         {
             if (Player?.Track == null)
             {
@@ -668,7 +676,7 @@ namespace Namiko
 
         [Command("Queue"), Description("Lists all the songs currently in queue.\n**Usage**: `!queue`")]
         [SlashCommand("queue", "Show the song queue")]
-        public async Task Queue([Remainder]string str = "")
+        public async Task Queue()
         {
             var player = Player;
             if (player?.Queue == null || player.Queue.Count == 0)
@@ -703,7 +711,7 @@ namespace Namiko
         [PermissionRole(RoleType.Music), PlayerChannel]
         [Command("Clear"), Description("Clears the queue.\n**Usage**: `!clear`")] 
         [SlashCommand("clear", "Clear the song queue")]
-        public async Task Clear([Remainder]string str = "")
+        public async Task Clear()
         {
             var player = Player;
             if (player?.Queue == null || player.Queue.Count == 0)
@@ -714,48 +722,6 @@ namespace Namiko
 
             Player.Queue.Clear();
             await ReplyAsync("Queue cleared... <a:Cleaning:621047051999903768>");
-        }
-
-        [Command("Lyrics"), Description("Looks up the lyrics of the current song or searches if specified.\n**Usage**: `!lyrics [author] [title]`")]
-        [SlashCommand("lyrics", "Try to find song lyrics of the playing song, or search your own")]
-        public async Task Lyrics(string author = "", [Remainder] string title = "")
-        {
-            var track = Player?.Track;
-            if (track == null && (author == "" || title == ""))
-            {
-                await ReplyAsync("I'm not playing anything, Senpai.\n" +
-                    "What song lyrics do you want me to look up? Example:\n" +
-                    @"`!lyrics ""Kana Hanazawa"" ""Renai Circulation""`");
-                return;
-            }
-
-            if (author == "")
-                (author, title) = track.GetAuthorAndTitle();
-
-            var lyrics = await LyricsResolver.SearchGeniusAsync(author, title);
-
-            if (lyrics?.DefaultIfEmpty() == null)
-            {
-                lyrics = await LyricsResolver.SearchOVHAsync(author, title);
-                if (lyrics?.DefaultIfEmpty() == null)
-                {
-                    await ReplyAsync($"Gomen, senpai. I can't find lyrics for `{author} - {title}`");
-                    return;
-                }
-            }
-
-            var lines = lyrics.Split('\n');
-            string section = "";
-            foreach(var line in lines)
-            {
-                if ((section.Length + line.Length) > 2047)
-                {
-                    await ReplyAsync(section);
-                    section = "";
-                }
-                section += line + '\n';
-            }
-            await ReplyAsync(section);
         }
 
         [PermissionRole(RoleType.Music)]
@@ -812,7 +778,7 @@ namespace Namiko
 
         [Command("Playlists"), Description("Lists all your saved playlists.\n**Usage**: `!playlists`")]
         [SlashCommand("playlists", "Show all playlists")]
-        public async Task Playlists([Remainder]string str = "")
+        public async Task Playlists()
         {
             var playlists = await MusicDb.GetPlaylists(Context.Guild.Id);
             playlists.AddRange(await MusicDb.GetPlaylists(0));
@@ -822,7 +788,7 @@ namespace Namiko
         [PermissionRole(RoleType.Music), PlayerChannel]
         [Command("LoadPlaylist"), Alias("lp"), Description("Loads a saved playlist to the queue.\n**Usage**: `!lp`")]
         [SlashCommand("playlist-load", "Load a playlist")]
-        public async Task LoadPlaylist([Remainder]string str = "")
+        public async Task LoadPlaylist()
         {
             var player = Player;
             var playlists = await MusicDb.GetPlaylists(Context.Guild.Id);
@@ -857,7 +823,7 @@ namespace Namiko
         [PermissionRole(RoleType.Music)]
         [Command("DeletePlaylist"), Alias("dp"), Description("Deletes a saved playlist.\n**Usage**: `!dp`")]
         [SlashCommand("playlist-delete", "Delete a playlist")]
-        public async Task DeletePlaylist([Remainder]string str = "")
+        public async Task DeletePlaylist()
         {
             var playlists = await MusicDb.GetPlaylists(Context.Guild.Id);
 
@@ -900,7 +866,7 @@ namespace Namiko
 
         [Command("MusicRoles"), Alias("mr"), Description("Lists roles that are able to control music.\n**Usage**: `!mr`")]
         [SlashCommand("music-roles", "Show what roles are able to control the music player")]
-        public async Task MusicRoles([Remainder]string str = "")
+        public async Task MusicRoles()
         {
             var dbRoles = PermissionRoleDb.GetAll(Context.Guild.Id, RoleType.Music);
             if (!dbRoles.Any())
