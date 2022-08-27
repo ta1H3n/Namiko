@@ -11,7 +11,10 @@ using Namiko.Modules.Basic;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Namiko.Handlers.Autocomplete;
+using Npgsql.PostgresTypes;
 using PreconditionAttribute = Namiko.Handlers.Attributes.PreconditionAttribute;
+using RequireUserPermissionAttribute = Discord.Interactions.RequireUserPermissionAttribute;
 
 namespace Namiko
 {
@@ -227,6 +230,83 @@ namespace Namiko
                     $"Type `{prefix}images` for a list of my reaction image commands!";
                 await ReplyAsync(msg);
             }
+        }
+
+        [SlashCommand("help", "See command details and stuff")]
+        public async Task Help([Autocomplete(typeof(ModulesAutocomplete))] string module = "All",
+            [Autocomplete(typeof(CommandsAutocomplete))] string command = "All")
+        {
+            var modul = Program.Interactions.Modules.FirstOrDefault(x => module == x.Name);
+            var cmd = Program.Interactions.SlashCommands.FirstOrDefault(x => x.Name == command);
+
+            EmbedBuilder eb;
+            if (cmd != null)
+            {
+                eb = CommandHelpEmbed(cmd);
+            }
+            else if (modul != null)
+            {
+                eb = ModuleHelpEmbed(modul);
+            }
+            else
+            {
+                eb = AllHelpEmbed(Program.Interactions);
+            }
+
+            await ReplyAsync(embed: eb.Build());
+        }
+
+        private EmbedBuilder AllHelpEmbed(InteractionService interactionService)
+        {
+            var eb = new EmbedBuilderPrepared(Context.User);
+            bool insider = Context?.User != null && Context.User is SocketGuildUser && ((SocketGuildUser)Context.User).Roles.Any(x => x.Id == AppSettings.InsiderRoleId);
+            string field = "";
+            
+            foreach(var module in interactionService.Modules)
+            {
+                if ((module.Name != "Special" && module.Name != "Basic" && module.Name != "SpecialModes" && module.Name != "WaifuEditing") || insider)
+                {
+                    int count = module.SlashCommands.Count(x => insider || x.Preconditions.Any(y => y is InsiderAttribute || y is OwnerPrecondition));
+                    
+                    field += $"{module.Name} - *{count} commands*\n";
+                }
+            }
+
+            eb.AddField("Modules", field);
+            eb.WithTitle("Namiko");
+            eb.WithDescription($"Check out Namiko's usage guide [here]({LinkHelper.Guide}) :star:\n" +
+                $"Open in [browser]({LinkHelper.Commands}) :star:");
+            eb.WithImageUrl(AppSettings.NamikoBannerUrl);
+            eb.WithFooter(@"""What are you? Twelve?"" -Namiko");
+            return eb;
+        }
+        private EmbedBuilder ModuleHelpEmbed(Discord.Interactions.ModuleInfo module)
+        {
+            var eb = new EmbedBuilderPrepared(Context.User);
+
+            var fields = module.SlashCommands.Select(x => new EmbedFieldBuilder().WithName(x.Name).WithValue(x.Description).WithIsInline(true));
+
+            eb.WithTitle(module.Name);
+            eb.WithFields(fields);
+            eb.WithImageUrl(AppSettings.NamikoBannerUrl);
+            eb.WithFooter(@"""What are you? Twelve?"" -Namiko");
+            return eb;
+        }
+        public EmbedBuilder CommandHelpEmbed(SlashCommandInfo command)
+        {
+            var eb = new EmbedBuilderPrepared(Context.User);
+
+            eb.WithTitle(command.Name);
+            eb.WithDescription(command.Description);
+            var prec = command.Preconditions.Where(x => x is RequireUserPermissionAttribute)
+                .Cast<RequireUserPermissionAttribute>();
+            if (command.Preconditions.Any(x => x is RequireUserPermissionAttribute))
+            {
+                eb.AddField(":star: Required permissions", string.Join(' ', prec.Select(x => $"`{x.GuildPermission.ToString()}`").Distinct()));
+            }
+            eb.WithImageUrl(AppSettings.NamikoBannerUrl);
+            eb.WithFooter(@"""What are you? Twelve?"" -Namiko");
+            return eb;
         }
 
         private EmbedBuilder AllHelpEmbed(CommandService commandService, bool all = false)

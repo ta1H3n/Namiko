@@ -88,9 +88,15 @@ namespace Namiko
         }
 
         [Command("List"), Alias("ListAll", "Images", "Albums"), Description("List of all image commands and how many images there are.\n**Usage**: `!list`")]
-        [SlashCommand("image-list", "List of all image commands")]
-        public async Task List()
+        [SlashCommand("images", "List of image commands")]
+        public async Task List([Description("Show all images from a command")] string album = null)
         {
+            if (album != null)
+            {
+                All(album);
+                return;
+            }
+            
             var images = await ImageDb.GetImages();
             List<ImageCount> names = new List<ImageCount>();
 
@@ -119,7 +125,6 @@ namespace Namiko
         }
 
         [Command("Album"), Alias("All"), Description("All reaction images from a single command.\n**Usage**: `!all [image_name]`")]
-        [SlashCommand("album", "All images from a single command")]
         public async Task All(string name)
         {
             var album = Context.Guild == null ? null : ImageDb.GetAlbum(name + Context.Guild.Id);

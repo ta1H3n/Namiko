@@ -27,7 +27,7 @@ namespace Namiko
     {
         private static DiscordShardedClient Client;
         private static CommandService Commands;
-        private static InteractionService Interactions;
+        public static InteractionService Interactions { get; private set; }
         private static IServiceProvider Services;
         private static Dictionary<ulong, string> Prefixes;
         private static readonly CancellationTokenSource cts = new CancellationTokenSource();
@@ -158,7 +158,7 @@ namespace Namiko
             Interactions.Log += Console_Log;
             //await Interactions.AddModuleAsync(typeof(Banroulettes), Services);
             //await Interactions.AddModuleAsync(typeof(Banroyales), Services);
-            //await Interactions.AddModuleAsync(typeof(Basic), Services);
+            await Interactions.AddModuleAsync(typeof(Basic), Services);
             await Interactions.AddModuleAsync(typeof(Currency), Services);
             await Interactions.AddModuleAsync(typeof(Images), Services);
             await Interactions.AddModuleAsync(typeof(Roles), Services);

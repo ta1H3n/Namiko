@@ -13,6 +13,7 @@ namespace Namiko.Addons.Handlers.Confirmation
 
         public ConfirmationCallback(ICustomContext context, string question = null, ICriterion<SocketMessageComponent> criterion = null) : base(context, criterion)
         {
+            DisposeLevel = DisposeLevel.Delete;
             Question = question ?? "Are you sure?";
             _taskSource = new TaskCompletionSource<bool>();
         }
@@ -35,9 +36,17 @@ namespace Namiko.Addons.Handlers.Confirmation
             {
                 "yes" => true,
                 "no" => false,
-                _ => throw new ArgumentException()
+                _ => true
+            };
+            
+            DisposeLevel = comp.Data.CustomId switch
+            {
+                "yes" => DisposeLevel.Continue,
+                "no" => DisposeLevel.Delete,
+                _ => DisposeLevel.Delete
             };
 
+            await TimeoutAsync();
             _taskSource.SetResult(res);
             return true;
         }

@@ -38,13 +38,20 @@ namespace Namiko.Addons.Handlers
             }
             else
             {
-                await Response.ModifyAsync(x =>
+                try
                 {
-                    x.Embed = embed;
-                    x.Content = text;
-                    x.Components = components;
-                    x.AllowedMentions = allowedMentions;
-                });
+                    await Response.ModifyAsync(x =>
+                    {
+                        x.Embed = embed;
+                        x.Content = text;
+                        x.Components = components;
+                        x.AllowedMentions = allowedMentions;
+                    });
+                }
+                catch
+                {
+                    Response = await Channel.SendMessageAsync(text, isTTS, embed, options, allowedMentions, messageReference, components, stickers, embeds, flags);
+                }
             }
             return Response;
         }

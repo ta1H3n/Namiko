@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Namiko.Handlers.Attributes.Preconditions;
 using PreconditionAttribute = Namiko.Handlers.Attributes.PreconditionAttribute;
 
 namespace Namiko.Addons.Handlers
@@ -133,7 +134,7 @@ namespace Namiko.Addons.Handlers
                 {
                     cmd.WithSummary((desc as DescriptionAttribute).Description);
                 }
-                foreach (var prec in cmd.Attributes.Where(x => x is PreconditionAttribute).Select(x => x as PreconditionAttribute))
+                foreach (var prec in cmd.Attributes.Where(x => x is PreconditionAttribute).Cast<PreconditionAttribute>())
                 {
                     cmd.AddPrecondition(prec.ReturnAttribute(Handler.Commands) as Discord.Commands.PreconditionAttribute);
                 }
@@ -168,8 +169,13 @@ namespace Namiko.Addons.Handlers
                 //{
                 //    cmd.WithSu((desc as DescriptionAttribute).Description);
                 //}
-                var atr = cmd.Attributes.Where(x => x is PreconditionAttribute).Select(x => x as PreconditionAttribute);
+                var atr = cmd.Attributes.Where(x => x is PreconditionAttribute).Cast<PreconditionAttribute>();
                 cmd.WithPreconditions(atr.Select(x => x.ReturnAttribute(Handler.Interactions) as Discord.Interactions.PreconditionAttribute).ToArray());
+
+                var permissions = cmd.Attributes.Where(x => x is UserPermissionAttribute).Cast<UserPermissionAttribute>().Select(x => x.GuildPermission);
+                cmd.DefaultMemberPermissions = permissions.FirstOrDefault();
+
+                cmd.IsEnabledInDm = cmd.Attributes.Any(x => x is RequireGuildAttribute);
             }
         }
 

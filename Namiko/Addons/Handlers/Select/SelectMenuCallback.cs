@@ -37,6 +37,7 @@ namespace Namiko.Addons.Handlers.Select
 
             var id = comp.Data.Values.First();
             var res = _selectMenu.Options[id].Item;
+            await TimeoutAsync();
             _taskSource.TrySetResult(res);
             return true;
         }
