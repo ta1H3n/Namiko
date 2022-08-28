@@ -54,7 +54,7 @@ namespace Namiko
         [Command("JoinMessageTest"), OwnerPrecondition]
         public async Task JoinMessageTest()
         {
-            await ReplyAsync("Hi! Please take good care of me!", false, BasicUtil.GuildJoinEmbed("!").Build());
+            await ReplyAsync("Hi! Please take good care of me!", false, BasicUtil.GuildJoinEmbed().Build());
         }
 
         [Command("PermTest"), BotPermission(GuildPermission.Administrator)]

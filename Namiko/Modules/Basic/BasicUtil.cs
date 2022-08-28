@@ -103,21 +103,18 @@ namespace Namiko
             eb.WithImageUrl(AppSettings.NamikoBannerUrl);
             return eb;
         }
-        public static EmbedBuilder GuildJoinEmbed(string prefix)
+        public static EmbedBuilder GuildJoinEmbed()
         {
             var eb = new EmbedBuilder();
             var client = Program.GetClient();
 
             string desc = "";
-            desc += $"`{prefix}info` - learn more about me.\n" +
-                $"`{prefix}help` - list of my commands.\n" +
+            desc += $"`/help` - find my commands.\n\n" +
                 $"Or check out my usage guide [here]({LinkHelper.Guide}) :star: \n\n" +
-                $"You can change my prefix by typing `{prefix}sp [prefix]` and replacing [prefix] with your prefix!\n" +
-                $"Mentioning me {client.CurrentUser.Mention} can also be used as a prefix!";
             eb.WithDescription(desc);
 
             eb.WithAuthor(client.CurrentUser);
-            eb.WithColor(BasicUtil.RandomColor());
+            eb.WithColor(RandomColor());
             eb.WithFooter("-What are you? Twelve?");
             eb.WithImageUrl(AppSettings.NamikoBannerUrl);
             return eb;

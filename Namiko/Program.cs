@@ -285,7 +285,7 @@ namespace Namiko
                     await StartTimers();
                     if (!Development)
                         await Music.Initialize(Client);
-                    await Client.SetActivityAsync(new Game($"to sussy bakas", ActivityType.Listening));
+                    await Client.SetActivityAsync(new Game($"sussy bakas", ActivityType.Listening));
                 }
                 catch (Exception ex)
                 {
@@ -650,7 +650,7 @@ namespace Namiko
             SocketTextChannel ch = arg.SystemChannel ?? arg.DefaultChannel;
             try
             {
-                await ch?.SendMessageAsync("Hi! Please take good care of me!", false, BasicUtil.GuildJoinEmbed(server.Prefix).Build());
+                await ch?.SendMessageAsync("Hi! Please take good care of me!", false, BasicUtil.GuildJoinEmbed().Build());
             }
             catch { }
             await WebhookClients.GuildJoinLogChannel.SendMessageAsync($"<:TickYes:577838859107303424> {Client.CurrentUser.Username} joined `{arg.Id}` **{arg.Name}**.\nOwner: `{arg.Owner.Id}` **{arg.Owner}**");
