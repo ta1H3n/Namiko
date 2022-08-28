@@ -120,13 +120,6 @@ namespace Namiko
             await ReplyAsync($"**{waifu.Name}** shipped!");
         }
 
-        //  [Command("Test"), OwnerPrecondition]
-        //  public async Task Test()
-        //  {
-        //      Timers.Timer_NamikoSteal(null, null);
-        //      await ReplyAsync($"It has been done.");
-        //  }
-
         [Command("Blacklist"), OwnerPrecondition]
         public async Task Blacklist(ulong id)
         {
@@ -168,7 +161,6 @@ namespace Namiko
         }
 
         [Command("Status"), Description("Bot status.\n **Usage**: `!status`")]
-        // [SlashCommand("status", "Namiko <-> Discord connection status")]
         public async Task Status()
         {
             var client = Context.Client as DiscordShardedClient;

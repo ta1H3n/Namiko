@@ -21,8 +21,16 @@ namespace Namiko.Modules.Pro
     [Name("Pro")]
     public class Pro : CustomModuleBase<ICustomContext>
     {
-        [Command("ActivateProGuild"), Alias("asp", "ActivateServerPremium", "apg"), Description("Activates pro guild in the current server.\n**Usage**: `!asp [tier]`")]
-        [SlashCommand("activate-pro-guild", "Activate Pro Guild benefits. Upgrades for your Server.")]
+        public enum ProChoice { [ChoiceDisplay("Pro - global upgrade for your account")] Pro, [ChoiceDisplay("Pro Guild - upgrade this server")] Guild }
+
+        [SlashCommand("pro", "Activate Namiko pro")]
+        public Task ActivatePro(ProChoice type) => type switch
+        {
+            ProChoice.Guild => ActivateServerPremium(),
+            ProChoice.Pro => ActivatePremium()
+        };
+        
+        [Command("ActivateProGuild"), Alias("asp", "ActivateServerPremium", "apg"), Description("Activates pro guild in the current server.\n**Usage**: `!asp`")]
         public async Task ActivateServerPremium()
         {
             var ntr = Context.Client.GetGuild((ulong)ProType.HomeGuildId_NOTAPREMIUMTYPE);
@@ -104,7 +112,6 @@ namespace Namiko.Modules.Pro
         }
 
         [Command("ActivatePro"), Alias("ap", "ActivatePremium"), Description("Activates premium subscriptions associated with this account.\n**Usage**: `!ap`")]
-        [SlashCommand("activate-pro", "Activate Pro benefits. Upgrades for your account.")]
         public async Task ActivatePremium()
         {
             var ntr = Context.Client.GetGuild((ulong)ProType.HomeGuildId_NOTAPREMIUMTYPE);
@@ -163,7 +170,6 @@ namespace Namiko.Modules.Pro
         }
 
         [Command("RedeemCode"), Alias("Redeem"), Description("Redeem a premium trial code.\n**Usage**: `!redeem [code]`")]
-        [SlashCommand("redeem-code", "Redeem a Pro or Pro Guild code.")]
         public async Task RedeemCode(string code)
         {
             Premium res = await PremiumCodeDb.RedeemCode(code, Context.User.Id, Context.Guild.Id);
@@ -182,7 +188,7 @@ namespace Namiko.Modules.Pro
         
 
         [Command("Pro"), Alias("Premium", "Support", "Patreon", "Paypal", "Donate"), Description("Donation Links.")]
-        [SlashCommand("pro", "Info about pro features")]
+        //[SlashCommand("pro", "Info about pro features")]
         public async Task Donate()
         {
             await ReplyAsync("", false, BasicUtil.DonateEmbed(Program.GetPrefix(Context)).Build());

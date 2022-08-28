@@ -20,9 +20,9 @@ namespace Namiko
                 new Color(250, 202, 48),
                 new Color(255, 165, 229),
                 new Color(112, 255, 65),
-                new Color(90, 161, 255),
-                new Color(255, 69, 0),
-                new Color(123, 104, 238)
+                new Color(85, 147, 255),
+                new Color(130, 79, 250),
+                new Color(185, 12, 69)
             };
             rnd = new Random();
         }

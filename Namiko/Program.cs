@@ -18,6 +18,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Namiko.Handlers.TypeConverters;
 using Namiko.Modules.Leaderboard;
+using Namiko.Modules.Pro;
 
 #pragma warning disable CS1998
 
@@ -41,7 +42,6 @@ namespace Namiko
 
         private static int Startup = 0;
         private static int AllShardsReady = 0;
-        private static int ReadyCount = 0;
         private HashSet<int> ShardsDownloadingUsers = new HashSet<int>();
 
         static void Main(string[] args)
@@ -75,11 +75,8 @@ namespace Namiko
                 LargeThreshold = 250,
                 GatewayIntents =
                     GatewayIntents.Guilds |
-                    GatewayIntents.GuildMembers |
                     GatewayIntents.GuildVoiceStates |
                     GatewayIntents.GuildMessages |
-                    GatewayIntents.GuildMessageReactions |
-                    GatewayIntents.GuildScheduledEvents |
                     GatewayIntents.GuildInvites |
                     GatewayIntents.DirectMessages |
                     GatewayIntents.DirectMessageReactions
@@ -92,11 +89,11 @@ namespace Namiko
             Client.ShardConnected += Client_ShardConnected;
             Client.ShardDisconnected += Client_ShardDisconnected;
             Client.ShardReady += Client_ShardReady;
-            Client.ShardReady += Client_ShardReady_DownloadUsers;
+            //Client.ShardReady += Client_ShardReady_DownloadUsers;
 
-            Client.ReactionAdded += Client_ReactionAdded;
-            Client.ReactionAdded += BanroyaleGame.HandleBanroyaleReactionAsync;
-            Client.MessageReceived += Client_ReadCommand;
+            // Client.ReactionAdded += Client_ReactionAdded;
+            // Client.ReactionAdded += BanroyaleGame.HandleBanroyaleReactionAsync;
+            // Client.MessageReceived += Client_ReadCommand;
             Client.UserVoiceStateUpdated += Client_UserVoiceChannel;
 
             // Namiko join/leave
@@ -120,9 +117,9 @@ namespace Namiko
                 LogLevel = LogSeverity.Debug
             });
 
-            Commands.CommandExecuted += Commands_CommandExecuted;
-            Commands.Log += Console_Log;
-            Commands.Log += Error_Log;
+            // Commands.CommandExecuted += Commands_CommandExecuted;
+            // Commands.Log += Console_Log;
+            // Commands.Log += Error_Log;
 
 
             Services = new ServiceCollection()
@@ -145,6 +142,7 @@ namespace Namiko
             await Commands.AddModuleAsync(typeof(Web), Services);
             await Commands.AddModuleAsync(typeof(Music), Services);
             await Commands.AddModuleAsync(typeof(Leaderboards), Services);
+            await Commands.AddModuleAsync(typeof(Pro), Services);
 
             Interactions = new InteractionService(Client, new InteractionServiceConfig
             {
@@ -169,6 +167,7 @@ namespace Namiko
             await Interactions.AddModuleAsync(typeof(Web), Services);
             await Interactions.AddModuleAsync(typeof(Music), Services);
             await Interactions.AddModuleAsync(typeof(Leaderboards), Services);
+            await Interactions.AddModuleAsync(typeof(Pro), Services);
             Interactions.SlashCommandExecuted += Interactions_SlashCommandExecuted;
 
 
@@ -264,7 +263,7 @@ namespace Namiko
             _ = LootboxStats.Reload(Locations.LootboxStatsJSON);
             Prefixes = ServerDb.GetPrefixes();
             Images.ReactionImageCommands = ImageDb.GetReactionImageDictionary().Result;
-            Blacklist = BlacklistDb.GetAll();
+            //Blacklist = BlacklistDb.GetAll();
             Waifu.Path = AppSettings.ImageUrlPath + "waifus/";
         }
         private async Task SetUp_FirstShardConnected(DiscordSocketClient arg)
@@ -274,11 +273,19 @@ namespace Namiko
             {
                 try
                 {
+                    if (!Development)
+                    {
+                        await Interactions.AddModulesGloballyAsync(true,
+                            Interactions.Modules.Where(x => x.Name != nameof(WaifuEditing)).ToArray());
+                        await Interactions.AddModulesToGuildAsync(418900885079588884, true,
+                            Interactions.Modules.FirstOrDefault(x => x.Name == nameof(WaifuEditing)));
+                    }
+
                     WebUtil.SetUpDbl(arg.CurrentUser.Id);
                     await StartTimers();
                     if (!Development)
                         await Music.Initialize(Client);
-                    await Client.SetActivityAsync(new Game($"Chinese Cartoons. Try @{arg.CurrentUser.Username} help", ActivityType.Watching));
+                    await Client.SetActivityAsync(new Game($"to sussy bakas", ActivityType.Listening));
                 }
                 catch (Exception ex)
                 {
@@ -296,9 +303,8 @@ namespace Namiko
         }
         private async Task SetUp_AllShardsReady(DiscordSocketClient arg)
         {
-            ReadyCount++;
             // Making sure this part only runs once, unless an exception is thrown. Thread safe.
-            if (ReadyCount >= ShardCount && Interlocked.Exchange(ref AllShardsReady, 1) == 0)
+            if (Client.Shards.All(x => x.ConnectionState == ConnectionState.Connected) && Interlocked.Exchange(ref AllShardsReady, 1) == 0)
             {
                 try
                 {
@@ -563,7 +569,7 @@ namespace Namiko
             _ = WebhookClients.NamikoLogChannel.SendMessageAsync($"<:TickYes:577838859107303424> `{DateTime.Now.ToString("HH:mm:ss")}` - `Shard {arg.ShardId} Connected`");
             if (Development)
             {
-                await Interactions.RegisterCommandsToGuildAsync(418900885079588884, true);
+                //await Interactions.RegisterCommandsToGuildAsync(418900885079588884, true);
             }
         }
         private async Task Client_ShardDisconnected(Exception arg1, DiscordSocketClient arg2)

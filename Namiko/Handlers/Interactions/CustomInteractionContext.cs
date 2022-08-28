@@ -27,10 +27,11 @@ namespace Namiko.Addons.Handlers
             {
                 Guild = (((SocketInteraction)interaction).User as SocketGuildUser)?.Guild;
                 User = ((SocketInteraction)interaction).User;
+                Channel = ((SocketInteraction)interaction).Channel;
             }
 
             Client = client;
-            Channel = channel;
+            Channel = channel ?? Channel;
             Interaction = interaction;
         }
 

@@ -8,8 +8,8 @@ namespace Model
     public static class LootboxStats
     {
         public static Dictionary<LootBoxType, LootboxStat> Lootboxes;
-
-        public async static Task Reload(string path)
+        
+        public static async Task Reload(string path)
         {
             Lootboxes = new Dictionary<LootBoxType, LootboxStat>();
             var stats = await JsonHelper.ReadJson<List<LootboxStat>>(path);
