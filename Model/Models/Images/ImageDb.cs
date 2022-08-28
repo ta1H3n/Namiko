@@ -81,6 +81,15 @@ namespace Model
             }
         }
 
+        public static async Task<Dictionary<ulong, HashSet<string>>> GetReactionImageDictionary()
+        {
+            using (var db = new NamikoDbContext())
+            {
+                var images = db.Images.Select(x => new { x.GuildId, x.Name }).AsEnumerable().GroupBy(x => x.GuildId, x => x.Name.ToLower());
+                return new Dictionary<ulong, HashSet<string>>(images.Select(x => new KeyValuePair<ulong, HashSet<string>>(x.Key, x.ToHashSet())));
+            }
+        }
+
         public static async Task ToLower()
         {
             using var db = new NamikoDbContext();

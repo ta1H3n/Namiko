@@ -171,7 +171,10 @@ namespace Namiko
         }
         
         
-        public enum PlayOption { ToStartOfQueue, ToEndOfQueue, PickFirstResult }
+        public enum PlayOption { 
+            [ChoiceDisplay("Start of queue")] ToStartOfQueue, 
+            [ChoiceDisplay("End of queue")] ToEndOfQueue, 
+            [ChoiceDisplay("Auto pick first search result")] PickFirstResult }
 
         [SlashCommand("play", "Play a song/playlist or add it to the end of a queue")]
         public Task Play(string song, PlayOption option = PlayOption.ToEndOfQueue) => option switch

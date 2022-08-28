@@ -9,18 +9,29 @@ using Model;
 
 namespace Namiko.Handlers.Autocomplete;
 
-public class CommandsAutocomplete : AutocompleteHandler
+public class ReactionImageAutocomplete : AutocompleteHandler
 {
     public override async Task<AutocompletionResult> GenerateSuggestionsAsync(IInteractionContext context, IAutocompleteInteraction autocompleteInteraction, IParameterInfo parameter, IServiceProvider services)
     {
         var value = autocompleteInteraction?.Data?.Options?.FirstOrDefault()?.Value?.ToString() ?? "";
-        var commands = Program.Interactions.SlashCommands;
-
-        var result = commands.Where(x => x.Name.ToUpper().Contains(value.ToUpper())).Select(x => new AutocompleteResult
+        var images = Images.ReactionImageCommands[0].ToHashSet();
+        
+        if (context?.Guild != null && Images.ReactionImageCommands.TryGetValue(context.Guild.Id, out var images2))
         {
-            Name = x.Name + " - " + x.Description,
-            Value = x.Name
-        }).ToList();
+            foreach (var image in images2)
+            {
+                if (!images.Contains(image))
+                {
+                    images.Add(image);
+                }
+            }
+        }
+
+        var result = images.Where(x => x.ToUpper().Contains(value.ToUpper())).Select(x => new AutocompleteResult
+        {
+            Name = x,
+            Value = x
+        });
         
         return AutocompletionResult.FromSuccess(result.OrderBy(x => x.Value).Take(25));
     }

@@ -263,7 +263,7 @@ namespace Namiko
             NamikoDbContext.ConnectionString = AppSettings.ConnectionString;
             _ = LootboxStats.Reload(Locations.LootboxStatsJSON);
             Prefixes = ServerDb.GetPrefixes();
-            Images.ReactionImageCommands = ImageDb.GetReactionImageCommandHashSet();
+            Images.ReactionImageCommands = ImageDb.GetReactionImageDictionary().Result;
             Blacklist = BlacklistDb.GetAll();
             Waifu.Path = AppSettings.ImageUrlPath + "waifus/";
         }

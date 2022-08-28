@@ -22,8 +22,6 @@ public class ModulesAutocomplete : AutocompleteHandler
             Value = x.Name
         }).ToList();
         
-        result.Add(new AutocompleteResult("All", "All"));
-        
         return AutocompletionResult.FromSuccess(result.OrderBy(x => x.Value).Take(25));
     }
 }

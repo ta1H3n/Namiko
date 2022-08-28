@@ -23,7 +23,7 @@ namespace Namiko.Addons.Handlers.Confirmation
             var eb = new EmbedBuilderPrepared(Question);
             var cb = new ComponentBuilder()
                 .WithButton(customId: "no", emote: Emote.Parse("<:TickNo:577838859077943306>"), style: ButtonStyle.Secondary)
-                .WithButton(customId: "yes", emote: Emote.Parse("<:TickYes:577838859107303424>"), style: ButtonStyle.Success);
+                .WithButton(customId: "yes", emote: Emote.Parse("<:TickYes:577838859107303424>"), style: ButtonStyle.Secondary);
 
             var message = await Context.ReplyAsync(embed: eb.Build(), components: cb.Build()).ConfigureAwait(false);
             Message = message;

@@ -1,4 +1,6 @@
-﻿namespace Namiko.Modules.Leaderboard
+﻿using Discord.Interactions;
+
+namespace Namiko.Modules.Leaderboard
 {
     public class LeaderboardUtil
     {
@@ -10,13 +12,17 @@
         Rep,
         Vote,
         Toastie,
+        [ChoiceDisplay("Daily streak")]
         DailyStreak,
+        [ChoiceDisplay("Waifu value")]
         WaifuValue,
+        [ChoiceDisplay("Top waifus")]
         TopWaifus
     }
 
     public enum LeaderboardScope
     {
+        [ChoiceDisplay("This server")]
         Server,
         Global
     }

@@ -9,13 +9,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Namiko.Handlers.Autocomplete;
 
 namespace Namiko
 {
     [Name("Reaction Images")]
     public class Images : CustomModuleBase<ICustomContext>
     {
-        public static HashSet<string> ReactionImageCommands { get; set; }
+        public static Dictionary<ulong, HashSet<string>> ReactionImageCommands { get; set; }
 
         public async Task<bool> SendRandomImage(ICommandContext Context)
         {
@@ -24,26 +25,29 @@ namespace Namiko
                 return false;
             }
 
-            string text = Context.Message.Content;
-            text = text.Replace(Program.GetPrefix(Context.Guild), "");
-            text = text.Split(' ')[0];
-
-            if (!ReactionImageCommands.Contains(text))
-                return false;
-
-            text = text.ToLower();
-            var image = Context.Guild == null ? null : ImageDb.GetRandomImage(text, Context.Guild.Id);
-            if (image == null)
-            {
-                image = ImageDb.GetRandomImage(text);
-                if(image == null)
-                    return false;
-            }
-
             if (!RateLimit.CanExecute(Context.Channel.Id))
             {
                 await ReplyAsync($"Woah there, Senpai, calm down! I locked this channel for **{RateLimit.InvokeLockoutPeriod.Seconds}** seconds <:MeguExploded:627470499278094337>\n" +
-                    $"You can only use **{RateLimit.InvokeLimit}** commands per **{RateLimit.InvokeLimitPeriod.Seconds}** seconds per channel.");
+                                 $"You can only use **{RateLimit.InvokeLimit}** commands per **{RateLimit.InvokeLimitPeriod.Seconds}** seconds per channel.");
+                return false;
+            }
+
+            string text = Context.Message.Content;
+            text = text.Replace(Program.GetPrefix(Context.Guild), "");
+            text = text.Split(' ')[0].ToLower();
+
+            ReactionImage image;
+            if (Context?.Guild.Id != null && ReactionImageCommands.ContainsKey(Context.Guild.Id) && ReactionImageCommands[Context.Guild.Id].Contains(text))
+            {
+                image = ImageDb.GetRandomImage(text, Context.Guild.Id);
+            }
+            else if (ReactionImageCommands[0].Contains(text))
+            {
+                image = ImageDb.GetRandomImage(text);
+            }
+            else
+            {
+                await ReplyAsync("Not an image command", ephemeral: true);
                 return false;
             }
 
@@ -53,33 +57,34 @@ namespace Namiko
         }
 
         [SlashCommand("image", "Send a reaction image")]
-        public async Task SendImage(string name, int imageId = 0)
+        public async Task SendImage([Autocomplete(typeof(ReactionImageAutocomplete))] string name = null, int imageId = 0)
         {
             if (imageId != 0)
             {
                 Image(imageId);
                 return;
             }
+
+            if (name == null)
+            {
+                await ReplyAsync("Not an image command", ephemeral: true);
+                return;
+            }
             
             name = name.ToLower();
-            
-            if (!ReactionImageCommands.Contains(name))
+
+            ReactionImage image;
+            if (Context?.Guild.Id != null && ReactionImageCommands.ContainsKey(Context.Guild.Id) && ReactionImageCommands[Context.Guild.Id].Contains(name))
+            {
+                image = ImageDb.GetRandomImage(name, Context.Guild.Id);
+            }
+            else if (ReactionImageCommands[0].Contains(name))
+            {
+                image = ImageDb.GetRandomImage(name);
+            }
+            else
             {
                 await ReplyAsync("Not an image command", ephemeral: true);
-                return;
-            }
-
-            var image = Context.Guild == null ? ImageDb.GetRandomImage(name) : ImageDb.GetRandomImage(name, Context.Guild.Id);
-            if (image == null)
-            {
-                await ReplyAsync("Not an image command", ephemeral: true);
-                return;
-            }
-
-            if (!RateLimit.CanExecute(Context.Channel.Id))
-            {
-                await ReplyAsync($"Woah there, Senpai, calm down! I locked this channel for **{RateLimit.InvokeLockoutPeriod.Seconds}** seconds <:MeguExploded:627470499278094337>\n" +
-                                 $"You can only use **{RateLimit.InvokeLimit}** commands per **{RateLimit.InvokeLimitPeriod.Seconds}** seconds per channel.");
                 return;
             }
 
@@ -207,8 +212,24 @@ namespace Namiko
             var iImage = await ImgurAPI.UploadImageAsync(url, albumId);
             var img = await ImageDb.AddImage(name.ToLower(), iImage.Link, insider ? 0 : Context.Guild.Id);
 
-            if (!ReactionImageCommands.Contains(name.ToLower()))
-                ReactionImageCommands.Add(name.ToLower());
+            if (insider)
+            {
+                if (!ReactionImageCommands[0].Contains(name.ToLower()))
+                {
+                    ReactionImageCommands[0].Add(name.ToLower());
+                }
+            }
+            else
+            {
+                if (!ReactionImageCommands.ContainsKey(Context.Guild.Id))
+                {
+                    ReactionImageCommands.Add(Context.Guild.Id, new HashSet<string>());
+                }
+                if (!ReactionImageCommands[Context.Guild.Id].Contains(name.ToLower()))
+                {
+                    ReactionImageCommands[Context.Guild.Id].Add(name.ToLower());
+                }
+            }
 
             await ImgurAPI.EditImageAsync(iImage.Id.ToString(), null, img.Id.ToString());
             var rl = ImgurAPI.RateLimit;

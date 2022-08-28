@@ -253,7 +253,7 @@ namespace Namiko
                 eb = AllHelpEmbed(Program.Interactions);
             }
 
-            await ReplyAsync(embed: eb.Build());
+            await ReplyAsync(embed: eb.Build(), ephemeral: true);
         }
 
         private EmbedBuilder AllHelpEmbed(InteractionService interactionService)
