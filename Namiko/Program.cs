@@ -569,7 +569,7 @@ namespace Namiko
             _ = WebhookClients.NamikoLogChannel.SendMessageAsync($"<:TickYes:577838859107303424> `{DateTime.Now.ToString("HH:mm:ss")}` - `Shard {arg.ShardId} Connected`");
             if (Development)
             {
-                //await Interactions.RegisterCommandsToGuildAsync(418900885079588884, true);
+                await Interactions.RegisterCommandsToGuildAsync(418900885079588884, true);
             }
         }
         private async Task Client_ShardDisconnected(Exception arg1, DiscordSocketClient arg2)
