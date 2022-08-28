@@ -341,7 +341,6 @@ namespace Namiko
             await ReplyAsync($"You don't want **{waifu.Name}** anymore, huh...");
         }
 
-        [DefaultMemberPermissions(GuildPermission.ManageGuild)]
         [UserPermission(GuildPermission.ManageGuild)]
         [Command("ModShopAddWaifu"), Alias("msaddwaifu", "msaw"),
          Description("Adds a waifu to the mod shop. Available for everyone to purchase.\n**Usage**: `!msaw [waifu]`")]

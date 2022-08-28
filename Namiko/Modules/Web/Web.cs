@@ -41,16 +41,13 @@ namespace Namiko
             await ReplyAsync("", false, WebUtil.IqdbSourceResultEmbed(result, url).Build());
         }
 
-        [SlashCommand("sauceattackment", "asdf")]
-        public async Task SauceNaoAttachment(IAttachment file)
-        {
-            
-        }
+        [SlashCommand("sauce", "Finds the source of an image with SauceNao")]
+        public Task SauceNaoAttachment(IAttachment file) =>
+            SauceNaoCmd(file.Url);
 
         [Command("Source"), Alias("SauceNao", "Sauce"), Description("Finds the source of an image with SauceNao.\n**Usage**: `!source [image_url]` or `!source` with attached image.")]
-        [SlashCommand("sauce", "Finds the source of an image with SauceNao")]
-        public async Task SauceNao(string url = null)
-            => await SauceNaoCmd(url ?? ((ICommandContext)Context)?.Message?.Attachments?.FirstOrDefault()?.Url);
+        public Task SauceNao(string url = null) => 
+            SauceNaoCmd(url ?? ((ICommandContext)Context)?.Message?.Attachments?.FirstOrDefault()?.Url);
 
         public async Task SauceNaoCmd(string url)
         {

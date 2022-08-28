@@ -845,7 +845,6 @@ namespace Namiko
 
         [PermissionRole(RoleType.Music), UserPermission(GuildPermission.Administrator)]
         [Command("SetMusicRole"), Alias("smr"), Description("Adds or removes a role that is required for controlling music.\n**Usage**: `!smr [role_name]`")]
-        [SlashCommand("music-role", "Add/remove a role requirement for controlling the music player")]
         public async Task MusicRole(IRole role)
         {
             if (role == null)
@@ -868,7 +867,6 @@ namespace Namiko
         }
 
         [Command("MusicRoles"), Alias("mr"), Description("Lists roles that are able to control music.\n**Usage**: `!mr`")]
-        [SlashCommand("music-roles", "Show what roles are able to control the music player")]
         public async Task MusicRoles()
         {
             var dbRoles = PermissionRoleDb.GetAll(Context.Guild.Id, RoleType.Music);
