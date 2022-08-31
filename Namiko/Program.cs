@@ -78,6 +78,7 @@ namespace Namiko
                     GatewayIntents.GuildVoiceStates |
                     GatewayIntents.GuildMessages |
                     GatewayIntents.GuildInvites |
+                    GatewayIntents.GuildMessageReactions |
                     GatewayIntents.DirectMessages |
                     GatewayIntents.DirectMessageReactions
             });
@@ -114,7 +115,7 @@ namespace Namiko
             {
                 CaseSensitiveCommands = false,
                 DefaultRunMode = Discord.Commands.RunMode.Async,
-                LogLevel = LogSeverity.Debug
+                LogLevel = LogSeverity.Warning
             });
 
             // Commands.CommandExecuted += Commands_CommandExecuted;
@@ -146,7 +147,7 @@ namespace Namiko
 
             Interactions = new InteractionService(Client, new InteractionServiceConfig
             {
-                LogLevel = LogSeverity.Debug,
+                LogLevel = LogSeverity.Warning,
                 WildCardExpression = "*",
             });
             
@@ -285,7 +286,7 @@ namespace Namiko
                     await StartTimers();
                     if (!Development)
                         await Music.Initialize(Client);
-                    await Client.SetActivityAsync(new Game($"sussy bakas", ActivityType.Listening));
+                    await Client.SetActivityAsync(new Game($"with your waifu", ActivityType.Playing));
                 }
                 catch (Exception ex)
                 {
