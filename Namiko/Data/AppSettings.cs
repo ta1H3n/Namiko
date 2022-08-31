@@ -118,7 +118,8 @@ namespace Namiko
         {
             foreach (var prop in properties)
             {
-                if (prop.GetValue(null) == default)
+                var val = prop.GetValue(null);
+                if (val == default || (val is string && val.Equals("")))
                 {
                     Logger.Log($"AppSettings missing: {prop.Name}", Discord.LogSeverity.Warning);
                 }

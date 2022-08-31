@@ -1,5 +1,4 @@
 ﻿using Discord;
-using Discord.Addons.Interactive;
 using Discord.WebSocket;
 using Model;
 using Namiko.Modules.Basic;
@@ -18,33 +17,11 @@ namespace Namiko
     {
         private static readonly Random rnd = new Random();
 
-        public static async Task<LavaTrack> SelectTrack(List<LavaTrack> tracks, Music interactive)
+        public static async Task<LavaTrack> SelectTrack(List<LavaTrack> tracks, Music module)
         {
-            var msg = await interactive.Context.Channel.SendMessageAsync(embed: TrackSelectEmbed(tracks, (SocketGuildUser)interactive?.Context.User).Build());
-
-            var response = await interactive.NextMessageAsync(
-                new Criteria<IMessage>()
-                .AddCriterion(new EnsureSourceUserCriterion())
-                .AddCriterion(new EnsureSourceChannelCriterion())
-                .AddCriterion(new EnsureRangeCriterion(tracks.Count, Program.GetPrefix(interactive.Context))),
-                new TimeSpan(0, 0, 23));
-
-            _ = msg.DeleteAsync();
-            int i;
-            try
-            {
-                i = int.Parse(response.Content);
-            }
-            catch
-            {
-                _ = interactive.Context.Message.DeleteAsync();
-                return null;
-            }
-            _ = response.DeleteAsync();
-
-            return tracks[i - 1];
+            return await module.Select(tracks, "Track", TrackSelectEmbed(tracks, (SocketGuildUser)module?.Context.User).Build());
         }
-        public static async Task<List<LavaTrack>> SearchAndSelect(this LavaNode client, string query, Music interactive, int limit = 500)
+        public static async Task<List<LavaTrack>> SearchAndSelect(this LavaNode client, string query, Music module, int limit = 500)
         {
             List<LavaTrack> tracks;
             if (Uri.IsWellFormedUriString(query, UriKind.Absolute))
@@ -60,13 +37,13 @@ namespace Namiko
 
             if (tracks.Count <= 0)
             {
-                await interactive.ReplyAsync("*~ No Results ~*", Color.DarkRed.RawValue);
+                await module.ReplyAsync("*~ No Results ~*", Color.DarkRed.RawValue);
                 return null;
             }
 
-            var player = interactive.GetPlayer();
+            var player = module.GetPlayer();
             await player.PlayLocal("select");
-            var track = await SelectTrack(tracks, interactive);
+            var track = await SelectTrack(tracks, module);
             return track == null ? null : new List<LavaTrack>
             {
                 track
@@ -120,8 +97,6 @@ namespace Namiko
             }
 
             eb.AddField($"Search Results :musical_note:", str);
-            eb.WithDescription("Enter the number of the song you wish to select __");
-            eb.WithFooter("Times out in 23 seconds");
             return eb;
         }
         public static EmbedBuilder TrackListEmbed(IEnumerable<LavaTrack> tracks, IUser author = null, bool loop = false)

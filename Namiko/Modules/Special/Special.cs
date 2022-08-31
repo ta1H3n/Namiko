@@ -1,10 +1,12 @@
 ﻿using Discord;
-using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Model;
 using Model.Models.Users;
+using Namiko.Addons.Handlers;
+using Namiko.Handlers.Attributes;
+using Namiko.Handlers.Attributes.Preconditions;
 using Namiko.Modules.Basic;
 using Newtonsoft.Json;
 using Sentry;
@@ -16,12 +18,13 @@ using System.Net;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using PreconditionAttribute = Namiko.Handlers.Attributes.PreconditionAttribute;
 
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 
 namespace Namiko
 {
-    public class Special : InteractiveBase<ShardedCommandContext>
+    public class Special : CustomModuleBase<ICustomContext>
     {
         static ISocketMessageChannel ch;
 
@@ -29,7 +32,7 @@ namespace Namiko
         public async Task SetSayChannel(ulong id)
         {
             ch = Context.Client.GetChannel(id) as ISocketMessageChannel;
-            await Context.Channel.SendMessageAsync($"{ch.Name} set as say channel.");
+            await ReplyAsync($"{ch.Name} set as say channel.");
         }
 
         [Command("SayCh"), Alias("sch"), OwnerPrecondition]
@@ -47,63 +50,56 @@ namespace Namiko
         {
             ISocketMessageChannel ch = Context.Client.GetChannel(id) as ISocketMessageChannel;
             await ch.SendMessageAsync(str);
-            await Context.Channel.SendMessageAsync($"Saying in {ch.Name}:\n\n{str}");
+            await ReplyAsync($"Saying in {ch.Name}:\n\n{str}");
         }
 
-        [Command("Sayd"), Alias("sd"), OwnerPrecondition]
-        public async Task SayDelete([Remainder] string str)
-        {
-            await Context.Message.DeleteAsync();
-            await Context.Channel.SendMessageAsync(str);
-        }
-
-        [Command("Playing"), Summary("Sets the playing status."), OwnerPrecondition]
+        [Command("Playing"), Description("Sets the playing status."), OwnerPrecondition]
         public async Task Playing([Remainder] string str)
         {
             await Context.Client.SetGameAsync(str);
         }
 
-        [Command("Freeze"), Summary("Pauses or Unpauses the bot"), OwnerPrecondition]
-        public async Task Pause([Remainder] string str = "")
+        [Command("Freeze"), Description("Pauses or Unpauses the bot"), OwnerPrecondition]
+        public async Task Pause()
         {
             var pause = Program.SetPause();
-            await Context.Channel.SendMessageAsync($"Pause = {pause}");
+            await ReplyAsync($"Pause = {pause}");
         }
 
-        [Command("SQL"), Summary("Executes an SQL query. DANGEROUS"), OwnerPrecondition]
+        [Command("SQL"), Description("Executes an SQL query. DANGEROUS"), OwnerPrecondition]
         public async Task Sql([Remainder] string str = "")
         {
             try
             {
                 int res = await NamikoDbContext.ExecuteSQL(str);
-                await Context.Channel.SendMessageAsync($"{res} rows affected.");
+                await ReplyAsync($"{res} rows affected.");
             } catch (Exception ex)
             {
                 string err = $"Thrown: `{ex.Message}`\n";
                 if (ex.InnerException != null)
                     err += $"Inner: `{ex.InnerException.Message}`";
-                await Context.Channel.SendMessageAsync(err);
+                await ReplyAsync(err);
             }
         }
 
-        [Command("SSQL"), Summary("Executes an SQL query on the stats db. DANGEROUS"), OwnerPrecondition]
+        [Command("SSQL"), Description("Executes an SQL query on the stats db. DANGEROUS"), OwnerPrecondition]
         public async Task SSql([Remainder] string str = "")
         {
             try
             {
                 int res = await StatsDbContext.ExecuteSQL(str);
-                await Context.Channel.SendMessageAsync($"{res} rows affected.");
+                await ReplyAsync($"{res} rows affected.");
             }
             catch (Exception ex)
             {
                 string err = $"Thrown: `{ex.Message}`\n";
                 if (ex.InnerException != null)
                     err += $"Inner: `{ex.InnerException.Message}`";
-                await Context.Channel.SendMessageAsync(err);
+                await ReplyAsync(err);
             }
         }
 
-        [Command("SQLGET"), Summary("Executes an SQL GET query. DANGEROUS"), OwnerPrecondition]
+        [Command("SQLGET"), Description("Executes an SQL GET query. DANGEROUS"), OwnerPrecondition]
         public async Task SqlGet([Remainder] string str = "")
         {
             try
@@ -125,18 +121,18 @@ namespace Namiko
 
                 if (text.Length > 2000)
                     text = text.Substring(0, 1990) + "\n...```";
-                await Context.Channel.SendMessageAsync(text);
+                await ReplyAsync(text);
             }
             catch (Exception ex)
             {
                 string err = $"Thrown: `{ex.Message}`\n";
                 if (ex.InnerException != null)
                     err += $"Inner: `{ex.InnerException.Message}`";
-                await Context.Channel.SendMessageAsync(err);
+                await ReplyAsync(err);
             }
         }
 
-        [Command("SSQLGET"), Summary("Executes an SQL GET query on the stats db. DANGEROUS"), OwnerPrecondition]
+        [Command("SSQLGET"), Description("Executes an SQL GET query on the stats db. DANGEROUS"), OwnerPrecondition]
         public async Task SSqlGet([Remainder] string str = "")
         {
             try
@@ -158,18 +154,18 @@ namespace Namiko
 
                 if (text.Length > 2000)
                     text = text.Substring(0, 1990) + "\n...```";
-                await Context.Channel.SendMessageAsync(text);
+                await ReplyAsync(text);
             }
             catch (Exception ex)
             {
                 string err = $"Thrown: `{ex.Message}`\n";
                 if (ex.InnerException != null)
                     err += $"Inner: `{ex.InnerException.Message}`";
-                await Context.Channel.SendMessageAsync(err);
+                await ReplyAsync(err);
             }
         }
 
-        [Command("Die"), Summary("Kills Namiko"), Insider]
+        [Command("Die"), Description("Kills Namiko"), Insider]
         public async Task Die()
         {
             var tasks = new List<Task>();
@@ -191,49 +187,49 @@ namespace Namiko
             cts.Cancel();
         }
 
-        [Command("GetInvite"), Summary("Gets an invite to a server"), OwnerPrecondition]
-        public async Task GetInvite(ulong id, [Remainder] string str = "")
+        [Command("GetInvite"), Description("Gets an invite to a server"), OwnerPrecondition]
+        public async Task GetInvite(ulong id)
         {
             var guild = Context.Client.GetGuild(id);
             var invite = (await guild.GetInvitesAsync()).FirstOrDefault();
-            await Context.Channel.SendMessageAsync(invite == null ? "Nada." : invite.Url);
+            await ReplyAsync(invite == null ? "Nada." : invite.Url);
         }
 
-        [Command("CreateInvite"), Summary("Creates an invite to a server"), OwnerPrecondition]
-        public async Task CreateInvite(ulong id, [Remainder] string str = "")
+        [Command("CreateInvite"), Description("Creates an invite to a server"), OwnerPrecondition]
+        public async Task CreateInvite(ulong id)
         {
             var guild = Context.Client.GetGuild(id);
             var invite = guild.TextChannels.FirstOrDefault();
-            await Context.Channel.SendMessageAsync(invite == null ? "Nada." : (await invite.CreateInviteAsync()).Url);
+            await ReplyAsync(invite == null ? "Nada." : (await invite.CreateInviteAsync()).Url);
         }
 
-        [Command("NewWelcome"), Alias("nwlc"), Summary("Adds a new welcome message. @_ will be replaced with a mention.\n**Usage**: `!nw [welcome]`"), Insider]
+        [Command("NewWelcome"), Alias("nwlc"), Description("Adds a new welcome message. @_ will be replaced with a mention.\n**Usage**: `!nw [welcome]`"), Insider]
         public async Task NewWelcome([Remainder] string message)
         {
             if (message.Length < 20)
             {
-                await Context.Channel.SendMessageAsync("Message must be longer than 20 characters.");
+                await ReplyAsync("Message must be longer than 20 characters.");
                 return;
             }
             await WelcomeMessageDb.AddMessage(message);
-            await Context.Channel.SendMessageAsync("Message added: '" + message.Replace("@_", Context.User.Mention) + "'");
+            await ReplyAsync("Message added: '" + message.Replace("@_", Context.User.Mention) + "'");
         }
 
-        [Command("DeleteWelcome"), Alias("dw", "delwelcome"), Summary("Deletes a welcome message by ID.\n**Usage**: `!dw [id]`"), Insider]
+        [Command("DeleteWelcome"), Alias("dw", "delwelcome"), Description("Deletes a welcome message by ID.\n**Usage**: `!dw [id]`"), Insider]
         public async Task DeleteWelcome(int id)
         {
 
             WelcomeMessage message = WelcomeMessageDb.GetMessage(id);
             if (message == null)
-                await Context.Channel.SendMessageAsync($"Message with id: {id} not found");
+                await ReplyAsync($"Message with id: {id} not found");
             else
             {
                 await WelcomeMessageDb.DeleteMessage(id);
-                await Context.Channel.SendMessageAsync($"Deleted welcome message with id: {id}");
+                await ReplyAsync($"Deleted welcome message with id: {id}");
             }
         }
 
-        [Command("StartLavalink"), Summary("Starts Lavalink.\n**Usage**: `!join`"), Insider]
+        [Command("StartLavalink"), Description("Starts Lavalink.\n**Usage**: `!join`"), Insider]
         public async Task Init([Remainder]string str = "")
         {
             await Music.Initialize(Program.GetClient());
@@ -246,7 +242,7 @@ namespace Namiko
             var voters = (await WebUtil.GetVotersAsync()).Select(x => x.Id).Distinct();
             int sent = await Timers.SendRewards(voters);
 
-            Context.Channel.SendMessageAsync($"Broadcasted to {sent}/{voters.Count()} users.");
+            ReplyAsync($"Broadcasted to {sent}/{voters.Count()} users.");
         }
 
         [Command("MessageVoters"), OwnerPrecondition]
@@ -266,34 +262,34 @@ namespace Namiko
                 catch { }
             }
 
-            Context.Channel.SendMessageAsync($"Broadcasted to {sent}/{voters.Count()} users.");
+            ReplyAsync($"Broadcasted to {sent}/{voters.Count()} users.");
         }
 
         [Command("Debug"), OwnerPrecondition]
         public async Task Debug([Remainder] string msg = "")
         {
             var commands = Program.GetCommands();
-            var processed = System.DateTime.Now.AddMinutes(-10);
+            var processed = DateTime.Now.AddMinutes(-10);
+            var context = (ICommandContext)Context;
 
             async Task listen(Optional<CommandInfo> arg1, ICommandContext arg2, IResult arg3)
             {
-                if (arg2.Message.Equals(Context.Message) && arg1.Value.Name != "Debug")
+                if (arg2.Message.Equals(context.Message) && arg1.Value.Name != "Debug")
                 {
                     processed = System.DateTime.Now;
                     await Task.Delay(1);
                 }
-                Console.WriteLine("Command debugger");
             }
             commands.CommandExecuted += listen;
 
             var received = System.DateTime.Now;
             string prefix = Program.GetPrefix(Context);
             int ArgPos = 0;
-            bool isPrefixed = Context.Message.HasStringPrefix(prefix + "debug ", ref ArgPos);
-            var result = await commands.ExecuteAsync(Context, ArgPos, Program.GetServices());
+            bool isPrefixed = context.Message.HasStringPrefix(prefix + "debug ", ref ArgPos);
+            var result = await commands.ExecuteAsync(context, ArgPos, Program.GetServices());
 
             //var processed = System.DateTime.Now;
-            var message = await Context.Channel.SendMessageAsync("`Counting...`");
+            var message = await ReplyAsync("`Counting...`");
             await Task.Delay(5000);
             commands.CommandExecuted -= listen;
 
@@ -311,14 +307,14 @@ namespace Namiko
         [Command("ImgurAuth"), OwnerPrecondition]
         public async Task ImgurAuth([Remainder] string msg = "")
         {
-            await Context.Channel.SendMessageAsync(ImgurAPI.GetAuthorizationUrl());
+            await ReplyAsync(ImgurAPI.GetAuthorizationUrl());
         }
 
         [Command("SetImgurRefreshToken"), Alias("sirt"), OwnerPrecondition]
         public async Task SetImgurRefreshToken(string refreshToken, [Remainder] string msg = "")
         {
             ImgurAPI.SetRefreshToken(refreshToken);
-            await Context.Channel.SendMessageAsync("Done.");
+            await ReplyAsync("Done.");
         }
 
         [Command("TestEmbed"), OwnerPrecondition] 
@@ -407,13 +403,15 @@ namespace Namiko
 
             ISocketMessageChannel ch = Context.Client.GetChannel(id) as ISocketMessageChannel;
             await ch.SendMessageAsync(embed: eb.Build());
-            await Context.Channel.SendMessageAsync($"Saying in {ch.Name}", false, embed: eb.Build());
+            await ReplyAsync($"Saying in {ch.Name}", false, embed: eb.Build());
         }
 
-        [Command("DownloadFiles"), Summary("Downloads files from a channel.\n**Usage**: `!DownloadImages [path] [amount] [skip] [channel_id}`"), OwnerPrecondition]
+        [Command("DownloadFiles"), Description("Downloads files from a channel.\n**Usage**: `!DownloadImages [path] [amount] [skip] [channel_id}`"), OwnerPrecondition]
         public async Task DownloadFiles(string path, int amount, int skip = 0, ulong channelId = 0)
         {
-            await Context.Message.DeleteAsync();
+            var context = (ICommandContext)Context;
+
+            await context.Message.DeleteAsync();
             var ch = channelId == 0 ? Context.Channel : (ISocketMessageChannel) Context.Client.GetChannel(channelId);
             var messages = await ch.GetMessagesAsync(amount, CacheMode.AllowDownload).FlattenAsync();
 
@@ -484,8 +482,8 @@ namespace Namiko
             Console.WriteLine("Total: " + total);
         }
 
-        [Command("CreateCommandSchema"), Summary("Copies command info to the database"), OwnerPrecondition]
-        public async Task CreateCommandSchema([Remainder] string str = "")
+        [Command("CreateCommandSchema"), Description("Copies command info to the database"), OwnerPrecondition]
+        public async Task CreateCommandSchema()
         {
             var cmds = Program.GetCommands();
 
@@ -518,19 +516,22 @@ namespace Namiko
                         }
                     }
 
-                    foreach (var x in command.Preconditions)
+                    foreach (var x in command.Attributes)
                     {
-                        if (x is RequireUserPermissionAttribute)
+                        if (x is UserPermissionAttribute)
                         {
-                            var prec = x as RequireUserPermissionAttribute;
-                            cmd.Conditions += prec.ChannelPermission != null ? $"{prec.ChannelPermission}," : "";
-                            cmd.Conditions += prec.GuildPermission != null ? $"{prec.GuildPermission}," : "";
+                            var prec = x as UserPermissionAttribute;
+                            cmd.Conditions += $"User:{prec.Name},";
                         }
-
-                        else if (x is CustomPrecondition)
+                        else if (x is BotPermissionAttribute)
                         {
-                            var prec = x as CustomPrecondition;
-                            cmd.Conditions += $"{prec.GetName()},";
+                            var prec = x as BotPermissionAttribute;
+                            cmd.Conditions += $"Bot:{prec.Name},";
+                        }
+                        else if (x is PreconditionAttribute)
+                        {
+                            var prec = x as PreconditionAttribute;
+                            cmd.Conditions += $"{prec.Name},";
                         }
                     }
 
@@ -553,7 +554,7 @@ namespace Namiko
             await ReplyAsync($"Updated db command list. {res} rows affected.");
         }
 
-        [Command("LeaveInactiveGuildsTest"), Summary("Rundown of how many guilds are inactive.\n**Usage**: `!LeaveInactiveGuildsTest [inactive_days] [new_servers_days]`"), OwnerPrecondition]
+        [Command("LeaveInactiveGuildsTest"), Description("Rundown of how many guilds are inactive.\n**Usage**: `!LeaveInactiveGuildsTest [inactive_days] [new_servers_days]`"), OwnerPrecondition]
         public async Task LeaveInactiveGuildsTest(int days, int newDays)
         {
             string desc = "";
@@ -586,15 +587,15 @@ namespace Namiko
                     $"NTR: {guilds.Any(x => x.Id == 418900885079588884)}\n\n";
             }
 
-            await Context.Channel.SendMessageAsync(desc);
+            await ReplyAsync(desc);
         }
 
-        [Command("LeaveInactiveGuilds"), Summary("Leave all inactive guilds.\n**Usage**: `!LeaveInactiveGuilds [inactive_days] [new_servers_days] [ms_delay_per_task]`"), OwnerPrecondition]
+        [Command("LeaveInactiveGuilds"), Description("Leave all inactive guilds.\n**Usage**: `!LeaveInactiveGuilds [inactive_days] [new_servers_days] [ms_delay_per_task]`"), OwnerPrecondition]
         public async Task LeaveInactiveGuilds(int days, int newDays, int delay)
         {
             if (days < 14)
             {
-                await Context.Channel.SendMessageAsync("Less than 14 days illegal");
+                await ReplyAsync("Less than 14 days illegal");
                 return;
             }
 
@@ -628,13 +629,13 @@ namespace Namiko
                     $"NTR: {guilds.Any(x => x.Id == 418900885079588884)}\n\n";
 
                 desc += "Leaving filtered guilds...";
-                await Context.Channel.SendMessageAsync(desc);
+                await ReplyAsync(desc);
 
                 Program.GuildLeaveEvent = false;
 
                 if (guilds.Count >= Program.GetClient().Guilds.Count)
                 {
-                    await Context.Channel.SendMessageAsync("Filtered same or higher than all. Cancelling.");
+                    await ReplyAsync("Filtered same or higher than all. Cancelling.");
                     return;
                 }
                 int s = 0;
@@ -660,7 +661,7 @@ namespace Namiko
                     {
                         try
                         {
-                            _ = Context.Channel.SendMessageAsync($"Left: {s}\n" +
+                            _ = ReplyAsync($"Left: {s}\n" +
                                 $"Failed: {f}\n" +
                                 $"Dms: {dm}\n" +
                                 $"Remaining: {guilds.Count - s - f}");
@@ -671,7 +672,7 @@ namespace Namiko
                     await Task.Delay(delay);
                 }
 
-                await Context.Channel.SendMessageAsync($"Left: {s}\n" +
+                await ReplyAsync($"Left: {s}\n" +
                     $"Failed: {f}\n" +
                     $"Dms: {dm}\n" +
                     $"Done.");
@@ -680,15 +681,15 @@ namespace Namiko
             }
         }
 
-        [Command("GuildLeaveEvent"), Summary("Set guild leave tracking."), OwnerPrecondition]
-        public async Task GuildLeaveEvent([Remainder] string str = "")
+        [Command("GuildLeaveEvent"), Description("Set guild leave tracking."), OwnerPrecondition]
+        public async Task GuildLeaveEvent()
         {
             Program.GuildLeaveEvent = !Program.GuildLeaveEvent;
-            await Context.Channel.SendMessageAsync(Program.GuildLeaveEvent.ToString());
+            await ReplyAsync(Program.GuildLeaveEvent.ToString());
         }
 
-        [Command("TestCode"), Summary("Test code."), OwnerPrecondition]
-        public async Task GenerateCode(string code, [Remainder] string str = "")
+        [Command("TestCode"), Description("Test code."), OwnerPrecondition]
+        public async Task GenerateCode(string code)
         {
             string desc = "```yaml\n";
             var example = await PremiumCodeDb.TestCode(code);
@@ -698,11 +699,11 @@ namespace Namiko
             }
             desc += "```";
 
-            await Context.Channel.SendMessageAsync(desc);
+            await ReplyAsync(desc);
         }
 
-        [Command("GenerateCodes"), Summary("Generate trial codes. 0 to pass null into optionals.\n**Usage**: `!GenerateCodes ProType type, int durationDays, int useAmount, int codeAmount, string prefix, string id, int codeExpiresInDays`"), OwnerPrecondition]
-        public async Task GenerateCode(ProType type, int durationDays, int useAmount, int codeAmount, string prefix, string id, int codeExpiresInDays, [Remainder] string str = "")
+        [Command("GenerateCodes"), Description("Generate trial codes. 0 to pass null into optionals.\n**Usage**: `!GenerateCodes ProType type, int durationDays, int useAmount, int codeAmount, string prefix, string id, int codeExpiresInDays`"), OwnerPrecondition]
+        public async Task GenerateCode(ProType type, int durationDays, int useAmount, int codeAmount, string prefix, string id, int codeExpiresInDays)
         {
             prefix = prefix == "0" ? null : prefix;
             id = id == "0" ? null : id;
@@ -724,7 +725,7 @@ namespace Namiko
             }
             desc += "```";
 
-            await Context.Channel.SendMessageAsync(desc);
+            await ReplyAsync(desc);
         }
 
         [Command("GetVoters")]

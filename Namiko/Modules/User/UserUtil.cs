@@ -1,9 +1,8 @@
 ﻿using Discord;
-using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Model;
-using Newtonsoft.Json.Converters;
+using Namiko.Addons.Handlers;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -326,40 +325,9 @@ namespace Namiko
         {
             return marriage.UserId == userId ? marriage.WifeId : marriage.UserId;
         }
-        public async static Task<Marriage> SelectMarriage(List<Marriage> marriages, InteractiveBase<ShardedCommandContext> interactive)
+        public async static Task<Marriage> SelectMarriage(List<Marriage> marriages, CustomModuleBase<ICustomContext> module)
         {
-            if (interactive != null)
-            {
-                if (marriages.Count > 0)
-                {
-                    var msg = await interactive.Context.Channel.SendMessageAsync(embed: ListMarriageEmbed(marriages, interactive.Context.User)
-                        .WithDescription("Enter the number of the user you wish to select.")
-                        .WithFooter("Times out in 23 seconds.")
-                        .Build());
-                    var response = await interactive.NextMessageAsync(
-                        new Criteria<IMessage>()
-                        .AddCriterion(new EnsureSourceUserCriterion())
-                        .AddCriterion(new EnsureSourceChannelCriterion())
-                        .AddCriterion(new EnsureRangeCriterion(marriages.Count, Program.GetPrefix(interactive.Context))),
-                        new TimeSpan(0, 0, 23));
-
-                    _ = msg.DeleteAsync();
-                    int i;
-                    try
-                    {
-                        i = int.Parse(response.Content);
-                    }
-                    catch
-                    {
-                        _ = interactive.Context.Message.DeleteAsync();
-                        return null;
-                    }
-                    _ = response.DeleteAsync();
-
-                    return marriages[i - 1];
-                }
-            }
-            return null;
+            return await module.Select(marriages, "Spouse", embed: ListMarriageEmbed(marriages, module.Context.User).Build());
         }
     }
 }

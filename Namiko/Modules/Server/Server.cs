@@ -1,28 +1,32 @@
 ﻿using Discord;
-using Discord.Addons.Interactive;
 using Discord.Commands;
-using Discord.Webhook;
 using Discord.WebSocket;
 using Model;
+using Namiko.Addons.Handlers;
+using Namiko.Handlers.Attributes;
+using Namiko.Handlers.Attributes.Preconditions;
 using Namiko.Modules.Basic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord.Interactions;
 
 namespace Namiko
 {
     [RequireGuild]
     [Name("Server")]
-    public class ServerModule : InteractiveBase<ShardedCommandContext>
+    public class ServerModule : CustomModuleBase<ICustomContext>
     {
-        [Command("Server"), Alias("serverinfo", "guild", "stats"), Summary("Stats about the server.\n**Usage**: `!server`")] 
-        public async Task ServerInfo([Remainder] string str = "")
+        [Command("Server"), Alias("serverinfo", "guild", "stats"), Description("Stats about the server.\n**Usage**: `!server`")] 
+        [SlashCommand("server", "Show server stats")]
+        public async Task ServerInfo()
         {
-            await Context.Channel.SendMessageAsync("", false, (await ServerUtil.ServerInfo(Context.Guild)).Build());
+            await ReplyAsync("", false, (await ServerUtil.ServerInfo(Context.Guild)).Build());
         }
 
-        [Command("SetPrefix"), Alias("sp", "sbp", "setbotprefix"), Summary("Sets a prefix for the bot in the server.\n**Usage**: `!sp [prefix]`"), CustomUserPermission(GuildPermission.ManageMessages)]
+        [UserPermission(GuildPermission.ManageMessages)]
+        [Command("SetPrefix"), Alias("sp", "sbp", "setbotprefix"), Description("Sets a prefix for the bot in the server.\n**Usage**: `!sp [prefix]`")]
         public async Task SetBotPrefix(string prefix)
         {
             if (prefix.Length < 1)
@@ -33,17 +37,19 @@ namespace Namiko
             server.Prefix = prefix;
             await ServerDb.UpdateServer(server);
             Program.UpdatePrefix(Context.Guild.Id, prefix);
-            await Context.Channel.SendMessageAsync($"My prefix is now `{prefix}`");
+            await ReplyAsync($"My prefix is now `{prefix}`");
         }
 
-        [Command("Prefix"), Alias("sp", "sbp", "setbotprefix"), Summary("View the current prefix.\n**Usage**: `!sp [prefix]`")]
-        public async Task Prefix([Remainder] string str = "")
+        [Command("Prefix"), Alias("sp", "sbp", "setbotprefix"), Description("View the current prefix.\n**Usage**: `!sp [prefix]`")]
+        public async Task Prefix()
         {
             var prefix = Program.GetPrefix(Context);
-            await Context.Channel.SendMessageAsync($"My current prefix is `{prefix}`.\nYou can change it by typing `{prefix}sp [new_prefix]` without the brackets :fox:");
+            await ReplyAsync($"My current prefix is `{prefix}`.\nYou can change it by typing `{prefix}sp [new_prefix]` without the brackets :fox:");
         }
 
-        [Command("SetJoinLogChannel"), Alias("jch", "jlch", "sjch", "sjlch"), Summary("Sets a channel to log users joining/leaving the guild.\n**Usage**: `!jlch`"), CustomUserPermission(GuildPermission.ManageChannels)]
+        [UserPermission(GuildPermission.ManageChannels)]
+        [Command("SetJoinLogChannel"), Alias("jch", "jlch", "sjch", "sjlch"), Description("Sets a channel to log users joining/leaving the guild.\n**Usage**: `!jlch`")]
+        [SlashCommand("channel-join-log", "Set a channel to log users joining and leaving")]
         public async Task SetJoinLogChannel()
         {
             var server = ServerDb.GetServer(Context.Guild.Id);
@@ -52,16 +58,18 @@ namespace Namiko
             {
                 server.JoinLogChannelId = 0;
                 await ServerDb.UpdateServer(server);
-                await Context.Channel.SendMessageAsync("Join Log channel removed.");
+                await ReplyAsync("Join Log channel removed.");
                 return;
             }
 
             server.JoinLogChannelId = Context.Channel.Id;
             await ServerDb.UpdateServer(server);
-            await Context.Channel.SendMessageAsync("Join Log channel set.");
+            await ReplyAsync("Join Log channel set.");
         }
 
-        [Command("SetTeamLogChannel"), Alias("tch"), Summary("Sets a channel to log users joining/leaving teams.\n**Usage**: `!tlch`"), CustomUserPermission(GuildPermission.ManageChannels)]
+        [UserPermission(GuildPermission.ManageChannels)]
+        [Command("SetTeamLogChannel"), Alias("tch"), Description("Sets a channel to log users joining/leaving teams.\n**Usage**: `!tlch`")]
+        [SlashCommand("channel-team-log", "Set a channel to log users joining and leaving teams")]
         public async Task SetTeamLogChannel()
         {
             var server = ServerDb.GetServer(Context.Guild.Id);
@@ -70,16 +78,18 @@ namespace Namiko
             {
                 server.TeamLogChannelId = 0;
                 await ServerDb.UpdateServer(server);
-                await Context.Channel.SendMessageAsync("Team Log channel removed.");
+                await ReplyAsync("Team Log channel removed.");
                 return;
             }
 
             server.TeamLogChannelId = Context.Channel.Id;
             await ServerDb.UpdateServer(server);
-            await Context.Channel.SendMessageAsync("Team Log channel set.");
+            await ReplyAsync("Team Log channel set.");
         }
 
-        [Command("SetWelcomeChannel"), Alias("wch"), Summary("Sets a channel to welcome members.\n**Usage**: `!wch`"), CustomUserPermission(GuildPermission.ManageChannels)]
+        [UserPermission(GuildPermission.ManageChannels)]
+        [Command("SetWelcomeChannel"), Alias("wch"), Description("Sets a channel to welcome members.\n**Usage**: `!wch`")]
+        [SlashCommand("channel-welcome", "Sets a channel to welcome members")]
         public async Task SetWelcomeChannel()
         {
             var server = ServerDb.GetServer(Context.Guild.Id);
@@ -88,16 +98,17 @@ namespace Namiko
             {
                 server.WelcomeChannelId = 0;
                 await ServerDb.UpdateServer(server);
-                await Context.Channel.SendMessageAsync("Welcome channel removed.");
+                await ReplyAsync("Welcome channel removed.");
                 return;
             }
 
             server.WelcomeChannelId = Context.Channel.Id;
             await ServerDb.UpdateServer(server);
-            await Context.Channel.SendMessageAsync("Welcome channel set.");
+            await ReplyAsync("Welcome channel set.");
         }
 
-        [Command("BlacklistChannel"), Alias("blch"), Summary("Disables or enables bot commands in a channel.\n**Usage**: `!blch [optional_channel_id]`"), CustomUserPermission(GuildPermission.ManageChannels)]
+        [UserPermission(GuildPermission.ManageChannels)]
+        [Command("BlacklistChannel"), Alias("blch"), Description("Disables or enables bot commands in a channel.\n**Usage**: `!blch [optional_channel_id]`")]
         public async Task BlacklistChannel(ulong channelId = 0)
         {
             if (channelId == 0)
@@ -105,119 +116,23 @@ namespace Namiko
 
             else if(Context.Guild.GetChannel(channelId) == null)
             {
-                await Context.Channel.SendMessageAsync("Can't find channel.");
+                await ReplyAsync("Can't find channel.");
                 return;
             }
 
             if(BlacklistedChannelDb.IsBlacklisted(channelId))
             {
                 await BlacklistedChannelDb.DeleteBlacklistedChannel(channelId);
-                await Context.Channel.SendMessageAsync("Channel unblacklisted.");
+                await ReplyAsync("Channel unblacklisted.");
                 return;
             }
 
             await BlacklistedChannelDb.UpdateBlacklistedChannel(new BlacklistedChannel { ChannelId = channelId });
-            await Context.Channel.SendMessageAsync($"Channel blacklisted. Use `{Program.GetPrefix(Context)}blch [channel_id]` in another channel to undo.\n The ID of this channel is `{Context.Channel.Id}`.");
+            await ReplyAsync($"Channel blacklisted. Use `{Program.GetPrefix(Context)}blch [channel_id]` in another channel to undo.\n The ID of this channel is `{Context.Channel.Id}`.");
         }
 
-        //[Command("ListWelcomes"), Alias("lw"), Summary("Lists all welcomes and their IDs.")]
-        //public async Task ListWelcome()
-        //{
-
-        //    List<WelcomeMessage> messages = WelcomeMessageDb.GetMessages();
-        //    string list = @"```";
-        //    foreach (WelcomeMessage x in messages)
-        //    {
-        //        list += x.Id + ". ";
-        //        list += x.Message;
-        //        list += '\n';
-        //    }
-        //    list += "```";
-        //    await Context.Channel.SendMessageAsync(list);
-        //}
-
-        [Command("ActivateProGuild"), Alias("asp", "ActivateServerPremium", "apg"), Summary("Activates pro guild in the current server.\n**Usage**: `!asp [tier]`")]
-        public async Task ActivateServerPremium([Remainder] string str = "")
-        {
-            var ntr = Context.Client.GetGuild((ulong)ProType.HomeGuildId_NOTAPREMIUMTYPE);
-            SocketGuildUser user = ntr.GetUser(Context.User.Id);
-
-            if (user == null)
-            {
-                await Context.Channel.SendMessageAsync($"You are not in my server! {LinkHelper.SupportServerInvite}");
-                return;
-            }
-
-            var current = PremiumDb.GetGuildPremium(Context.Guild.Id);
-            var roles = user.Roles;
-
-            bool log = false;
-            string text = "";
-            foreach (var role in roles)
-            {
-                if (role.Id == (ulong)ProType.GuildPlus)
-                {
-                    if (current.Any(x => x.Type == ProType.GuildPlus))
-                    {
-                        text += "**Pro Guild+** is already activated in this server!\n";
-                    }
-                    else
-                    {
-                        if (PremiumDb.IsPremium(user.Id, ProType.GuildPlus))
-                            text += "You used your **Pro Guild+** premium upgrade in another server...\n";
-
-                        else
-                        {
-                            await PremiumDb.AddPremium(user.Id, ProType.GuildPlus, Context.Guild.Id);
-                            try
-                            {
-                                await PremiumDb.DeletePremium(PremiumDb.GetGuildPremium(Context.Guild.Id).FirstOrDefault(x => x.Type == ProType.Guild));
-                            }
-                            catch { }
-                            text += "**Pro Guild+** activated!\n";
-                            log = true;
-                        }
-                    }
-                    break;
-                }
-                if (role.Id == (ulong)ProType.Guild)
-                {
-                    if (current.Any(x => x.Type == ProType.GuildPlus))
-                        text += "**Pro Guild+** is already activated in this server!\n";
-                    else if (current.Any(x => x.Type == ProType.Guild))
-                        text += "**Pro Guild** is already activated in this server!\n";
-                    else
-                    {
-                        if (PremiumDb.IsPremium(user.Id, ProType.Guild))
-                            text += "You used your **Pro Guild** premium upgrade in another server...\n";
-
-                        else
-                        {
-                            await PremiumDb.AddPremium(user.Id, ProType.Guild, Context.Guild.Id);
-                            text += "**Pro Guild** activated!\n";
-                            log = true;
-                        }
-                    }
-                    break;
-                }
-            }
-            if (text == "")
-                text += $"You have no Pro Guild... Try `{Program.GetPrefix(Context)}Pro`";
-
-            await Context.Channel.SendMessageAsync(text);
-            if (log)
-            {
-                await WebhookClients.PremiumLogChannel.SendMessageAsync(embeds: new List<Embed>
-                    {
-                        new EmbedBuilderPrepared(Context.User)
-                            .WithDescription($"{Context.User.Mention} `{Context.User.Id}`\n{Context.Guild.Name} `{Context.Guild.Id}`\n{text}")
-                            .WithFooter(System.DateTime.Now.ToLongDateString())
-                            .Build()
-                    });
-            }
-        }
-
-        [Command("ToggleModule"), Alias("tm"), Summary("Disables or enables a command module.\n**Usage**: `!tm [module_name]`"), CustomUserPermission(GuildPermission.Administrator)]
+        [UserPermission(GuildPermission.Administrator)]
+        [Command("ToggleModule"), Alias("tm"), Description("Disables or enables a command module.\n**Usage**: `!tm [module_name]`")]
         public async Task ToggleModule([Remainder] string name)
         {
             var cmdService = Program.GetCommands();
@@ -248,7 +163,8 @@ namespace Namiko
             }
         }
 
-        [Command("ToggleCommand"), Alias("tc"), Summary("Disables or enables a command.\n**Usage**: `!tc [command_name]`"), CustomUserPermission(GuildPermission.Administrator)]
+        [UserPermission(GuildPermission.Administrator)]
+        [Command("ToggleCommand"), Alias("tc"), Description("Disables or enables a command.\n**Usage**: `!tc [command_name]`")]
         public async Task ToggleCommand([Remainder] string name)
         {
             var cmdService = Program.GetCommands();
@@ -282,23 +198,24 @@ namespace Namiko
             }
         }
 
-        [Command("ToggleReactionImages"), Alias("tri"), Summary("Disables or enables reaction images.\n**Usage**: `!tri`"), CustomUserPermission(GuildPermission.Administrator)]
-        public async Task ToggleReactionImages([Remainder] string name = "")
+        [UserPermission(GuildPermission.Administrator)]
+        [Command("ToggleReactionImages"), Alias("tri"), Description("Disables or enables reaction images.\n**Usage**: `!tri`")]
+        public async Task ToggleReactionImages()
         {
-            if (await DisabledCommandHandler.AddNew(name, Context.Guild.Id, DisabledCommandType.Images))
+            if (await DisabledCommandHandler.AddNew("ReactionImages", Context.Guild.Id, DisabledCommandType.Images))
             {
                 await ReplyAsync($":star: **Reaction images** disabled... Use the same command again to re-enable");
                 return;
             }
             else
             {
-                await DisabledCommandHandler.Remove(name, Context.Guild.Id, DisabledCommandType.Images);
+                await DisabledCommandHandler.Remove("ReactionImages", Context.Guild.Id, DisabledCommandType.Images);
                 await ReplyAsync($":star: **Reaction images** re-enabled.");
                 return;
             }
         }
 
-        [Command("ListDisabledCommands"), Alias("ldc"), Summary("Lists all disabled modules and commands.\n**Usage**: `!ldc`")]
+        [Command("ListDisabledCommands"), Alias("ldc"), Description("Lists all disabled modules and commands.\n**Usage**: `!ldc`")]
         public async Task ListDisabledCommands([Remainder] string name = "")
         {
             string modules = "-";

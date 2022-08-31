@@ -1,18 +1,22 @@
 ﻿using Discord;
-using Discord.Addons.Interactive;
 using Discord.Commands;
+using Discord.Interactions;
 using Model;
+using Namiko.Addons.Handlers;
+using Namiko.Handlers.Attributes;
+using Namiko.Handlers.Attributes.Preconditions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Namiko.Handlers.Autocomplete;
 
 namespace Namiko
 {
     [Name("Reaction Images")]
-    public class Images : InteractiveBase<ShardedCommandContext>
+    public class Images : CustomModuleBase<ICustomContext>
     {
-        public static HashSet<string> ReactionImageCommands { get; set; }
+        public static Dictionary<ulong, HashSet<string>> ReactionImageCommands { get; set; }
 
         public async Task<bool> SendRandomImage(ICommandContext Context)
         {
@@ -21,37 +25,83 @@ namespace Namiko
                 return false;
             }
 
-            string text = Context.Message.Content;
-            text = text.Replace(Program.GetPrefix(Context.Guild), "");
-            text = text.Split(' ')[0];
-
-            if (!ReactionImageCommands.Contains(text))
-                return false;
-
-            text = text.ToLower();
-            var image = Context.Guild == null ? null : ImageDb.GetRandomImage(text, Context.Guild.Id);
-            if (image == null)
-            {
-                image = ImageDb.GetRandomImage(text);
-                if(image == null)
-                    return false;
-            }
-
             if (!RateLimit.CanExecute(Context.Channel.Id))
             {
-                await Context.Channel.SendMessageAsync($"Woah there, Senpai, calm down! I locked this channel for **{RateLimit.InvokeLockoutPeriod.Seconds}** seconds <:MeguExploded:627470499278094337>\n" +
-                    $"You can only use **{RateLimit.InvokeLimit}** commands per **{RateLimit.InvokeLimitPeriod.Seconds}** seconds per channel.");
+                await ReplyAsync($"Woah there, Senpai, calm down! I locked this channel for **{RateLimit.InvokeLockoutPeriod.Seconds}** seconds <:MeguExploded:627470499278094337>\n" +
+                                 $"You can only use **{RateLimit.InvokeLimit}** commands per **{RateLimit.InvokeLimitPeriod.Seconds}** seconds per channel.");
+                return false;
+            }
+
+            string text = Context.Message.Content;
+            text = text.Replace(Program.GetPrefix(Context.Guild), "");
+            text = text.Split(' ')[0].ToLower();
+
+            ReactionImage image;
+            if (Context?.Guild.Id != null && ReactionImageCommands.ContainsKey(Context.Guild.Id) && ReactionImageCommands[Context.Guild.Id].Contains(text))
+            {
+                image = ImageDb.GetRandomImage(text, Context.Guild.Id);
+            }
+            else if (ReactionImageCommands[0].Contains(text))
+            {
+                image = ImageDb.GetRandomImage(text);
+            }
+            else
+            {
+                await ReplyAsync("Not an image command", ephemeral: true);
                 return false;
             }
 
             var embed = ImageUtil.ToEmbed(image).Build();
-            await Context.Channel.SendMessageAsync("", false, embed);
+            await ReplyAsync("", false, embed);
             return true;
         }
 
-        [Command("List"), Alias("ListAll", "Images", "Albums"), Summary("List of all image commands and how many images there are.\n**Usage**: `!list`")]
-        public async Task List([Remainder] string str = "")
+        [SlashCommand("image", "Send a reaction image")]
+        public async Task SendImage([Autocomplete(typeof(ReactionImageAutocomplete))] string name = null, int imageId = 0)
         {
+            if (imageId != 0)
+            {
+                Image(imageId);
+                return;
+            }
+
+            if (name == null)
+            {
+                await ReplyAsync("Not an image command", ephemeral: true);
+                return;
+            }
+            
+            name = name.ToLower();
+
+            ReactionImage image;
+            if (Context?.Guild.Id != null && ReactionImageCommands.ContainsKey(Context.Guild.Id) && ReactionImageCommands[Context.Guild.Id].Contains(name))
+            {
+                image = ImageDb.GetRandomImage(name, Context.Guild.Id);
+            }
+            else if (ReactionImageCommands[0].Contains(name))
+            {
+                image = ImageDb.GetRandomImage(name);
+            }
+            else
+            {
+                await ReplyAsync("Not an image command", ephemeral: true);
+                return;
+            }
+
+            var embed = ImageUtil.ToEmbed(image).Build();
+            await ReplyAsync("", false, embed);
+        }
+
+        [Command("List"), Alias("ListAll", "Images", "Albums"), Description("List of all image commands and how many images there are.\n**Usage**: `!list`")]
+        [SlashCommand("images", "List of image commands")]
+        public async Task List([Description("Show all images from a command")] string album = null)
+        {
+            if (album != null)
+            {
+                All(album);
+                return;
+            }
+            
             var images = await ImageDb.GetImages();
             List<ImageCount> names = new List<ImageCount>();
 
@@ -76,11 +126,11 @@ namespace Namiko
             names = names.OrderBy(x => x.Name).ToList();
             var eb = ImageUtil.ListAllEmbed(names, Program.GetPrefix(Context), Context.User);
             eb = ImageUtil.AddGuildImagesToEmbed(eb, (await ImageDb.GetImages(null, Context.Guild.Id)).Select(x => x.Name).Distinct().OrderBy(x => x));
-            await Context.Channel.SendMessageAsync(embed: eb.Build());
+            await ReplyAsync(embed: eb.Build());
         }
 
-        [Command("Album"), Alias("All"), Summary("All reaction images from a single command.\n**Usage**: `!all [image_name]`")]
-        public async Task All(string name, [Remainder] string str = "")
+        [Command("Album"), Alias("All"), Description("All reaction images from a single command.\n**Usage**: `!all [image_name]`")]
+        public async Task All(string name)
         {
             var album = Context.Guild == null ? null : ImageDb.GetAlbum(name + Context.Guild.Id);
             var album2 = ImageDb.GetAlbum(name);
@@ -91,52 +141,54 @@ namespace Namiko
 
             if (albums == "")
             {
-                await Context.Channel.SendMessageAsync($"Album **{name}** doesn't exist.");
+                await ReplyAsync($"Album **{name}** doesn't exist.");
                 return;
             }
 
-            await Context.Channel.SendMessageAsync(albums);
+            await ReplyAsync(albums);
         }
 
-        [Command("Image"), Alias("i"), Summary("Sends a reaction image by id.\n**Usage**: `!i [id]`")]
-        public async Task Image(int id, [Remainder] string str = "")
+        [Command("Image"), Alias("i"), Description("Sends a reaction image by id.\n**Usage**: `!i [id]`")]
+        public async Task Image(int id)
         {
             var image = ImageDb.GetImage(id);
             if (image == null || (image.GuildId != 0 && image.GuildId != Context.Guild.Id))
             {
-                await Context.Channel.SendMessageAsync($"There is no image with id: {id}");
+                await ReplyAsync($"There is no image with id: {id}");
                 return;
             }
             var embed = ImageUtil.ToEmbed(image).Build();
-            await Context.Channel.SendMessageAsync("", false, embed);
+            await ReplyAsync("", false, embed);
         }
 
-        [Command("NewImage"), Alias("ni"), Summary("Adds a new image to the database.\n**Usage**: `!ni [name] [url_or_attachment]`"), HomeOrT1GuildPrecondition, CustomUserPermission(GuildPermission.ManageMessages)]
-        public async Task NewImage(string name, string url = null, [Remainder] string str = "")
+        [HomeOrT1GuildPrecondition, UserPermission(GuildPermission.ManageMessages)]
+        [Command("NewImage"), Alias("ni"), Description("Adds a new image to the database.\n**Usage**: `!ni [name] [url_or_attachment]`")]
+        [SlashCommand("image-new", "Add a new image with a url or attachment")]
+        public async Task NewImage(string name, string url = null)
         {
-            await Context.Channel.TriggerTypingAsync();
+            await Context.TriggerTypingAsync();
             bool insider = Context.Guild.Id == 418900885079588884;
 
-            url ??= Context.Message.Attachments.FirstOrDefault()?.Url;
+            url ??= ((ICommandContext)Context).Message.Attachments.FirstOrDefault()?.Url;
+
+            if (url == null)
+            {
+                await ReplyAsync("Can't get your attachment, there probably isn't one. *Heh, dummy...*");
+                return;
+            }
 
             if (!insider)
             {
                 if(!PremiumDb.IsPremium(Context.Guild.Id, ProType.GuildPlus))
                 {
-                    await Context.Channel.SendMessageAsync($"This server does not have Pro Guild+. `{Program.GetPrefix(Context)}pro`");
+                    await ReplyAsync($"This server does not have Pro Guild+. `{Program.GetPrefix(Context)}pro`");
                     return;
                 }
 
                 if ((await ImageDb.GetImages(name, 0)).Any())
                 {
-                    await Context.Channel.SendMessageAsync($"There is already a default image command called **{name}**. It will be replaced with your custom one.");
+                    await ReplyAsync($"There is already a default image command called **{name}**. It will be replaced with your custom one.");
                 }
-            }
-
-            if (url == null)
-            {
-                await Context.Channel.SendMessageAsync("Can't get your attachment, there probably isn't one. *Heh, dummy...*");
-                return;
             }
 
             url = url.EndsWith(".gifv") ? url.Replace(".gifv", ".gif") : url;
@@ -160,34 +212,52 @@ namespace Namiko
             var iImage = await ImgurAPI.UploadImageAsync(url, albumId);
             var img = await ImageDb.AddImage(name.ToLower(), iImage.Link, insider ? 0 : Context.Guild.Id);
 
-            if (!ReactionImageCommands.Contains(name.ToLower()))
-                ReactionImageCommands.Add(name.ToLower());
+            if (insider)
+            {
+                if (!ReactionImageCommands[0].Contains(name.ToLower()))
+                {
+                    ReactionImageCommands[0].Add(name.ToLower());
+                }
+            }
+            else
+            {
+                if (!ReactionImageCommands.ContainsKey(Context.Guild.Id))
+                {
+                    ReactionImageCommands.Add(Context.Guild.Id, new HashSet<string>());
+                }
+                if (!ReactionImageCommands[Context.Guild.Id].Contains(name.ToLower()))
+                {
+                    ReactionImageCommands[Context.Guild.Id].Add(name.ToLower());
+                }
+            }
 
             await ImgurAPI.EditImageAsync(iImage.Id.ToString(), null, img.Id.ToString());
             var rl = ImgurAPI.RateLimit;
             await ImageUtil.UploadReactionImage(img, Context.Channel);
-            await Context.Channel.SendMessageAsync($"{rl.ClientRemaining-20}/{rl.ClientLimit} imgur credits remaining.", false, ImageUtil.ToEmbed(img).Build());
+            await ReplyAsync($"{rl.ClientRemaining-20}/{rl.ClientLimit} imgur credits remaining.", false, ImageUtil.ToEmbed(img).Build());
         }
 
-        [Command("DeleteImage"), Alias("di"), Summary("Deletes image from the database using the id.\n**Usage**: `di [id]`"), HomeOrT1GuildPrecondition, CustomUserPermission(GuildPermission.ManageMessages)]
-        public async Task DeleteImage(int id, [Remainder] string str = "")
+        [HomeOrT1GuildPrecondition, UserPermission(GuildPermission.ManageMessages)]
+        [Command("DeleteImage"), Alias("di"), Description("Deletes image from the database using the id.\n**Usage**: `di [id]`")]
+        [SlashCommand("image-delete", "Delete an image by id")]
+        public async Task DeleteImage(int id)
         {
             bool insider = Context.Guild.Id == 418900885079588884;
 
             var image = ImageDb.GetImage(id);
             if (image == null)
             {
-                await Context.Channel.SendMessageAsync($"There is no image with id: **{id}**");
+                await ReplyAsync($"There is no image with id: **{id}**");
                 return;
             }
             if(!insider && image.GuildId != Context.Guild.Id)
             {
-                await Context.Channel.SendMessageAsync($"There is no image with id **{id}** in your guild.");
+                await ReplyAsync($"There is no image with id **{id}** in your guild.");
                 return;
             }
 
             await ImageDb.DeleteImage(id);
-            await Context.Channel.SendMessageAsync($"Image **{id}** is gone forever. Why have you done this?");
+            await ReplyAsync($"Image **{id}** is gone forever. Why have you done this?");
             await ImgurAPI.EditImageAsync(ImgurAPI.ParseId(image.Url), null, image.Id.ToString() + " [DELETED]");
         }
 

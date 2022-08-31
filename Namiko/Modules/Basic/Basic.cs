@@ -1,163 +1,72 @@
 ﻿using Discord;
-using Discord.Addons.Interactive;
 using Discord.Commands;
+using Discord.Interactions;
 using Discord.WebSocket;
 using Model;
+using Namiko.Addons.Handlers;
+using Namiko.Addons.Handlers.Paginator;
+using Namiko.Handlers.Attributes;
+using Namiko.Handlers.Attributes.Preconditions;
 using Namiko.Modules.Basic;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+using Namiko.Handlers.Autocomplete;
+using Npgsql.PostgresTypes;
+using PreconditionAttribute = Namiko.Handlers.Attributes.PreconditionAttribute;
+using RequireUserPermissionAttribute = Discord.Interactions.RequireUserPermissionAttribute;
 
 namespace Namiko
 {
-    public class Basic : InteractiveBase<ShardedCommandContext>
+    public class Basic : CustomModuleBase<ICustomContext>
     {
-        [Command("Hi Namiko"), Alias("Hi", "ping", "Awoo"), Summary("Hi Namiko command. Counts response time.")]
-        public async Task HiNamiko([Remainder] string str = "")
+        [Command("Hi Namiko"), Alias("Hi", "ping", "Awoo"), Description("Hi Namiko command. Counts response time.")]
+        public async Task HiNamiko()
         {
-            var msgTime = Context.Message.CreatedAt;
-            var msg = await Context.Channel.SendMessageAsync($"Hi {Context.User.Mention} :fox: `Counting...`");
+            var msgTime = Context.CreatedAt;
+            var msg = await ReplyAsync($"Hi {Context.User.Mention} :fox: `Counting...`");
             var msgTime2 = msg.CreatedAt;
             var ping = msgTime2 - msgTime;
             await msg.ModifyAsync(a => a.Content = $"Hi {Context.User.Mention} :fox: `{ping.TotalMilliseconds}ms`");
         }
         
-        [Command("Info"), Alias("About"), Summary("Bot info.")]
-        public async Task Info([Remainder] string str = "")
+        [Command("Info"), Alias("About"), Description("Bot info.")]
+        public async Task Info()
         {
-            await Context.Channel.SendMessageAsync("", false, BasicUtil.InfoEmbed().Build());
-        }
-
-        [Command("Pro"), Alias("Premium", "Support", "Patreon", "Paypal", "Donate"), Summary("Donation Links.")]
-        public async Task Donate([Remainder] string str = "")
-        {
-            await Context.Channel.SendMessageAsync("", false, BasicUtil.DonateEmbed(Program.GetPrefix(Context)).Build());
-        }
-
-        [Command("InfoPro"), Summary("Donation Links.")]
-        public async Task InfoPro([Remainder] string str = "")
-        {
-            string prefix = Program.GetPrefix(Context);
-            var eb = new EmbedBuilder()
-                .WithAuthor(Program.GetClient().CurrentUser)
-                .WithDescription($"Namiko Pro Upgrades :star:\n" +
-                    $"\n" +
-                    $"- Waifus from your wishlist have a much higher chance to appear in the `{prefix}waifushop`\n" +
-                    $"- Much higher chance to find waifus from your wishlist in your lootboxes\n" +
-                    $"- Get upgraded lootboxes for voting: chance to get **T1** and **T2** waifus, more toasties.\n" +
-                    $"- Marry up to **3** users\n" +
-                    $"\n" +
-                    $":star: Subscribe on [Patreon]({LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-info-pro")})")
-                .WithImageUrl("https://i.imgur.com/NIAP5QC.png")
-                .WithFooter("-What are you? Twelve?")
-                .WithColor(BasicUtil.RandomColor());
-
-            await Context.Channel.SendMessageAsync("", false, eb.Build());
-        }
-
-        [Command("InfoProPlus"), Summary("Donation Links.")]
-        public async Task InfoProPlus([Remainder] string str = "")
-        {
-            string prefix = Program.GetPrefix(Context);
-            var eb = new EmbedBuilder()
-                .WithAuthor(Program.GetClient().CurrentUser)
-                .WithDescription($"Namiko Pro+ Upgrades :star2:\n" +
-                    $"\n" +
-                    $"- All upgrades in Pro\n" +
-                    $"- **Halved** `{prefix}daily` cooldown in all servers\n" +
-                    $"- Get a **T1 Waifu** Lootbox when using `{prefix}weekly`\n" +
-                    $"- Request a **custom waifu** that is only obtainable by you (Stays after premium ends)\n" +
-                    $"- Waifu **wishlist** limit increased to **12**\n" +
-                    $"- Marry up to **10** users\n" +
-                    $"- Behind the scenes access in *Namiko Test Realm*\n" +
-                    $"\n" +
-                    $":star: Subscribe on [Patreon]({LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-info-proplus")})")
-                .WithImageUrl("https://i.imgur.com/uq9eip4.png")
-                .WithFooter("-What are you? Twelve?")
-                .WithColor(BasicUtil.RandomColor());
-
-            await Context.Channel.SendMessageAsync("", false, eb.Build());
-        }
-
-        [Command("InfoGuild"), Summary("Donation Links.")]
-        public async Task InfoGuild([Remainder] string str = "")
-        {
-            string prefix = Program.GetPrefix(Context);
-            var eb = new EmbedBuilder()
-                .WithAuthor(Program.GetClient().CurrentUser)
-                .WithDescription($"Namiko Pro Guild Upgrades :star:\n" +
-                    $"\n" +
-                    $"- **Music** with a lot of features! Try `{prefix}join`\n" +
-                    $"- Halved `{prefix}weekly` cooldown\n" +
-                    $"- **3** times more waifus in waifu shop and gacha shop\n" +
-                    $"- Subreddit follow limit increased to **5**\n" +
-                    $"\n" +
-                    $":star: Subscribe on [Patreon]({LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-info-guild")})")
-                .WithImageUrl("https://i.imgur.com/XxFJ1gH.png")
-                .WithFooter("-What are you? Twelve?")
-                .WithColor(BasicUtil.RandomColor());
-
-            await Context.Channel.SendMessageAsync("", false, eb.Build());
-        }
-
-        [Command("InfoGuildPlus"), Summary("Donation Links.")]
-        public async Task InfoGuildPlus([Remainder] string str = "")
-        {
-            var eb = new EmbedBuilder()
-                .WithAuthor(Program.GetClient().CurrentUser)
-                .WithDescription($"Namiko Pro Guild+ Upgrades :star2:\n" +
-                    $"\n" +
-                    $"- All upgrades in Guild\n" +
-                    $"- Music queue limit increased from **100** to **500**\n" +
-                    $"- A new waifu shop that can be controlled by your mods\n" +
-                    $"- Waifu **lootboxes** will be up for purchase for users\n" +
-                    $"- Create **reaction image commands** exclusive to your server (Stays after premium ends)\n" +
-                    $"- Weekly increased by **1000** for everyone\n" +
-                    $"- Subreddit follow limit increased to **10**\n" +
-                    $"\n" +
-                    $":star: Subscribe on [Patreon]({LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-info-guildplus")})")
-                .WithImageUrl("https://i.imgur.com/f8XYQxU.png")
-                .WithFooter("-What are you? Twelve?")
-                .WithColor(BasicUtil.RandomColor());
-
-            await Context.Channel.SendMessageAsync("", false, eb.Build());
+            await ReplyAsync("", false, BasicUtil.InfoEmbed().Build());
         }
 
         [Command("Vote")]
-        public async Task Vote([Remainder] string str = "")
+        [SlashCommand("vote", "Vote for Namiko and get lootboxes!")]
+        public async Task Vote()
         {
-            await Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared(Context.User)
+            await ReplyAsync(embed: new EmbedBuilderPrepared(Context.User)
                 .WithDescription($"Vote for Namiko on [Discord Bots]({LinkHelper.GetRedirectUrl(LinkHelper.Vote, "Vote", "cmd-vote")}) and receive a lootbox!")
                 .Build());
         }
 
         [Command("Burn")]
-        public async Task Burn([Remainder] string str = "")
+        public async Task Burn()
         {
-            await Context.Channel.SendMessageAsync(ToastieUtil.GetFalseBegMessage());
+            await ReplyAsync(CurrencyUtil.GetFalseBegMessage());
         }
 
         [Command("JoinMessageTest"), OwnerPrecondition]
-        public async Task JoinMessageTest([Remainder] string str = "")
+        public async Task JoinMessageTest()
         {
-            await Context.Channel.SendMessageAsync("Hi! Please take good care of me!", false, BasicUtil.GuildJoinEmbed("!").Build());
+            await ReplyAsync("Hi! Please take good care of me!", false, BasicUtil.GuildJoinEmbed().Build());
         }
 
-        [Command("PermTest"), CustomBotPermission(GuildPermission.Administrator)]
+        [Command("PermTest"), BotPermission(GuildPermission.Administrator)]
         public async Task PermTest()
         {
-            await Context.Channel.SendMessageAsync("???");
+            await ReplyAsync("???");
         }
 
         [Command("GuildList"), OwnerPrecondition]
         public async Task GuildTest()
         {
-            var msg = new CustomPaginatedMessage
-            {
-                Pages = CustomPaginatedMessage.PagesArray(Program.GetClient().Guilds, 20, (x) => $"`{x.Id}` - **{x.Name}**\n`{x.OwnerId}` - **{x.Owner}**\n")
-            };
+            var msg = new PaginatedMessage<SocketGuild>(Program.GetClient().Guilds, 20, (x) => $"`{x.Id}` - **{x.Name}**\n`{x.OwnerId}` - **{x.Owner}**\n");
             await PagedReplyAsync(msg);
         }
 
@@ -172,24 +81,24 @@ namespace Namiko
         public async Task Wait(int sec)
         {
             await Task.Delay(sec * 1000);
-            await Context.Channel.SendMessageAsync("Done.");
+            await ReplyAsync("Done.");
         }
 
         [Command("CleanData"), OwnerPrecondition]
         public async Task CleanData()
         {
             Timers.Timer_CleanData(null, null);
-            await Context.Channel.SendMessageAsync("Done.");
+            await ReplyAsync("Done.");
         }
 
         [Command("StealToasties"), OwnerPrecondition]
         public async Task StealToasties()
         {
             Timers.Timer_NamikoSteal(null, null);
-            await Context.Channel.SendMessageAsync("Done.");
+            await ReplyAsync("Done.");
         }
 
-        [Command("SShipWaifu"), Summary("\n **Usage**: `!shipwaifu [waifu] [userid] [guildid_optional]`"), OwnerPrecondition]
+        [Command("SShipWaifu"), Description("\n **Usage**: `!shipwaifu [waifu] [userid] [guildid_optional]`"), OwnerPrecondition]
         public async Task ShipWaifu(string name, ulong userId, ulong guildId = 0)
         {
             Program.GetPrefix(Context);
@@ -203,20 +112,13 @@ namespace Namiko
 
             if (UserInventoryDb.OwnsWaifu(userId, waifu, guildId))
             {
-                await Context.Channel.SendMessageAsync($"They already own **{waifu.Name}**");
+                await ReplyAsync($"They already own **{waifu.Name}**");
                 return;
             }
 
             await UserInventoryDb.AddWaifu(userId, waifu, guildId);
-            await Context.Channel.SendMessageAsync($"**{waifu.Name}** shipped!");
+            await ReplyAsync($"**{waifu.Name}** shipped!");
         }
-
-        //  [Command("Test"), OwnerPrecondition]
-        //  public async Task Test()
-        //  {
-        //      Timers.Timer_NamikoSteal(null, null);
-        //      await Context.Channel.SendMessageAsync($"It has been done.");
-        //  }
 
         [Command("Blacklist"), OwnerPrecondition]
         public async Task Blacklist(ulong id)
@@ -224,7 +126,7 @@ namespace Namiko
             if (BlacklistDb.IsBlacklisted(id))
             {
                 await BlacklistDb.Remove(id);
-                await Context.Channel.SendMessageAsync($"Unblacklisted.");
+                await ReplyAsync($"Unblacklisted.");
                 await WebhookClients.NamikoLogChannel.SendMessageAsync($"Unblacklisted {id}");
                 Program.Blacklist.Remove(id);
                 return;
@@ -232,7 +134,7 @@ namespace Namiko
             else
             {
                 await BlacklistDb.Add(id);
-                await Context.Channel.SendMessageAsync($"Blacklisted.");
+                await ReplyAsync($"Blacklisted.");
                 Program.Blacklist.Add(id);
                 var client = Program.GetClient();
                 var guild = client.GetGuild(id);
@@ -258,16 +160,18 @@ namespace Namiko
             }
         }
 
-        [Command("Status"), Summary("Bot status.\n **Usage**: `!status`")]
+        [Command("Status"), Description("Bot status.\n **Usage**: `!status`")]
         public async Task Status()
         {
-            var shards = Context.Client.Shards;
+            var client = Context.Client as DiscordShardedClient;
+
+            var shards = client.Shards;
             var eb = new EmbedBuilderPrepared();
 
             int homeShard = -1;
             if (Context.Guild != null)
             {
-                homeShard = (int)(Context.Guild.Id << 22) % Context.Client.Shards.Count;
+                homeShard = (int)(Context.Guild.Id << 22) % client.Shards.Count;
             }
 
             foreach(var shard in shards)
@@ -278,12 +182,11 @@ namespace Namiko
                     true);
             }
 
-            await Context.Channel.SendMessageAsync(embed: eb.Build());
+            await ReplyAsync(embed: eb.Build());
         }
 
         // HELP COMMAND STUFF
-
-        [Command("Help"), Alias("h"), Summary("Shows more information about a command.\n**Usage**: `!help [command/module_name]`")]
+        [Command("Help"), Alias("h"), Description("Shows more information about a command.\n**Usage**: `!help [command/module_name]`")]
         public async Task Help([Remainder] string cmd = "")
         {
             var commandService = Program.GetCommands();
@@ -306,19 +209,96 @@ namespace Namiko
 
             if(!desc.Equals(""))
             {
-                await Context.Channel.SendMessageAsync(desc);
+                await ReplyAsync(desc);
                 return;
             }
 
             if (eb != null)
             {
-                await Context.Channel.SendMessageAsync(embed: eb.Build());
+                await ReplyAsync(embed: eb.Build());
                 string msg = $"Check out this simple guide detailing my main features: <{LinkHelper.Guide}>\n" +
                     $"Find the command list online: <{LinkHelper.Commands}>\n" +
                     $"Type `{prefix}info` to learn more about me and find useful links!\n" +
                     $"Type `{prefix}images` for a list of my reaction image commands!";
-                await Context.Channel.SendMessageAsync(msg);
+                await ReplyAsync(msg);
             }
+        }
+
+        [SlashCommand("help", "See command details and stuff")]
+        public async Task Help([Autocomplete(typeof(ModulesAutocomplete))] string module = "All",
+            [Autocomplete(typeof(CommandsAutocomplete))] string command = "All")
+        {
+            var modul = Program.Interactions.Modules.FirstOrDefault(x => module == x.Name);
+            var cmd = Program.Interactions.SlashCommands.FirstOrDefault(x => x.Name == command);
+
+            EmbedBuilder eb;
+            if (cmd != null)
+            {
+                eb = CommandHelpEmbed(cmd);
+            }
+            else if (modul != null)
+            {
+                eb = ModuleHelpEmbed(modul);
+            }
+            else
+            {
+                eb = AllHelpEmbed(Program.Interactions);
+            }
+
+            await ReplyAsync(embed: eb.Build(), ephemeral: true);
+        }
+
+        private EmbedBuilder AllHelpEmbed(InteractionService interactionService)
+        {
+            var eb = new EmbedBuilderPrepared(Context.User);
+            bool insider = Context?.User != null && Context.User is SocketGuildUser && ((SocketGuildUser)Context.User).Roles.Any(x => x.Id == AppSettings.InsiderRoleId);
+            string field = "";
+            
+            foreach(var module in interactionService.Modules)
+            {
+                if ((module.Name != "Special" && module.Name != "Basic" && module.Name != "SpecialModes" && module.Name != "WaifuEditing") || insider)
+                {
+                    int count = module.SlashCommands.Count(x => insider || x.Preconditions.Any(y => y is InsiderAttribute || y is OwnerPrecondition));
+                    
+                    field += $"{module.Name} - *{count} commands*\n";
+                }
+            }
+
+            eb.AddField("Modules", field);
+            eb.WithTitle("Namiko");
+            eb.WithDescription($"Check out Namiko's usage guide [here]({LinkHelper.Guide}) :star:\n" +
+                $"Open in [browser]({LinkHelper.Commands}) :star:");
+            eb.WithImageUrl(AppSettings.NamikoBannerUrl);
+            eb.WithFooter(@"""What are you? Twelve?"" -Namiko");
+            return eb;
+        }
+        private EmbedBuilder ModuleHelpEmbed(Discord.Interactions.ModuleInfo module)
+        {
+            var eb = new EmbedBuilderPrepared(Context.User);
+
+            var fields = module.SlashCommands.Select(x => new EmbedFieldBuilder().WithName(x.Name).WithValue(x.Description).WithIsInline(true));
+
+            eb.WithTitle(module.Name);
+            eb.WithFields(fields);
+            eb.WithImageUrl(AppSettings.NamikoBannerUrl);
+            eb.WithFooter(@"""What are you? Twelve?"" -Namiko");
+            return eb;
+        }
+        public EmbedBuilder CommandHelpEmbed(SlashCommandInfo command)
+        {
+            var eb = new EmbedBuilderPrepared(Context.User);
+
+            eb.WithTitle(command.Name);
+            eb.WithDescription(command.Description);
+            var prec = command.Preconditions.Where(x => x is RequireUserPermissionAttribute)
+                .Cast<RequireUserPermissionAttribute>();
+            if (command.Preconditions.Any(x => x is RequireUserPermissionAttribute))
+            {
+                eb.AddField(":star: Required permissions", string.Join(' ', prec.Select(x => $"`{x.GuildPermission.ToString()}`").Distinct()));
+            }
+            eb.WithImageUrl(AppSettings.NamikoBannerUrl);
+            eb.WithFooter(@"""What are you? Twelve?"" -Namiko");
+            return eb;
         }
 
         private EmbedBuilder AllHelpEmbed(CommandService commandService, bool all = false)
@@ -358,7 +338,7 @@ namespace Namiko
             eb.WithTitle("Commands");
             return eb;
         }
-        private EmbedBuilder ModuleHelpEmbed(ModuleInfo moduleInfo)
+        private EmbedBuilder ModuleHelpEmbed(Discord.Commands.ModuleInfo moduleInfo)
         {
             if (moduleInfo == null)
                 return null;
@@ -414,20 +394,23 @@ namespace Namiko
                 desc += $"`{x}` ";
             desc += "\n";
             if(commandInfo.Preconditions.Count > 0)
-                desc += $"**Permissions**: ";
-            foreach (var x in commandInfo.Preconditions)
+                desc += $"**Conditions**: ";
+            foreach (var x in commandInfo.Attributes)
             {
-                if (x is RequireUserPermissionAttribute)
+                if (x is UserPermissionAttribute)
                 { 
-                    var prec = x as RequireUserPermissionAttribute;
-                    desc += prec.ChannelPermission != null ? $"{prec.ChannelPermission} " : "";
-                    desc += prec.GuildPermission != null ? $"{prec.GuildPermission} " : "";
+                    var prec = x as UserPermissionAttribute;
+                    desc += $"`User:{prec.Name}` ";
                 }
-
-                else if (x is CustomPrecondition)
+                else if (x is BotPermissionAttribute)
                 {
-                    var prec = x as CustomPrecondition;
-                    desc += $"{prec.GetName()} ";
+                    var prec = x as BotPermissionAttribute;
+                    desc += $"`Bot:{prec.Name}` ";
+                }
+                else if (x is PreconditionAttribute)
+                {
+                    var prec = x as PreconditionAttribute;
+                    desc += $"`{prec.Name}` ";
                 }
             }
 

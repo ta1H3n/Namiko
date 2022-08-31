@@ -1,22 +1,15 @@
-﻿using System;
+﻿using Discord;
+using Discord.Commands;
+using Namiko.Addons.Handlers;
+using Namiko.Handlers.Attributes.Preconditions;
+using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
-using Discord.Commands;
-using Discord.WebSocket;
-
-
-
-
-
-
-using Discord.Addons.Interactive;
 
 namespace Namiko
 {
-    public class SpecialModes : InteractiveBase<ShardedCommandContext>
+    public class SpecialModes : CustomModuleBase<ICustomContext>
     {
         public static bool ChristmasModeEnable { get; set; }
         public static int ChristmasModeRate { get; set; }
@@ -37,7 +30,7 @@ namespace Namiko
         private static List<string> Lines { get; set; }
         
         [Command("ToggleSpookMode"), Alias("tsm"), Summary("Enables spook mode, 0 to disable.\n**Usage**: `!tsm [chance per message 1/n]`"), OwnerPrecondition]
-        public async Task ToggleSpookMode(int rate, [Remainder] string str = "")
+        public async Task ToggleSpookMode(int rate)
         {
             if(rate == 0)
             {
@@ -82,7 +75,7 @@ namespace Namiko
         }
 
         [Command("DeleteSpook"), Alias("ds"), Summary("Deletes a spook.\n**Usage**: `!ds [no.]`"), OwnerPrecondition]
-        public async Task DeleteSpook(int id, [Remainder] string str = "")
+        public async Task DeleteSpook(int id)
         {
             var lines = XmlHelper.GetSpookLines();
             lines.RemoveAt(id);
@@ -113,7 +106,7 @@ namespace Namiko
             await Context.Channel.SendMessageAsync($"Christmas Rate enabled at rate {rate}. *Yaayy.*");
         }
 
-        public async Task Spook(SocketCommandContext context)
+        public async Task Spook(ICommandContext context)
         {
             if (!SpookModeEnable)
                 return;
@@ -129,7 +122,7 @@ namespace Namiko
             await context.Channel.SendMessageAsync(spook);
         }
 
-        public async Task Christmas(SocketCommandContext context)
+        public async Task Christmas(ICommandContext context)
         {
             if (!ChristmasModeEnable)
                 return;

@@ -25,7 +25,7 @@ namespace Model
             DbContext.Update(waifu);
             return await DbContext.SaveChangesAsync();
         }
-        public static async Task<List<Waifu>> SearchWaifus(string query, bool primaryName = false, IEnumerable<Waifu> from = null, bool includeMAL = false, int perPage = 0, int page = 0)
+        public static async Task<List<Waifu>> SearchWaifus(string query, bool primaryName = false, IEnumerable<Waifu> from = null, bool includeMAL = false, int perPage = 100, int page = 0)
         {
             using var DbContext = new NamikoDbContext();
             List<Waifu> waifus = new List<Waifu>();

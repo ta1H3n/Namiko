@@ -6,6 +6,7 @@ namespace Namiko.Modules.Basic
     {
         public const string RedirectUrl = "https://namiko.moe/redirect";
         public const string Patreon = "https://www.patreon.com/taiHen";
+        public const string Pro = "https://namiko.moe/Pro";
         public const string SupportServerInvite = "https://discord.gg/W6Ru5sM";
         public const string Guide = "https://namiko.moe/Guide";
         public const string Commands = "https://namiko.moe/Commands";

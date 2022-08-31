@@ -2,6 +2,7 @@
 using Discord.Commands;
 using Discord.WebSocket;
 using Model;
+using Namiko.Addons.Handlers;
 using Namiko.Modules.Basic;
 using System;
 using System.Collections.Generic;
@@ -10,11 +11,11 @@ using System.Threading.Tasks;
 
 namespace Namiko
 {
-    public static class ToastieUtil
+    public static class CurrencyUtil
     {
         public static string[] BegMessages { get; set; }
 
-        static ToastieUtil()
+        static CurrencyUtil()
         {
             BegMessages = new string[] {
                 "Go away.",
@@ -27,47 +28,38 @@ namespace Namiko
                 "You need a high-five... on the face... with a chair.",
                 "If you were orphaned when you were a child, I feel sorry for you, but not for your parents.",
                 "I bet your brain feels as good as new, seeing that you've never used it.",
-                "Don't let your mind wander, it's far too small to be out by itself.",
-                "People can't say that you have absolutely nothing! After all, you have inferiority!",
                 "If we were to kill everybody who hates you, it wouldn't be murder; it would be genocide!",
-                "I called your boyfriend gay and he hit me with his purse!",
                 "I'd slap you, but that would be animal abuse.",
                 "The next time you shave, could you stand a little closer to the razor?",
                 "Everyone is entitled to be stupid, but you abuse the privilege.",
-                "Don't piss me off today, I'm running out of places to hide the bodies.",
                 "Until you called me I couldn't remember the last time I wanted to break somebody's fingers so badly.",
                 "Beauty is skin deep, but ugly is to the bone.",
                 "Sorry I can't think of an insult stupid enough for you.",
-                "Let's see... I've walked the dog, cleaned my room, gone shopping and gossiped with my friends... Nope, this list doesn't say that I'm required to talk to you.",
                 "Earth is full. Go home.",
-                "If I could be one person for a day, it sure as hell wouldn't be you.",
-                "Roses are red violets are blue, God made me pretty, what the hell happened to you?",
                 "I am not anti-social, I just don't like you.",
                 "There are some stupid people in this world. You just helped me realize it.",
                 "A-are you talking? Did I give you permission to talk...?",
                 "OK, and that's supposed to make me feel what?",
                 "Damn not you again.",
                 "I'm sorry I'm busy right now, can I ignore you some other time?",
-                "Oh please help me, I'm sooo hurt by your hurtful comments!",
-                "Before you came along we were hungry. Now we are fed up.",
-                "Cancel my subscriptions, I'm tired of your issues!",
                 "You have your whole life to be a jerk... So why don't you take a day off?",
-                "You don't know me, you just wish you did.",
-                "My Mom said never talk to strangers and well, since you're really strange... I guess that means I can't talk to you!",
-                "People like you are the reason I'm on medication.",
-                "If you're gonna act like a dick you should wear a condom on your head so you can at least look like one!",
+                "Mom said to never talk to strangers and well, since you're really strange...",
                 "I don't discriminate, I hate everyone.",
                 "You know the drill... You leave a message and I ignore it!",
                 "Life may be temporary, but your stupidity is eternal.",
-                "If I agreed with you, then we'd both be wrong.",
-                "Could you stop talking?",
+                "Could you stop?",
                 "Do you know what a tsundere is? That's me except I actually don't like you.",
-                "The ideal heart rate? For you... 0.",
+                "The ideal heart rate? For someone like you... 0",
                 "If humans are 70% water, how are you 100% bullshit?",
                 "Toasties? It's your life you should be begging for...",
                 "Jokes aside, you're pathetic.",
                 "STOP... SPAMMING... ME!",
-                "You should've been aborted by your mother."
+                "You should've been aborted by your mother.",
+                "You have failed this city",
+                "Can I please ban this guy?",
+                "Ew normie",
+                "You wanna try begging for some brain cells first?..",
+                "OwO What's this? You can still talk?",
             };
         }
 
@@ -111,11 +103,11 @@ namespace Namiko
         {
             var eb = new EmbedBuilder();
             eb.WithAuthor(user);
-            eb.WithDescription($"You have **{amount.ToString("n0")}** {ToastieUtil.RandomEmote()}!");
+            eb.WithDescription($"You have **{amount.ToString("n0")}** {CurrencyUtil.RandomEmote()}!");
             eb.WithColor(Color.Gold);
             return eb;
         }
-        public static async Task<EmbedBuilder> ToastieLeaderboardEmbedAsync(List<Balance> toasties, SocketCommandContext context, int page)
+        public static async Task<EmbedBuilder> ToastieLeaderboardEmbedAsync(List<Balance> toasties, ICustomContext context, int page)
         {
             var eb = new EmbedBuilder();
             long timeNow = DateTimeOffset.Now.ToUnixTimeMilliseconds();
@@ -151,7 +143,7 @@ namespace Namiko
             eb.WithFooter($"Page: {page / 10 + 1}");
             return eb;
         }
-        public static async Task<EmbedBuilder> DailyLeaderboardEmbedAsync(List<Daily> dailies, SocketCommandContext context, int page)
+        public static async Task<EmbedBuilder> DailyLeaderboardEmbedAsync(List<Daily> dailies, ICustomContext context, int page)
         {
             var eb = new EmbedBuilder();
             long timeNow = DateTimeOffset.Now.ToUnixTimeMilliseconds();
@@ -189,7 +181,7 @@ namespace Namiko
             eb.WithFooter($"Page: {page / 10 + 1}");
             return eb;
         }
-        public static async Task<EmbedBuilder> BothLeaderboardEmbedAsync(List<Balance> toasties, List<Daily> dailies, SocketCommandContext context, int page)
+        public static async Task<EmbedBuilder> BothLeaderboardEmbedAsync(List<Balance> toasties, List<Daily> dailies, ICustomContext context, int page)
         {
             var eb = new EmbedBuilder();
             long timeNow = DateTimeOffset.Now.ToUnixTimeMilliseconds();
@@ -247,7 +239,7 @@ namespace Namiko
         public static EmbedBuilder GiveEmbed(IUser from, IUser to, int amount)
         {
             EmbedBuilder eb = new EmbedBuilder();
-            eb.AddField("Toasties <:toastie3:454441133876183060>", $"{from.Username} gave {to.Username} **{amount.ToString("n0")}** {ToastieUtil.RandomEmote()}!");
+            eb.AddField("Toasties <:toastie3:454441133876183060>", $"{from.Username} gave {to.Username} **{amount.ToString("n0")}** {CurrencyUtil.RandomEmote()}!");
             eb.WithColor(BasicUtil.RandomColor());
             return eb;
         }
@@ -266,7 +258,7 @@ namespace Namiko
         {
             var eb = new EmbedBuilder();
             eb.WithAuthor(user);
-            eb.WithDescription($"**You win!** {amount.ToString("n0")} {ToastieUtil.RandomEmote()} received!\nNow you have {BalanceDb.GetToasties(user.Id, user.Guild.Id).ToString("n0")} {ToastieUtil.RandomEmote()}!");
+            eb.WithDescription($"**You win!** {amount.ToString("n0")} {CurrencyUtil.RandomEmote()} received!\nNow you have {BalanceDb.GetToasties(user.Id, user.Guild.Id).ToString("n0")} {CurrencyUtil.RandomEmote()}!");
             eb.WithColor(Color.Gold);
             return eb;
         }
@@ -274,7 +266,7 @@ namespace Namiko
         {
             var eb = new EmbedBuilder();
             eb.WithAuthor(user);
-            eb.WithDescription($"**You lose!** {amount.ToString("n0")} {ToastieUtil.RandomEmote()} lost...\nNow you have {BalanceDb.GetToasties(user.Id, user.Guild.Id).ToString("n0")} {ToastieUtil.RandomEmote()}!");
+            eb.WithDescription($"**You lose!** {amount.ToString("n0")} {CurrencyUtil.RandomEmote()} lost...\nNow you have {BalanceDb.GetToasties(user.Id, user.Guild.Id).ToString("n0")} {CurrencyUtil.RandomEmote()}!");
             eb.WithColor(Color.DarkRed);
             return eb;
         }
@@ -312,8 +304,8 @@ namespace Namiko
         {
             var eb = new EmbedBuilder();
             eb.WithAuthor(user.ToString(), user.GetAvatarUrl(), LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-embed-daily"));
-            eb.WithDescription($"You're on a **{streak.ToString("n0")}** day streak. You receive **{amount.ToString("n0")}** {ToastieUtil.RandomEmote()}\n" +
-                $"Now you have **{balance.ToString("n0")}** {ToastieUtil.RandomEmote()}\n\n" +
+            eb.WithDescription($"You're on a **{streak.ToString("n0")}** day streak. You receive **{amount.ToString("n0")}** {CurrencyUtil.RandomEmote()}\n" +
+                $"Now you have **{balance.ToString("n0")}** {CurrencyUtil.RandomEmote()}\n\n" +
                 $"Vote for me on [Discord Bots]({LinkHelper.GetRedirectUrl(LinkHelper.Vote, "Vote", "cmd-daily")}) every day to receive a lootbox!");
             eb.WithColor(BasicUtil.RandomColor());
 
@@ -387,6 +379,13 @@ namespace Namiko
 
             return waifus[rnd.Next(waifus.Count)];
         }
+        public static async Task<LootBox> SelectLootbox(this CustomModuleBase<ICustomContext> module, IList<LootBox> boxes)
+        {
+            var eb = BoxListEmbed(boxes, module.Context.User).Build();
+            Func<LootBox, SelectMenuOptionBuilder> func = x => new SelectMenuOptionBuilder(x.Type.ToString(), x.Type.ToString(), emote: Emote.Parse(x.Type.GetLootboxStats().Emote));
+
+            return await module.Select(boxes, "Lootbox to open", eb, x => x.Type.GetLootboxStats().Name, null, x => Emote.Parse(x.Type.GetLootboxStats().Emote));
+        }
         public static EmbedBuilder NoBoxEmbed(IUser author)
         {
             var eb = new EmbedBuilder();
@@ -404,7 +403,7 @@ namespace Namiko
             eb.WithImageUrl("https://data.whicdn.com/images/109950962/original.gif");
             return eb;
         }
-        public static EmbedBuilder BoxListEmbed(List<LootBox> boxes, IUser author)
+        public static EmbedBuilder BoxListEmbed(IList<LootBox> boxes, IUser author)
         {
             var eb = new EmbedBuilderPrepared(author);
 

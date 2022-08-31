@@ -1,9 +1,12 @@
 ﻿using Discord;
-using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.Rest;
 using Discord.WebSocket;
 using Model;
+using Namiko.Addons.Handlers;
+using Namiko.Addons.Handlers.Criteria;
+using Namiko.Addons.Handlers.Paginator;
+using Namiko.Addons.Handlers.Select;
 using Namiko.Modules.Basic;
 using Sentry;
 using System;
@@ -387,11 +390,11 @@ namespace Namiko
             eb.Color = BasicUtil.RandomColor();
             return eb;
         }
-        public static CustomPaginatedMessage PaginatedShopMessage(IEnumerable<ShopWaifu> waifus, int pageSize, string prefix, ulong guildId = 0, ShopType type = ShopType.Waifu)
+        public static PaginatedMessage PaginatedShopMessage(IEnumerable<ShopWaifu> waifus, int pageSize, string prefix, ulong guildId = 0, ShopType type = ShopType.Waifu)
         {
-            CustomPaginatedMessage paginatedMessage = new CustomPaginatedMessage();
+            PaginatedMessage paginatedMessage = new PaginatedMessage();
             var fieldList = new List<FieldPages>();
-            var splitWaifus = CustomPaginatedMessage.Split(waifus, pageSize);
+            var splitWaifus = PaginatedMessage.Split(waifus, pageSize);
             int pages = splitWaifus.Count();
 
             var fieldInfo = new FieldPages();
@@ -418,7 +421,6 @@ namespace Namiko
             paginatedMessage.Fields = fieldList;
             paginatedMessage.Footer = $"Resets in {11 - DateTime.Now.Hour % 12} Hours {60 - DateTime.Now.Minute} Minutes | ";
             paginatedMessage.Color = BasicUtil.RandomColor();
-            paginatedMessage.PageCount = pages;
             if (guildId != 0)
                 paginatedMessage.Pages = new List<string> { $"Open in [browser](https://namiko.moe/WaifuShop/{guildId})" };
             paginatedMessage.Author = new EmbedAuthorBuilder()
@@ -473,7 +475,7 @@ namespace Namiko
         public static EmbedBuilder WaifuShopSlideEmbed(Waifu waifu)
         {
             var eb = new EmbedBuilder();
-            eb.Description = $"**{waifu.LongName}**\nT{waifu.Tier} - `{GetPrice(waifu.Tier)}` {ToastieUtil.RandomEmote()}";
+            eb.Description = $"**{waifu.LongName}**\nT{waifu.Tier} - `{GetPrice(waifu.Tier)}` {CurrencyUtil.RandomEmote()}";
             eb.WithImageUrl(waifu.HostImageUrl);
             eb.WithColor(BasicUtil.RandomColor());
             return eb;
@@ -533,7 +535,7 @@ namespace Namiko
         }
 
         //Random embeds
-        public static EmbedBuilder WaifuEmbedBuilder(Waifu waifu, SocketCommandContext context = null)
+        public static EmbedBuilder WaifuEmbedBuilder(Waifu waifu, ICustomContext context = null)
         {
             EmbedBuilder eb = new EmbedBuilder();
             eb.WithAuthor(waifu.Name, null, LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-embed-waifu"));
@@ -582,7 +584,7 @@ namespace Namiko
             eb.Color = BasicUtil.RandomColor();
             return eb;
         }
-        public static string WaifuOwnerString(Waifu waifu, SocketCommandContext context)
+        public static string WaifuOwnerString(Waifu waifu, ICustomContext context)
         {
             var userIds = UserInventoryDb.GetOwners(waifu, context.Guild.Id);
             string str = null;
@@ -601,7 +603,7 @@ namespace Namiko
             }
             return str;
         }
-        public static string WaifuWantedString(IEnumerable<WaifuWish> wishes, SocketCommandContext context)
+        public static string WaifuWantedString(IEnumerable<WaifuWish> wishes, ICustomContext context)
         {
             string str = "";
             foreach (var wish in wishes)
@@ -665,7 +667,7 @@ namespace Namiko
             text += "```";
             return text;
         }
-        public static EmbedBuilder FoundWaifusEmbedBuilder(IEnumerable<IGrouping<string, Waifu>> waifus, SocketGuildUser user = null)
+        public static EmbedBuilder SelectWaifuEmbedBuilder(IEnumerable<IGrouping<string, Waifu>> waifus, SocketGuildUser user = null)
         {
             var eb = new EmbedBuilderPrepared();
 
@@ -715,6 +717,67 @@ namespace Namiko
             eb.WithFooter("Times out in 23 seconds.");
             return eb;
         }
+        public static EmbedBuilder FoundWaifusEmbedBuilder(IEnumerable<Waifu> waifus, IGuildUser user = null)
+        {
+            var eb = new EmbedBuilderPrepared();
+            
+            if (!waifus.Any())
+            {
+                eb.WithTitle("Waifus found")
+                    .WithDescription("*~ No results ~*")
+                    .WithColor(Color.DarkRed);
+
+                return eb;
+            }
+            
+            var ordered = waifus.OrderBy(x => x.Source).ThenBy(x => x.Name).ToList();
+            var grouped = ordered.GroupBy(x => x.Source);
+
+            int i = 1;
+            foreach (var x in grouped)
+            {
+                if (x.Count() > 15)
+                {
+                    var split = x.GroupBy(10);
+                    foreach (var y in split)
+                    {
+                        string list = "";
+                        foreach (var waifu in y)
+                        {
+                            list += $"`#{i++}` ";
+                            try
+                            {
+                                if (user != null && UserInventoryDb.OwnsWaifu(user.Id, waifu, user.Guild.Id))
+                                    list += "✓ ";
+                            }
+                            catch { }
+                            list += $"**{waifu.Name}** - *{BasicUtil.ShortenString(waifu.LongName, 28, 27, "-")}*\n";
+                        }
+                        eb.AddField(x.Key + "#" + (y.Key + 1), list);
+                    }
+                }
+                else
+                {
+                    string list = "";
+                    foreach (var waifu in x)
+                    {
+                        list += $"`#{i++}` ";
+                        try
+                        {
+                            if (user != null && UserInventoryDb.OwnsWaifu(user.Id, waifu, user.Guild.Id))
+                                list += "✓ ";
+                        }
+                        catch { }
+                        list += $"**{waifu.Name}** - *{BasicUtil.ShortenString(waifu.LongName, 28, 27, "-")}*\n";
+                    }
+                    eb.AddField(x.Key, list);
+                }
+            }
+
+            eb.WithAuthor("Waifus Found", user?.GetAvatarUrl(), LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-embed-waifulist"));
+            return eb;
+        }
+        
         public static EmbedBuilder WaifuLeaderboardEmbed(IOrderedEnumerable<KeyValuePair<Waifu, int>> waifus, IOrderedEnumerable<KeyValuePair<SocketUser, int>> users, int page)
         {
             var eb = new EmbedBuilder();
@@ -783,56 +846,26 @@ namespace Namiko
         }
 
         //Selector
-        public static async Task<Waifu> ProcessWaifuListAndRespond(List<Waifu> waifus, InteractiveBase<ShardedCommandContext> interactive = null)
+        public static async Task<Waifu> ProcessWaifuListAndRespond(List<Waifu> waifus, CustomModuleBase<ICustomContext> module = null)
         {
             if (waifus.Count == 1)
                 return waifus[0];
 
-            if (interactive != null)
+            if (module != null)
             {
                 if (waifus.Count > 0)
                 {
                     var ordered = waifus.OrderBy(x => x.Source).ThenBy(x => x.Name).ToList();
                     var grouped = ordered.GroupBy(x => x.Source);
-                    RestUserMessage msg = null;
-                    try
-                    {
-                        msg = await interactive.Context.Channel.SendMessageAsync(embed: FoundWaifusEmbedBuilder(grouped, (SocketGuildUser)interactive?.Context.User).Build());
-                    }
-                    catch
-                    {
-                        _ = interactive.Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared()
-                            .WithAuthor("Waifus Found", interactive?.Context.User.GetAvatarUrl(), LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-embed-waifulist"))
-                            .WithDescription("*~ Too many results ~*")
-                            .WithColor(255, 255, 255)
-                            .Build());
-                        return null;
-                    }
-                    var response = await interactive.NextMessageAsync(
-                        new Criteria<IMessage>()
-                        .AddCriterion(new EnsureSourceUserCriterion())
-                        .AddCriterion(new EnsureSourceChannelCriterion())
-                        .AddCriterion(new EnsureRangeCriterion(waifus.Count, Program.GetPrefix(interactive.Context))),
-                        new TimeSpan(0, 0, 23));
-
-                    _ = msg.DeleteAsync();
-                    int i = 0;
-                    try
-                    {
-                        i = int.Parse(response.Content);
-                    }
-                    catch
-                    {
-                        _ = interactive.Context.Message.DeleteAsync();
-                        return null;
-                    }
-                    _ = response.DeleteAsync();
-
-                    return ordered[i - 1];
+                    var embed = SelectWaifuEmbedBuilder(grouped, (SocketGuildUser)module?.Context.User).Build();
+                    var options = ordered
+                        .Select(x => new SelectMenuOption<Waifu>(new SelectMenuOptionBuilder(x.LongName, x.Name, x.Source), x))
+                        .ToDictionary(x => x.Item.Name, x => x);
+                    Waifu waifu = await module.SelectMenuReplyAsync(new SelectMenu<Waifu>(embed, options));
                 }
 
-                _ = interactive.Context.Channel.SendMessageAsync(embed: new EmbedBuilderPrepared()
-                    .WithAuthor("Waifus Found", interactive?.Context.User.GetAvatarUrl(), LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-embed-waifulist"))
+                _ = module.ReplyAsync(embed: new EmbedBuilderPrepared()
+                    .WithAuthor("Waifus Found", module?.Context.User.GetAvatarUrl(), LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-embed-waifulist"))
                     .WithDescription("*~ No results ~*")
                     .WithColor(201, 0, 16)
                     .Build());

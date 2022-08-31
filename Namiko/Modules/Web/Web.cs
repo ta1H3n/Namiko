@@ -1,28 +1,32 @@
 ﻿using Discord;
-using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Model;
+using Namiko.Addons.Handlers;
+using Namiko.Addons.Handlers.Criteria;
+using Namiko.Handlers.Attributes;
+using Namiko.Handlers.Attributes.Preconditions;
 using Reddit.Controllers;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord.Interactions;
 
 namespace Namiko
 {
     [Name("Web Services")]
-    public class Web : InteractiveBase<ShardedCommandContext>
+    public class Web : CustomModuleBase<ICustomContext>
     {
-        [Command("IQDB"), Summary("Finds the source of an image in iqdb.\n**Usage**: `!iqdb [image_url]` or `!iqdb` with attached image.")]
-        public async Task Iqdb(string url = null, [Remainder] string str = "")
+        [Command("IQDB"), Description("Finds the source of an image in iqdb.\n**Usage**: `!iqdb [image_url]` or `!iqdb` with attached image.")]
+        public async Task Iqdb(string url)
+            => await Iqdb(url ?? ((ICommandContext)Context).Message.Attachments.FirstOrDefault()?.Url);
+        //[SlashCommand("iqdb", "Finds the source of an image in iqdb")]
+        public async Task Iqdb2(string url)
         {
-            await Context.Channel.TriggerTypingAsync();
-
-            url ??= Context.Message.Attachments.FirstOrDefault()?.Url;
-
+            await Context.TriggerTypingAsync();
             if (url == null)
             {
-                await Context.Channel.SendMessageAsync("Can't get your attachment, there probably isn't one. *Heh, dummy...*");
+                await ReplyAsync("Can't get your attachment, there probably isn't one. *Heh, dummy...*");
                 return;
             }
 
@@ -30,23 +34,28 @@ namespace Namiko
 
             if (!result.IsFound)
             {
-                await Context.Channel.SendMessageAsync("No results. Too bad.");
+                await ReplyAsync("No results. Too bad.");
                 return;
             }
 
-            await Context.Channel.SendMessageAsync("", false, WebUtil.IqdbSourceResultEmbed(result, url).Build());
+            await ReplyAsync("", false, WebUtil.IqdbSourceResultEmbed(result, url).Build());
         }
 
-        [Command("Source"), Alias("SauceNao", "Sauce"), Summary("Finds the source of an image with SauceNao.\n**Usage**: `!source [image_url]` or `!source` with attached image.")]
-        public async Task SauceNao(string url = null, [Remainder] string str = "")
-        {
-            await Context.Channel.TriggerTypingAsync();
+        [SlashCommand("sauce", "Finds the source of an image with SauceNao")]
+        public Task SauceNaoAttachment(IAttachment file) =>
+            SauceNaoCmd(file.Url);
 
-            url ??= Context.Message.Attachments.FirstOrDefault()?.Url;
+        [Command("Source"), Alias("SauceNao", "Sauce"), Description("Finds the source of an image with SauceNao.\n**Usage**: `!source [image_url]` or `!source` with attached image.")]
+        public Task SauceNao(string url = null) => 
+            SauceNaoCmd(url ?? ((ICommandContext)Context)?.Message?.Attachments?.FirstOrDefault()?.Url);
+
+        public async Task SauceNaoCmd(string url)
+        {
+            await Context.TriggerTypingAsync();
 
             if (url == null)
             {
-                await Context.Channel.SendMessageAsync("Can't get your attachment, there probably isn't one. *Heh, dummy...*");
+                await ReplyAsync("Can't get your attachment, there probably isn't one. *Heh, dummy...*");
                 return;
             }
 
@@ -54,7 +63,7 @@ namespace Namiko
 
             if (sauce.Request.Status != 0)
             {
-                await Context.Channel.SendMessageAsync($"An error occured. Server response: `{sauce.Message}`");
+                await ReplyAsync($"An error occured. Server response: `{sauce.Message}`");
                 return;
             }
 
@@ -66,106 +75,70 @@ namespace Namiko
 
             if (sauce.Results.Count == 0)
             {
-                await Context.Channel.SendMessageAsync("No matches. Sorry~");
+                await ReplyAsync("No matches. Sorry~");
                 return;
             }
 
-            await Context.Channel.SendMessageAsync("", false, WebUtil.SauceEmbed(sauce, url).Build());
+            await ReplyAsync("", false, WebUtil.SauceEmbed(sauce, url).Build());
         }
+        
 
-        [Command("Anime"), Alias("AnimeSearch", "SearchAnime"), Summary("Searches MAL for an anime and the following details.\n**Usage**: `!Anime [anime_title]`")]
+        public enum Mal { Anime, Manga, Waifu }
+
+        [SlashCommand("myanimelist", "Search MyAnimeList database")]
+        public Task MalSearch(Mal searchType, string search) => searchType switch
+        {
+            Mal.Anime => AnimeSearch(search),
+            Mal.Manga => MangaSearch(search),
+            Mal.Waifu => WaifuSearch(search)
+        };
+        
+        [Command("Anime"), Alias("AnimeSearch", "SearchAnime"), Description("Searches MAL for an anime and the following details.\n**Usage**: `!Anime [anime_title]`")]
         public async Task AnimeSearch([Remainder]string Query)
         {
-            await Context.Channel.TriggerTypingAsync();
+            await Context.TriggerTypingAsync();
             var animeSearch = await WebUtil.AnimeSearch(Query);
 
             //Quick If to see if manga had results
             if (animeSearch == null || animeSearch.Results == null || animeSearch.Results.Count <= 0)
             {
-                await Context.Channel.SendMessageAsync($"Gomen, Senpai... No results.");
+                await ReplyAsync($"Gomen, senpai... No results.");
                 return;
             }
 
-            //Sends embed of manga titles from results
-            var listMsg = await ReplyAsync("", false, WebUtil.AnimeListEmbed(animeSearch).Build());
+            var response = await Select(animeSearch.Results, "Result", WebUtil.AnimeListEmbed(animeSearch).Build());
 
-            //Sets a timeout of 20 seconds, changeable if needed
-            var response = await NextMessageAsync(
-                new Criteria<IMessage>()
-                    .AddCriterion(new EnsureSourceUserCriterion())
-                    .AddCriterion(new EnsureSourceChannelCriterion())
-                    .AddCriterion(new EnsureRangeCriterion(7, Program.GetPrefix(Context))),
-                new TimeSpan(0, 0, 23));
+            await Context.TriggerTypingAsync();
+            var anime = await WebUtil.GetAnime(response.MalId); //EndManga becomes the manga, it uses ID to get propa page umu
 
-            long id;
-            try
-            {
-                int i = int.Parse(response.Content);
-                id = animeSearch.Results.Skip(i - 1).FirstOrDefault().MalId;
-            }
-            catch
-            {
-                _ = Context.Message.DeleteAsync();
-                return;
-            }
-            _ = response.DeleteAsync();
-
-            if (response != null)
-            {
-                await Context.Channel.TriggerTypingAsync();
-                var endAnime = await WebUtil.GetAnime(id); //EndManga becomes the manga, it uses ID to get propa page umu
-                await listMsg.ModifyAsync(x => x.Embed = WebUtil.AnimeEmbed(endAnime).Build());
-            }
+            await ReplyAsync(WebUtil.AnimeEmbed(anime).Build());
         }
 
-        [Command("Manga"), Alias("MangaSearch", "SearchManga"), Summary("Searches MAL for an manga and the following details.\n**Usage**: `!Manga [manga_title]`")]
+        [Command("Manga"), Alias("MangaSearch", "SearchManga"), Description("Searches MAL for an manga and the following details.\n**Usage**: `!Manga [manga_title]`")]
         public async Task MangaSearch([Remainder]string Query)
         {
-            await Context.Channel.TriggerTypingAsync();
+            await Context.TriggerTypingAsync();
             var mangaSearch = await WebUtil.MangaSearch(Query);
 
             //Quick If to see if manga had results
             if (mangaSearch == null || mangaSearch.Results == null || mangaSearch.Results.Count <= 0)
             {
-                await Context.Channel.SendMessageAsync($"Gomen, Senpai... No results.");
+                await ReplyAsync($"Gomen, Senpai... No results.");
                 return;
             }
 
-            //Sends embed of manga titles from results
-            var listMsg = await ReplyAsync("", false, WebUtil.MangaListEmbed(mangaSearch).Build());
+            var response = await Select(mangaSearch.Results, "Result", WebUtil.MangaListEmbed(mangaSearch).Build());
 
-            var response = await NextMessageAsync(
-                new Criteria<IMessage>()
-                    .AddCriterion(new EnsureSourceUserCriterion())
-                    .AddCriterion(new EnsureSourceChannelCriterion())
-                    .AddCriterion(new EnsureRangeCriterion(7, Program.GetPrefix(Context))),
-                new TimeSpan(0, 0, 23));
+            await Context.TriggerTypingAsync();
+            var manga = await WebUtil.GetManga(response.MalId); //EndManga becomes the manga, it uses ID to get propa page umu
 
-            long id;
-            try
-            {
-                int i = int.Parse(response.Content);
-                id = mangaSearch.Results.Skip(i - 1).FirstOrDefault().MalId;
-            }
-            catch
-            {
-                _ = Context.Message.DeleteAsync();
-                return;
-            }
-            _ = response.DeleteAsync();
-
-            if (mangaSearch != null)
-            {
-                await Context.Channel.TriggerTypingAsync();
-                var endManga = await WebUtil.GetManga(id); //EndManga becomes the manga, it uses ID to get propa page umu
-                await listMsg.ModifyAsync(x => x.Embed = WebUtil.MangaEmbed(endManga).Build());
-            }
+            await ReplyAsync(WebUtil.MangaEmbed(manga).Build());
         }
         
-        [Command("MALWaifu"), Alias("malw"), Summary("Searches MAL for characters.\n**Usage**: `!malw [query]`"), Insider]
-        public async Task AutocompleteWaifu([Remainder] string name)
+        [Command("MALWaifu"), Alias("malw"), Description("Searches MAL for characters.\n**Usage**: `!malw [query]`")]
+        public async Task WaifuSearch([Remainder] string name)
         {
-            await Context.Channel.TriggerTypingAsync();
+            await Context.TriggerTypingAsync();
             var eb = new EmbedBuilderPrepared(Context.User);
 
             var waifus = await WebUtil.GetWaifus(name);
@@ -176,12 +149,15 @@ namespace Namiko
             }
             eb.WithDescription(list);
 
-            await Context.Channel.SendMessageAsync(embed: eb.Build());
+            await ReplyAsync(embed: eb.Build());
         }
 
+
         [RequireGuild]
-        [Command("Subreddit"), Alias("sub"), Summary("Set a subreddit for Namiko to post hot posts from.\n**Usage**: `!sub [subreddit_name] [min_upvotes]`"), CustomUserPermission(GuildPermission.ManageChannels)]
-        public async Task Subreddit(string name, int upvotes)
+        [UserPermission(GuildPermission.ManageChannels)]
+        [Command("Subreddit"), Alias("sub"), Description("Set a subreddit for Namiko to post hot posts from.\n**Usage**: `!sub [subreddit_name] [min_upvotes]`")]
+        [SlashCommand("reddit-subscribe", "Set a subreddit for Namiko to post hot posts from")]
+        public async Task Subreddit(string subredditName, int minimumUpvotes)
         {
             var subs = SpecialChannelDb.GetChannelsByGuild(Context.Guild.Id, Model.ChannelType.Reddit);
             int limit = 1;
@@ -192,29 +168,29 @@ namespace Namiko
 
             if (subs.Count() >= limit)
             {
-                await Context.Channel.SendMessageAsync($"Limit {limit} subscription per guild. Upgrade server to increase the limit! `{Program.GetPrefix(Context)}Pro`", embed: WebUtil.SubListEmbed(Context.Guild.Id).Build());
+                await ReplyAsync($"Limit {limit} subscription per guild. Upgrade server to increase the limit! `{Program.GetPrefix(Context)}Pro`", embed: WebUtil.SubListEmbed(Context.Guild.Id).Build());
                 return;
             }
 
-            if (upvotes < 100)
+            if (minimumUpvotes < 100)
             {
-                await Context.Channel.SendMessageAsync("Upvote minimum must be at least 100.");
+                await ReplyAsync("Upvote minimum must be at least 100.");
                 return;
             }
 
-            await Context.Channel.TriggerTypingAsync();
+            await Context.TriggerTypingAsync();
             Subreddit sub = null;
             try
             {
-                sub = await RedditAPI.GetSubreddit(name);
+                sub = await RedditAPI.GetSubreddit(subredditName);
             } catch
             {
-                await Context.Channel.SendMessageAsync($"Subreddit **{name}** not found.");
+                await ReplyAsync($"Subreddit **{subredditName}** not found.");
                 return;
             }
             if (sub.Subscribers < 20000)
             {
-                await Context.Channel.SendMessageAsync("The Subreddit must have at least **20,000** subscribers.\n" +
+                await ReplyAsync("The Subreddit must have at least **20,000** subscribers.\n" +
                     $"**{sub.Name}** has **{sub.Subscribers?.ToString("n0")}**.");
                 return;
             }
@@ -222,7 +198,7 @@ namespace Namiko
             {
                 if (sub.Over18.Value && !((SocketTextChannel)Context.Channel).IsNsfw)
                 {
-                    await Context.Channel.SendMessageAsync($"**{sub.Name}** is a NSFW subreddit. This channel must be marked as NSFW.");
+                    await ReplyAsync($"**{sub.Name}** is a NSFW subreddit. This channel must be marked as NSFW.");
                     return;
                 }
             } catch { }
@@ -233,34 +209,37 @@ namespace Namiko
                 await SpecialChannelDb.Delete(old);
             }
 
-            await SpecialChannelDb.AddChannel(Context.Channel.Id, Model.ChannelType.Reddit, Context.Guild.Id, sub.Name + "," + upvotes);
-            await Context.Channel.SendMessageAsync(embed: WebUtil.SubredditSubscribedEmbed(sub, upvotes).Build());
+            await SpecialChannelDb.AddChannel(Context.Channel.Id, Model.ChannelType.Reddit, Context.Guild.Id, sub.Name + "," + minimumUpvotes);
+            await ReplyAsync(embed: WebUtil.SubredditSubscribedEmbed(sub, minimumUpvotes).Build());
         }
 
         [RequireGuild]
-        [Command("Unsubscribe"), Alias("unsub"), Summary("Unsubscribe from a subreddit.\n**Usage**: `!unsub [subreddit_name]`"), CustomUserPermission(GuildPermission.ManageChannels)]
-        public async Task Unsubscribe(string name)
+        [UserPermission(GuildPermission.ManageChannels)]
+        [Command("Unsubscribe"), Alias("unsub"), Description("Unsubscribe from a subreddit.\n**Usage**: `!unsub [subreddit_name]`")]
+        [SlashCommand("reddit-unsubscribe", "Unsubscribe from a subreddit")]
+        public async Task Unsubscribe(string subredditName)
         {
-            await Context.Channel.TriggerTypingAsync();
+            await Context.TriggerTypingAsync();
 
             var subs = SpecialChannelDb.GetChannelsByGuild(Context.Guild.Id, Model.ChannelType.Reddit);
-            var olds = subs.Where(x => x.Args.Split(",")[0].Equals(name, StringComparison.OrdinalIgnoreCase));
+            var olds = subs.Where(x => x.Args.Split(",")[0].Equals(subredditName, StringComparison.OrdinalIgnoreCase));
             if (!olds.Any())
             {
-                await Context.Channel.SendMessageAsync($"Subreddit **{name}** not found. Try `{Program.GetPrefix(Context)}sublist` for a list of your subreddits.");
+                await ReplyAsync($"Subreddit **{subredditName}** not found. Try `{Program.GetPrefix(Context)}sublist` for a list of your subreddits.");
             }
             foreach (var old in olds)
             {
                 await SpecialChannelDb.Delete(old);
-                await Context.Channel.SendMessageAsync($"Unsubscribed from **{name}**. Were their posts not good enough?");
+                await ReplyAsync($"Unsubscribed from **{subredditName}**. Were their posts not good enough?");
             }
         }
 
         [RequireGuild]
-        [Command("SubList"), Summary("Subreddits you are subscribed to.\n**Usage**: `!sublist`")]
+        [Command("SubList"), Description("Subreddits you are subscribed to.\n**Usage**: `!sublist`")]
+        [SlashCommand("reddit-list", "Subreddits you are subscribed to")]
         public async Task SubList()
         {
-            await Context.Channel.SendMessageAsync(embed: WebUtil.SubListEmbed(Context.Guild.Id).Build());
+            await ReplyAsync(embed: WebUtil.SubListEmbed(Context.Guild.Id).Build());
         }
     }
 }

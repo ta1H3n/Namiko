@@ -8,8 +8,8 @@ namespace Model
     public static class LootboxStats
     {
         public static Dictionary<LootBoxType, LootboxStat> Lootboxes;
-
-        public async static Task Reload(string path)
+        
+        public static async Task Reload(string path)
         {
             Lootboxes = new Dictionary<LootBoxType, LootboxStat>();
             var stats = await JsonHelper.ReadJson<List<LootboxStat>>(path);
@@ -18,5 +18,7 @@ namespace Model
                 Lootboxes.Add((LootBoxType)item.TypeId, item);
             }
         }
+
+        public static LootboxStat GetLootboxStats(this LootBoxType type) => LootboxStats.Lootboxes[type];
     }
 }

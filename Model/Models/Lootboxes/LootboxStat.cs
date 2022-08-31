@@ -7,7 +7,7 @@ namespace Model
     public class LootboxStat
     {
         public string Name { get; set; }
-        public int TypeId { get; set; }
+        public LootBoxType TypeId { get; set; }
         public Dictionary<int, int> WaifuChance { get; set; }
         public int DefaultWaifutier { get; set; } = 3;
         public int ToastieChance { get; set; }
