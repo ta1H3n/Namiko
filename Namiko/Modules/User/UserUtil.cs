@@ -188,7 +188,7 @@ namespace Namiko
             if( !String.IsNullOrEmpty(field2) ) embed.AddField("Proposals Received :sparkling_heart:", field2, true);
             return embed;
         }
-        public static EmbedBuilder MarriagesEmbed(IUser user, SocketGuild guild)
+        public static EmbedBuilder MarriagesEmbed(IUser user, SocketGuild guild, BaseSocketClient client)
         {
 
             //embed basics
@@ -205,7 +205,7 @@ namespace Namiko
                 embed.AddField("Married To", partners, true);
                 try
                 {
-                    embed.WithImageUrl(Program.GetClient().GetUser(GetWifeId(marriages[0], user.Id)).GetAvatarUrl());
+                    embed.WithImageUrl(client.GetUser(GetWifeId(marriages[0], user.Id)).GetAvatarUrl());
                 } catch { }
             }
             else embed.WithDescription("You are not Married.");
@@ -254,7 +254,7 @@ namespace Namiko
             {
                 string desc = "You find yourself in a strange place. You are all alone in the darkness. You have no waifus, no love, no purpose.\n\nBut perhaps all is not lost?\n\n"
                     + $"*A pillar of light reveals strange texts*\n"
-                    + $"```{Program.GetPrefix(user)}lootbox\n{Program.GetPrefix(user)}daily\n{Program.GetPrefix(user)}weekly\n{Program.GetPrefix(user)}waifushop```";
+                    + $"```{TextCommandService.GetPrefix(user)}lootbox\n{TextCommandService.GetPrefix(user)}daily\n{TextCommandService.GetPrefix(user)}weekly\n{TextCommandService.GetPrefix(user)}waifushop```";
                 eb.WithDescription(desc);
             }
 

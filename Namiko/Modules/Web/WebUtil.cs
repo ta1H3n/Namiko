@@ -16,6 +16,9 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Discord.WebSocket;
+using Namiko.Addons.Handlers;
+using Namiko.Handlers.Services;
 
 namespace Namiko
 {
@@ -283,14 +286,14 @@ namespace Namiko
         
         // DISCORD BOTS ORG
 
-        public static async Task<IList<IDblEntity>> GetVotersAsync()
+        public static async Task<IList<IDblEntity>> GetVotersAsync(BaseSocketClient client)
         {
             try
             {
                 return await DblApi.GetVotersAsync();
             } catch (Exception ex)
             {
-                SetUpDbl(Program.GetClient().CurrentUser.Id);
+                SetUpDbl(client.CurrentUser.Id);
                 SentrySdk.CaptureException(ex);
                 throw;
             }
@@ -342,7 +345,7 @@ namespace Namiko
             eb.WithDescription(desc == "" ? "-" : desc);
             eb.WithAuthor("Subreddits subscribed in this server");
             eb.WithColor(BasicUtil.RandomColor());
-            eb.WithFooter($"Type `{Program.GetPrefix(guildId)}unsub [name]` to unsubscribe.");
+            eb.WithFooter($"Type `{TextCommandService.GetPrefix(guildId)}unsub [name]` to unsubscribe.");
             return eb;
         }
     }

@@ -16,6 +16,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Namiko.Handlers.Services;
 using Namiko.Handlers.TypeConverters;
 using Namiko.Modules.Leaderboard;
 using Namiko.Modules.Pro;
@@ -27,18 +28,12 @@ namespace Namiko
     public class Program
     {
         private static DiscordShardedClient Client;
-        private static CommandService Commands;
-        public static InteractionService Interactions { get; private set; }
         private static IServiceProvider Services;
-        private static Dictionary<ulong, string> Prefixes;
         private static readonly CancellationTokenSource cts = new CancellationTokenSource();
         private static readonly CancellationToken ct = cts.Token;
-        public static HashSet<ulong> Blacklist;
         public static bool Development = false;
-        private static bool Pause = false;
         public static bool GuildLeaveEvent = true;
         private static int ShardCount;
-
 
         private static int Startup = 0;
         private static int AllShardsReady = 0;
@@ -66,6 +61,8 @@ namespace Namiko
         }
         private async Task MainAsync()
         {
+            var logger = new Logger();
+            
             Client = new DiscordShardedClient(new DiscordSocketConfig
             {
                 LogLevel = LogSeverity.Warning,
@@ -83,7 +80,7 @@ namespace Namiko
                     GatewayIntents.DirectMessageReactions
             });
 
-            Client.Log += Console_Log;
+            Client.Log += logger.Console_Log;
             Client.ShardConnected += SetUp_FirstShardConnected;
             Client.ShardReady += SetUp_AllShardsReady;
 
@@ -108,69 +105,30 @@ namespace Namiko
             Client.UserLeft += Client_UserLeftLog;
             Client.UserBanned += Client_UserBannedLog;
 
-            //Client.SlashCommandExecuted += Client_SlashCommandExecuted;
-            Client.InteractionCreated += Client_InteractionCreated;
-
-            Commands = new CommandService(new CommandServiceConfig
+            var commandConfig = new CommandServiceConfig
             {
                 CaseSensitiveCommands = false,
                 DefaultRunMode = Discord.Commands.RunMode.Async,
                 LogLevel = LogSeverity.Warning
-            });
+            };
 
-            // Commands.CommandExecuted += Commands_CommandExecuted;
-            // Commands.Log += Console_Log;
-            // Commands.Log += Error_Log;
+            
 
-
-            Services = new ServiceCollection()
-                .AddSingleton(Client)
-                .AddSingleton<InteractiveService>()
-                .BuildServiceProvider();
-
-            await Commands.AddModuleAsync(typeof(Banroulettes), Services);
-            await Commands.AddModuleAsync(typeof(Banroyales), Services);
-            await Commands.AddModuleAsync(typeof(Basic), Services);
-            await Commands.AddModuleAsync(typeof(Currency), Services);
-            await Commands.AddModuleAsync(typeof(Images), Services);
-            await Commands.AddModuleAsync(typeof(Roles), Services);
-            await Commands.AddModuleAsync(typeof(ServerModule), Services);
-            await Commands.AddModuleAsync(typeof(Special), Services);
-            await Commands.AddModuleAsync(typeof(SpecialModes), Services);
-            await Commands.AddModuleAsync(typeof(User), Services);
-            await Commands.AddModuleAsync(typeof(Waifus), Services);
-            await Commands.AddModuleAsync(typeof(WaifuEditing), Services);
-            await Commands.AddModuleAsync(typeof(Web), Services);
-            await Commands.AddModuleAsync(typeof(Music), Services);
-            await Commands.AddModuleAsync(typeof(Leaderboards), Services);
-            await Commands.AddModuleAsync(typeof(Pro), Services);
-
-            Interactions = new InteractionService(Client, new InteractionServiceConfig
+            var interactionConfig = new InteractionServiceConfig
             {
                 LogLevel = LogSeverity.Warning,
                 WildCardExpression = "*",
-            });
+            };
             
-            Interactions.AddTypeConverter<Waifu>(new WaifuConverter());
-            Interactions.AddTypeConverter<ShopWaifu>(new ShopWaifuConverter());
-            
-            Interactions.Log += Console_Log;
-            //await Interactions.AddModuleAsync(typeof(Banroulettes), Services);
-            //await Interactions.AddModuleAsync(typeof(Banroyales), Services);
-            await Interactions.AddModuleAsync(typeof(Basic), Services);
-            await Interactions.AddModuleAsync(typeof(Currency), Services);
-            await Interactions.AddModuleAsync(typeof(Images), Services);
-            await Interactions.AddModuleAsync(typeof(Roles), Services);
-            await Interactions.AddModuleAsync(typeof(ServerModule), Services);
-            await Interactions.AddModuleAsync(typeof(User), Services);
-            await Interactions.AddModuleAsync(typeof(Waifus), Services);
-            await Interactions.AddModuleAsync(typeof(WaifuEditing), Services);
-            await Interactions.AddModuleAsync(typeof(Web), Services);
-            await Interactions.AddModuleAsync(typeof(Music), Services);
-            await Interactions.AddModuleAsync(typeof(Leaderboards), Services);
-            await Interactions.AddModuleAsync(typeof(Pro), Services);
-            Interactions.SlashCommandExecuted += Interactions_SlashCommandExecuted;
-
+            Services = new ServiceCollection()
+                .AddSingleton(Client)
+                .AddSingleton(interactionConfig)
+                .AddSingleton<SlashCommandService>()
+                .AddSingleton(commandConfig)
+                .AddSingleton<TextCommandService>()
+                .AddSingleton<InteractiveService>()
+                .AddSingleton(logger)
+                .BuildServiceProvider();
 
             await Client.LoginAsync(TokenType.Bot, AppSettings.Token);
             await Client.StartAsync();
@@ -191,60 +149,6 @@ namespace Namiko
             await Client.LogoutAsync();
         }
 
-        private async Task Client_InteractionCreated(SocketInteraction interaction)
-        {
-            try
-            {
-                // Create an execution context that matches the generic type parameter of your InteractionModuleBase<T> modules.
-                var context = new CustomInteractionContext(Client, interaction);
-                if (interaction.Type == InteractionType.ApplicationCommand)
-                {
-                    if (((SocketSlashCommand)interaction).CommandName != "waifu-edit")
-                    {
-                        await interaction.DeferAsync();
-                    }
-                }
-                var result = await Interactions.ExecuteCommandAsync(context, Services);
-            }
-            catch
-            {
-                // If Slash Command execution fails it is most likely that the original interaction acknowledgement will persist. It is a good idea to delete the original
-                // response, or at least let the user know that something went wrong during the command execution.
-                if (interaction.Type is InteractionType.ApplicationCommand)
-                    await interaction.GetOriginalResponseAsync().ContinueWith(async (msg) => await msg.Result.DeleteAsync());
-            }
-        }
-
-        private async Task Client_SlashCommandExecuted(SocketSlashCommand arg)
-        {
-            var context = new CustomInteractionContext(Client, arg, arg.Channel);
-            await arg.DeferAsync();
-            await Interactions.ExecuteCommandAsync(context, Services);
-        }
-        private async Task Interactions_SlashCommandExecuted(SlashCommandInfo cmd, IInteractionContext con, Discord.Interactions.IResult res)
-        {
-            var context = (CustomInteractionContext)con;
-            string cmdName = cmd?.Name;
-
-            if (!res.IsSuccess)
-            {
-                // If the command is found but failed then send help message for said command
-                if (!(res.Error == InteractionCommandError.UnknownCommand || res.Error == InteractionCommandError.Exception))
-                {
-                    string reason = res.ErrorReason + "\n";
-                    if (res.Error != InteractionCommandError.UnmetPrecondition)
-                        reason += CommandHelpString(cmdName, GetPrefix(context.Guild));
-                    await context.ReplyAsync(embed: new EmbedBuilder().WithColor(Color.DarkRed).WithDescription(":x: " + reason).Build());
-                }
-            }
-
-            // prevent doing "Bot is thinking..." for 15min if command fails
-            //if (await context.Interaction.GetOriginalResponseAsync() == null)
-            //{
-            //    await context.ReplyAsync(embed: new EmbedBuilderPrepared(":x: Unkown error occured").Build());
-            //}
-        }
-
         // SET-UP  
 
         private static void SetUp()
@@ -253,16 +157,13 @@ namespace Namiko
             {
                 case "Development":
                     Development = true;
-                    Pause = false;
                     break;
                 default:
-                    Console.WriteLine("Entry: " + Assembly.GetEntryAssembly().Location);
                     _ = ImgurAPI.ImgurSetup();
                     break;
             }
             NamikoDbContext.ConnectionString = AppSettings.ConnectionString;
             _ = LootboxStats.Reload(Locations.LootboxStatsJSON);
-            Prefixes = ServerDb.GetPrefixes();
             Images.ReactionImageCommands = ImageDb.GetReactionImageDictionary().Result;
             //Blacklist = BlacklistDb.GetAll();
             Waifu.Path = AppSettings.ImageUrlPath + "waifus/";
@@ -274,14 +175,6 @@ namespace Namiko
             {
                 try
                 {
-                    if (!Development)
-                    {
-                        await Interactions.AddModulesGloballyAsync(true,
-                            Interactions.Modules.Where(x => x.Name != nameof(WaifuEditing)).ToArray());
-                        await Interactions.AddModulesToGuildAsync(418900885079588884, true,
-                            Interactions.Modules.FirstOrDefault(x => x.Name == nameof(WaifuEditing)));
-                    }
-
                     WebUtil.SetUpDbl(arg.CurrentUser.Id);
                     await StartTimers();
                     if (!Development)
@@ -298,9 +191,9 @@ namespace Namiko
         private async static Task StartTimers()
         {
             if (Development)
-                await Timers.SetUp();
+                await Timers.SetUp(Client);
             else
-                await Timers.SetUpRelease();
+                await Timers.SetUpRelease(Client);
         }
         private async Task SetUp_AllShardsReady(DiscordSocketClient arg)
         {
@@ -328,147 +221,6 @@ namespace Namiko
             }
         }
 
-
-        // COMMANDS
-
-        private async Task Client_ReadCommand(SocketMessage MessageParam)
-        {
-            if (Client == null)
-                return;
-
-            if (!(MessageParam is SocketUserMessage Message))
-                return;
-
-            var context = new CustomCommandContext(Client, Message);
-            string prefix = GetPrefix(context.Guild);
-
-            if (Blacklist.Contains(context.User.Id) || (context.Guild != null && Blacklist.Contains(context.Guild.Id)) || (context.Channel != null && Blacklist.Contains(context.Channel.Id)))
-                return;
-            if (context.User.IsBot)
-                return;
-            if (context.Message == null || context.Message.Content == "")
-                return;
-            if (BlacklistedChannelDb.IsBlacklisted(context.Channel.Id))
-                return;
-            if (RateLimit.InvokeLockout.TryGetValue(context.Channel.Id, out var time) && time > DateTime.Now)
-                return;
-
-            await SpecialModeResponse(context);
-            await SpecialResponse(Message);
-
-            int ArgPos = 0;
-            bool isPrefixed = Message.HasStringPrefix(prefix, ref ArgPos) || Message.HasMentionPrefix(Client.CurrentUser, ref ArgPos);
-
-            if (!isPrefixed)
-                return;
-
-            var cmds = Commands.Search(context, ArgPos);
-            if (cmds.IsSuccess)
-            {
-                if (context.Guild != null && cmds.Commands.Any(x => DisabledCommandHandler.IsDisabled(x.Command.Name, context.Guild.Id, DisabledCommandType.Command)))
-                    return;
-                else if (context.Guild != null && cmds.Commands.Any(x => DisabledCommandHandler.IsDisabled(x.Command.Module.Name, context.Guild.Id, DisabledCommandType.Module)))
-                    return;
-
-                else if (!RateLimit.CanExecute(context.Channel.Id))
-                {
-                    await context.Channel.SendMessageAsync($"Woah there, Senpai, calm down! I locked this channel for **{RateLimit.InvokeLockoutPeriod.Seconds}** seconds <:MeguExploded:627470499278094337>\n" +
-                        $"You can only use **{RateLimit.InvokeLimit}** commands per **{RateLimit.InvokeLimitPeriod.Seconds}** seconds per channel.");
-                    return;
-                }
-
-                else if (Pause && context.User.Id != AppSettings.OwnerId)
-                {
-                    await context.Channel.SendMessageAsync("Commands disabled temporarily. Try again later.");
-                    return;
-                }
-
-                else if (context.Channel is SocketTextChannel ch
-                    && (!ch.Guild.CurrentUser.GetPermissions(ch).Has(ChannelPermission.SendMessages) || !ch.Guild.CurrentUser.GetPermissions(ch).Has(ChannelPermission.EmbedLinks)))
-                {
-                    var dm = await context.User.CreateDMChannelAsync();
-                    await dm.SendMessageAsync(embed: new EmbedBuilderPrepared(context.Guild.CurrentUser)
-                        .WithDescription($"I don't have permission to reply to you in **{ch.Name}**.\n" +
-                        $"Make sure I have a role that allows me to send messages and embed links in the channels you want to use me in.")
-                        .WithImageUrl("https://i.imgur.com/lrPHjyt.png")
-                        .Build());
-                    return;
-                }
-            }
-
-            _ = Commands.ExecuteAsync(context, ArgPos, Services);
-        }
-        private async Task Commands_CommandExecuted(Optional<CommandInfo> cmd, ICommandContext context, Discord.Commands.IResult res)
-        {
-            string cmdName = cmd.IsSpecified ? cmd.Value.Name : null;
-            bool success = res.IsSuccess;
-
-            if (!success)
-            {
-                // Try sending a reaction image if there is no such command
-                if (await new Images().SendRandomImage(context))
-                {
-                    cmdName = "ReactionImage";
-                    success = true;
-                }
-
-                // If the command is found but failed then send help message for said command
-                else
-                if (!(res.Error == CommandError.UnknownCommand || res.Error == CommandError.Exception))
-                {
-                    string reason = res.ErrorReason + "\n";
-                    if (res.Error != CommandError.UnmetPrecondition)
-                        reason += CommandHelpString(context.Message.Content.Split(null)[0].Replace(GetPrefix(context.Guild), ""), GetPrefix(context.Guild));
-                    await context.Channel.SendMessageAsync(embed: new EmbedBuilder().WithColor(Color.DarkRed).WithDescription(":x: " + reason).Build());
-                }
-            }
-            // If the command is found and completed but it is a music command in a guild with no premium - set as failed
-            else
-            if ((cmdName == nameof(Music.Join) || cmdName == nameof(Music.Play) || cmdName == nameof(Music.PlayNext) || cmdName == nameof(Music.PlayFirst))
-                && !(PremiumDb.IsPremium(context.Guild.Id, ProType.GuildPlus) || PremiumDb.IsPremium(context.Guild.Id, ProType.Guild)))
-            {
-                success = false;
-            }
-
-
-            // If command is found - save a log of it
-            if (cmdName != null && Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Development")
-                await Stats.LogCommand(cmdName, context, success);
-        }
-        private async Task Error_Log(LogMessage logMessage)
-        {
-            if (logMessage.Exception is CommandException cmdException)
-            {
-                if (cmdException.InnerException is NamikoException ex)
-                {
-                    await cmdException.Context.Channel.SendMessageAsync(":x: " + ex.Message);
-                }
-                else
-                {
-                    SentrySdk.WithScope(scope =>
-                    {
-                        scope.SetTag("Command", cmdException.Command.Name);
-                        scope.SetExtra("GuildId", cmdException.Context.Guild.Id);
-                        scope.SetExtra("Guild", cmdException.Context.Guild.Name);
-                        scope.SetExtra("GuildOwnerId", cmdException.Context.Guild.OwnerId);
-                        scope.SetExtra("ChannelId", cmdException.Context.Channel.Id);
-                        scope.SetExtra("Channel", cmdException.Context.Channel.Name);
-                        scope.SetExtra("UserId", cmdException.Context.User.Id);
-                        scope.SetExtra("User", cmdException.Context.User.Username);
-                        scope.SetExtra("MessageId", cmdException.Context.Message.Id);
-                        scope.SetExtra("Message", cmdException.Context.Message.Content);
-                        if (cmdException.InnerException is HttpException)
-                            scope.Level = Sentry.Protocol.SentryLevel.Warning;
-                        SentrySdk.CaptureException(cmdException.InnerException);
-                    });
-
-                    if (cmdException.Command.Module.Name.Equals(nameof(WaifuEditing)))
-                    {
-                        await cmdException.Context.Channel.SendMessageAsync(cmdException.InnerException.Message);
-                    }
-                }
-            }
-        }
 
         // EVENTS
 
@@ -559,19 +311,10 @@ namespace Namiko
             if (arg.Severity == LogSeverity.Critical || ((arg.Message.Contains("Connected") || arg.Message.Contains("Disconnected")) && arg.Source.Contains("Shard")))
                 await WebhookClients.NamikoLogChannel.SendMessageAsync($":information_source:`{shortdate} {arg.Source}]` {arg.Message}{exc}");
         }
-        private Task Console_Log(LogMessage arg)
-        {
-            Logger.Log(arg.ToString(), arg.Severity);
-            return Task.CompletedTask;
-        }
         private async Task Client_ShardConnected(DiscordSocketClient arg)
         {
             Console.WriteLine($"{DateTime.Now} - Shard {arg.ShardId} Connected");
             _ = WebhookClients.NamikoLogChannel.SendMessageAsync($"<:TickYes:577838859107303424> `{DateTime.Now.ToString("HH:mm:ss")}` - `Shard {arg.ShardId} Connected`");
-            if (Development)
-            {
-                await Interactions.RegisterCommandsToGuildAsync(418900885079588884, true);
-            }
         }
         private async Task Client_ShardDisconnected(Exception arg1, DiscordSocketClient arg2)
         {
@@ -651,7 +394,7 @@ namespace Namiko
             SocketTextChannel ch = arg.SystemChannel ?? arg.DefaultChannel;
             try
             {
-                await ch?.SendMessageAsync("Hi! Please take good care of me!", false, BasicUtil.GuildJoinEmbed().Build());
+                await ch?.SendMessageAsync("Hi! Please take good care of me!", false, BasicUtil.GuildJoinEmbed(Client).Build());
             }
             catch { }
             await WebhookClients.GuildJoinLogChannel.SendMessageAsync($"<:TickYes:577838859107303424> {Client.CurrentUser.Username} joined `{arg.Id}` **{arg.Name}**.\nOwner: `{arg.Owner.Id}` **{arg.Owner}**");
@@ -710,74 +453,8 @@ namespace Namiko
             return (SocketTextChannel)guild.GetChannel(ServerDb.GetServer(guild.Id).JoinLogChannelId);
         }
 
-        // PREFIXES
-
-        public static string GetPrefix(ulong guildId)
-        {
-            return Prefixes.GetValueOrDefault(guildId) ?? AppSettings.DefaultPrefix;
-        }
-        public static string GetPrefix(ICustomContext context)
-        {
-            return context.Guild == null ? AppSettings.DefaultPrefix : GetPrefix(context.Guild.Id);
-        }
-        public static string GetPrefix(ICommandContext context)
-        {
-            return context.Guild == null ? AppSettings.DefaultPrefix : GetPrefix(context.Guild.Id);
-        }
-        public static string GetPrefix(SocketGuildUser user)
-        {
-            return user.Guild == null ? AppSettings.DefaultPrefix : GetPrefix(user.Guild.Id);
-        }
-        public static string GetPrefix(IGuild guild)
-        {
-            return guild == null ? AppSettings.DefaultPrefix : GetPrefix(guild.Id);
-        }
-        public static bool UpdatePrefix(ulong guildId, string prefix)
-        {
-            if (guildId == 0 || prefix == null || prefix == "")
-                return false;
-
-            if (Prefixes.GetValueOrDefault(guildId) != null)
-                Prefixes.Remove(guildId);
-
-            Prefixes.Add(guildId, prefix);
-            return true;
-        }
-
         // RANDOM
-
-        public static string CommandHelpString(string commandName, string prefix)
-        {
-            try
-            {
-                var cmd = Commands.Commands.Where(x => x.Aliases.Any(y => y.Equals(commandName, StringComparison.OrdinalIgnoreCase))).FirstOrDefault();
-                string str = cmd.Summary;
-                string result = "**Description**: " + str;
-                result = result.Replace("!", prefix);
-                return result;
-            }
-            catch
-            {
-                return "";
-            }
-        }
-        //  public static EmbedBuilder CommandHelpEmbed(string commandName)
-        //  {
-        //      var cmd = Commands.Commands.Where(x => x.Aliases.Any(y => y.Equals(commandName))).FirstOrDefault();
-        //      return new BasicCommands().CommandHelpEmbed(cmd);
-        //  }
-        public static DiscordShardedClient GetClient()
-        {
-            return Client;
-        }
-        public static CommandService GetCommands()
-        {
-            return Commands;
-        }
-        public static IServiceProvider GetServices()
-        {
-            return Services;
-        }
+        
         private static string GetWelcomeMessageString(SocketUser user)
         {
             string message = WelcomeMessageDb.GetRandomMessage();
@@ -787,58 +464,6 @@ namespace Namiko
         public static CancellationTokenSource GetCts()
         {
             return cts;
-        }
-        public static bool SetPause()
-        {
-            if (Pause)
-                Pause = false;
-            else
-                Pause = true;
-
-            return Pause;
-        }
-
-        private async Task SpecialModeResponse(ICommandContext context)
-        {
-            if (SpecialModes.ChristmasModeEnable)
-                await new SpecialModes().Christmas(context);
-
-            if (SpecialModes.SpookModeEnable)
-                await new SpecialModes().Spook(context);
-        }
-        private async Task SpecialResponse(SocketUserMessage message)
-        {
-            if (Client == null)
-                return;
-
-            if (message.Content.Contains("rep", StringComparison.OrdinalIgnoreCase))
-                return;
-
-            if (message.Content.StartsWith("Hi Namiko", StringComparison.OrdinalIgnoreCase))
-            {
-                await message.Channel.SendMessageAsync($"Hi {message.Author.Mention} :fox:");
-                return;
-            }
-            if (message.Content.StartsWith("Namiko-sama", StringComparison.OrdinalIgnoreCase))
-            {
-                var msgs = new List<string>
-                {
-                    $"Rise, {message.Author.Mention}",
-                    $"Yes, {message.Author.Mention}?"
-                };
-                await message.Channel.SendMessageAsync(msgs[new Random().Next(msgs.Count)]);
-                return;
-            }
-
-            if (Client?.CurrentUser == null)
-                return;
-
-            string msg = message.Content.Replace("!", "");
-            string mention = Client.CurrentUser.Mention.Replace("!", "");
-            if (msg.Contains(mention) && (!msg.StartsWith(mention) || msg.Equals(mention)))
-            {
-                await message.Channel.SendMessageAsync($"{message.Author.Mention} <a:loveme:536705504798441483>");
-            }
         }
 
 

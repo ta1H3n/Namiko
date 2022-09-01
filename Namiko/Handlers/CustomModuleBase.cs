@@ -136,7 +136,7 @@ namespace Namiko.Addons.Handlers
                 }
                 foreach (var prec in cmd.Attributes.Where(x => x is PreconditionAttribute).Cast<PreconditionAttribute>())
                 {
-                    cmd.AddPrecondition(prec.ReturnAttribute(Handler.Commands) as Discord.Commands.PreconditionAttribute);
+                    cmd.AddPrecondition(prec.ReturnAttribute(HandlerType.Commands) as Discord.Commands.PreconditionAttribute);
                 }
             }
         }
@@ -170,7 +170,7 @@ namespace Namiko.Addons.Handlers
                 //    cmd.WithSu((desc as DescriptionAttribute).Description);
                 //}
                 var atr = cmd.Attributes.Where(x => x is PreconditionAttribute).Cast<PreconditionAttribute>();
-                cmd.WithPreconditions(atr.Select(x => x.ReturnAttribute(Handler.Interactions) as Discord.Interactions.PreconditionAttribute).ToArray());
+                cmd.WithPreconditions(atr.Select(x => x.ReturnAttribute(HandlerType.Interactions) as Discord.Interactions.PreconditionAttribute).ToArray());
 
                 var permissions = cmd.Attributes.Where(x => x is UserPermissionAttribute).Cast<UserPermissionAttribute>().Select(x => x.GuildPermission);
                 cmd.DefaultMemberPermissions = permissions.FirstOrDefault();

@@ -7,7 +7,7 @@ namespace Namiko.Addons.Handlers
 {
     public interface ICustomContext
     {
-        DiscordShardedClient Client { get; }
+        BaseSocketClient Client { get; }
         SocketGuild Guild { get; }
         ISocketMessageChannel Channel { get; }
         SocketUser User { get; }

@@ -21,6 +21,9 @@ namespace Namiko.Modules.Pro
     [Name("Pro")]
     public class Pro : CustomModuleBase<ICustomContext>
     {
+        public BaseSocketClient Client { get; set; }
+        
+        
         public enum ProChoice { [ChoiceDisplay("Pro - global upgrade for your account")] Pro, [ChoiceDisplay("Pro Guild - upgrade this server")] Guild }
 
         [SlashCommand("pro", "Activate Namiko pro")]
@@ -96,7 +99,7 @@ namespace Namiko.Modules.Pro
                 }
             }
             if (text == "")
-                text += $"You have no Pro Guild... Try `{Program.GetPrefix(Context)}Pro`";
+                text += $"You have no Pro Guild... Try `{TextCommandService.GetPrefix(Context)}Pro`";
 
             await ReplyAsync(text);
             if (log)
@@ -154,7 +157,7 @@ namespace Namiko.Modules.Pro
                 }
             }
             if (text == "")
-                text += $"You have no user premium... Try `{Program.GetPrefix(Context)}donate`";
+                text += $"You have no user premium... Try `{TextCommandService.GetPrefix(Context)}donate`";
 
             await ReplyAsync(text);
             if (log)
@@ -191,15 +194,15 @@ namespace Namiko.Modules.Pro
         //[SlashCommand("pro", "Info about pro features")]
         public async Task Donate()
         {
-            await ReplyAsync("", false, BasicUtil.DonateEmbed(Program.GetPrefix(Context)).Build());
+            await ReplyAsync("", false, BasicUtil.DonateEmbed(TextCommandService.GetPrefix(Context), Client).Build());
         }
 
         [Command("InfoPro"), Description("Donation Links.")]
         public async Task InfoPro()
         {
-            string prefix = Program.GetPrefix(Context);
+            string prefix = TextCommandService.GetPrefix(Context);
             var eb = new EmbedBuilder()
-                .WithAuthor(Program.GetClient().CurrentUser)
+                .WithAuthor(Client.CurrentUser)
                 .WithDescription($"Namiko Pro Upgrades :star:\n" +
                     $"\n" +
                     $"- Waifus from your wishlist have a much higher chance to appear in the `{prefix}waifushop`\n" +
@@ -218,9 +221,9 @@ namespace Namiko.Modules.Pro
         [Command("InfoProPlus"), Description("Donation Links.")]
         public async Task InfoProPlus()
         {
-            string prefix = Program.GetPrefix(Context);
+            string prefix = TextCommandService.GetPrefix(Context);
             var eb = new EmbedBuilder()
-                .WithAuthor(Program.GetClient().CurrentUser)
+                .WithAuthor(Client.CurrentUser)
                 .WithDescription($"Namiko Pro+ Upgrades :star2:\n" +
                     $"\n" +
                     $"- All upgrades in Pro\n" +
@@ -242,9 +245,9 @@ namespace Namiko.Modules.Pro
         [Command("InfoGuild"), Description("Donation Links.")]
         public async Task InfoGuild()
         {
-            string prefix = Program.GetPrefix(Context);
+            string prefix = TextCommandService.GetPrefix(Context);
             var eb = new EmbedBuilder()
-                .WithAuthor(Program.GetClient().CurrentUser)
+                .WithAuthor(Client.CurrentUser)
                 .WithDescription($"Namiko Pro Guild Upgrades :star:\n" +
                     $"\n" +
                     $"- **Music** with a lot of features! Try `{prefix}join`\n" +
@@ -264,7 +267,7 @@ namespace Namiko.Modules.Pro
         public async Task InfoGuildPlus()
         {
             var eb = new EmbedBuilder()
-                .WithAuthor(Program.GetClient().CurrentUser)
+                .WithAuthor(Client.CurrentUser)
                 .WithDescription($"Namiko Pro Guild+ Upgrades :star2:\n" +
                     $"\n" +
                     $"- All upgrades in Guild\n" +

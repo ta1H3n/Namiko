@@ -26,6 +26,8 @@ namespace Namiko
 {
     public class Special : CustomModuleBase<ICustomContext>
     {
+        public DiscordShardedClient Client { get; set; }
+        public TextCommandService TextCommands { get; set; }
         static ISocketMessageChannel ch;
 
         [Command("SetSayCh"), Alias("ssch"), OwnerPrecondition]
@@ -59,12 +61,12 @@ namespace Namiko
             await Context.Client.SetGameAsync(str);
         }
 
-        [Command("Freeze"), Description("Pauses or Unpauses the bot"), OwnerPrecondition]
-        public async Task Pause()
-        {
-            var pause = Program.SetPause();
-            await ReplyAsync($"Pause = {pause}");
-        }
+        // [Command("Freeze"), Description("Pauses or Unpauses the bot"), OwnerPrecondition]
+        // public async Task Pause()
+        // {
+        //     var pause = Program.SetPause();
+        //     await ReplyAsync($"Pause = {pause}");
+        // }
 
         [Command("SQL"), Description("Executes an SQL query. DANGEROUS"), OwnerPrecondition]
         public async Task Sql([Remainder] string str = "")
@@ -232,14 +234,14 @@ namespace Namiko
         [Command("StartLavalink"), Description("Starts Lavalink.\n**Usage**: `!join`"), Insider]
         public async Task Init([Remainder]string str = "")
         {
-            await Music.Initialize(Program.GetClient());
+            await Music.Initialize(Client);
             await ReplyAsync("Done.");
         }
 
         [Command("SendLootboxes"), OwnerPrecondition]
         public async Task SendLootboxes()
         {
-            var voters = (await WebUtil.GetVotersAsync()).Select(x => x.Id).Distinct();
+            var voters = (await WebUtil.GetVotersAsync(Client)).Select(x => x.Id).Distinct();
             int sent = await Timers.SendRewards(voters);
 
             ReplyAsync($"Broadcasted to {sent}/{voters.Count()} users.");
@@ -248,14 +250,14 @@ namespace Namiko
         [Command("MessageVoters"), OwnerPrecondition]
         public async Task MessageVoters([Remainder] string msg = "")
         {
-            var voters = (await WebUtil.GetVotersAsync()).Select(x => x.Id).Distinct();
+            var voters = (await WebUtil.GetVotersAsync(Client)).Select(x => x.Id).Distinct();
 
             int sent = 0;
             foreach (var x in voters)
             {
                 try
                 {
-                    var ch = await Program.GetClient().GetUser(x).CreateDMChannelAsync();
+                    var ch = await Client.GetUser(x).CreateDMChannelAsync();
                     await ch.SendMessageAsync(msg);
                     sent++;
                 }
@@ -263,45 +265,6 @@ namespace Namiko
             }
 
             ReplyAsync($"Broadcasted to {sent}/{voters.Count()} users.");
-        }
-
-        [Command("Debug"), OwnerPrecondition]
-        public async Task Debug([Remainder] string msg = "")
-        {
-            var commands = Program.GetCommands();
-            var processed = DateTime.Now.AddMinutes(-10);
-            var context = (ICommandContext)Context;
-
-            async Task listen(Optional<CommandInfo> arg1, ICommandContext arg2, IResult arg3)
-            {
-                if (arg2.Message.Equals(context.Message) && arg1.Value.Name != "Debug")
-                {
-                    processed = System.DateTime.Now;
-                    await Task.Delay(1);
-                }
-            }
-            commands.CommandExecuted += listen;
-
-            var received = System.DateTime.Now;
-            string prefix = Program.GetPrefix(Context);
-            int ArgPos = 0;
-            bool isPrefixed = context.Message.HasStringPrefix(prefix + "debug ", ref ArgPos);
-            var result = await commands.ExecuteAsync(context, ArgPos, Program.GetServices());
-
-            //var processed = System.DateTime.Now;
-            var message = await ReplyAsync("`Counting...`");
-            await Task.Delay(5000);
-            commands.CommandExecuted -= listen;
-
-            //var receivedms = received - Context.Message.CreatedAt;
-            var processedms = processed - received;
-            //var sentms = message.CreatedAt - processed;
-
-            message.ModifyAsync(x => x.Content = $"" +
-            //$"Discord -> Namiko: `{receivedms.TotalMilliseconds}ms`\n" +
-            $"Random Number: `{processedms.TotalMilliseconds.ToString("n0")}ms`\n" +
-            //$"Namiko -> Discord: `{sentms.TotalMilliseconds}ms`" +
-            "");
         }
 
         [Command("ImgurAuth"), OwnerPrecondition]
@@ -377,7 +340,7 @@ namespace Namiko
             int votes = db.Voters.AsQueryable().Where(x => x.Date > DateTime.Now.AddDays(-days)).Count();
             await ReplyAsync($"Sending this to {voters.Count} users. Votes - {votes}");
             await ReplyAsync(embed: eb.Build());
-            var client = Program.GetClient();
+            var client = Client;
             var embed = eb.Build();
 
             int i = 0;
@@ -485,11 +448,11 @@ namespace Namiko
         [Command("CreateCommandSchema"), Description("Copies command info to the database"), OwnerPrecondition]
         public async Task CreateCommandSchema()
         {
-            var cmds = Program.GetCommands();
+            var cmds = TextCommands;
 
             var modules = new List<Model.Module>();
 
-            foreach (var module in cmds.Modules)
+            foreach (var module in TextCommands.Commands.Modules)
             {
                 var m = new Model.Module
                 {
@@ -574,7 +537,7 @@ namespace Namiko
                     $"Personal: {active.Contains(231113616911237120)}\n" +
                     $"NTR: {active.Contains(418900885079588884)}\n\n";
 
-                var guilds = Program.GetClient().Guilds.ToList();
+                var guilds = Client.Guilds.ToList();
                 desc += $"Joined servers: {guilds.Count}\n" +
                     $"AMFWT: {guilds.Any(x => x.Id == 417064769309245471)}\n" +
                     $"Personal: {guilds.Any(x => x.Id == 231113616911237120)}\n" +
@@ -616,7 +579,7 @@ namespace Namiko
                     $"Personal: {active.Contains(231113616911237120)}\n" +
                     $"NTR: {active.Contains(418900885079588884)}\n\n";
 
-                var guilds = Program.GetClient().Guilds.ToList();
+                var guilds = Client.Guilds.ToList();
                 desc += $"Joined servers: {guilds.Count}\n" +
                     $"AMFWT: {guilds.Any(x => x.Id == 417064769309245471)}\n" +
                     $"Personal: {guilds.Any(x => x.Id == 231113616911237120)}\n" +
@@ -633,7 +596,7 @@ namespace Namiko
 
                 Program.GuildLeaveEvent = false;
 
-                if (guilds.Count >= Program.GetClient().Guilds.Count)
+                if (guilds.Count >= Client.Guilds.Count)
                 {
                     await ReplyAsync("Filtered same or higher than all. Cancelling.");
                     return;
@@ -733,7 +696,7 @@ namespace Namiko
         {
             string er = "```\n";
             WebUtil.SetUpDbl(botId == 0 ? Context.Client.CurrentUser.Id : botId);
-            var voters = await WebUtil.GetVotersAsync();
+            var voters = await WebUtil.GetVotersAsync(Client);
             foreach (var id in voters.Take(10))
             {
                 er += $"{id.Id}\n";

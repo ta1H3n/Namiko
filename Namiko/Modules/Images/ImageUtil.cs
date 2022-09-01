@@ -99,7 +99,7 @@ namespace Namiko
 
 
         //Image handlers
-        public static async Task UploadReactionImage(ReactionImage img, ISocketMessageChannel ch)
+        public static async Task UploadReactionImage(ReactionImage img, ISocketMessageChannel ch, BaseSocketClient client)
         {
             try
             {
@@ -123,7 +123,7 @@ namespace Namiko
             }
             catch (Exception ex)
             {
-                await ch.SendMessageAsync($"{Program.GetClient().GetUser(AppSettings.OwnerId).Mention} Error while uploading image to host.");
+                await ch.SendMessageAsync($"{client.GetUser(AppSettings.OwnerId).Mention} Error while uploading image to host.");
                 SentrySdk.WithScope(scope =>
                 {
                     scope.SetExtras(img.GetProperties());
