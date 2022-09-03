@@ -20,6 +20,8 @@ namespace Namiko
 {
     public static class Timers
     {
+        public static BaseSocketClient Client { get; set; }
+        
         private static Timer Minute;
         private static Timer MinuteVoters;
         private static Timer Minute5;
@@ -29,8 +31,10 @@ namespace Namiko
         private static Timer Hour;
         private static Timer HourAgain;
 
-        public async static Task SetUp()
+        public async static Task SetUp(BaseSocketClient client)
         {
+            Client = client;
+            
             Minute = new Timer(1000 * 60);
             Minute.AutoReset = true;
             Minute.Enabled = true;
@@ -47,9 +51,9 @@ namespace Namiko
             Hour.Elapsed += Timer_NamikoSteal;
         }
 
-        public async static Task SetUpRelease()
+        public async static Task SetUpRelease(BaseSocketClient client)
         {
-            await SetUp();
+            await SetUp(client);
 
             await Task.Delay(3000);
             MinuteVoters = new Timer(1000 * 60);
@@ -90,13 +94,13 @@ namespace Namiko
 
         private static async void Timer_PlayingStatus(object sender, ElapsedEventArgs e)
         {
-            await Program.GetClient().SetActivityAsync(new Game("Chinese Cartoons. Try @Namiko help", ActivityType.Watching));
+            await Client.SetActivityAsync(new Game("Chinese Cartoons. Try @Namiko help", ActivityType.Watching));
         }
         private static async void Timer_ExpirePremium(object sender, ElapsedEventArgs e)
         {
             var now = System.DateTime.Now;
             var expired = PremiumDb.GetNewlyExpired();
-            var client = Program.GetClient();
+            var client = Client;
             var ntr = client.GetGuild((ulong)ProType.HomeGuildId_NOTAPREMIUMTYPE);
 
             foreach (var premium in expired)
@@ -162,7 +166,7 @@ namespace Namiko
             int r;
             using (var db = new NamikoDbContext())
             {
-                var client = Program.GetClient();
+                var client = Client;
                 var nid = client.CurrentUser.Id;
                 var namikos = await db.Toasties.AsQueryable().Where(x => x.UserId == nid && x.Amount < 200000).ToListAsync();
 
@@ -280,7 +284,7 @@ namespace Namiko
                 await BanDb.EndBan(x.UserId, x.ServerId);
                 try
                 {
-                    await Program.GetClient().GetGuild(x.ServerId).RemoveBanAsync(x.UserId);
+                    await Client.GetGuild(x.ServerId).RemoveBanAsync(x.UserId);
                 }
                 catch { }
             }
@@ -487,7 +491,7 @@ namespace Namiko
         private static bool ReminderLock = false;
         public static void Timer_UpdateDBLGuildCount(object sender, ElapsedEventArgs e)
         {
-            int amount = Program.GetClient().Guilds.Count;
+            int amount = Client.Guilds.Count;
             WebUtil.UpdateGuildCount(amount);
         }
         public static async void Timer_Voters2(object sender, ElapsedEventArgs e)
@@ -496,7 +500,7 @@ namespace Namiko
             {
                 try
                 {
-                    var voters = await WebUtil.GetVotersAsync();
+                    var voters = await WebUtil.GetVotersAsync(Client);
                     var old = await VoteDb.GetVoters(500);
                     var votersParsed = voters.Select(x => x.Id).ToList();
                     votersParsed.Reverse();
@@ -505,7 +509,7 @@ namespace Namiko
 
                     if (add.Count > 500)
                     {
-                        var ch = await Program.GetClient().GetUser(AppSettings.OwnerId).CreateDMChannelAsync();
+                        var ch = await Client.GetUser(AppSettings.OwnerId).CreateDMChannelAsync();
                         string er = "```\n";
                         foreach(var id in voters.Take(10))
                         {
@@ -577,7 +581,7 @@ namespace Namiko
 
                     await LootBoxDb.AddLootbox(x, type, 1);
                     sent++;
-                    var user = Program.GetClient().GetUser(x);
+                    var user = Client.GetUser(x);
                     var ch = await user.CreateDMChannelAsync();
                     await ch.SendMessageAsync(embed: new EmbedBuilderPrepared(user)
                          .WithDescription($"Thank you for voting for me! I have given you a **{type.ToString()} Lootbox**! :star:\n" +
@@ -594,7 +598,7 @@ namespace Namiko
             {
                 try
                 {
-                    var user = Program.GetClient().GetUser(x);
+                    var user = Client.GetUser(x);
                     var ch = await user.CreateDMChannelAsync();
                     await ch.SendMessageAsync(embed: new EmbedBuilderPrepared(user)
                         .WithDescription($"You can now vote for me again and receive another lootbox! [Discord Bots]({LinkHelper.GetRedirectUrl(LinkHelper.Vote, "Vote", "reminder")})")
@@ -751,7 +755,7 @@ namespace Namiko
         }
         public static async Task<List<RedditChannel>> GetChannels(IEnumerable<SpecialChannel> ids)
         {
-            var client = Program.GetClient();
+            var client = Client;
             var channels = new List<RedditChannel>();
             await Task.Run(async () =>
             {

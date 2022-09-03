@@ -22,13 +22,13 @@ namespace Namiko.Handlers.Attributes.Preconditions
         public override string ErrorMessage => $"You don't have the {Name} permission. Getting ahead of yourself, huh?";
         public override string Name => Guild ? GuildPermission.ToString() : ChannelPermission.ToString();
 
-        public override Attribute ReturnAttribute(Handler handler)
-            => handler switch
+        public override Attribute ReturnAttribute(HandlerType handlerType)
+            => handlerType switch
             {
-                Handler.Interactions when Guild => new Discord.Interactions.RequireUserPermissionAttribute(GuildPermission),
-                Handler.Interactions => new Discord.Interactions.RequireUserPermissionAttribute(ChannelPermission),
-                Handler.Commands when Guild => new Discord.Commands.RequireUserPermissionAttribute(GuildPermission) { ErrorMessage = ErrorMessage },
-                Handler.Commands => new Discord.Commands.RequireUserPermissionAttribute(ChannelPermission) { ErrorMessage = ErrorMessage },
+                HandlerType.Interactions when Guild => new Discord.Interactions.RequireUserPermissionAttribute(GuildPermission),
+                HandlerType.Interactions => new Discord.Interactions.RequireUserPermissionAttribute(ChannelPermission),
+                HandlerType.Commands when Guild => new Discord.Commands.RequireUserPermissionAttribute(GuildPermission) { ErrorMessage = ErrorMessage },
+                HandlerType.Commands => new Discord.Commands.RequireUserPermissionAttribute(ChannelPermission) { ErrorMessage = ErrorMessage },
                 _ => throw new NotImplementedException(),
             };
     }

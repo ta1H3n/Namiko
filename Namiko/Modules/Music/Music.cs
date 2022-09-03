@@ -27,7 +27,7 @@ namespace Namiko
     {
         public static readonly LavaNode Node;
         public static readonly HashSet<LavaPlayer> ReconnectPlayer;
-        private static DiscordShardedClient Client { get { return Program.GetClient(); } }
+        private static DiscordShardedClient Client { get { return Client; } }
 
         private LavaPlayer Player { get => Node.GetPlayer(Context.Guild); }
 
@@ -46,7 +46,7 @@ namespace Namiko
 
             ReconnectPlayer = new HashSet<LavaPlayer>();
 
-            Program.GetClient().ShardConnected += Shard_ReconnectPlayer;
+            Client.ShardConnected += Shard_ReconnectPlayer;
             Node.OnLog += LavaClient_Log;
             Node.OnTrackException += TrackException;
             Node.OnTrackStuck += TrackStuck;
@@ -83,7 +83,7 @@ namespace Namiko
                     $"• Look up lyrics of the playing song!\n" +
                     $"• And... I... I will talk to you in voice chat~ <:Awooo:582888496793124866>\n" +
                     $"\n" +
-                    $"Type `{Program.GetPrefix(Context)}pro` for more info! Get all these features and more from 5$/month!\n" +
+                    $"Type `{TextCommandService.GetPrefix(Context)}pro` for more info! Get all these features and more from 5$/month!\n" +
                     $"Or join my [Support Server]({LinkHelper.SupportServerInvite}) and try!");
                 return;
             }
@@ -201,7 +201,7 @@ namespace Namiko
                     $"• Look up lyrics of the playing song!\n" +
                     $"• And... I... I will talk to you in voice chat~ <:Awooo:582888496793124866>\n" +
                     $"\n" +
-                    $"Type `{Program.GetPrefix(Context)}pro` for more info! Get all these features and more from 5$/month!\n" +
+                    $"Type `{TextCommandService.GetPrefix(Context)}pro` for more info! Get all these features and more from 5$/month!\n" +
                     $"Or join my [Support Server]({LinkHelper.SupportServerInvite}) and try!");
                 return;
             }
@@ -209,7 +209,7 @@ namespace Namiko
             var player = GetPlayer();
             if (player == null)
             {
-                await ReplyAsync($"I'm not in a voice channel... Type `{Program.GetPrefix(Context)}join` to invite me to yours!");
+                await ReplyAsync($"I'm not in a voice channel... Type `{TextCommandService.GetPrefix(Context)}join` to invite me to yours!");
                 return;
             }
 
@@ -275,7 +275,7 @@ namespace Namiko
                     $"• Look up lyrics of the playing song!\n" +
                     $"• And... I... I will talk to you in voice chat~ <:Awooo:582888496793124866>\n" +
                     $"\n" +
-                    $"Type `{Program.GetPrefix(Context)}pro` for more info! Get all these features and more from 5$/month!\n" +
+                    $"Type `{TextCommandService.GetPrefix(Context)}pro` for more info! Get all these features and more from 5$/month!\n" +
                     $"Or join my [Support Server]({LinkHelper.SupportServerInvite}) and try!");
                 return;
             }
@@ -283,7 +283,7 @@ namespace Namiko
             var player = GetPlayer();
             if (player == null)
             {
-                await ReplyAsync($"I'm not in a voice channel... Type `{Program.GetPrefix(Context)}join` to invite me to yours!");
+                await ReplyAsync($"I'm not in a voice channel... Type `{TextCommandService.GetPrefix(Context)}join` to invite me to yours!");
                 return;
             }
 
@@ -365,7 +365,7 @@ namespace Namiko
                     $"• Look up lyrics of the playing song!\n" +
                     $"• And... I... I will talk to you in voice chat~ <:Awooo:582888496793124866>\n" +
                     $"\n" +
-                    $"Type `{Program.GetPrefix(Context)}pro` for more info! Get all these features and more from 5$/month!\n" +
+                    $"Type `{TextCommandService.GetPrefix(Context)}pro` for more info! Get all these features and more from 5$/month!\n" +
                     $"Or join my [Support Server]({LinkHelper.SupportServerInvite}) and try!");
                 return;
             }
@@ -373,7 +373,7 @@ namespace Namiko
             var player = GetPlayer();
             if (player == null)
             {
-                await ReplyAsync($"I'm not in a voice channel... Type `{Program.GetPrefix(Context)}join` to invite me to yours!");
+                await ReplyAsync($"I'm not in a voice channel... Type `{TextCommandService.GetPrefix(Context)}join` to invite me to yours!");
                 return;
             }
 
@@ -635,7 +635,7 @@ namespace Namiko
             {
                 if (!TimeSpan.TryParseExact(timeStr, @"hh\:mm\:ss", null, out time))
                 {
-                    await ReplyAsync($"Couldn't parse the time. Try `mm:ss` or `hh:mm:ss` e.g. `{Program.GetPrefix(Context)}seek 01:30` or `{Program.GetPrefix(Context)}seek 01:15:30`");
+                    await ReplyAsync($"Couldn't parse the time. Try `mm:ss` or `hh:mm:ss` e.g. `{TextCommandService.GetPrefix(Context)}seek 01:30` or `{TextCommandService.GetPrefix(Context)}seek 01:15:30`");
                     return;
                 }
             }
@@ -742,7 +742,7 @@ namespace Namiko
             if (MusicDb.IsPlaylist(name, Context.Guild.Id))
             {
                 await ReplyAsync($"There already is a playlist called **{name}**.\n" +
-                    $"Remove it with `{Program.GetPrefix(Context)}DeletePlaylist`");
+                    $"Remove it with `{TextCommandService.GetPrefix(Context)}DeletePlaylist`");
                 return;
             }
 
@@ -838,7 +838,7 @@ namespace Namiko
             await ReplyAsync($"**{playlist.Name}** deleted <:KannaSad:625348483968401419>");
             if (playlist.UserId != Context.User.Id)
             {
-                var ch = await Program.GetClient().GetUser(playlist.UserId).CreateDMChannelAsync();
+                var ch = await Client.GetUser(playlist.UserId).CreateDMChannelAsync();
                 await ch.SendMessageAsync($"Your playlist ({playlist.Name}) in {Context.Guild.Name} has been deleted by {Context.User}");
             }
         }
@@ -924,7 +924,7 @@ namespace Namiko
 
             var eb = new EmbedBuilder();
             eb.WithColor(BasicUtil.RandomColor());
-            eb.WithAuthor(DateTime.Now.ToString("HH:mm:ss"), Program.GetClient().CurrentUser.GetAvatarUrl());
+            eb.WithAuthor(DateTime.Now.ToString("HH:mm:ss"), Client.CurrentUser.GetAvatarUrl());
             eb.WithFooter($"🌋 Lavalink running for {Math.Round(arg.Uptime.TotalMinutes, 2)} minutes");
 
             eb.WithDescription($"Connected: {arg.Players}\nPlaying: {arg.PlayingPlayers}");

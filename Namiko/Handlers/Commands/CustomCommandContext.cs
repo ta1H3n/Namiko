@@ -9,7 +9,7 @@ namespace Namiko.Addons.Handlers
 {
     public class CustomCommandContext : ICustomContext, ICommandContext
     {
-        public DiscordShardedClient Client { get; }
+        public BaseSocketClient Client { get; }
         public SocketGuild Guild { get; }
         public ISocketMessageChannel Channel { get; }
         public SocketUser User { get; }
@@ -20,7 +20,7 @@ namespace Namiko.Addons.Handlers
         public DateTimeOffset CreatedAt => Message.CreatedAt;
 
 
-        public CustomCommandContext(DiscordShardedClient client, SocketUserMessage msg)
+        public CustomCommandContext(BaseSocketClient client, SocketUserMessage msg)
         {
             Client = client;
             Guild = (msg.Channel as SocketGuildChannel)?.Guild;

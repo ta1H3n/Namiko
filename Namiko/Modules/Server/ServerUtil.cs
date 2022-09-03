@@ -10,7 +10,7 @@ namespace Namiko
 {
     public static class ServerUtil
     {
-        public static async Task<EmbedBuilder> ServerInfo(SocketGuild guild)
+        public static async Task<EmbedBuilder> ServerInfo(SocketGuild guild, BaseSocketClient client)
         {
             var eb = new EmbedBuilder();
 
@@ -35,7 +35,7 @@ namespace Namiko
             if(user != null)
                 field += $"Richest user: {user.Mention} - **{toasties.FirstOrDefault(x => x.UserId == user.Id).Amount.ToString("n0")}**\n";
 
-            var bank = toasties.FirstOrDefault(x => x.UserId == Program.GetClient().CurrentUser.Id);
+            var bank = toasties.FirstOrDefault(x => x.UserId == client.CurrentUser.Id);
             field += $"Bank balance: **{(bank == null ? "0" : bank.Amount.ToString("n0"))}**\n";
             eb.AddField("Toasties <:toastie3:454441133876183060>", field);
 

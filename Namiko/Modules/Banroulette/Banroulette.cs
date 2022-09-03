@@ -26,7 +26,7 @@ namespace Namiko
                 throw new IndexOutOfRangeException();
 
             var banroulette = BanrouletteDb.GetBanroulette(Context.Channel.Id);
-            string prefix = Program.GetPrefix(Context);
+            string prefix = TextCommandService.GetPrefix(Context);
             if (banroulette != null)
             {
                 await ReplyAsync($":x: There is already a running Ban Roulette in this channel. Type `{prefix}ebr` to end it.");
@@ -61,7 +61,7 @@ namespace Namiko
             var banroulette = BanrouletteDb.GetBanroulette(Context.Channel.Id);
             if(banroulette == null)
             {
-                await ReplyAsync($"There is no running Ban Roulette in this channel. `{Program.GetPrefix(Context)}nbr` to start a new one.");
+                await ReplyAsync($"There is no running Ban Roulette in this channel. `{TextCommandService.GetPrefix(Context)}nbr` to start a new one.");
                 return;
             }
 

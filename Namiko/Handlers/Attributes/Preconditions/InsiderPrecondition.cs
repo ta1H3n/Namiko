@@ -10,11 +10,11 @@ namespace Namiko.Handlers.Attributes.Preconditions
         public override string ErrorMessage => null;
         public override string Name => "BotInsider";
 
-        public override Attribute ReturnAttribute(Handler handler)
-            => handler switch
+        public override Attribute ReturnAttribute(HandlerType handlerType)
+            => handlerType switch
             {
-                Handler.Interactions => new InsiderInteractionsAttribute(),
-                Handler.Commands => new InsiderCommandsAttribute(ErrorMessage),
+                HandlerType.Interactions => new InsiderInteractionsAttribute(),
+                HandlerType.Commands => new InsiderCommandsAttribute(ErrorMessage),
                 _ => throw new NotImplementedException(),
             };
 

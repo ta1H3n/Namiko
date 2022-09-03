@@ -2,6 +2,7 @@
 using Discord.WebSocket;
 using System;
 using System.Threading.Tasks;
+using Namiko.Addons.Handlers;
 
 namespace Namiko.Handlers.Attributes.Preconditions
 {
@@ -10,11 +11,11 @@ namespace Namiko.Handlers.Attributes.Preconditions
         public override string ErrorMessage => null;
         public override string Name => "VoiceChannel";
 
-        public override Attribute ReturnAttribute(Handler handler)
-            => handler switch
+        public override Attribute ReturnAttribute(HandlerType handlerType)
+            => handlerType switch
             {
-                Handler.Commands => new PlayerChannelCommandsAttribute(ErrorMessage),
-                Handler.Interactions => new PlayerChannelInteractionsAttribute(),
+                HandlerType.Commands => new PlayerChannelCommandsAttribute(ErrorMessage),
+                HandlerType.Interactions => new PlayerChannelInteractionsAttribute(),
                 _ => throw new NotImplementedException(),
             };
         private class PlayerChannelCommandsAttribute : Discord.Commands.PreconditionAttribute
@@ -26,7 +27,7 @@ namespace Namiko.Handlers.Attributes.Preconditions
                 var vc = user.VoiceChannel;
 
                 if (player == null)
-                    return Task.FromResult(Discord.Commands.PreconditionResult.FromError($"I'm not in a voice channel, Senpai. Try `{Program.GetPrefix(context.Guild.Id)}join`"));
+                    return Task.FromResult(Discord.Commands.PreconditionResult.FromError($"I'm not in a voice channel, Senpai. Try `{TextCommandService.GetPrefix(context.Guild.Id)}join`"));
 
                 else if (vc != null && player.VoiceChannel == vc)
                     return Task.FromResult(Discord.Commands.PreconditionResult.FromSuccess());
@@ -48,7 +49,7 @@ namespace Namiko.Handlers.Attributes.Preconditions
                 var vc = user.VoiceChannel;
 
                 if (player == null)
-                    return Task.FromResult(Discord.Interactions.PreconditionResult.FromError($"I'm not in a voice channel, Senpai. Try `{Program.GetPrefix(context.Guild.Id)}join`"));
+                    return Task.FromResult(Discord.Interactions.PreconditionResult.FromError($"I'm not in a voice channel, Senpai. Try `{TextCommandService.GetPrefix(context.Guild.Id)}join`"));
 
                 else if (vc != null && player.VoiceChannel == vc)
                     return Task.FromResult(Discord.Interactions.PreconditionResult.FromSuccess());

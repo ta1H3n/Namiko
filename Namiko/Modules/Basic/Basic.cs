@@ -10,6 +10,7 @@ using Namiko.Handlers.Attributes.Preconditions;
 using Namiko.Modules.Basic;
 using System;
 using System.Linq;
+using System.Net.Mime;
 using System.Threading.Tasks;
 using Namiko.Handlers.Autocomplete;
 using Npgsql.PostgresTypes;
@@ -20,6 +21,10 @@ namespace Namiko
 {
     public class Basic : CustomModuleBase<ICustomContext>
     {
+        public BaseSocketClient Client { get; set; }
+        public SlashCommandService SlashCommands { get; set; }
+        public TextCommandService TextCommands { get; set; }
+        
         [Command("Hi Namiko"), Alias("Hi", "ping", "Awoo"), Description("Hi Namiko command. Counts response time.")]
         public async Task HiNamiko()
         {
@@ -33,7 +38,7 @@ namespace Namiko
         [Command("Info"), Alias("About"), Description("Bot info.")]
         public async Task Info()
         {
-            await ReplyAsync("", false, BasicUtil.InfoEmbed().Build());
+            await ReplyAsync("", false, BasicUtil.InfoEmbed(Client).Build());
         }
 
         [Command("Vote")]
@@ -54,7 +59,7 @@ namespace Namiko
         [Command("JoinMessageTest"), OwnerPrecondition]
         public async Task JoinMessageTest()
         {
-            await ReplyAsync("Hi! Please take good care of me!", false, BasicUtil.GuildJoinEmbed().Build());
+            await ReplyAsync("Hi! Please take good care of me!", false, BasicUtil.GuildJoinEmbed(Client).Build());
         }
 
         [Command("PermTest"), BotPermission(GuildPermission.Administrator)]
@@ -66,16 +71,16 @@ namespace Namiko
         [Command("GuildList"), OwnerPrecondition]
         public async Task GuildTest()
         {
-            var msg = new PaginatedMessage<SocketGuild>(Program.GetClient().Guilds, 20, (x) => $"`{x.Id}` - **{x.Name}**\n`{x.OwnerId}` - **{x.Owner}**\n");
+            var msg = new PaginatedMessage<SocketGuild>(Client.Guilds, 20, (x) => $"`{x.Id}` - **{x.Name}**\n`{x.OwnerId}` - **{x.Owner}**\n");
             await PagedReplyAsync(msg);
         }
 
-        [Command("MarkdownCommands"), OwnerPrecondition]
-        public async Task MarkdownCommands()
-        {
-            using var stream = Timers.GenerateStreamFromString(MarkdownCommandList(Program.GetCommands()));
-            await Context.Channel.SendFileAsync(stream, "CommandsMarkdown.txt");
-        }
+        // [Command("MarkdownCommands"), OwnerPrecondition]
+        // public async Task MarkdownCommands()
+        // {
+        //     using var stream = Timers.GenerateStreamFromString(MarkdownCommandList(TextCommands));
+        //     await Context.Channel.SendFileAsync(stream, "CommandsMarkdown.txt");
+        // }
 
         [Command("Wait"), OwnerPrecondition]
         public async Task Wait(int sec)
@@ -101,7 +106,7 @@ namespace Namiko
         [Command("SShipWaifu"), Description("\n **Usage**: `!shipwaifu [waifu] [userid] [guildid_optional]`"), OwnerPrecondition]
         public async Task ShipWaifu(string name, ulong userId, ulong guildId = 0)
         {
-            Program.GetPrefix(Context);
+            TextCommandService.GetPrefix(Context);
 
             if (guildId == 0)
                 guildId = Context.Guild.Id;
@@ -118,46 +123,6 @@ namespace Namiko
 
             await UserInventoryDb.AddWaifu(userId, waifu, guildId);
             await ReplyAsync($"**{waifu.Name}** shipped!");
-        }
-
-        [Command("Blacklist"), OwnerPrecondition]
-        public async Task Blacklist(ulong id)
-        {
-            if (BlacklistDb.IsBlacklisted(id))
-            {
-                await BlacklistDb.Remove(id);
-                await ReplyAsync($"Unblacklisted.");
-                await WebhookClients.NamikoLogChannel.SendMessageAsync($"Unblacklisted {id}");
-                Program.Blacklist.Remove(id);
-                return;
-            }
-            else
-            {
-                await BlacklistDb.Add(id);
-                await ReplyAsync($"Blacklisted.");
-                Program.Blacklist.Add(id);
-                var client = Program.GetClient();
-                var guild = client.GetGuild(id);
-                string what = $"Blacklisted {id}";
-                if (guild != null)
-                {
-                    var ch = await guild.Owner.CreateDMChannelAsync();
-                    await ch.SendMessageAsync($"Your guild ({guild.Name} - {id}) has been blacklisted.\n" +
-                        $"Please contact taiHen#2839 in {LinkHelper.SupportServerInvite} for more information or if you think this is a mistake.");
-                    what = $"Guild ({guild.Name} {id}) Blacklisted.";
-                } else
-                {
-                    var user = client.GetUser(id);
-                    if (user != null)
-                    {
-                        var ch = await user.CreateDMChannelAsync();
-                        await ch.SendMessageAsync($"You ({user.Username} - {id}) have been blacklisted.\n" +
-                            $"Please contact taiHen#2839 in {LinkHelper.SupportServerInvite} for more information or if you think this is a mistake.");
-                        what = $"User ({user.Username} {id}) Blacklisted.";
-                    }
-                }
-                await WebhookClients.NamikoLogChannel.SendMessageAsync(what);
-            }
         }
 
         [Command("Status"), Description("Bot status.\n **Usage**: `!status`")]
@@ -189,8 +154,8 @@ namespace Namiko
         [Command("Help"), Alias("h"), Description("Shows more information about a command.\n**Usage**: `!help [command/module_name]`")]
         public async Task Help([Remainder] string cmd = "")
         {
-            var commandService = Program.GetCommands();
-            string prefix = Program.GetPrefix(Context);
+            var commandService = TextCommands.Commands;
+            string prefix = TextCommandService.GetPrefix(Context);
 
             EmbedBuilder eb = null;
             string desc = "";
@@ -228,8 +193,9 @@ namespace Namiko
         public async Task Help([Autocomplete(typeof(ModulesAutocomplete))] string module = "All",
             [Autocomplete(typeof(CommandsAutocomplete))] string command = "All")
         {
-            var modul = Program.Interactions.Modules.FirstOrDefault(x => module == x.Name);
-            var cmd = Program.Interactions.SlashCommands.FirstOrDefault(x => x.Name == command);
+            var interaction = SlashCommands.Interaction;
+            var modul = interaction.Modules.FirstOrDefault(x => module == x.Name);
+            var cmd = interaction.SlashCommands.FirstOrDefault(x => x.Name == command);
 
             EmbedBuilder eb;
             if (cmd != null)
@@ -242,7 +208,7 @@ namespace Namiko
             }
             else
             {
-                eb = AllHelpEmbed(Program.Interactions);
+                eb = AllHelpEmbed(interaction);
             }
 
             await ReplyAsync(embed: eb.Build(), ephemeral: true);

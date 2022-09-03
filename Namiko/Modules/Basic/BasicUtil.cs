@@ -63,10 +63,9 @@ namespace Namiko
 
             return str.Length > max ? (str.Substring(0, cut) + suffix) : str;
         }
-        public static EmbedBuilder InfoEmbed()
+        public static EmbedBuilder InfoEmbed(BaseSocketClient client)
         {
             var eb = new EmbedBuilder();
-            var client = Program.GetClient();
 
             string desc = "Discord bot made in C#, featuring innovations like waifu shops, a banroulette, teams and extensive currency and economy features.";
             eb.WithDescription(desc);
@@ -86,10 +85,9 @@ namespace Namiko
             eb.WithImageUrl(AppSettings.NamikoBannerUrl);
             return eb;
         }
-        public static EmbedBuilder DonateEmbed(string prefix)
+        public static EmbedBuilder DonateEmbed(string prefix, BaseSocketClient client)
         {
             var eb = new EmbedBuilder();
-            var client = Program.GetClient();
 
             string desc =
                 "Support the development of Namiko and get rewards!\n" +
@@ -103,10 +101,9 @@ namespace Namiko
             eb.WithImageUrl(AppSettings.NamikoBannerUrl);
             return eb;
         }
-        public static EmbedBuilder GuildJoinEmbed()
+        public static EmbedBuilder GuildJoinEmbed(BaseSocketClient client)
         {
             var eb = new EmbedBuilder();
-            var client = Program.GetClient();
 
             string desc = "";
             desc += $"`/help` - find my commands.\n\n";

@@ -12,11 +12,11 @@ namespace Namiko.Handlers.Attributes.Preconditions
         public override string ErrorMessage => null;
         public override string Name => "Guild+";
 
-        public override Attribute ReturnAttribute(Handler handler)
-            => handler switch
+        public override Attribute ReturnAttribute(HandlerType handlerType)
+            => handlerType switch
             {
-                Handler.Commands => new HomeOrT1GuildCommandsAttribute(ErrorMessage),
-                Handler.Interactions => new HomeOrT1GuildInteractionsAttribute(),
+                HandlerType.Commands => new HomeOrT1GuildCommandsAttribute(ErrorMessage),
+                HandlerType.Interactions => new HomeOrT1GuildInteractionsAttribute(),
                 _ => throw new NotImplementedException(),
             };
         private class HomeOrT1GuildCommandsAttribute : Discord.Commands.PreconditionAttribute

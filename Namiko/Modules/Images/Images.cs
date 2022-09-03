@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord.WebSocket;
 using Namiko.Handlers.Autocomplete;
 using Namiko.Handlers.ComplexParameters;
 
@@ -17,6 +18,7 @@ namespace Namiko
     [Name("Reaction Images")]
     public class Images : CustomModuleBase<ICustomContext>
     {
+        public BaseSocketClient Client { get; set; }
         public static Dictionary<ulong, HashSet<string>> ReactionImageCommands { get; set; }
 
         public async Task<bool> SendRandomImage(ICommandContext Context)
@@ -34,7 +36,7 @@ namespace Namiko
             }
 
             string text = Context.Message.Content;
-            text = text.Replace(Program.GetPrefix(Context.Guild), "");
+            text = text.Replace(TextCommandService.GetPrefix(Context.Guild), "");
             text = text.Split(' ')[0].ToLower();
 
             ReactionImage image;
@@ -127,7 +129,7 @@ namespace Namiko
             }
 
             names = names.OrderBy(x => x.Name).ToList();
-            var eb = ImageUtil.ListAllEmbed(names, Program.GetPrefix(Context), Context.User);
+            var eb = ImageUtil.ListAllEmbed(names, TextCommandService.GetPrefix(Context), Context.User);
             eb = ImageUtil.AddGuildImagesToEmbed(eb, (await ImageDb.GetImages(null, Context.Guild.Id)).Select(x => x.Name).Distinct().OrderBy(x => x));
             await ReplyAsync(embed: eb.Build());
         }
@@ -184,7 +186,7 @@ namespace Namiko
             {
                 if(!PremiumDb.IsPremium(Context.Guild.Id, ProType.GuildPlus))
                 {
-                    await ReplyAsync($"This server does not have Pro Guild+. `{Program.GetPrefix(Context)}pro`");
+                    await ReplyAsync($"This server does not have Pro Guild+. `{TextCommandService.GetPrefix(Context)}pro`");
                     return;
                 }
 
@@ -236,7 +238,7 @@ namespace Namiko
 
             await ImgurAPI.EditImageAsync(iImage.Id.ToString(), null, img.Id.ToString());
             var rl = ImgurAPI.RateLimit;
-            await ImageUtil.UploadReactionImage(img, Context.Channel);
+            await ImageUtil.UploadReactionImage(img, Context.Channel, Client);
             await ReplyAsync($"{rl.ClientRemaining-20}/{rl.ClientLimit} imgur credits remaining.", false, ImageUtil.ToEmbed(img).Build());
         }
 
