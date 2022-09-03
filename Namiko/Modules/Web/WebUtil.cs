@@ -329,7 +329,7 @@ namespace Namiko
             return eb;
         }
 
-        public static EmbedBuilder SubListEmbed(ulong guildId)
+        public static EmbedBuilder SubListEmbed(ulong guildId, string prefix)
         {
             var eb = new EmbedBuilder();
             var subs = SpecialChannelDb.GetChannelsByGuild(guildId, Model.ChannelType.Reddit);
@@ -345,7 +345,7 @@ namespace Namiko
             eb.WithDescription(desc == "" ? "-" : desc);
             eb.WithAuthor("Subreddits subscribed in this server");
             eb.WithColor(BasicUtil.RandomColor());
-            eb.WithFooter($"Type `{TextCommandService.GetPrefix(guildId)}unsub [name]` to unsubscribe.");
+            eb.WithFooter($"Type `{prefix}unsub [name]` to unsubscribe.");
             return eb;
         }
     }

@@ -25,7 +25,7 @@ namespace Namiko
             var role = await this.SelectRole(PublicRoleDb.GetAll(Context.Guild.Id).Select(x => x.RoleId), name);
             if (role == null)
             {
-                await ReplyAsync($"No public roles found. {(name == "" ? "" : $"Search: `{name}`")}\n`{TextCommandService.GetPrefix(Context)}spr` - make a role public.\n`{TextCommandService.GetPrefix(Context)}prl` - view a list of public roles.");
+                await ReplyAsync($"No public roles found. {(name == "" ? "" : $"Search: `{name}`")}\n`{GetPrefix()}spr` - make a role public.\n`{GetPrefix()}prl` - view a list of public roles.");
                 return;
             }
 
@@ -242,7 +242,7 @@ namespace Namiko
             }
 
             await InviteDb.NewInvite(team.MemberRoleId, user.Id);
-            await channel.SendMessageAsync($"{user.Mention} You're invited to join **{teamRole.Name}**! Type `{TextCommandService.GetPrefix(Context)}jointeam {teamRole.Name}`");
+            await channel.SendMessageAsync($"{user.Mention} You're invited to join **{teamRole.Name}**! Type `{GetPrefix()}jointeam {teamRole.Name}`");
 
             ISocketMessageChannel ch = (ISocketMessageChannel) Context.Client.GetChannel(ServerDb.GetServer(Context.Guild.Id).TeamLogChannelId);
             await ch.SendMessageAsync($"<:KannaHype:571690048001671238> `{Context.User}` invited `{user}` to **{teamRole.Name}**.");
@@ -326,7 +326,7 @@ namespace Namiko
             var leaderteam = Context.Guild.GetRole(team.MemberRoleId);
             if (!userteam.Equals(leaderteam))
             {
-                await ReplyAsync($"They're not in your team! If you just want to kick them normaly use `{TextCommandService.GetPrefix(Context)}kick`");
+                await ReplyAsync($"They're not in your team! If you just want to kick them normaly use `{GetPrefix()}kick`");
                 return;
             }
 

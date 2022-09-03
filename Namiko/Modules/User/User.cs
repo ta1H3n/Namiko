@@ -42,7 +42,7 @@ namespace Namiko
 
             if (waifus.Count <= 21)
             {
-                await ReplyAsync("", false, UserUtil.WaifusEmbed((SocketGuildUser)user).Build());
+                await ReplyAsync("", false, UserUtil.WaifusEmbed((SocketGuildUser)user, GetPrefix()).Build());
                 return;
             }
 
@@ -108,7 +108,7 @@ namespace Namiko
 
                 eb.WithAuthor(wife);
                 eb.WithDescription($"**{ user.Mention }** has proposed to you.");
-                eb.WithFooter($"`{TextCommandService.GetPrefix(Context)}marry [user]` or `{TextCommandService.GetPrefix(Context)}decline [user]`");
+                eb.WithFooter($"`{GetPrefix()}marry [user]` or `{GetPrefix()}decline [user]`");
                 await ReplyAsync($"", false, eb.Build());
                 return;
             }

@@ -18,8 +18,17 @@ namespace Namiko
     [Name("Reaction Images")]
     public class Images : CustomModuleBase<ICustomContext>
     {
-        public BaseSocketClient Client { get; set; }
-        public static Dictionary<ulong, HashSet<string>> ReactionImageCommands { get; set; }
+        private readonly BaseSocketClient _client;
+        public static Dictionary<ulong, HashSet<string>> ReactionImageCommands;
+
+        public Images(BaseSocketClient client)
+        {
+            _client = client;
+            if (ReactionImageCommands == null)
+            {
+                ReactionImageCommands = ImageDb.GetReactionImageDictionary().Result;
+            }
+        }
 
         public async Task<bool> SendRandomImage(ICommandContext Context)
         {
@@ -36,7 +45,7 @@ namespace Namiko
             }
 
             string text = Context.Message.Content;
-            text = text.Replace(TextCommandService.GetPrefix(Context.Guild), "");
+            text = text.Replace(GetPrefix(), "");
             text = text.Split(' ')[0].ToLower();
 
             ReactionImage image;
@@ -129,7 +138,7 @@ namespace Namiko
             }
 
             names = names.OrderBy(x => x.Name).ToList();
-            var eb = ImageUtil.ListAllEmbed(names, TextCommandService.GetPrefix(Context), Context.User);
+            var eb = ImageUtil.ListAllEmbed(names, GetPrefix(), Context.User);
             eb = ImageUtil.AddGuildImagesToEmbed(eb, (await ImageDb.GetImages(null, Context.Guild.Id)).Select(x => x.Name).Distinct().OrderBy(x => x));
             await ReplyAsync(embed: eb.Build());
         }
@@ -186,7 +195,7 @@ namespace Namiko
             {
                 if(!PremiumDb.IsPremium(Context.Guild.Id, ProType.GuildPlus))
                 {
-                    await ReplyAsync($"This server does not have Pro Guild+. `{TextCommandService.GetPrefix(Context)}pro`");
+                    await ReplyAsync($"This server does not have Pro Guild+. `{GetPrefix()}pro`");
                     return;
                 }
 
@@ -238,7 +247,7 @@ namespace Namiko
 
             await ImgurAPI.EditImageAsync(iImage.Id.ToString(), null, img.Id.ToString());
             var rl = ImgurAPI.RateLimit;
-            await ImageUtil.UploadReactionImage(img, Context.Channel, Client);
+            await ImageUtil.UploadReactionImage(img, Context.Channel, _client);
             await ReplyAsync($"{rl.ClientRemaining-20}/{rl.ClientLimit} imgur credits remaining.", false, ImageUtil.ToEmbed(img).Build());
         }
 

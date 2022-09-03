@@ -42,14 +42,14 @@ namespace Namiko
 
             server.Prefix = prefix;
             await ServerDb.UpdateServer(server);
-            TextCommandService.UpdatePrefix(Context.Guild.Id, prefix);
+            ServerDb.UpdatePrefix(Context.Guild.Id, prefix);
             await ReplyAsync($"My prefix is now `{prefix}`");
         }
 
         [Command("Prefix"), Alias("sp", "sbp", "setbotprefix"), Description("View the current prefix.\n**Usage**: `!sp [prefix]`")]
         public async Task Prefix()
         {
-            var prefix = TextCommandService.GetPrefix(Context);
+            var prefix = GetPrefix();
             await ReplyAsync($"My current prefix is `{prefix}`.\nYou can change it by typing `{prefix}sp [new_prefix]` without the brackets :fox:");
         }
 
@@ -134,7 +134,7 @@ namespace Namiko
             }
 
             await BlacklistedChannelDb.UpdateBlacklistedChannel(new BlacklistedChannel { ChannelId = channelId });
-            await ReplyAsync($"Channel blacklisted. Use `{TextCommandService.GetPrefix(Context)}blch [channel_id]` in another channel to undo.\n The ID of this channel is `{Context.Channel.Id}`.");
+            await ReplyAsync($"Channel blacklisted. Use `{GetPrefix()}blch [channel_id]` in another channel to undo.\n The ID of this channel is `{Context.Channel.Id}`.");
         }
 
         [UserPermission(GuildPermission.Administrator)]

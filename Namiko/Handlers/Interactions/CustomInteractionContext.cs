@@ -35,8 +35,10 @@ namespace Namiko.Addons.Handlers
             Interaction = interaction;
         }
 
-
-
+        public string GetPrefix()
+        {
+            return "/";
+        }
 
         public async Task<IUserMessage> ReplyAsync(string text = null, bool isTTS = false, Embed embed = null, RequestOptions options = null, AllowedMentions allowedMentions = null, MessageReference messageReference = null, MessageComponent components = null, ISticker[] stickers = null, Embed[] embeds = null, MessageFlags flags = MessageFlags.None, bool ephemeral = false)
         {

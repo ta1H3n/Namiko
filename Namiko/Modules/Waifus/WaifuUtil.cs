@@ -814,7 +814,7 @@ namespace Namiko
                          .GroupBy(i => i.Group, g => g.Item)
                          .ToList();
         }
-        public static EmbedBuilder WishlistEmbed(IEnumerable<Waifu> waifus, SocketGuildUser user)
+        public static EmbedBuilder WishlistEmbed(IEnumerable<Waifu> waifus, SocketGuildUser user, string prefix)
         {
             var eb = new EmbedBuilder();
             eb.WithAuthor(user);
@@ -836,7 +836,7 @@ namespace Namiko
             {
                 string desc = "Your mind is empty, you have no desires. You do not wish for any waifus.\n\n"
                     + $"*A pillar of light reveals strange texts*\n"
-                    + $"```{TextCommandService.GetPrefix(user)}waifu\n{TextCommandService.GetPrefix(user)}wishwaifu```";
+                    + $"```{prefix}waifu\n{prefix}wishwaifu```";
                 eb.WithDescription(desc);
             }
 

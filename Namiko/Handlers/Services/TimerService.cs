@@ -14,93 +14,90 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
+using Namiko.Handlers.Services;
 using Timer = System.Timers.Timer;
 
-namespace Namiko
+namespace Namiko.Handlers.Services
 {
-    public static class Timers
+    public class TimerService
     {
-        public static BaseSocketClient Client { get; set; }
+        private readonly BaseSocketClient _client;
         
-        private static Timer Minute;
-        private static Timer MinuteVoters;
-        private static Timer Minute5;
-        private static Timer Sauce;
-        private static Timer SauceRequest;
-        private static Timer MinuteReminders;
-        private static Timer Hour;
-        private static Timer HourAgain;
+        private Timer _minute;
+        private Timer _minuteVoters;
+        private Timer _minute5;
+        private Timer _sauce;
+        private Timer _minuteReminders;
+        private Timer _hour;
+        private Timer _hourAgain;
 
-        public async static Task SetUp(BaseSocketClient client)
+        public TimerService(DiscordService discord)
         {
-            Client = client;
+            _client = discord.Client;
             
-            Minute = new Timer(1000 * 60);
-            Minute.AutoReset = true;
-            Minute.Enabled = true;
-
-            Minute5 = new Timer(1000 * 60 * 5);
-            Minute5.AutoReset = true;
-            Minute5.Enabled = true;
-
-            await Task.Delay(10000);
-            Hour = new Timer(1000 * 60 * 60);
-            Hour.AutoReset = true;
-            Hour.Enabled = true;
-            Hour.Elapsed += Timer_ExpireTeamInvites;
-            Hour.Elapsed += Timer_NamikoSteal;
+            if (discord.Development)
+            {
+                SetUp();
+            }
+            else
+            {
+                SetUpRelease();
+            }
         }
 
-        public async static Task SetUpRelease(BaseSocketClient client)
+        public async Task SetUp()
         {
-            await SetUp(client);
+            await Task.Delay(10000);
+            _hour = new Timer(1000 * 60 * 60);
+            _hour.AutoReset = true;
+            _hour.Enabled = true;
+            _hour.Elapsed += Timer_ExpireTeamInvites;
+            _hour.Elapsed += Timer_NamikoSteal;
+        }
+
+        public async Task SetUpRelease()
+        {
+            await SetUp();
 
             await Task.Delay(3000);
-            MinuteVoters = new Timer(1000 * 60);
-            MinuteVoters.AutoReset = true;
-            MinuteVoters.Enabled = true;
-            MinuteVoters.Elapsed += Timer_Voters2;
+            _minuteVoters = new Timer(1000 * 60);
+            _minuteVoters.AutoReset = true;
+            _minuteVoters.Enabled = true;
+            _minuteVoters.Elapsed += Timer_Voters2;
 
-            Minute5.Elapsed += Timer_Unban;
-            Minute5.Elapsed += Timer_RedditPost;
-
-            await Task.Delay(10000);
-            MinuteReminders = new Timer(1000 * 60 * 5);
-            MinuteReminders.AutoReset = true;
-            MinuteReminders.Enabled = true;
-            MinuteReminders.Elapsed += Timer_RemindVote;
-
-            Hour.Elapsed += Timer_UpdateDBLGuildCount;
-            Hour.Elapsed += Timer_ExpirePremium;
+            _minute5 = new Timer(1000 * 60 * 5);
+            _minute5.AutoReset = true;
+            _minute5.Enabled = true;
+            _minute5.Elapsed += Timer_Unban;
+            _minute5.Elapsed += Timer_RedditPost;
 
             await Task.Delay(10000);
-            HourAgain = new Timer(1000 * 60 * 60);
-            HourAgain.AutoReset = true;
-            HourAgain.Enabled = true;
-            //HourAgain.Elapsed += Timer_BackupData;
-            HourAgain.Elapsed += Timer_CleanData;
+            _minuteReminders = new Timer(1000 * 60 * 5);
+            _minuteReminders.AutoReset = true;
+            _minuteReminders.Enabled = true;
+            _minuteReminders.Elapsed += Timer_RemindVote;
+
+            _hour.Elapsed += Timer_UpdateDBLGuildCount;
+            _hour.Elapsed += Timer_ExpirePremium;
+
+            await Task.Delay(10000);
+            _hourAgain = new Timer(1000 * 60 * 60);
+            _hourAgain.AutoReset = true;
+            _hourAgain.Enabled = true;
+            _hourAgain.Elapsed += Timer_CleanData;
 
             await Task.Delay(30000);
-            Sauce = new Timer(1000 * 60 * 1);
-            Sauce.AutoReset = true;
-            Sauce.Enabled = true;
-            Sauce.Elapsed += Timer_GetSauce;
-
-            await Task.Delay(20000);
-            SauceRequest = new Timer(1000 * 60 * 10);
-            SauceRequest.AutoReset = true;
-            SauceRequest.Enabled = true;
+            _sauce = new Timer(1000 * 60 * 1);
+            _sauce.AutoReset = true;
+            _sauce.Enabled = true;
+            _sauce.Elapsed += Timer_GetSauce;
         }
 
-        private static async void Timer_PlayingStatus(object sender, ElapsedEventArgs e)
-        {
-            await Client.SetActivityAsync(new Game("Chinese Cartoons. Try @Namiko help", ActivityType.Watching));
-        }
-        private static async void Timer_ExpirePremium(object sender, ElapsedEventArgs e)
+        private async void Timer_ExpirePremium(object sender, ElapsedEventArgs e)
         {
             var now = System.DateTime.Now;
             var expired = PremiumDb.GetNewlyExpired();
-            var client = Client;
+            var client = _client;
             var ntr = client.GetGuild((ulong)ProType.HomeGuildId_NOTAPREMIUMTYPE);
 
             foreach (var premium in expired)
@@ -154,7 +151,7 @@ namespace Namiko
                 }
             }
         }
-        public static async void Timer_NamikoSteal(object sender, ElapsedEventArgs e)
+        public async void Timer_NamikoSteal(object sender, ElapsedEventArgs e)
         {
             if (new Random().Next(5) != 1)
                 return;
@@ -166,7 +163,7 @@ namespace Namiko
             int r;
             using (var db = new NamikoDbContext())
             {
-                var client = Client;
+                var client = _client;
                 var nid = client.CurrentUser.Id;
                 var namikos = await db.Toasties.AsQueryable().Where(x => x.UserId == nid && x.Amount < 200000).ToListAsync();
 
@@ -194,9 +191,10 @@ namespace Namiko
             watch.Stop();
             Console.WriteLine($"[TIMER] Namiko robbed {s} servers. {r} rows affected. It took her {watch.ElapsedMilliseconds} ms.");
         }
-        private static int CleanTake = 100;
-        private static int CleanSkip = 0;
-        public static async void Timer_CleanData(object sender, ElapsedEventArgs e)
+        
+        private int CleanTake = 100;
+        private int CleanSkip = 0;
+        public async void Timer_CleanData(object sender, ElapsedEventArgs e)
         {
             try
             {
@@ -271,11 +269,11 @@ namespace Namiko
                 }
             }
         }
-        private static async void Timer_ExpireTeamInvites(object sender, ElapsedEventArgs e)
+        private async void Timer_ExpireTeamInvites(object sender, ElapsedEventArgs e)
         {
             await InviteDb.DeleteOlder(DateTime.Now.AddDays(-1));
         }
-        private static async void Timer_Unban(object sender, ElapsedEventArgs e)
+        private async void Timer_Unban(object sender, ElapsedEventArgs e)
         {
             var bans = await BanDb.ToUnban();
             foreach (var x in bans)
@@ -284,7 +282,7 @@ namespace Namiko
                 await BanDb.EndBan(x.UserId, x.ServerId);
                 try
                 {
-                    await Client.GetGuild(x.ServerId).RemoveBanAsync(x.UserId);
+                    await _client.GetGuild(x.ServerId).RemoveBanAsync(x.UserId);
                 }
                 catch { }
             }
@@ -292,9 +290,9 @@ namespace Namiko
 
 
         // IMAGE SAUCING
-        private static bool NullSource = true;
-        private static bool RetrySource = true;
-        private static async void Timer_GetSauce(object sender, ElapsedEventArgs e)
+        private bool NullSource = true;
+        private bool RetrySource = true;
+        private async void Timer_GetSauce(object sender, ElapsedEventArgs e)
         {
             if (!NullSource && !RetrySource)
                 return;
@@ -383,7 +381,7 @@ namespace Namiko
                 });
             }
         }
-        public static async Task Timer_RequestSauce(object sender, ElapsedEventArgs e)
+        public async Task Timer_RequestSauce(object sender, ElapsedEventArgs e)
         {
             Waifu waifu = null;
             List<Embed> embeds = new List<Embed>();
@@ -475,7 +473,7 @@ namespace Namiko
             }
         }
 
-        public static Stream GenerateStreamFromString(string s)
+        public Stream GenerateStreamFromString(string s)
         {
             var stream = new MemoryStream();
             var writer = new StreamWriter(stream);
@@ -487,20 +485,20 @@ namespace Namiko
 
 
         // DISCORBBOTLIST
-        private static int VoteLock = 0;
-        private static bool ReminderLock = false;
-        public static void Timer_UpdateDBLGuildCount(object sender, ElapsedEventArgs e)
+        private int VoteLock = 0;
+        private bool ReminderLock = false;
+        public void Timer_UpdateDBLGuildCount(object sender, ElapsedEventArgs e)
         {
-            int amount = Client.Guilds.Count;
+            int amount = _client.Guilds.Count;
             WebUtil.UpdateGuildCount(amount);
         }
-        public static async void Timer_Voters2(object sender, ElapsedEventArgs e)
+        public async void Timer_Voters2(object sender, ElapsedEventArgs e)
         {
             if (Interlocked.Exchange(ref VoteLock, 1) == 0)
             {
                 try
                 {
-                    var voters = await WebUtil.GetVotersAsync(Client);
+                    var voters = await WebUtil.GetVotersAsync(_client);
                     var old = await VoteDb.GetVoters(500);
                     var votersParsed = voters.Select(x => x.Id).ToList();
                     votersParsed.Reverse();
@@ -509,7 +507,7 @@ namespace Namiko
 
                     if (add.Count > 500)
                     {
-                        var ch = await Client.GetUser(AppSettings.OwnerId).CreateDMChannelAsync();
+                        var ch = await _client.GetUser(AppSettings.OwnerId).CreateDMChannelAsync();
                         string er = "```\n";
                         foreach(var id in voters.Take(10))
                         {
@@ -540,7 +538,7 @@ namespace Namiko
                 }
             }
         }
-        public static List<T> NewEntries<T>(List<T> oldList, List<T> newList, Func<T, T, bool> equal = null)
+        public List<T> NewEntries<T>(List<T> oldList, List<T> newList, Func<T, T, bool> equal = null)
         {
             equal ??= delegate (T x, T y) { return x.Equals(y); };
             List<T> list = new List<T>();
@@ -568,7 +566,7 @@ namespace Namiko
             list.Reverse();
             return list;
         }
-        public static async Task<int> SendRewards(IEnumerable<ulong> voters)
+        public async Task<int> SendRewards(IEnumerable<ulong> voters)
         {
             int sent = 0;
             foreach (var x in voters)
@@ -581,7 +579,7 @@ namespace Namiko
 
                     await LootBoxDb.AddLootbox(x, type, 1);
                     sent++;
-                    var user = Client.GetUser(x);
+                    var user = _client.GetUser(x);
                     var ch = await user.CreateDMChannelAsync();
                     await ch.SendMessageAsync(embed: new EmbedBuilderPrepared(user)
                          .WithDescription($"Thank you for voting for me! I have given you a **{type.ToString()} Lootbox**! :star:\n" +
@@ -592,13 +590,13 @@ namespace Namiko
             }
             return sent;
         }
-        public static async Task SendReminders(IEnumerable<ulong> voters)
+        public async Task SendReminders(IEnumerable<ulong> voters)
         {
             foreach (var x in voters)
             {
                 try
                 {
-                    var user = Client.GetUser(x);
+                    var user = _client.GetUser(x);
                     var ch = await user.CreateDMChannelAsync();
                     await ch.SendMessageAsync(embed: new EmbedBuilderPrepared(user)
                         .WithDescription($"You can now vote for me again and receive another lootbox! [Discord Bots]({LinkHelper.GetRedirectUrl(LinkHelper.Vote, "Vote", "reminder")})")
@@ -607,7 +605,7 @@ namespace Namiko
                 catch { }
             }
         }
-        public static async void Timer_RemindVote(object sender, ElapsedEventArgs e)
+        public async void Timer_RemindVote(object sender, ElapsedEventArgs e)
         {
             if (ReminderLock)
                 return;
@@ -635,8 +633,8 @@ namespace Namiko
 
 
         // REDDIT POST
-        private static bool RedditLock = false;
-        private static async void Timer_RedditPost(object sender, ElapsedEventArgs e)
+        private bool RedditLock = false;
+        private async void Timer_RedditPost(object sender, ElapsedEventArgs e)
         {
             if (RedditLock)
                 return;
@@ -663,7 +661,7 @@ namespace Namiko
                 RedditLock = false;
             }
         }
-        public static async Task Post(IGrouping<string, RedditChannel> sub)
+        public async Task Post(IGrouping<string, RedditChannel> sub)
         {
             var hot = await RedditAPI.GetHot(sub.Key);
             if (hot == null)
@@ -725,7 +723,7 @@ namespace Namiko
                 return;
             }
         }
-        public static EmbedBuilder RedditPostEmbed(Post post, string sub)
+        public EmbedBuilder RedditPostEmbed(Post post, string sub)
         {
             var eb = new EmbedBuilder()
                         .WithColor(BasicUtil.RandomColor())
@@ -753,9 +751,9 @@ namespace Namiko
 
             return eb;
         }
-        public static async Task<List<RedditChannel>> GetChannels(IEnumerable<SpecialChannel> ids)
+        public async Task<List<RedditChannel>> GetChannels(IEnumerable<SpecialChannel> ids)
         {
-            var client = Client;
+            var client = _client;
             var channels = new List<RedditChannel>();
             await Task.Run(async () =>
             {

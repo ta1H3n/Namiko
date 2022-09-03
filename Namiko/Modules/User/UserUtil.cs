@@ -224,7 +224,7 @@ namespace Namiko
             eb.AddField("User List <:MiaHug:536580304018735135>", list);
             return eb;
         }
-        public static EmbedBuilder WaifusEmbed(SocketGuildUser user)
+        public static EmbedBuilder WaifusEmbed(SocketGuildUser user, string prefix)
         {
             var eb = new EmbedBuilder();
             eb.WithAuthor(user);
@@ -254,7 +254,7 @@ namespace Namiko
             {
                 string desc = "You find yourself in a strange place. You are all alone in the darkness. You have no waifus, no love, no purpose.\n\nBut perhaps all is not lost?\n\n"
                     + $"*A pillar of light reveals strange texts*\n"
-                    + $"```{TextCommandService.GetPrefix(user)}lootbox\n{TextCommandService.GetPrefix(user)}daily\n{TextCommandService.GetPrefix(user)}weekly\n{TextCommandService.GetPrefix(user)}waifushop```";
+                    + $"```{prefix}lootbox\n{prefix}daily\n{prefix}weekly\n{prefix}waifushop```";
                 eb.WithDescription(desc);
             }
 

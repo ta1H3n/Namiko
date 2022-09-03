@@ -24,6 +24,9 @@ public class TextCommandService
     private static Dictionary<ulong, string> Prefixes;
     public static HashSet<ulong> Blacklist;
     private static bool Pause = false;
+    private HashSet<int> _shardsDownloadingUsers = new HashSet<int>();
+    
+    private bool CommandsRegistered { get; set; } = false;
 
     public TextCommandService(IServiceProvider services)
     {
@@ -32,31 +35,69 @@ public class TextCommandService
         var logger = services.GetService<Logger>();
         Commands = new CommandService(services.GetService<CommandServiceConfig>());
 
-        _client.MessageReceived += ReadMessage;
-        
         Commands.CommandExecuted += AfterCommandExecuted;
         Commands.Log += logger.Console_Log;
         Commands.Log += Error_Log;
 
-        Commands.AddModuleAsync(typeof(Banroulettes), _services);
-        Commands.AddModuleAsync(typeof(Banroyales), _services);
-        Commands.AddModuleAsync(typeof(Basic), _services);
-        Commands.AddModuleAsync(typeof(Currency), _services);
-        Commands.AddModuleAsync(typeof(Images), _services);
-        Commands.AddModuleAsync(typeof(Roles), _services);
-        Commands.AddModuleAsync(typeof(ServerModule), _services);
-        Commands.AddModuleAsync(typeof(Special), _services);
-        Commands.AddModuleAsync(typeof(SpecialModes), _services);
-        Commands.AddModuleAsync(typeof(User), _services);
-        Commands.AddModuleAsync(typeof(Waifus), _services);
-        Commands.AddModuleAsync(typeof(WaifuEditing), _services);
-        Commands.AddModuleAsync(typeof(Web), _services);
-        Commands.AddModuleAsync(typeof(Music), _services);
-        Commands.AddModuleAsync(typeof(Leaderboards), _services);
-        Commands.AddModuleAsync(typeof(Pro), _services);
+        _client.MessageReceived += ReadMessage;
+        _client.LoggedIn += RegisterCommands;
+        _client.LoggedIn += InitialisePrefixes;
     }
 
+    private async Task InitialisePrefixes()
+    {
+        ServerDb.Prefixes = await ServerDb.GetPrefixes(AppSettings.DefaultPrefix);
+    }
 
+    private async Task RegisterCommands()
+    {
+        if (!CommandsRegistered)
+        {
+            await Commands.AddModuleAsync(typeof(Banroulettes), _services);
+            await Commands.AddModuleAsync(typeof(Banroyales), _services);
+            await Commands.AddModuleAsync(typeof(Basic), _services);
+            await Commands.AddModuleAsync(typeof(Currency), _services);
+            await Commands.AddModuleAsync(typeof(Images), _services);
+            await Commands.AddModuleAsync(typeof(Roles), _services);
+            await Commands.AddModuleAsync(typeof(ServerModule), _services);
+            await Commands.AddModuleAsync(typeof(Special), _services);
+            await Commands.AddModuleAsync(typeof(SpecialModes), _services);
+            await Commands.AddModuleAsync(typeof(User), _services);
+            await Commands.AddModuleAsync(typeof(Waifus), _services);
+            await Commands.AddModuleAsync(typeof(WaifuEditing), _services);
+            await Commands.AddModuleAsync(typeof(Web), _services);
+            await Commands.AddModuleAsync(typeof(Music), _services);
+            await Commands.AddModuleAsync(typeof(Leaderboards), _services);
+            await Commands.AddModuleAsync(typeof(Pro), _services);
+
+            CommandsRegistered = true;
+        }
+    }
+    
+    
+    private async Task Client_ShardReady_DownloadUsers(DiscordSocketClient arg)
+    {
+        //method not thread safe, but it's ok.
+        if (_shardsDownloadingUsers.Contains(arg.ShardId))
+            return;
+
+        try
+        {
+            _shardsDownloadingUsers.Add(arg.ShardId);
+
+            await Task.Delay(5000);
+            await arg.DownloadUsersAsync(arg.Guilds);
+            int users = arg.Guilds.Sum(x => x.Users.Count);
+            _ = WebhookClients.NamikoLogChannel.SendMessageAsync(
+                $":space_invader: `{DateTime.Now:HH:mm:ss}` - `Shard {arg.ShardId} downloaded {users} users.`");
+        }
+        finally
+        {
+            _shardsDownloadingUsers.Remove(arg.ShardId);
+        }
+    }
+    
+    
     private async Task ReadMessage(SocketMessage messageParam)
     {
         if (!(messageParam is SocketUserMessage message))
@@ -83,7 +124,7 @@ public class TextCommandService
     private async Task<bool> ExecuteCommand(SocketUserMessage message, CustomCommandContext context)
     {
         int ArgPos = 0;
-        string prefix = GetPrefix(context.Guild);
+        string prefix = GetPrefix(context.Guild.Id);
         bool isPrefixed = message.HasStringPrefix(prefix, ref ArgPos) ||
                           message.HasMentionPrefix(_client.CurrentUser, ref ArgPos);
 
@@ -140,7 +181,7 @@ public class TextCommandService
         if (!success)
         {
             // Try sending a reaction image if there is no such command
-            if (await new Images().SendRandomImage(context))
+            if (await new Images(_client).SendRandomImage(context))
             {
                 cmdName = "ReactionImage";
                 success = true;
@@ -152,8 +193,8 @@ public class TextCommandService
                 string reason = res.ErrorReason + "\n";
                 if (res.Error != CommandError.UnmetPrecondition)
                     reason += CommandHelpString(
-                        context.Message.Content.Split(null)[0].Replace(GetPrefix(context.Guild), ""),
-                        GetPrefix(context.Guild));
+                        context.Message.Content.Split(null)[0].Replace(GetPrefix(context.Guild.Id), ""),
+                        GetPrefix(context.Guild.Id));
                 await context.Channel.SendMessageAsync(embed: new EmbedBuilder().WithColor(Color.DarkRed)
                     .WithDescription(":x: " + reason).Build());
             }
@@ -262,38 +303,17 @@ public class TextCommandService
             return "";
         }
     }
-    
-    
 
     public static string GetPrefix(ulong guildId)
     {
-        return Prefixes.GetValueOrDefault(guildId) ?? AppSettings.DefaultPrefix;
-    }
-    public static string GetPrefix(ICustomContext context)
-    {
-        return context.Guild == null ? AppSettings.DefaultPrefix : GetPrefix(context.Guild.Id);
-    }
-    public static string GetPrefix(ICommandContext context)
-    {
-        return context.Guild == null ? AppSettings.DefaultPrefix : GetPrefix(context.Guild.Id);
-    }
-    public static string GetPrefix(SocketGuildUser user)
-    {
-        return user.Guild == null ? AppSettings.DefaultPrefix : GetPrefix(user.Guild.Id);
-    }
-    public static string GetPrefix(IGuild guild)
-    {
-        return guild == null ? AppSettings.DefaultPrefix : GetPrefix(guild.Id);
-    }
-    public static bool UpdatePrefix(ulong guildId, string prefix)
-    {
-        if (guildId == 0 || prefix == null || prefix == "")
-            return false;
-
-        if (Prefixes.GetValueOrDefault(guildId) != null)
-            Prefixes.Remove(guildId);
-
-        Prefixes.Add(guildId, prefix);
-        return true;
+        var prefix = ServerDb.GetPrefix(guildId);
+        if (prefix == null)
+        {
+            return AppSettings.DefaultPrefix;
+        }
+        else
+        {
+            return prefix;
+        }
     }
 }

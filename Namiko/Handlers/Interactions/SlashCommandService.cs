@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord;
@@ -18,49 +19,50 @@ public class SlashCommandService
 {
     public readonly InteractionService Interaction;
     private readonly IServiceProvider _services;
-    private readonly BaseSocketClient _client;
+    private readonly DiscordShardedClient _client;
 
     private bool CommandsRegistered { get; set; } = false;
 
     public SlashCommandService(IServiceProvider services)
     {
         _services = services;
-        _client = services.GetService<BaseSocketClient>();
+        _client = services.GetService<DiscordShardedClient>();
         var logger = services.GetService<Logger>();
         Interaction = new InteractionService(_client, services.GetService<InteractionServiceConfig>());
 
         Interaction.AddTypeConverter<Waifu>(new WaifuConverter());
         Interaction.AddTypeConverter<ShopWaifu>(new ShopWaifuConverter());
 
-        //await Interactions.AddModuleAsync(typeof(Banroulettes), Services);
-        //await Interactions.AddModuleAsync(typeof(Banroyales), Services);
-        Interaction.AddModuleAsync(typeof(Basic), services);
-        Interaction.AddModuleAsync(typeof(Currency), services);
-        Interaction.AddModuleAsync(typeof(Images), services);
-        Interaction.AddModuleAsync(typeof(Roles), services);
-        Interaction.AddModuleAsync(typeof(ServerModule), services);
-        Interaction.AddModuleAsync(typeof(User), services);
-        Interaction.AddModuleAsync(typeof(Waifus), services);
-        Interaction.AddModuleAsync(typeof(WaifuEditing), services);
-        Interaction.AddModuleAsync(typeof(Web), services);
-        Interaction.AddModuleAsync(typeof(Music), services);
-        Interaction.AddModuleAsync(typeof(Leaderboards), services);
-        Interaction.AddModuleAsync(typeof(Pro), services);
 
         Interaction.SlashCommandExecuted += AfterSlashCommandExecuted;
         Interaction.Log += logger.Console_Log;
 
         _client.InteractionCreated += ExecuteInteraction;
-        _client.LoggedIn += RegisterCommands;
+        _client.ShardReady += RegisterCommands;
     }
 
-    private async Task RegisterCommands()
+    private async Task RegisterCommands(DiscordSocketClient client)
     {
         if (!CommandsRegistered)
         {
+            // await Interaction.AddModuleAsync(typeof(Banroulettes), _services);
+            // await Interaction.AddModuleAsync(typeof(Banroyales), _services);
+            await Interaction.AddModuleAsync(typeof(Basic), _services);
+            await Interaction.AddModuleAsync(typeof(Leaderboards), _services);
+            await Interaction.AddModuleAsync(typeof(Currency), _services);
+            await Interaction.AddModuleAsync(typeof(Images), _services);
+            await Interaction.AddModuleAsync(typeof(Roles), _services);
+            await Interaction.AddModuleAsync(typeof(ServerModule), _services);
+            await Interaction.AddModuleAsync(typeof(User), _services);
+            await Interaction.AddModuleAsync(typeof(Waifus), _services);
+            await Interaction.AddModuleAsync(typeof(WaifuEditing), _services);
+            await Interaction.AddModuleAsync(typeof(Web), _services);
+            await Interaction.AddModuleAsync(typeof(Music), _services);
+            await Interaction.AddModuleAsync(typeof(Pro), _services);
+            
             if (true)
             {
-                await Interaction.AddModulesToGuildAsync(418900885079588884);
+                await Interaction.AddModulesToGuildAsync(418900885079588884, true, Interaction.Modules.ToArray());
             }
             else
             {

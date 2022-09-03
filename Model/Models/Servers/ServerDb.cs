@@ -8,17 +8,47 @@ namespace Model
 {
     public static class ServerDb
     {
+        public static Dictionary<ulong, string> Prefixes;
+        
         public static Server GetServer(ulong GuildId)
         {
             using var db = new NamikoDbContext();
             return db.Servers.Where(x => x.GuildId == GuildId).FirstOrDefault();
         }
-        public static Dictionary<ulong, string> GetPrefixes()
+        public static async Task<Dictionary<ulong, string>> GetPrefixes(string pref)
         {
             using (var db = new NamikoDbContext())
             {
-                return db.Servers.ToDictionary(x => x.GuildId, x => x.Prefix);
+                return await db.Servers.Where(x => x.Prefix != pref).ToDictionaryAsync(x => x.GuildId, x => x.Prefix);
             }
+        }
+
+        public static async Task UpdatePrefix(ulong guildId, string prefix)
+        {
+            if (guildId == 0 || prefix == null || prefix == "")
+                return;
+
+            if (Prefixes.GetValueOrDefault(guildId) != null)
+                Prefixes.Remove(guildId);
+
+            Prefixes.Add(guildId, prefix);
+
+            using (var db = new NamikoDbContext())
+            {
+                var guild = await db.Servers.FirstOrDefaultAsync(x => x.GuildId == guildId);
+                guild.Prefix = prefix;
+                db.Servers.Update(guild);
+                await db.SaveChangesAsync();
+            }
+        }
+
+        public static string GetPrefix(ulong guildId)
+        {
+            if (Prefixes.TryGetValue(guildId, out string prefix))
+            {
+                return prefix;
+            }
+            return null;
         }
         public static async Task UpdateServer(Server server)
         {

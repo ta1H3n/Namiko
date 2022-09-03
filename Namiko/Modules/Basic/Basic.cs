@@ -29,7 +29,7 @@ namespace Namiko
         public async Task HiNamiko()
         {
             var msgTime = Context.CreatedAt;
-            var msg = await ReplyAsync($"Hi {Context.User.Mention} :fox: `Counting...`");
+            var msg = await ReplyAsync(text: $"Hi {Context.User.Mention} :fox: `Counting...`", embed: null);
             var msgTime2 = msg.CreatedAt;
             var ping = msgTime2 - msgTime;
             await msg.ModifyAsync(a => a.Content = $"Hi {Context.User.Mention} :fox: `{ping.TotalMilliseconds}ms`");
@@ -89,24 +89,10 @@ namespace Namiko
             await ReplyAsync("Done.");
         }
 
-        [Command("CleanData"), OwnerPrecondition]
-        public async Task CleanData()
-        {
-            Timers.Timer_CleanData(null, null);
-            await ReplyAsync("Done.");
-        }
-
-        [Command("StealToasties"), OwnerPrecondition]
-        public async Task StealToasties()
-        {
-            Timers.Timer_NamikoSteal(null, null);
-            await ReplyAsync("Done.");
-        }
-
         [Command("SShipWaifu"), Description("\n **Usage**: `!shipwaifu [waifu] [userid] [guildid_optional]`"), OwnerPrecondition]
         public async Task ShipWaifu(string name, ulong userId, ulong guildId = 0)
         {
-            TextCommandService.GetPrefix(Context);
+            GetPrefix();
 
             if (guildId == 0)
                 guildId = Context.Guild.Id;
@@ -155,7 +141,7 @@ namespace Namiko
         public async Task Help([Remainder] string cmd = "")
         {
             var commandService = TextCommands.Commands;
-            string prefix = TextCommandService.GetPrefix(Context);
+            string prefix = GetPrefix();
 
             EmbedBuilder eb = null;
             string desc = "";

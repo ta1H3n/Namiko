@@ -48,7 +48,7 @@ namespace Namiko
         {
             WaifuShop shop = await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Waifu, Client);
             int count = Constants.shoplimitedamount + Constants.shopt1amount + Constants.shopt2amount + Constants.shopt3amount;
-            string prefix = TextCommandService.GetPrefix(Context);
+            string prefix = GetPrefix();
             var waifus = shop.ShopWaifus.OrderByDescending(x => x.Limited).ThenBy(x => x.Waifu.Tier).ThenBy(x => x.Waifu.Source).ToList();
 
             if (waifus.Count <= count)
@@ -65,7 +65,7 @@ namespace Namiko
         public async Task GachaShop()
         {
             WaifuShop shop = await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Gacha, Client);
-            string prefix = TextCommandService.GetPrefix(Context);
+            string prefix = GetPrefix();
             var waifus = shop.ShopWaifus.OrderByDescending(x => x.Limited).ThenBy(x => x.Waifu.Tier).ThenBy(x => x.Waifu.Source).ToList();
 
             var eb = WaifuUtil.NewShopEmbed(waifus, prefix, Client, Context.Guild.Id, ShopType.Gacha);
@@ -77,7 +77,7 @@ namespace Namiko
         {
             WaifuShop shop = await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Mod, Client);
             int count = Constants.shoplimitedamount + Constants.shopt1amount + Constants.shopt2amount + Constants.shopt3amount;
-            string prefix = TextCommandService.GetPrefix(Context);
+            string prefix = GetPrefix();
             List<ShopWaifu> waifus = new List<ShopWaifu>();
             if (shop != null)
                 waifus = shop.ShopWaifus;
@@ -283,7 +283,7 @@ namespace Namiko
             if (PremiumDb.IsPremium(Context.User.Id, ProType.ProPlus))
                 cap = 12;
 
-            string prefix = TextCommandService.GetPrefix(Context);
+            string prefix = GetPrefix();
             if (waifus.Count >= cap)
             {
                 await ReplyAsync(embed: new EmbedBuilderPrepared(Context.User)
@@ -309,7 +309,7 @@ namespace Namiko
             await WaifuWishlistDb.AddWaifuWish(Context.User.Id, waifu, Context.Guild.Id);
 
             waifus = await WaifuWishlistDb.GetWishlist(user.Id, Context.Guild.Id);
-            await ReplyAsync($"Added **{waifu.Name}** to your wishlist!", false, WaifuUtil.WishlistEmbed(waifus, (SocketGuildUser)user).Build());
+            await ReplyAsync($"Added **{waifu.Name}** to your wishlist!", false, WaifuUtil.WishlistEmbed(waifus, (SocketGuildUser)user, GetPrefix()).Build());
         }
 
         [Command("WaifuWishlist"), Alias("wwl"), Description("Shows yours or someone's waifu wishlist.\n**Usage**: `!wwl [user_optional]`")]
@@ -319,7 +319,7 @@ namespace Namiko
             user ??= Context.User;
             var waifus = await WaifuWishlistDb.GetWishlist(user.Id, Context.Guild.Id);
 
-            await ReplyAsync(null, false, WaifuUtil.WishlistEmbed(waifus, (SocketGuildUser)user).Build());
+            await ReplyAsync(null, false, WaifuUtil.WishlistEmbed(waifus, (SocketGuildUser)user, GetPrefix()).Build());
         }
 
         [Command("RemoveWish"), Alias("rww", "RemoveWaifuWish"), Description("Removes a waifu from your wishlist.\n**Usage**: `!rww [waifu]`")]
@@ -358,7 +358,7 @@ namespace Namiko
         [SlashCommand("waifu-shop-add", "Add waifu to the mod shop.")]
         public async Task ModShopAddWaifu([Autocomplete(typeof(WaifuAutocomplete))] Waifu waifu)
         {
-            var prefix = TextCommandService.GetPrefix(Context);
+            var prefix = GetPrefix();
 
             if (!PremiumDb.IsPremium(Context.Guild.Id, ProType.GuildPlus))
             {
@@ -818,14 +818,6 @@ namespace Namiko
                 await ReplyAsync($":x: Failed to update {waifu.Name}");
                 return;
             }
-        }
-
-        [Insider]
-        [Command("ImageSauceRequest"), Alias("isr"), Description("Get a request for missing image sauce.\n**Usage**: `!isr`")]
-        public async Task ImageSauceRequest(string url = null)
-        {
-            await Timers.Timer_RequestSauce(null, null);
-            await ReplyAsync("<#728729035986829342>");
         }
 
         [Insider]

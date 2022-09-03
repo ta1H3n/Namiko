@@ -99,7 +99,7 @@ namespace Namiko.Modules.Pro
                 }
             }
             if (text == "")
-                text += $"You have no Pro Guild... Try `{TextCommandService.GetPrefix(Context)}Pro`";
+                text += $"You have no Pro Guild... Try `{GetPrefix()}Pro`";
 
             await ReplyAsync(text);
             if (log)
@@ -157,7 +157,7 @@ namespace Namiko.Modules.Pro
                 }
             }
             if (text == "")
-                text += $"You have no user premium... Try `{TextCommandService.GetPrefix(Context)}donate`";
+                text += $"You have no user premium... Try `{GetPrefix()}donate`";
 
             await ReplyAsync(text);
             if (log)
@@ -194,13 +194,13 @@ namespace Namiko.Modules.Pro
         //[SlashCommand("pro", "Info about pro features")]
         public async Task Donate()
         {
-            await ReplyAsync("", false, BasicUtil.DonateEmbed(TextCommandService.GetPrefix(Context), Client).Build());
+            await ReplyAsync("", false, BasicUtil.DonateEmbed(GetPrefix(), Client).Build());
         }
 
         [Command("InfoPro"), Description("Donation Links.")]
         public async Task InfoPro()
         {
-            string prefix = TextCommandService.GetPrefix(Context);
+            string prefix = GetPrefix();
             var eb = new EmbedBuilder()
                 .WithAuthor(Client.CurrentUser)
                 .WithDescription($"Namiko Pro Upgrades :star:\n" +
@@ -221,7 +221,7 @@ namespace Namiko.Modules.Pro
         [Command("InfoProPlus"), Description("Donation Links.")]
         public async Task InfoProPlus()
         {
-            string prefix = TextCommandService.GetPrefix(Context);
+            string prefix = GetPrefix();
             var eb = new EmbedBuilder()
                 .WithAuthor(Client.CurrentUser)
                 .WithDescription($"Namiko Pro+ Upgrades :star2:\n" +
@@ -245,7 +245,7 @@ namespace Namiko.Modules.Pro
         [Command("InfoGuild"), Description("Donation Links.")]
         public async Task InfoGuild()
         {
-            string prefix = TextCommandService.GetPrefix(Context);
+            string prefix = GetPrefix();
             var eb = new EmbedBuilder()
                 .WithAuthor(Client.CurrentUser)
                 .WithDescription($"Namiko Pro Guild Upgrades :star:\n" +

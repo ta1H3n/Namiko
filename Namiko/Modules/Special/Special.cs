@@ -18,6 +18,7 @@ using System.Net;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Namiko.Handlers.Services;
 using PreconditionAttribute = Namiko.Handlers.Attributes.PreconditionAttribute;
 
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
@@ -26,8 +27,10 @@ namespace Namiko
 {
     public class Special : CustomModuleBase<ICustomContext>
     {
+        public MusicService MusicService { get; set; }
         public DiscordShardedClient Client { get; set; }
         public TextCommandService TextCommands { get; set; }
+        public DiscordService Discord { get; set; }
         static ISocketMessageChannel ch;
 
         [Command("SetSayCh"), Alias("ssch"), OwnerPrecondition]
@@ -173,13 +176,13 @@ namespace Namiko
             var tasks = new List<Task>();
             tasks.Add(WebhookClients.NamikoLogChannel.SendMessageAsync($"`{DateTime.Now.ToString("HH:mm:ss")}` {Context.Client.CurrentUser.Username} killed by {Context.User.Mention} :gun:"));
 
-            foreach (var player in Music.Node.Players)
+            foreach (var player in MusicService.Node.Players)
             {
                 try
                 {
                     await player.TextChannel.SendMessageAsync(embed: new EmbedBuilderLava().WithDescription("Gomen, Senpai. I have to Disconnect the player due to server restart.\n" +
                         "You can restart the player once I am back online in a few minutes.").Build());
-                    await Music.Node.LeaveAsync(player.VoiceChannel);
+                    await MusicService.Node.LeaveAsync(player.VoiceChannel);
                 } 
                 catch (Exception ex) { SentrySdk.CaptureException(ex); }
             }
@@ -229,22 +232,6 @@ namespace Namiko
                 await WelcomeMessageDb.DeleteMessage(id);
                 await ReplyAsync($"Deleted welcome message with id: {id}");
             }
-        }
-
-        [Command("StartLavalink"), Description("Starts Lavalink.\n**Usage**: `!join`"), Insider]
-        public async Task Init([Remainder]string str = "")
-        {
-            await Music.Initialize(Client);
-            await ReplyAsync("Done.");
-        }
-
-        [Command("SendLootboxes"), OwnerPrecondition]
-        public async Task SendLootboxes()
-        {
-            var voters = (await WebUtil.GetVotersAsync(Client)).Select(x => x.Id).Distinct();
-            int sent = await Timers.SendRewards(voters);
-
-            ReplyAsync($"Broadcasted to {sent}/{voters.Count()} users.");
         }
 
         [Command("MessageVoters"), OwnerPrecondition]
@@ -594,7 +581,7 @@ namespace Namiko
                 desc += "Leaving filtered guilds...";
                 await ReplyAsync(desc);
 
-                Program.GuildLeaveEvent = false;
+                Discord.GuildLeaveEvent = false;
 
                 if (guilds.Count >= Client.Guilds.Count)
                 {
@@ -640,15 +627,15 @@ namespace Namiko
                     $"Dms: {dm}\n" +
                     $"Done.");
 
-                Program.GuildLeaveEvent = true;
+                Discord.GuildLeaveEvent = true;
             }
         }
 
         [Command("GuildLeaveEvent"), Description("Set guild leave tracking."), OwnerPrecondition]
         public async Task GuildLeaveEvent()
         {
-            Program.GuildLeaveEvent = !Program.GuildLeaveEvent;
-            await ReplyAsync(Program.GuildLeaveEvent.ToString());
+            Discord.GuildLeaveEvent = !Discord.GuildLeaveEvent;
+            await ReplyAsync(Discord.GuildLeaveEvent.ToString());
         }
 
         [Command("TestCode"), Description("Test code."), OwnerPrecondition]
