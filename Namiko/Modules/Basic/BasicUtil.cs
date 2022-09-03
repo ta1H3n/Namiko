@@ -109,8 +109,8 @@ namespace Namiko
             var client = Program.GetClient();
 
             string desc = "";
-            desc += $"`/help` - find my commands.\n\n" +
-                $"Or check out my usage guide [here]({LinkHelper.Guide}) :star: \n\n" +
+            desc += $"`/help` - find my commands.\n\n";
+                    //$"Or check out my usage guide [here]({LinkHelper.Guide}) :star: \n\n";
             eb.WithDescription(desc);
 
             eb.WithAuthor(client.CurrentUser);

@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Namiko.Handlers.Autocomplete;
+using Namiko.Handlers.ComplexParameters;
 
 namespace Namiko
 {
@@ -57,7 +58,7 @@ namespace Namiko
         }
 
         [SlashCommand("image", "Send a reaction image")]
-        public async Task SendImage([Autocomplete(typeof(ReactionImageAutocomplete))] string name = null, int imageId = 0)
+        public async Task SendImage([Autocomplete(typeof(ReactionImageAutocomplete))] string name, [ComplexParameter]UserListParams usersListParams = null, int imageId = 0)
         {
             if (imageId != 0)
             {
@@ -88,8 +89,10 @@ namespace Namiko
                 return;
             }
 
+            string mentions = string.Join(' ', usersListParams.GetUsers().Select(x => x.Mention));
+            
             var embed = ImageUtil.ToEmbed(image).Build();
-            await ReplyAsync("", false, embed);
+            await ReplyAsync(mentions, false, embed);
         }
 
         [Command("List"), Alias("ListAll", "Images", "Albums"), Description("List of all image commands and how many images there are.\n**Usage**: `!list`")]
