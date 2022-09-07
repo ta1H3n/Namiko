@@ -70,8 +70,9 @@ namespace Namiko
                 GatewayIntents =
                     GatewayIntents.Guilds |
                     GatewayIntents.GuildVoiceStates |
+                    GatewayIntents.GuildMembers |
+                    GatewayIntents.GuildPresences |
                     GatewayIntents.GuildMessages |
-                    GatewayIntents.GuildInvites |
                     GatewayIntents.GuildMessageReactions |
                     GatewayIntents.DirectMessages |
                     GatewayIntents.DirectMessageReactions
