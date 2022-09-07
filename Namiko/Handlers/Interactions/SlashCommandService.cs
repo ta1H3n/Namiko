@@ -20,6 +20,7 @@ public class SlashCommandService
     public readonly InteractionService Interaction;
     private readonly IServiceProvider _services;
     private readonly DiscordShardedClient _client;
+    private readonly DiscordService _discordService;
 
     private bool CommandsRegistered { get; set; } = false;
 
@@ -27,6 +28,7 @@ public class SlashCommandService
     {
         _services = services;
         _client = services.GetService<DiscordShardedClient>();
+        _discordService = services.GetService<DiscordService>();
         var logger = services.GetService<Logger>();
         Interaction = new InteractionService(_client, services.GetService<InteractionServiceConfig>());
 
@@ -60,7 +62,7 @@ public class SlashCommandService
             await Interaction.AddModuleAsync(typeof(Music), _services);
             await Interaction.AddModuleAsync(typeof(Pro), _services);
             
-            if (true)
+            if (_discordService.Development)
             {
                 await Interaction.AddModulesToGuildAsync(418900885079588884, true, Interaction.Modules.ToArray());
             }

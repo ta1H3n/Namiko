@@ -87,13 +87,14 @@ namespace Namiko.Addons.Handlers
             => Select(items, name, new EmbedBuilderPrepared(Context.User).WithDescription(message).Build(), label, description, emote, fromSourceUser);
         public Task<SocketRole> SelectRole(IEnumerable<SocketRole> roles, string roleNameFilter = null, IEnumerable<ulong> roleIdsFilter = null, string msg = "Role")
         {
+            roles = roles.Where(x => x?.Name != null);
             if (roleIdsFilter != null)
             {
                 roles = roles.Where(x => roleIdsFilter.Contains(x.Id));
             }
             if (roleNameFilter != null)
             {
-                roles = roles.Where(x => x.Name.Contains(roleNameFilter));
+                roles = roles.Where(x => x.Name.ToLower().Contains(roleNameFilter.ToLower()));
             }
 
             return Select(roles, placeholder: msg);

@@ -22,6 +22,12 @@ public class DiscordService
 
     public DiscordService(DiscordShardedClient client, Logger logger)
     {
+        string env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        if (env == "Production")
+        {
+            Development = false;
+        }
+        
         Client = client;
         
         Client.Log += logger.Console_Log;
@@ -36,6 +42,8 @@ public class DiscordService
         
         Client.JoinedGuild += NamikoJoinedGuild;
         Client.LeftGuild += NamikoLeftGuild;
+
+        Client.ReactionAdded += AMFWT_VerificationReaction;
 
         if (!Development)
             Client.UserJoined += Client_UserJoinedWelcome;
