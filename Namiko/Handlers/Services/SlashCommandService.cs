@@ -45,11 +45,41 @@ public class SlashCommandService
         Interaction.Log += logger.Console_Log;
 
         _client.InteractionCreated += ExecuteInteraction;
-        _client.ShardReady += RegisterCommands;
+        _client.ShardReady += RegisterCommandModules;
         _client.ShardReady += RegisterReactionImageCommands;
+        _client.JoinedGuild += RegisterReactionImageCommands;
     }
 
+    
+
     private int _reactionImageCommandsRegistered = 0;
+    private async Task RegisterReactionImageCommands(SocketGuild guild, SlashCommandProperties[] sharedCommands)
+    {
+        sharedCommands ??= BuildReactionImageCommands(_reactionCommands);
+        
+        if (Images.ReactionImageCommands.ContainsKey(guild.Id))
+        {
+            var guildImages = Images.ReactionImageCommands[guild.Id];
+            var commands = BuildReactionImageCommands(guildImages).ToList();
+            commands.AddRange(sharedCommands.Where(x => !guildImages.Contains(x.Name.Value)));
+
+            _ = guild.BulkOverwriteApplicationCommandAsync(commands.ToArray());
+        }
+        else if (guild.Id == 418900885079588884)
+        {
+            var commands = await guild.GetApplicationCommandsAsync();
+
+            foreach (var cmd in sharedCommands.Take(100 - commands.Count))
+            {
+                _ = guild.CreateApplicationCommandAsync(cmd);
+            }
+        }
+        else
+        {
+            _ = guild.BulkOverwriteApplicationCommandAsync(sharedCommands);
+        }
+    }
+    private Task RegisterReactionImageCommands(SocketGuild guild) => RegisterReactionImageCommands(guild, null);
     private async Task RegisterReactionImageCommands(DiscordSocketClient client)
     {
         // Making sure this part only runs once, unless an exception is thrown. Thread safe.
@@ -58,19 +88,10 @@ public class SlashCommandService
         {
             try
             {
-                var sharedCommands = _reactionCommands.Select(x => new SlashCommandBuilder()
-                    .WithName(x)
-                    .WithDescription($"Send a random reaction image/gif")
-                    .Build()
-                ).ToArray();
-
+                var sharedCommands = BuildReactionImageCommands(_reactionCommands);
                 foreach (var guild in client.Guilds)
                 {
-                    if (Images.ReactionImageCommands.ContainsKey(guild.Id))
-                    {
-                        
-                    }
-                    guild.BulkOverwriteApplicationCommandAsync(sharedCommands);
+                    _ = RegisterReactionImageCommands(guild, sharedCommands);
                 }
             }
             catch (Exception ex)
@@ -80,9 +101,22 @@ public class SlashCommandService
             }
         }
     }
+    private SlashCommandProperties[] BuildReactionImageCommands(IEnumerable<string> commands)
+    {
+        return commands.Select(x => new SlashCommandBuilder()
+            .WithName(x.ToLower())
+            .WithDescription($"Send a random reaction image/gif")
+            .AddOption("user-1", ApplicationCommandOptionType.User, "Add user to mention")
+            .AddOption("user-2", ApplicationCommandOptionType.User, "Add user to mention")
+            .AddOption("user-3", ApplicationCommandOptionType.User, "Add user to mention")
+            .AddOption("user-4", ApplicationCommandOptionType.User, "Add user to mention")
+            .AddOption("user-5", ApplicationCommandOptionType.User, "Add user to mention")
+            .Build()
+        ).ToArray();
+    }
 
     private int _commandsRegistered = 0;
-    private async Task RegisterCommands(DiscordSocketClient client)
+    private async Task RegisterCommandModules(DiscordSocketClient client)
     {
         // Making sure this part only runs once, unless an exception is thrown. Thread safe.
         if (Interlocked.Exchange(ref _commandsRegistered, 1) == 0)
@@ -129,16 +163,35 @@ public class SlashCommandService
     {
         try
         {
-            // Create an execution context that matches the generic type parameter of your InteractionModuleBase<T> modules.
-            var context = new CustomInteractionContext(_client, interaction);
             if (interaction.Type == InteractionType.ApplicationCommand)
             {
+                if (interaction is ISlashCommandInteraction slashCommand)
+                {
+                    var cmd = Interaction.SearchSlashCommand(slashCommand);
+                    if (!cmd.IsSuccess)
+                    {
+                        if (Images.ReactionImageCommands[0].Contains(slashCommand.Data.Name) ||
+                            (interaction.GuildId.HasValue &&
+                             Images.ReactionImageCommands[interaction.GuildId.Value].Contains(slashCommand.Data.Name)))
+                        {
+                            string mentions = string.Join(' ', slashCommand.Data.Options.Where(x => x?.Value != null && x.Value is IUser).Select(x => (x as IUser).Mention));
+
+                            var image = ImageDb.GetRandomImage(slashCommand.Data.Name, interaction.GuildId.Value);
+                            var embed = ImageUtil.ToEmbed(image).Build();
+
+                            interaction.RespondAsync(mentions, embed: embed);
+                        }
+                    }
+                }
+                
+                // DO NOT DEFER COMMANDS THAT SEND A MODAL !!! = pain :(
                 if (((SocketSlashCommand)interaction).CommandName != "waifu-edit")
                 {
-                    await interaction.DeferAsync();
+                    await interaction.DeferAsync(ephemeral: true);
                 }
             }
 
+            var context = new CustomInteractionContext(_client, interaction);
             var result = await Interaction.ExecuteCommandAsync(context, _services);
         }
         catch
@@ -146,11 +199,11 @@ public class SlashCommandService
             // If Slash Command execution fails it is most likely that the original interaction acknowledgement will persist. It is a good idea to delete the original
             // response, or at least let the user know that something went wrong during the command execution.
             if (interaction.Type is InteractionType.ApplicationCommand)
-                await interaction.GetOriginalResponseAsync()
-                    .ContinueWith(async (msg) => await msg.Result.DeleteAsync());
+            {
+                await interaction.RespondAsync("Whoops, something went wrong... :eyes:", ephemeral: true);
+            }
         }
     }
-
     private async Task AfterSlashCommandExecuted(SlashCommandInfo cmd, IInteractionContext con, IResult res)
     {
         var context = (CustomInteractionContext)con;
@@ -221,9 +274,6 @@ public class SlashCommandService
             "x",
             "wave",
             "banana",
-            "test",
-            "servermeme",
-            "namiko",
             "sudoku",
             "dab",
             "nuzzle",
@@ -235,10 +285,8 @@ public class SlashCommandService
             "furry",
             "holdhand",
             "ora",
-            "subonk",
             "nyaa",
             "clap",
-            "suhug",
             "step",
             "bad",
             "wasted",
@@ -257,7 +305,6 @@ public class SlashCommandService
             "dodge",
             "arrest",
             "rat",
-            "supat",
             "explosion",
             "fistbump",
             "kabedon",
@@ -268,9 +315,7 @@ public class SlashCommandService
             "thundercrosssplitattack",
             "brofist",
             "protecc",
-            "pun",
             "ree",
-            "creeper",
         };
     }
 }
