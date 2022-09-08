@@ -18,7 +18,7 @@ public class DiscordService
     public bool GuildLeaveEvent = true;
 
     private int _startup = 0;
-    private int _allShardsReady = 0;
+    private int _foundLeftGuilds = 0;
 
     public DiscordService(DiscordShardedClient client, Logger logger)
     {
@@ -171,7 +171,7 @@ public class DiscordService
     {
         // Making sure this part only runs once, unless an exception is thrown. Thread safe.
         if (Client.Shards.All(x => x.ConnectionState == ConnectionState.Connected) &&
-            Interlocked.Exchange(ref _allShardsReady, 1) == 0)
+            Interlocked.Exchange(ref _foundLeftGuilds, 1) == 0)
         {
             try
             {
@@ -190,7 +190,7 @@ public class DiscordService
             }
             catch (Exception ex)
             {
-                _allShardsReady = 0;
+                _foundLeftGuilds = 0;
                 SentrySdk.CaptureException(ex);
             }
         }
