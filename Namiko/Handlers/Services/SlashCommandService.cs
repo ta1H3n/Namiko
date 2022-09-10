@@ -70,6 +70,7 @@ public class SlashCommandService
 
             foreach (var cmd in sharedCommands.Take(100 - commands.Count))
             {
+                await Task.Delay(5000);
                 await guild.CreateApplicationCommandAsync(cmd);
             }
         }
@@ -88,10 +89,21 @@ public class SlashCommandService
             try
             {
                 var sharedCommands = BuildReactionImageCommands(_reactionCommands);
-                foreach (var guild in client.Guilds)
+                var param = ParamDb.GetParam(0, "ReactionImageSyncDate").FirstOrDefault() ?? new Param()
                 {
+                    Name = "ReactionImageSyncDate",
+                    Date = DateTime.MinValue
+                };
+                var guilds = ServerDb.GetGuildsJoinedAfterDate(param.Date);
+                
+                foreach (var guild in client.Guilds.Where(x => guilds.Contains(x.Id)))
+                {
+                    await Task.Delay(5000);
                     await RegisterReactionImageCommands(guild, sharedCommands);
                 }
+
+                param.Date = DateTime.Now;
+                ParamDb.UpdateParam(param);
             }
             catch (Exception ex)
             {

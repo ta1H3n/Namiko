@@ -124,7 +124,7 @@ public class TextCommandService
     private async Task<bool> ExecuteCommand(SocketUserMessage message, CustomCommandContext context)
     {
         int ArgPos = 0;
-        string prefix = GetPrefix(context.Guild.Id);
+        string prefix = context?.Guild == null ? AppSettings.DefaultPrefix : GetPrefix(context.Guild.Id);
         bool isPrefixed = message.HasStringPrefix(prefix, ref ArgPos) ||
                           message.HasMentionPrefix(_client.CurrentUser, ref ArgPos);
 

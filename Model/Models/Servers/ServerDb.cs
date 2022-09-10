@@ -88,6 +88,12 @@ namespace Model
             db.Servers.AddRange(servers);
             return await db.SaveChangesAsync();
         }
+
+        public static HashSet<ulong> GetGuildsJoinedAfterDate(DateTime date)
+        {
+            using var db = new NamikoDbContext();
+            return db.Servers.Where(x => x.JoinDate > date).Select(x => x.GuildId).ToHashSet();
+        }
         public static HashSet<ulong> GetAll()
         {
             using var db = new NamikoDbContext();
