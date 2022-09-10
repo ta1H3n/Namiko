@@ -261,9 +261,12 @@ public class DiscordService
         if (!GuildLeaveEvent)
             return;
 
-        var server = ServerDb.GetServer(arg.Id);
-        server.LeaveDate = DateTime.Now;
-        await ServerDb.UpdateServer(server);
+        try
+        {
+            var server = ServerDb.GetServer(arg.Id);
+            server.LeaveDate = DateTime.Now;
+            await ServerDb.UpdateServer(server);
+        } catch {}
 
         await WebhookClients.GuildJoinLogChannel.SendMessageAsync(
             $"<:TickNo:577838859077943306> {Client.CurrentUser.Username} left `{arg.Id}` **{arg.Name}**.\nOwner: `{arg.Owner.Id}` **{arg.Owner}**");
