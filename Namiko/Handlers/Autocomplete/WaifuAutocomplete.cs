@@ -17,12 +17,12 @@ public class WaifuAutocomplete : AutocompleteHandler
 
         var waifus = await WaifuDb.SearchWaifus(value.ToString(), perPage: 25);
 
-        var result = waifus.Select(x => new AutocompleteResult
+        var result = waifus.OrderBy(x => x.Source).ThenBy(x => x.Name).Select(x => new AutocompleteResult
         {
             Name = x.Name + " - " + x.Source,
-            Value = x.Source + " " + x.Name
+            Value = "key:" + x.Name
         });
         
-        return AutocompletionResult.FromSuccess(result.OrderBy(x => x.Value).Take(25));
+        return AutocompletionResult.FromSuccess(result.Take(25));
     }
 }

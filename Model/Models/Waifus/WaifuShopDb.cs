@@ -46,6 +46,17 @@ namespace Model
                 .FirstOrDefaultAsync(x => x.GuildId == guildId && x.Type == type);
             return shop;
         }
+        public static async Task<ShopWaifu> GetWaifuFromShop(ulong guildId, string name)
+        {
+            using var db = new NamikoDbContext();
+            var shop = await db.WaifuShops
+                .Include(x => x.ShopWaifus)
+                    .ThenInclude(x => x.Waifu)
+                .Where(x => x.GuildId == guildId)
+                .SelectMany(x => x.ShopWaifus)
+                .FirstOrDefaultAsync(x => x.WaifuName == name);
+            return shop;
+        }
         public static async Task<List<Waifu>> GetWaifus(ulong guildId)
         {
             using var db = new NamikoDbContext();

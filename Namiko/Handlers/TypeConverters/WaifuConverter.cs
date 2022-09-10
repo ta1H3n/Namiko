@@ -17,6 +17,13 @@ public class WaifuConverter : TypeConverter<Waifu>
 
     public override async Task<TypeConverterResult> ReadAsync(IInteractionContext context, IApplicationCommandInteractionDataOption option, IServiceProvider services)
     {
+        var key = option.Value.ToString().Split(":");
+        if (key[0] == "key")
+        {
+            string name = key[1].Split(" ")[0];
+            return TypeConverterResult.FromSuccess((await WaifuDb.SearchWaifus(name, true)).FirstOrDefault());
+        }
+        
         var waifus = await WaifuDb.SearchWaifus(option.Value.ToString());
 
         if (waifus.Count != 1)
