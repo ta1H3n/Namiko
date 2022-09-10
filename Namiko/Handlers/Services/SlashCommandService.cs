@@ -51,7 +51,6 @@ public class SlashCommandService
     }
 
     
-
     private int _reactionImageCommandsRegistered = 0;
     private async Task RegisterReactionImageCommands(SocketGuild guild, SlashCommandProperties[] sharedCommands)
     {
@@ -63,7 +62,7 @@ public class SlashCommandService
             var commands = BuildReactionImageCommands(guildImages).ToList();
             commands.AddRange(sharedCommands.Where(x => !guildImages.Contains(x.Name.Value)));
 
-            _ = guild.BulkOverwriteApplicationCommandAsync(commands.ToArray());
+            await guild.BulkOverwriteApplicationCommandAsync(commands.ToArray());
         }
         else if (guild.Id == 418900885079588884)
         {
@@ -71,7 +70,7 @@ public class SlashCommandService
 
             foreach (var cmd in sharedCommands.Take(100 - commands.Count))
             {
-                _ = guild.CreateApplicationCommandAsync(cmd);
+                await guild.CreateApplicationCommandAsync(cmd);
             }
         }
         else
@@ -91,7 +90,7 @@ public class SlashCommandService
                 var sharedCommands = BuildReactionImageCommands(_reactionCommands);
                 foreach (var guild in client.Guilds)
                 {
-                    _ = RegisterReactionImageCommands(guild, sharedCommands);
+                    await RegisterReactionImageCommands(guild, sharedCommands);
                 }
             }
             catch (Exception ex)
@@ -106,15 +105,12 @@ public class SlashCommandService
         return commands.Select(x => new SlashCommandBuilder()
             .WithName(x.ToLower())
             .WithDescription($"Send a random reaction image/gif")
-            .AddOption("user-1", ApplicationCommandOptionType.User, "Add user to mention")
-            .AddOption("user-2", ApplicationCommandOptionType.User, "Add user to mention")
-            .AddOption("user-3", ApplicationCommandOptionType.User, "Add user to mention")
-            .AddOption("user-4", ApplicationCommandOptionType.User, "Add user to mention")
-            .AddOption("user-5", ApplicationCommandOptionType.User, "Add user to mention")
+            .AddOption("target", ApplicationCommandOptionType.String, "Add a message to the command")
             .Build()
         ).ToArray();
     }
 
+    
     private int _commandsRegistered = 0;
     private async Task RegisterCommandModules(DiscordSocketClient client)
     {
@@ -170,24 +166,24 @@ public class SlashCommandService
                     var cmd = Interaction.SearchSlashCommand(slashCommand);
                     if (!cmd.IsSuccess)
                     {
-                        if (Images.ReactionImageCommands[0].Contains(slashCommand.Data.Name) ||
-                            (interaction.GuildId.HasValue &&
-                             Images.ReactionImageCommands[interaction.GuildId.Value].Contains(slashCommand.Data.Name)))
-                        {
-                            string mentions = string.Join(' ', slashCommand.Data.Options.Where(x => x?.Value != null && x.Value is IUser).Select(x => (x as IUser).Mention));
+                        ulong guildId = interaction.GuildId.HasValue && Images.ReactionImageCommands.ContainsKey(interaction.GuildId.Value)
+                            ? interaction.GuildId.Value
+                            : 0;
+                        
+                        string msg = slashCommand.Data.Options.FirstOrDefault()?.Value.ToString();
 
-                            var image = ImageDb.GetRandomImage(slashCommand.Data.Name, interaction.GuildId.Value);
-                            var embed = ImageUtil.ToEmbed(image).Build();
+                        var image = ImageDb.GetRandomImage(slashCommand.Data.Name, guildId);
+                        var embed = ImageUtil.ToEmbed(image).Build();
 
-                            interaction.RespondAsync(mentions, embed: embed);
-                        }
+                        await interaction.RespondAsync(msg, embed: embed, allowedMentions: new AllowedMentions(AllowedMentionTypes.Users));
+                        return;
                     }
                 }
                 
                 // DO NOT DEFER COMMANDS THAT SEND A MODAL !!! = pain :(
                 if (((SocketSlashCommand)interaction).CommandName != "waifu-edit")
                 {
-                    await interaction.DeferAsync(ephemeral: true);
+                    await interaction.DeferAsync();
                 }
             }
 
