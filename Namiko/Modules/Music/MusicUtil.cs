@@ -42,7 +42,7 @@ namespace Namiko
             }
 
             var player = module.GetPlayer();
-            await player.PlayLocal("select");
+            await player.PlayLocal("select", module.MusicService.Node);
             var track = await SelectTrack(tracks, module);
             return track == null ? null : new List<LavaTrack>
             {
@@ -52,7 +52,7 @@ namespace Namiko
 
         // LOCAL FILES
 
-        public static async Task<bool> PlayLocal(this LavaPlayer player, string folder)
+        public static async Task<bool> PlayLocal(this LavaPlayer player, string folder, LavaNode node)
         {
             if (Program.Development == true)
                 return false;
@@ -60,7 +60,7 @@ namespace Namiko
             if (player.PlayerState == PlayerState.Playing)
                 return false;
 
-            var tracks = await Music.Node.SearchAsync(RandomFilePath(folder));
+            var tracks = await node.SearchAsync(RandomFilePath(folder));
             if (tracks.LoadStatus != LoadStatus.NoMatches && tracks.LoadStatus != LoadStatus.LoadFailed)
             {
                 var track = tracks.Tracks.FirstOrDefault();

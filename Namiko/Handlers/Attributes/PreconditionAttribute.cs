@@ -6,7 +6,7 @@ namespace Namiko.Handlers.Attributes
     {
         public virtual string ErrorMessage { get; } = $"Precondition failed";
         public abstract string Name { get; }
-        public abstract Attribute ReturnAttribute(Handler handler);
+        public abstract Attribute ReturnAttribute(HandlerType handlerType);
 
         public override string ToString()
         {

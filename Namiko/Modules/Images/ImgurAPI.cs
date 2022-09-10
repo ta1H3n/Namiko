@@ -12,11 +12,9 @@ namespace Namiko
         private static ImgurClient Client;
         public static IRateLimit RateLimit { get { return Client.RateLimit; } }
 
-        public async static Task ImgurSetup()
+        public static async Task ImgurSetup()
         {
-            ApiSettings settings = GetApiLogin();
-
-            Client = new ImgurClient(settings.ClientId, settings.ClientSecret);
+            Client = new ImgurClient(AppSettings.Imgur.ClientId, AppSettings.Imgur.ClientSecret);
             var endpoint = new OAuth2Endpoint(Client);
             IOAuth2Token token = null;
 
@@ -24,7 +22,7 @@ namespace Namiko
             {
                 try
                 {
-                    token = await endpoint.GetTokenByRefreshTokenAsync(settings.RefreshToken);
+                    token = await endpoint.GetTokenByRefreshTokenAsync(AppSettings.Imgur.RefreshToken);
                 } catch (Exception ex)
                 {
                     token = null;
@@ -85,8 +83,7 @@ namespace Namiko
 
         public static string GetAuthorizationUrl()
         {
-            ApiSettings settings = GetApiLogin();
-            Client = new ImgurClient(settings.ClientId, settings.ClientSecret);
+            Client = new ImgurClient(AppSettings.Imgur.ClientId, AppSettings.Imgur.ClientSecret);
             var endpoint = new OAuth2Endpoint(Client);
 
             return endpoint.GetAuthorizationUrl(Imgur.API.Enums.OAuth2ResponseType.Token);
@@ -96,11 +93,6 @@ namespace Namiko
         {
             AppSettings.Imgur.RefreshToken = refreshToken;
             AppSettings.Save();
-        }
-
-        public static ApiSettings GetApiLogin()
-        {
-            return AppSettings.Imgur;
         }
     }
 }

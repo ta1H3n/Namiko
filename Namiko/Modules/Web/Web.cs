@@ -168,7 +168,7 @@ namespace Namiko
 
             if (subs.Count() >= limit)
             {
-                await ReplyAsync($"Limit {limit} subscription per guild. Upgrade server to increase the limit! `{Program.GetPrefix(Context)}Pro`", embed: WebUtil.SubListEmbed(Context.Guild.Id).Build());
+                await ReplyAsync($"Limit {limit} subscription per guild. Upgrade server to increase the limit! `{GetPrefix()}Pro`", embed: WebUtil.SubListEmbed(Context.Guild.Id, GetPrefix()).Build());
                 return;
             }
 
@@ -225,7 +225,7 @@ namespace Namiko
             var olds = subs.Where(x => x.Args.Split(",")[0].Equals(subredditName, StringComparison.OrdinalIgnoreCase));
             if (!olds.Any())
             {
-                await ReplyAsync($"Subreddit **{subredditName}** not found. Try `{Program.GetPrefix(Context)}sublist` for a list of your subreddits.");
+                await ReplyAsync($"Subreddit **{subredditName}** not found. Try `{GetPrefix()}sublist` for a list of your subreddits.");
             }
             foreach (var old in olds)
             {
@@ -239,7 +239,7 @@ namespace Namiko
         [SlashCommand("reddit-list", "Subreddits you are subscribed to")]
         public async Task SubList()
         {
-            await ReplyAsync(embed: WebUtil.SubListEmbed(Context.Guild.Id).Build());
+            await ReplyAsync(embed: WebUtil.SubListEmbed(Context.Guild.Id, GetPrefix()).Build());
         }
     }
 }

@@ -52,7 +52,7 @@ namespace Namiko
 
             if (BalanceDb.GetToasties(Context.Client.CurrentUser.Id, Context.Guild.Id) < amount)
             {
-                string prefix = Program.GetPrefix(Context);
+                string prefix = GetPrefix();
                 await ReplyAsync("Tch, I don't have enough toasties... I will recover eventually by stealing toasties from all of you. :fox:" +
                     $"But if you want to speed up the process you can give me some using the `{prefix}give` or `{prefix}at` commands.");
                 await BalanceDb.AddToasties(user.Id, amount, Context.Guild.Id);
@@ -116,7 +116,7 @@ namespace Namiko
                 await BalanceDb.AddToasties(Context.User.Id, amount, Context.Guild.Id);
                 await BalanceDb.AddToasties(Context.Client.CurrentUser.Id, tax, Context.Guild.Id);
 
-                await ReplyAsync(dayslate == 0 ? "" : $"You are **{dayslate}** days late to claim your daily. For every day missed, you lose 25% of your streak.", false, CurrencyUtil.DailyGetEmbed(Context.User, daily.Streak, amount, BalanceDb.GetToasties(Context.User.Id, Context.Guild.Id), Program.GetPrefix(Context)).Build());
+                await ReplyAsync(dayslate == 0 ? "" : $"You are **{dayslate}** days late to claim your daily. For every day missed, you lose 25% of your streak.", false, CurrencyUtil.DailyGetEmbed(Context.User, daily.Streak, amount, BalanceDb.GetToasties(Context.User.Id, Context.Guild.Id), GetPrefix()).Build());
             }
             else
             {
@@ -124,7 +124,7 @@ namespace Namiko
                 int hours = (int)wait / 3600;
                 int minutes = (int)wait % 3600 / 60;
                 int seconds = (int)wait % 60;
-                await ReplyAsync("", false, CurrencyUtil.DailyWaitEmbed(Context.User, hours, minutes, seconds, Program.GetPrefix(Context)).Build());
+                await ReplyAsync("", false, CurrencyUtil.DailyWaitEmbed(Context.User, hours, minutes, seconds, GetPrefix()).Build());
             }
         }
 
@@ -166,11 +166,11 @@ namespace Namiko
                 await BalanceDb.AddToasties(Context.Client.CurrentUser.Id, tax / 2, Context.Guild.Id);
                 weekly.Date = DateTime.Now;
                 await WeeklyDb.SetWeekly(weekly);
-                await ReplyAsync(text, false, CurrencyUtil.WeeklyGetEmbed(amount, BalanceDb.GetToasties(Context.User.Id, Context.Guild.Id), Context.User, Program.GetPrefix(Context)).Build());
+                await ReplyAsync(text, false, CurrencyUtil.WeeklyGetEmbed(amount, BalanceDb.GetToasties(Context.User.Id, Context.Guild.Id), Context.User, GetPrefix()).Build());
                 return;
             }
 
-            await ReplyAsync("", false, CurrencyUtil.WeeklyWaitEmbed(weekly.Date.AddHours(hours), Context.User, Program.GetPrefix(Context)).Build());
+            await ReplyAsync("", false, CurrencyUtil.WeeklyWaitEmbed(weekly.Date.AddHours(hours), Context.User, GetPrefix()).Build());
         }
 
         [Command("Flip"), Alias("f", "fwip"), Description("Flip a coin for toasties, defaults to tails.\n**Usage**: `!flip [amount] [heads_or_tails]`")]
@@ -211,7 +211,7 @@ namespace Namiko
 
             if (BalanceDb.GetToasties(Context.Client.CurrentUser.Id, Context.Guild.Id) < amount)
             {
-                string prefix = Program.GetPrefix(Context);
+                string prefix = GetPrefix();
                 await ReplyAsync("Tch, I don't have enough toasties... I will recover eventually by stealing toasties from all of you. :fox:" +
                     $"But if you want to speed up the process you can give me some using the `{prefix}give` or `{prefix}at` commands.");
                 await BalanceDb.AddToasties(user.Id, amount, Context.Guild.Id);
@@ -314,7 +314,7 @@ namespace Namiko
         [SlashCommand("buy-lootbox", "Buy a lootbox")]
         public async Task BuyLootbox()
         {
-            var prefix = Program.GetPrefix(Context);
+            var prefix = GetPrefix();
 
             if (!PremiumDb.IsPremium(Context.Guild.Id, ProType.GuildPlus))
             {
@@ -347,7 +347,7 @@ namespace Namiko
 
             await LootBoxDb.AddLootbox(Context.User.Id, (LootBoxType)box.TypeId, amount, Context.Guild.Id);
             await ReplyAsync(embed: new EmbedBuilderPrepared(Context.User)
-                .WithDescription($"You bought {amount}x **{box.Name}**!\nType `{Program.GetPrefix(Context)}open` to open it!")
+                .WithDescription($"You bought {amount}x **{box.Name}**!\nType `{GetPrefix()}open` to open it!")
                 .Build());
         }
 

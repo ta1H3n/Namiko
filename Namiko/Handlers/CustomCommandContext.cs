@@ -4,12 +4,13 @@ using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Model;
 
 namespace Namiko.Addons.Handlers
 {
     public class CustomCommandContext : ICustomContext, ICommandContext
     {
-        public DiscordShardedClient Client { get; }
+        public BaseSocketClient Client { get; }
         public SocketGuild Guild { get; }
         public ISocketMessageChannel Channel { get; }
         public SocketUser User { get; }
@@ -20,7 +21,7 @@ namespace Namiko.Addons.Handlers
         public DateTimeOffset CreatedAt => Message.CreatedAt;
 
 
-        public CustomCommandContext(DiscordShardedClient client, SocketUserMessage msg)
+        public CustomCommandContext(BaseSocketClient client, SocketUserMessage msg)
         {
             Client = client;
             Guild = (msg.Channel as SocketGuildChannel)?.Guild;
@@ -29,6 +30,16 @@ namespace Namiko.Addons.Handlers
             Message = msg;
         }
 
+
+        public string GetPrefix()
+        {
+            if (Guild != null && ServerDb.Prefixes.TryGetValue(Guild.Id, out string prefix))
+            {
+                return prefix;
+            }
+
+            return AppSettings.DefaultPrefix;
+        }
 
         public async Task<IUserMessage> ReplyAsync(string text = null, bool isTTS = false, Embed embed = null, RequestOptions options = null, AllowedMentions allowedMentions = null, MessageReference messageReference = null, MessageComponent components = null, ISticker[] stickers = null, Embed[] embeds = null, MessageFlags flags = MessageFlags.None, bool ephemeral = false)
         {

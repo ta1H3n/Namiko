@@ -25,7 +25,7 @@ namespace Namiko
             var banroyale = await BanroyaleDb.GetBanroyale(Context.Channel.Id);
             if (banroyale != null)
             {
-                await ReplyAsync($":x: There is already a running Ban Royale in this channel. Type `{Program.GetPrefix(Context)}cbrl` to cancel it.");
+                await ReplyAsync($":x: There is already a running Ban Royale in this channel. Type `{GetPrefix()}cbrl` to cancel it.");
                 return;
             }
 
@@ -66,7 +66,7 @@ namespace Namiko
                 MaxFrequency = 20
             };
 
-            string prefix = Program.GetPrefix(Context);
+            string prefix = GetPrefix();
             await BanroyaleDb.AddBanroyale(banroyale);
             await ReplyAsync("Setting up a new game of Ban Royale! It's on." +
                 $"\n\n**More settings:**" +
@@ -91,7 +91,7 @@ namespace Namiko
             var banroyale = await BanroyaleDb.GetBanroyale(Context.Channel.Id);
             if (banroyale == null)
             {
-                await ReplyAsync($"There is no running Ban Royale in this channel. `{Program.GetPrefix(Context)}nbrl` to start a new one.");
+                await ReplyAsync($"There is no running Ban Royale in this channel. `{GetPrefix()}nbrl` to start a new one.");
                 return;
             }
 

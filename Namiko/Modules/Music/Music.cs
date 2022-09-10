@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord.Interactions;
+using Namiko.Handlers.Services;
 using Victoria;
 using Victoria.Decoder;
 using Victoria.Enums;
@@ -25,45 +26,10 @@ namespace Namiko
     [RequireGuild]
     public class Music : CustomModuleBase<ICustomContext>
     {
-        public static readonly LavaNode Node;
-        public static readonly HashSet<LavaPlayer> ReconnectPlayer;
-        private static DiscordShardedClient Client { get { return Program.GetClient(); } }
+        public BaseSocketClient Client { get; set; }
+        public MusicService MusicService { get; set; }
+        private LavaPlayer Player { get => MusicService.Node.GetPlayer(Context.Guild); }
 
-        private LavaPlayer Player { get => Node.GetPlayer(Context.Guild); }
-
-        static Music()
-        {
-            Node = new LavaNode(Client, new LavaConfig
-            {
-                SelfDeaf = true,
-                DefaultVolume = 40,
-                LogSeverity = LogSeverity.Info,
-                Hostname = "127.0.0.1",
-                Port = 2333,
-                Authorization = "NamikoLove",
-                EnableResume = true
-            });
-
-            ReconnectPlayer = new HashSet<LavaPlayer>();
-
-            Program.GetClient().ShardConnected += Shard_ReconnectPlayer;
-            Node.OnLog += LavaClient_Log;
-            Node.OnTrackException += TrackException;
-            Node.OnTrackStuck += TrackStuck;
-            Node.OnTrackEnded += TrackEnded;
-            //Node.OnStatsReceived += StatsReceived;
-            Node.OnWebSocketClosed += WebSocketClosed;
-        }
-
-        public static async Task<bool> Initialize(DiscordShardedClient client)
-        {
-            if (!Node.IsConnected)
-            {
-                await Node.ConnectAsync();
-                return true;
-            }
-            return false;
-        }
 
         [PermissionRole(RoleType.Music)]
         [Command("Join"), Alias("Music"), Description("Namiko joins your voice channel.\n**Usage**: `!join`")]
@@ -83,12 +49,12 @@ namespace Namiko
                     $"• Look up lyrics of the playing song!\n" +
                     $"• And... I... I will talk to you in voice chat~ <:Awooo:582888496793124866>\n" +
                     $"\n" +
-                    $"Type `{Program.GetPrefix(Context)}pro` for more info! Get all these features and more from 5$/month!\n" +
+                    $"Type `{GetPrefix()}pro` for more info! Get all these features and more from 5$/month!\n" +
                     $"Or join my [Support Server]({LinkHelper.SupportServerInvite}) and try!");
                 return;
             }
 
-            if (!Node.IsConnected)
+            if (!MusicService.Node.IsConnected)
             {
                 await ReplyAsync("I'm not connected to Lavalink, please try again in a few seconds...");
                 return;
@@ -118,9 +84,9 @@ namespace Namiko
             {
                 if (current != null)
                     await current.DisconnectAsync();
-                player = await Node.JoinAsync(user.VoiceChannel, Context.Channel as ITextChannel);
+                player = await MusicService.Node.JoinAsync(user.VoiceChannel, Context.Channel as ITextChannel);
                 await ReplyAsync($"Hellooo~ I joined **{user.VoiceChannel.Name}** <:NekoHi:620711213826834443>");
-                await player.PlayLocal("join");
+                await player.PlayLocal("join", MusicService.Node);
                 return;
             }
 
@@ -130,7 +96,7 @@ namespace Namiko
                 return;
             }
 
-            await Node.MoveChannelAsync(user.VoiceChannel);
+            await MusicService.Node.MoveChannelAsync(user.VoiceChannel);
             await ReplyAsync($"Moving over to **{user.VoiceChannel.Name}**");
         }
 
@@ -150,7 +116,7 @@ namespace Namiko
 
             if (player != null && current != null && player?.VoiceChannel == current)
             {
-                if (await player.PlayLocal("leave"))
+                if (await player.PlayLocal("leave", MusicService.Node))
                 {
                     await Context.TriggerTypingAsync();
                     await Task.Delay(2000);
@@ -160,7 +126,7 @@ namespace Namiko
             if (player != null)
             {
                 await player.DisposeAsync();
-                Node._playerCache.TryRemove(Context.Guild.Id, out _);
+                MusicService.Node._playerCache.TryRemove(Context.Guild.Id, out _);
             }
 
             if (current != null)
@@ -201,7 +167,7 @@ namespace Namiko
                     $"• Look up lyrics of the playing song!\n" +
                     $"• And... I... I will talk to you in voice chat~ <:Awooo:582888496793124866>\n" +
                     $"\n" +
-                    $"Type `{Program.GetPrefix(Context)}pro` for more info! Get all these features and more from 5$/month!\n" +
+                    $"Type `{GetPrefix()}pro` for more info! Get all these features and more from 5$/month!\n" +
                     $"Or join my [Support Server]({LinkHelper.SupportServerInvite}) and try!");
                 return;
             }
@@ -209,7 +175,7 @@ namespace Namiko
             var player = GetPlayer();
             if (player == null)
             {
-                await ReplyAsync($"I'm not in a voice channel... Type `{Program.GetPrefix(Context)}join` to invite me to yours!");
+                await ReplyAsync($"I'm not in a voice channel... Type `{GetPrefix()}join` to invite me to yours!");
                 return;
             }
 
@@ -236,7 +202,7 @@ namespace Namiko
             }
 
             await Context.TriggerTypingAsync();
-            var tracks = await Node.SearchAndSelect(query, this, max);
+            var tracks = await MusicService.Node.SearchAndSelect(query, this, max);
             if (tracks == null)
                 return;
 
@@ -275,7 +241,7 @@ namespace Namiko
                     $"• Look up lyrics of the playing song!\n" +
                     $"• And... I... I will talk to you in voice chat~ <:Awooo:582888496793124866>\n" +
                     $"\n" +
-                    $"Type `{Program.GetPrefix(Context)}pro` for more info! Get all these features and more from 5$/month!\n" +
+                    $"Type `{GetPrefix()}pro` for more info! Get all these features and more from 5$/month!\n" +
                     $"Or join my [Support Server]({LinkHelper.SupportServerInvite}) and try!");
                 return;
             }
@@ -283,7 +249,7 @@ namespace Namiko
             var player = GetPlayer();
             if (player == null)
             {
-                await ReplyAsync($"I'm not in a voice channel... Type `{Program.GetPrefix(Context)}join` to invite me to yours!");
+                await ReplyAsync($"I'm not in a voice channel... Type `{GetPrefix()}join` to invite me to yours!");
                 return;
             }
 
@@ -310,7 +276,7 @@ namespace Namiko
             }
 
             await Context.TriggerTypingAsync();
-            var tracks = await Node.SearchAndSelect(query, this, max);
+            var tracks = await MusicService.Node.SearchAndSelect(query, this, max);
             if (tracks == null)
                 return;
 
@@ -365,7 +331,7 @@ namespace Namiko
                     $"• Look up lyrics of the playing song!\n" +
                     $"• And... I... I will talk to you in voice chat~ <:Awooo:582888496793124866>\n" +
                     $"\n" +
-                    $"Type `{Program.GetPrefix(Context)}pro` for more info! Get all these features and more from 5$/month!\n" +
+                    $"Type `{GetPrefix()}pro` for more info! Get all these features and more from 5$/month!\n" +
                     $"Or join my [Support Server]({LinkHelper.SupportServerInvite}) and try!");
                 return;
             }
@@ -373,7 +339,7 @@ namespace Namiko
             var player = GetPlayer();
             if (player == null)
             {
-                await ReplyAsync($"I'm not in a voice channel... Type `{Program.GetPrefix(Context)}join` to invite me to yours!");
+                await ReplyAsync($"I'm not in a voice channel... Type `{GetPrefix()}join` to invite me to yours!");
                 return;
             }
 
@@ -400,7 +366,7 @@ namespace Namiko
             }
 
             await Context.TriggerTypingAsync();
-            var res = await Node.SearchYouTubeAsync(query);
+            var res = await MusicService.Node.SearchYouTubeAsync(query);
             if (res.LoadStatus == LoadStatus.NoMatches)
             {
                 await ReplyAsync("*~ No Results ~*", Color.DarkRed.RawValue);
@@ -433,7 +399,7 @@ namespace Namiko
             if (player.Queue.Count == 0)
             {
                 await player.StopAsync();
-                await player.PlayLocal("skip");
+                await player.PlayLocal("skip", MusicService.Node);
                 await ReplyAsync("The queue is empty, Senpai.");
                 return;
             }
@@ -635,7 +601,7 @@ namespace Namiko
             {
                 if (!TimeSpan.TryParseExact(timeStr, @"hh\:mm\:ss", null, out time))
                 {
-                    await ReplyAsync($"Couldn't parse the time. Try `mm:ss` or `hh:mm:ss` e.g. `{Program.GetPrefix(Context)}seek 01:30` or `{Program.GetPrefix(Context)}seek 01:15:30`");
+                    await ReplyAsync($"Couldn't parse the time. Try `mm:ss` or `hh:mm:ss` e.g. `{GetPrefix()}seek 01:30` or `{GetPrefix()}seek 01:15:30`");
                     return;
                 }
             }
@@ -742,7 +708,7 @@ namespace Namiko
             if (MusicDb.IsPlaylist(name, Context.Guild.Id))
             {
                 await ReplyAsync($"There already is a playlist called **{name}**.\n" +
-                    $"Remove it with `{Program.GetPrefix(Context)}DeletePlaylist`");
+                    $"Remove it with `{GetPrefix()}DeletePlaylist`");
                 return;
             }
 
@@ -838,7 +804,7 @@ namespace Namiko
             await ReplyAsync($"**{playlist.Name}** deleted <:KannaSad:625348483968401419>");
             if (playlist.UserId != Context.User.Id)
             {
-                var ch = await Program.GetClient().GetUser(playlist.UserId).CreateDMChannelAsync();
+                var ch = await Client.GetUser(playlist.UserId).CreateDMChannelAsync();
                 await ch.SendMessageAsync($"Your playlist ({playlist.Name}) in {Context.Guild.Name} has been deleted by {Context.User}");
             }
         }
@@ -892,171 +858,6 @@ namespace Namiko
 
         // EVENTS
 
-        private static async Task LavaClient_Log(LogMessage arg)
-        {
-            string message = $"`🌋` `{DateTime.Now.ToString("HH:mm:ss")}` - `{arg.Message}`";
-            Console.WriteLine(message);
-
-            await WebhookClients.LavalinkChannel.SendMessageAsync(message);
-        }
-        private static async Task WebSocketClosed(WebSocketClosedEventArgs arg)
-        {
-            try
-            {
-                var player = Node.GetPlayer(arg.GuildId);
-
-                if (arg.Code == 4014 && player != null && !ReconnectPlayer.Contains(player))
-                {
-                    ReconnectPlayer.Add(player);
-                    await WebhookClients.LavalinkChannel.SendMessageAsync($"`🌋` `{DateTime.Now.ToString("HH:mm:ss")}` -  Lost connection to `{arg.GuildId}`, queueing reconnect.");
-                }
-            } catch (Exception ex)
-            {
-                SentrySdk.CaptureException(ex);
-            }
-        }
-        private static async Task StatsReceived(StatsEventArgs arg)
-        {
-            if (DateTime.Now.Minute % 10 != 0)
-                return;
-            if (arg.Players < 1)
-                return;
-
-            var eb = new EmbedBuilder();
-            eb.WithColor(BasicUtil.RandomColor());
-            eb.WithAuthor(DateTime.Now.ToString("HH:mm:ss"), Program.GetClient().CurrentUser.GetAvatarUrl());
-            eb.WithFooter($"🌋 Lavalink running for {Math.Round(arg.Uptime.TotalMinutes, 2)} minutes");
-
-            eb.WithDescription($"Connected: {arg.Players}\nPlaying: {arg.PlayingPlayers}");
-            eb.AddField("Memory", $"Allocated: {arg.Memory.Allocated / 1000000}MB\nUsed: {arg.Memory.Used / 1000000}MB\nFree: {arg.Memory.Free / 1000000}MB\nReservable: {arg.Memory.Reservable / 1000000}MB\n", true);
-            eb.AddField("Frames", $"Sent: {arg.Frames.Sent}\nDeficit: {arg.Frames.Deficit}\nNulled: {arg.Frames.Nulled}", true);
-            eb.AddField("Cpu", $"Cores: {arg.Cpu.Cores}\nSystem Load: {Math.Round(arg.Cpu.SystemLoad, 4) * 100}%\nLavalink Load: {Math.Round(arg.Cpu.LavalinkLoad, 4) * 100}%", true);
-
-            await WebhookClients.LavalinkChannel.SendMessageAsync(embeds: new List<Embed> { eb.Build() });
-        }
-        private static async Task TrackEnded(TrackEndedEventArgs arg)
-        {
-            var player = arg.Player;
-            var track = arg.Track;
-            var reason = arg.Reason;
-
-            if (!reason.ShouldPlayNext())
-                return;
-
-            if (player.Repeat && !track.Url.ToString().Contains("VoiceLines") && reason != TrackEndReason.LoadFailed)
-            {
-                player.Queue.EnqueueFirst(track);
-            }
-
-            else if (player.Loop && !track.Url.ToString().Contains("VoiceLines") && reason != TrackEndReason.LoadFailed)
-            {
-                player.Queue.Enqueue(track);
-            }
-
-            if (!player.Queue.TryDequeue(out var nextTrack) || !(nextTrack is LavaTrack))
-            {
-                if (!track.Url.ToString().Contains("VoiceLines"))
-                {
-                    await player.PlayLocal("empty");
-                    await player.TextChannel.SendMessageAsync(embed: new EmbedBuilderLava(track.User)
-                        .WithDescription("There are no more tracks in the queue. We should fix that.")
-                        .Build());
-                }
-                return;
-            }
-
-            await player.PlayAsync(nextTrack as LavaTrack);
-            await player.TextChannel.SendMessageAsync(embed: (await MusicUtil.NowPlayingEmbed(player)).Build());
-        }
-        private static async Task TrackStuck(TrackStuckEventArgs arg)
-        {
-            var player = arg.Player;
-            var track = arg.Track;
-
-            if (player?.Track == track)
-            {
-                await player.SkipAsync();
-                await player.TextChannel.SendMessageAsync($"Track `{track.Title}` is stuck for `{arg.Threshold}ms`. Skipping...", embed: (await MusicUtil.NowPlayingEmbed(player)).Build());
-            }
-        }
-        private static async Task TrackException(TrackExceptionEventArgs arg)
-        {
-            var player = arg.Player;
-
-            if (player?.Track == arg.Track)
-            {
-                await player.SkipAsync();
-                if (player.Queue.Count == 0)
-                {
-                    await player.TextChannel.SendMessageAsync("Gomen, Senpai... *Coughs blood* ... The player broke! Try starting a new one?\n" +
-                        $"Error: `{arg.ErrorMessage}`");
-                    await player.DisposeAsync();
-                }
-            }
-        }
-
-        private static async Task Shard_ReconnectPlayer(DiscordSocketClient arg)
-        {
-            var players = new List<LavaPlayer>(ReconnectPlayer);
-            foreach (var player in players)
-            {
-                try
-                {
-                    var guild = arg.Guilds.FirstOrDefault(x => x.Id == player.GuildId);
-                    if (guild == null)
-                    {
-                        Console.WriteLine($"[LAVALINK] [{DateTime.Now.ToString("HH:mm:ss")}] Guild mismatch: {player.GuildId} not in shard {arg.ShardId}.");
-                        break;
-                    }
-
-                    if (player == null || player.VoiceChannel == null)
-                    {
-                        if (ReconnectPlayer.Contains(player))
-                            ReconnectPlayer.Remove(player);
-
-                        await WebhookClients.LavalinkChannel.SendMessageAsync($"`🌋` `{DateTime.Now.ToString("HH:mm:ss")}` -  Reconnect `{guild.Id}` failed, cancelling...");
-                        await player.TextChannel.SendMessageAsync(embed: new EmbedBuilderLava()
-                                .WithDescription("Gomen, Senpai... Failed to reconnect to voice channel. Use the join command to reinvite me.")
-                                .Build());
-                        break;
-                    }
-
-                    var current = guild.CurrentUser.VoiceChannel;
-                    if (current == null || player.VoiceChannel != current)
-                    {
-                        if (ReconnectPlayer.Contains(player))
-                            ReconnectPlayer.Remove(player);
-
-                        await Node.MoveChannelAsync(player.VoiceChannel);
-                        await WebhookClients.LavalinkChannel.SendMessageAsync($"`🌋` `{DateTime.Now.ToString("HH:mm:ss")}` -  Succesfully reconnected to `{guild.Id}`");
-                        await player.TextChannel.SendMessageAsync(embed: new EmbedBuilderLava()
-                            .WithDescription($"Reconnected player to **{player.VoiceChannel.Name}**")
-                            .Build());
-                        break;
-                    }
-
-                    else
-                    {
-                        if (ReconnectPlayer.Contains(player))
-                            ReconnectPlayer.Remove(player);
-
-                        await WebhookClients.LavalinkChannel.SendMessageAsync($"`🌋` `{DateTime.Now.ToString("HH:mm:ss")}` -  Already reconnected `{guild.Id}`, cancelling...");
-                        break;
-                    }
-                } catch (Exception ex)
-                {
-                    if (ex is NullReferenceException)
-                        return;
-
-                    SentrySdk.CaptureException(ex);
-                    if (ReconnectPlayer.Contains(player))
-                        ReconnectPlayer.Remove(player);
-
-                    await WebhookClients.LavalinkChannel.SendMessageAsync($"`🌋` `{DateTime.Now.ToString("HH:mm:ss")}` -  Reconnect `{player.GuildId}` threw an exception.");
-                }
-            }
-        }
-
         // HELPERS
 
         public async Task AddTrack(LavaTrack track, LavaPlayer player)
@@ -1090,7 +891,7 @@ namespace Namiko
         }
         public LavaPlayer GetPlayer()
         {
-            return Node.GetPlayer(Context.Guild);
+            return MusicService.Node.GetPlayer(Context.Guild);
         }
         public SocketVoiceChannel GetVoiceChannel()
         {
@@ -1116,7 +917,7 @@ namespace Namiko
 
         public async Task<LavaTrack> LocalTrackFirstOrDefaultAsync(string path)
         {
-            var res = await Node.SearchAsync(path);
+            var res = await MusicService.Node.SearchAsync(path);
             return res.Tracks.FirstOrDefault();
         }
     }

@@ -1,6 +1,6 @@
 ﻿namespace Namiko.Handlers
 {
-    public enum Handler
+    public enum HandlerType
     {
         Commands,
         Interactions

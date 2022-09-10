@@ -2,6 +2,9 @@
 using Discord.WebSocket;
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Namiko.Addons.Handlers;
+using Namiko.Handlers.Services;
 
 namespace Namiko.Handlers.Attributes.Preconditions
 {
@@ -10,23 +13,25 @@ namespace Namiko.Handlers.Attributes.Preconditions
         public override string ErrorMessage => null;
         public override string Name => "VoiceChannel";
 
-        public override Attribute ReturnAttribute(Handler handler)
-            => handler switch
+        public override Attribute ReturnAttribute(HandlerType handlerType)
+            => handlerType switch
             {
-                Handler.Commands => new PlayerChannelCommandsAttribute(ErrorMessage),
-                Handler.Interactions => new PlayerChannelInteractionsAttribute(),
+                HandlerType.Commands => new PlayerChannelCommandsAttribute(ErrorMessage),
+                HandlerType.Interactions => new PlayerChannelInteractionsAttribute(),
                 _ => throw new NotImplementedException(),
             };
         private class PlayerChannelCommandsAttribute : Discord.Commands.PreconditionAttribute
         {
             public override Task<Discord.Commands.PreconditionResult> CheckPermissionsAsync(Discord.Commands.ICommandContext context, Discord.Commands.CommandInfo command, IServiceProvider services)
             {
+                var service = services.GetService<MusicService>();
+                
                 SocketGuildUser user = (SocketGuildUser)context.User;
-                var player = Music.Node.GetPlayer(context.Guild);
+                var player = service.Node.GetPlayer(context.Guild);
                 var vc = user.VoiceChannel;
 
                 if (player == null)
-                    return Task.FromResult(Discord.Commands.PreconditionResult.FromError($"I'm not in a voice channel, Senpai. Try `{Program.GetPrefix(context.Guild.Id)}join`"));
+                    return Task.FromResult(Discord.Commands.PreconditionResult.FromError($"I'm not in a voice channel, Senpai. Try `{((ICustomContext)context).GetPrefix()}join`"));
 
                 else if (vc != null && player.VoiceChannel == vc)
                     return Task.FromResult(Discord.Commands.PreconditionResult.FromSuccess());
@@ -43,12 +48,14 @@ namespace Namiko.Handlers.Attributes.Preconditions
         {
             public override Task<Discord.Interactions.PreconditionResult> CheckRequirementsAsync(IInteractionContext context, Discord.Interactions.ICommandInfo commandInfo, IServiceProvider services)
             {
+                var service = services.GetService<MusicService>();
+                
                 SocketGuildUser user = (SocketGuildUser)context.User;
-                var player = Music.Node.GetPlayer(context.Guild);
+                var player = service.Node.GetPlayer(context.Guild);
                 var vc = user.VoiceChannel;
 
                 if (player == null)
-                    return Task.FromResult(Discord.Interactions.PreconditionResult.FromError($"I'm not in a voice channel, Senpai. Try `{Program.GetPrefix(context.Guild.Id)}join`"));
+                    return Task.FromResult(Discord.Interactions.PreconditionResult.FromError($"I'm not in a voice channel, Senpai. Try `{((ICustomContext)context).GetPrefix()}join`"));
 
                 else if (vc != null && player.VoiceChannel == vc)
                     return Task.FromResult(Discord.Interactions.PreconditionResult.FromSuccess());

@@ -7,11 +7,11 @@ namespace Namiko.Handlers.Attributes.Preconditions
         public override string ErrorMessage => "You can only use this command in a server, Senpai...";
         public override string Name => "RequireGuild";
 
-        public override Attribute ReturnAttribute(Handler handler)
-            => handler switch
+        public override Attribute ReturnAttribute(HandlerType handlerType)
+            => handlerType switch
             {
-                Handler.Interactions => new Discord.Interactions.RequireContextAttribute(Discord.Interactions.ContextType.Guild),
-                Handler.Commands => new Discord.Commands.RequireContextAttribute(Discord.Commands.ContextType.Guild) { ErrorMessage = ErrorMessage },
+                HandlerType.Interactions => new Discord.Interactions.RequireContextAttribute(Discord.Interactions.ContextType.Guild),
+                HandlerType.Commands => new Discord.Commands.RequireContextAttribute(Discord.Commands.ContextType.Guild) { ErrorMessage = ErrorMessage },
                 _ => throw new NotImplementedException(),
             };
     }

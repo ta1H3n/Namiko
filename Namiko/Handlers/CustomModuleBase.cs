@@ -24,7 +24,6 @@ namespace Namiko.Addons.Handlers
         public InteractiveService Interactive { get; set; }
 
 
-
         public async Task<IUserMessage> ReplyAsync(string text = null, bool isTTS = false, Embed embed = null, RequestOptions options = null, AllowedMentions allowedMentions = null, MessageReference messageReference = null, MessageComponent components = null, ISticker[] stickers = null, Embed[] embeds = null, MessageFlags flags = MessageFlags.None, bool ephemeral = false)
             => await Context.ReplyAsync(text, isTTS, embed, options, allowedMentions, messageReference, components, stickers, embeds, flags, ephemeral);
         public async Task<IUserMessage> ReplyAsync(Embed embed)
@@ -34,7 +33,7 @@ namespace Namiko.Addons.Handlers
         public async Task<IUserMessage> ReplyAsync(string text)
             => await ReplyAsync(new EmbedBuilderPrepared(Context.User).WithDescription(text).Build());
 
-
+        public string GetPrefix() => Context.GetPrefix();
 
         public Task<IUserMessage> DialogueReplyAsync(DialogueBox dialogue, bool fromSourceUser = true, int timeout = 60)
             => DialogueReplyAsync(dialogue, GetSourceUserCriterion(fromSourceUser), timeout);
@@ -88,13 +87,14 @@ namespace Namiko.Addons.Handlers
             => Select(items, name, new EmbedBuilderPrepared(Context.User).WithDescription(message).Build(), label, description, emote, fromSourceUser);
         public Task<SocketRole> SelectRole(IEnumerable<SocketRole> roles, string roleNameFilter = null, IEnumerable<ulong> roleIdsFilter = null, string msg = "Role")
         {
+            roles = roles.Where(x => x?.Name != null);
             if (roleIdsFilter != null)
             {
                 roles = roles.Where(x => roleIdsFilter.Contains(x.Id));
             }
             if (roleNameFilter != null)
             {
-                roles = roles.Where(x => x.Name.Contains(roleNameFilter));
+                roles = roles.Where(x => x.Name.ToLower().Contains(roleNameFilter.ToLower()));
             }
 
             return Select(roles, placeholder: msg);
@@ -136,7 +136,7 @@ namespace Namiko.Addons.Handlers
                 }
                 foreach (var prec in cmd.Attributes.Where(x => x is PreconditionAttribute).Cast<PreconditionAttribute>())
                 {
-                    cmd.AddPrecondition(prec.ReturnAttribute(Handler.Commands) as Discord.Commands.PreconditionAttribute);
+                    cmd.AddPrecondition(prec.ReturnAttribute(HandlerType.Commands) as Discord.Commands.PreconditionAttribute);
                 }
             }
         }
@@ -164,13 +164,8 @@ namespace Namiko.Addons.Handlers
         {
             foreach (var cmd in builder.SlashCommands)
             {
-                //var desc = cmd.Attributes.FirstOrDefault(x => x is DescriptionAttribute);
-                //if (desc != default)
-                //{
-                //    cmd.WithSu((desc as DescriptionAttribute).Description);
-                //}
                 var atr = cmd.Attributes.Where(x => x is PreconditionAttribute).Cast<PreconditionAttribute>();
-                cmd.WithPreconditions(atr.Select(x => x.ReturnAttribute(Handler.Interactions) as Discord.Interactions.PreconditionAttribute).ToArray());
+                cmd.WithPreconditions(atr.Select(x => x.ReturnAttribute(HandlerType.Interactions) as Discord.Interactions.PreconditionAttribute).ToArray());
 
                 var permissions = cmd.Attributes.Where(x => x is UserPermissionAttribute).Cast<UserPermissionAttribute>().Select(x => x.GuildPermission);
                 cmd.DefaultMemberPermissions = permissions.FirstOrDefault();

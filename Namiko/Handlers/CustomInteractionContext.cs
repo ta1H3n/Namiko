@@ -9,7 +9,7 @@ namespace Namiko.Addons.Handlers
 {
     public class CustomInteractionContext : ICustomContext, IInteractionContext
     {
-        public DiscordShardedClient Client { get; }
+        public BaseSocketClient Client { get; }
         public SocketGuild Guild { get; }
         public ISocketMessageChannel Channel { get; }
         public SocketUser User { get; }
@@ -21,7 +21,7 @@ namespace Namiko.Addons.Handlers
         public DateTimeOffset CreatedAt => Interaction.CreatedAt;
 
 
-        public CustomInteractionContext(DiscordShardedClient client, IDiscordInteraction interaction, ISocketMessageChannel channel = null)
+        public CustomInteractionContext(BaseSocketClient client, IDiscordInteraction interaction, ISocketMessageChannel channel = null)
         {
             if (interaction is SocketInteraction)
             {
@@ -35,8 +35,10 @@ namespace Namiko.Addons.Handlers
             Interaction = interaction;
         }
 
-
-
+        public string GetPrefix()
+        {
+            return "/";
+        }
 
         public async Task<IUserMessage> ReplyAsync(string text = null, bool isTTS = false, Embed embed = null, RequestOptions options = null, AllowedMentions allowedMentions = null, MessageReference messageReference = null, MessageComponent components = null, ISticker[] stickers = null, Embed[] embeds = null, MessageFlags flags = MessageFlags.None, bool ephemeral = false)
         {

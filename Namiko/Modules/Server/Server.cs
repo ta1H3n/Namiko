@@ -9,6 +9,7 @@ using Namiko.Modules.Basic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mime;
 using System.Threading.Tasks;
 using Discord.Interactions;
 
@@ -18,11 +19,16 @@ namespace Namiko
     [Name("Server")]
     public class ServerModule : CustomModuleBase<ICustomContext>
     {
+        public BaseSocketClient Client { get; set; }
+        public TextCommandService TextCommands { get; set; }
+        
+        
+        
         [Command("Server"), Alias("serverinfo", "guild", "stats"), Description("Stats about the server.\n**Usage**: `!server`")] 
         [SlashCommand("server", "Show server stats")]
         public async Task ServerInfo()
         {
-            await ReplyAsync("", false, (await ServerUtil.ServerInfo(Context.Guild)).Build());
+            await ReplyAsync("", false, (await ServerUtil.ServerInfo(Context.Guild, Client)).Build());
         }
 
         [UserPermission(GuildPermission.ManageMessages)]
@@ -36,14 +42,14 @@ namespace Namiko
 
             server.Prefix = prefix;
             await ServerDb.UpdateServer(server);
-            Program.UpdatePrefix(Context.Guild.Id, prefix);
+            ServerDb.UpdatePrefix(Context.Guild.Id, prefix);
             await ReplyAsync($"My prefix is now `{prefix}`");
         }
 
         [Command("Prefix"), Alias("sp", "sbp", "setbotprefix"), Description("View the current prefix.\n**Usage**: `!sp [prefix]`")]
         public async Task Prefix()
         {
-            var prefix = Program.GetPrefix(Context);
+            var prefix = GetPrefix();
             await ReplyAsync($"My current prefix is `{prefix}`.\nYou can change it by typing `{prefix}sp [new_prefix]` without the brackets :fox:");
         }
 
@@ -128,15 +134,14 @@ namespace Namiko
             }
 
             await BlacklistedChannelDb.UpdateBlacklistedChannel(new BlacklistedChannel { ChannelId = channelId });
-            await ReplyAsync($"Channel blacklisted. Use `{Program.GetPrefix(Context)}blch [channel_id]` in another channel to undo.\n The ID of this channel is `{Context.Channel.Id}`.");
+            await ReplyAsync($"Channel blacklisted. Use `{GetPrefix()}blch [channel_id]` in another channel to undo.\n The ID of this channel is `{Context.Channel.Id}`.");
         }
 
         [UserPermission(GuildPermission.Administrator)]
         [Command("ToggleModule"), Alias("tm"), Description("Disables or enables a command module.\n**Usage**: `!tm [module_name]`")]
         public async Task ToggleModule([Remainder] string name)
         {
-            var cmdService = Program.GetCommands();
-            var module = cmdService.Modules.SingleOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+            var module = TextCommands.Commands.Modules.SingleOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
 
             if (module == null)
             {
@@ -167,8 +172,7 @@ namespace Namiko
         [Command("ToggleCommand"), Alias("tc"), Description("Disables or enables a command.\n**Usage**: `!tc [command_name]`")]
         public async Task ToggleCommand([Remainder] string name)
         {
-            var cmdService = Program.GetCommands();
-            var command = cmdService.Commands.FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+            var command = TextCommands.Commands.Commands.FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
 
             if (command == null)
             {

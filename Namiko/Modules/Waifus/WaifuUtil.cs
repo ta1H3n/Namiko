@@ -21,7 +21,7 @@ namespace Namiko
     public static class WaifuUtil
     {
         // Waifus Read/Write
-        public static async Task<WaifuShop> GetShop(ulong guildId, ShopType type, bool overrideNew = false)
+        public static async Task<WaifuShop> GetShop(ulong guildId, ShopType type, BaseSocketClient client, bool overrideNew = false)
         {
             WaifuShop shop = null;
             try
@@ -49,17 +49,17 @@ namespace Namiko
 
             if (overrideNew || shop == null || shop.GeneratedDate.AddHours(12) < DateTime.Now)
             {
-                var newShop = await CreateNewShop(guildId, type);
+                var newShop = await CreateNewShop(guildId, type, client);
                 await WaifuShopDb.DeleteShop(guildId, type);
                 await WaifuShopDb.AddShop(newShop);
                 if (Program.Development == false)
-                    _ = Task.Run(() => NotifyWishlist(newShop.ShopWaifus.Select(x => x.Waifu), guildId));
+                    _ = Task.Run(() => NotifyWishlist(newShop.ShopWaifus.Select(x => x.Waifu), guildId, client));
                 return newShop;
             }
 
             return shop;
         }
-        public static async Task<WaifuShop> CreateNewShop(ulong guildId, ShopType type)
+        public static async Task<WaifuShop> CreateNewShop(ulong guildId, ShopType type, BaseSocketClient client)
         {
             var date = System.DateTime.Now.Date;
             if (DateTime.Now.Hour >= 12)
@@ -77,10 +77,10 @@ namespace Namiko
             switch (type)
             {
                 case ShopType.Waifu:
-                    waifus = await GenerateWaifuShopList(guildId);
+                    waifus = await GenerateWaifuShopList(guildId, client);
                     break;
                 case ShopType.Gacha:
-                    waifus = await GenerateGachaShopList(guildId);
+                    waifus = await GenerateGachaShopList(guildId, client);
                     break;
                 default:
                     return null;
@@ -89,7 +89,7 @@ namespace Namiko
             shop.ShopWaifus = waifus;
             return shop;
         }
-        public static async Task<List<ShopWaifu>> GenerateWaifuShopList(ulong guildId)
+        public static async Task<List<ShopWaifu>> GenerateWaifuShopList(ulong guildId, BaseSocketClient client)
         {
             int limitedamount = Constants.shoplimitedamount;
             int t1amount = Constants.shopt1amount;
@@ -109,7 +109,7 @@ namespace Namiko
             var wishlists = await WaifuWishlistDb.GetAllPremiumWishlists(guildId, ProType.Pro);
             wishlists.RemoveAll(x => gachaSource.Contains(x.Waifu.Source));
             var ids = wishlists.Select(x => x.UserId).Distinct().ToArray();
-            var guild = Program.GetClient().GetGuild(guildId);
+            var guild = client.GetGuild(guildId);
             foreach (var id in ids)
             {
                 SocketGuildUser user = null;
@@ -186,7 +186,7 @@ namespace Namiko
 
             return waifus;
         }
-        public static async Task<List<ShopWaifu>> GenerateGachaShopList(ulong guildId)
+        public static async Task<List<ShopWaifu>> GenerateGachaShopList(ulong guildId, BaseSocketClient client)
         {
             int t1amount = Constants.gachat1amount;
             int t2amount = Constants.gachat2amount;
@@ -206,7 +206,7 @@ namespace Namiko
             var wishlists = await WaifuWishlistDb.GetAllPremiumWishlists(guildId, ProType.Pro);
             wishlists.RemoveAll(x => !gachaSource.Contains(x.Waifu.Source));
             var ids = wishlists.Select(x => x.UserId).Distinct().ToArray();
-            var guild = Program.GetClient().GetGuild(guildId);
+            var guild = client.GetGuild(guildId);
             foreach (var id in ids)
             {
                 SocketGuildUser user = null;
@@ -272,7 +272,7 @@ namespace Namiko
             return par.Select(x => x.Args).ToList();
         }
 
-        public static async Task NotifyWishlist(IEnumerable<Waifu> waifus, ulong guildId)
+        public static async Task NotifyWishlist(IEnumerable<Waifu> waifus, ulong guildId, BaseSocketClient client)
         {
             var wishes = await WaifuWishlistDb.GetWishlist(guildId);
             foreach (var wish in wishes)
@@ -281,7 +281,7 @@ namespace Namiko
                 {
                     try
                     {
-                        var guild = Program.GetClient().GetGuild(guildId);
+                        var guild = client.GetGuild(guildId);
                         var ch = await guild.GetUser(wish.UserId).CreateDMChannelAsync();
                         await ch.SendMessageAsync($"**{wish.Waifu.Name}** is now for sale in **{guild.Name}**", false, WaifuEmbedBuilder(wish.Waifu).Build());
                     }
@@ -293,7 +293,7 @@ namespace Namiko
         // Shop Message generators
         /*public static EmbedBuilder GetShopEmbed(List<ShopWaifu> waifus, string prefix)
         {
-            var client = Program.GetClient();
+            var client = Client;
             var eb = new EmbedBuilder();
             eb.WithAuthor("Waifu Store", client.CurrentUser.GetAvatarUrl());
             foreach (var x in waifus)
@@ -330,7 +330,7 @@ namespace Namiko
         }
         public static EmbedBuilder WaifuShopEmbed(List<ShopWaifu> waifus, string prefix)
         {
-            var client = Program.GetClient();
+            var client = Client;
             var eb = new EmbedBuilder();
             eb.WithAuthor("Waifu Store", client.CurrentUser.GetAvatarUrl());
             
@@ -358,9 +358,8 @@ namespace Namiko
             eb.Color = BasicUtil.RandomColor();
             return eb;
         }*/
-        public static EmbedBuilder NewShopEmbed(List<ShopWaifu> waifus, string prefix, ulong guildId = 0, ShopType type = ShopType.Waifu)
+        public static EmbedBuilder NewShopEmbed(List<ShopWaifu> waifus, string prefix, BaseSocketClient client, ulong guildId = 0, ShopType type = ShopType.Waifu)
         {
-            var client = Program.GetClient();
             var eb = new EmbedBuilder();
 
             if (type == ShopType.Gacha)
@@ -378,7 +377,7 @@ namespace Namiko
                     eb.WithDescription($"Open in [browser](https://namiko.moe/WaifuShop/{guildId})");
             }
 
-            string list = WaifuShopWaifuList(waifus);
+            string list = WaifuShopWaifuList(waifus, client);
 
             eb.AddField("\n:books: Commands", $"`{prefix}BuyWaifu [name]` | `{prefix}Waifu [search]` | `{prefix}Ws` | `{prefix}Gs` | `{prefix}Ms`", true);
 
@@ -390,7 +389,7 @@ namespace Namiko
             eb.Color = BasicUtil.RandomColor();
             return eb;
         }
-        public static PaginatedMessage PaginatedShopMessage(IEnumerable<ShopWaifu> waifus, int pageSize, string prefix, ulong guildId = 0, ShopType type = ShopType.Waifu)
+        public static PaginatedMessage PaginatedShopMessage(IEnumerable<ShopWaifu> waifus, int pageSize, string prefix, BaseSocketClient client, ulong guildId = 0, ShopType type = ShopType.Waifu)
         {
             PaginatedMessage paginatedMessage = new PaginatedMessage();
             var fieldList = new List<FieldPages>();
@@ -413,7 +412,7 @@ namespace Namiko
             fieldWaifus.Title = "<:MiaHug:536580304018735135> Waifus";
             foreach (var w in splitWaifus)
             {
-                pagelist2.Add(WaifuUtil.WaifuShopWaifuList(w));
+                pagelist2.Add(WaifuUtil.WaifuShopWaifuList(w, client));
             }
             fieldWaifus.Pages = pagelist2;
             fieldList.Add(fieldWaifus);
@@ -432,13 +431,13 @@ namespace Namiko
                     ShopType.Mod => "Mod Shop",
                     _ => "Waifu Shop"
                 },
-                IconUrl = Program.GetClient().CurrentUser.GetAvatarUrl(),
+                IconUrl = client.CurrentUser.GetAvatarUrl(),
                 Url = LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-embed-shop")
             };
 
             return paginatedMessage;
         }
-        public static string WaifuShopWaifuList(IEnumerable<ShopWaifu> waifus)
+        public static string WaifuShopWaifuList(IEnumerable<ShopWaifu> waifus, BaseSocketClient client)
         {
             string list = "";
             foreach (var x in waifus)
@@ -456,7 +455,7 @@ namespace Namiko
                     {
                         try
                         {
-                            listing += $" OUT OF STOCK! Bought by: {Program.GetClient().GetUser(x.BoughtBy).Mention}\n";
+                            listing += $" OUT OF STOCK! Bought by: {client.GetUser(x.BoughtBy).Mention}\n";
                         }
                         catch
                         {
@@ -815,7 +814,7 @@ namespace Namiko
                          .GroupBy(i => i.Group, g => g.Item)
                          .ToList();
         }
-        public static EmbedBuilder WishlistEmbed(IEnumerable<Waifu> waifus, SocketGuildUser user)
+        public static EmbedBuilder WishlistEmbed(IEnumerable<Waifu> waifus, SocketGuildUser user, string prefix)
         {
             var eb = new EmbedBuilder();
             eb.WithAuthor(user);
@@ -837,7 +836,7 @@ namespace Namiko
             {
                 string desc = "Your mind is empty, you have no desires. You do not wish for any waifus.\n\n"
                     + $"*A pillar of light reveals strange texts*\n"
-                    + $"```{Program.GetPrefix(user)}waifu\n{Program.GetPrefix(user)}wishwaifu```";
+                    + $"```{prefix}waifu\n{prefix}wishwaifu```";
                 eb.WithDescription(desc);
             }
 
@@ -875,14 +874,14 @@ namespace Namiko
         }
 
         //Image handlers
-        public static async Task UploadWaifuImage(Waifu waifu, ISocketMessageChannel ch)
+        public static async Task UploadWaifuImage(Waifu waifu, ISocketMessageChannel ch, BaseSocketClient client)
         {
             try
             {
                 if (waifu.ImageUrl == null || waifu.ImageUrl == "")
                     return;
 
-                using WebClient client = new WebClient();
+                using WebClient webClient = new WebClient();
 
                 string filetype = waifu.ImageUrl.Split('.').Last();
                 string imgurId = waifu.ImageUrl.Split('/').Last().Split('.').First();
@@ -898,7 +897,7 @@ namespace Namiko
             }
             catch (Exception ex)
             {
-                await ch.SendMessageAsync($"{Program.GetClient().GetUser(AppSettings.OwnerId).Mention} Error while downloading waifu image variants to server.");
+                await ch.SendMessageAsync($"{client.GetUser(AppSettings.OwnerId).Mention} Error while downloading waifu image variants to server.");
                 SentrySdk.WithScope(scope =>
                 {
                     scope.SetExtras(waifu.GetProperties());

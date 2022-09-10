@@ -127,10 +127,8 @@ namespace Namiko
                 }
             return cards;
         }
-        public static async Task GameTimeout(ulong userId, BlackjackGame game)
+        public static async Task GameTimeout(IUser user, BlackjackGame game)
         {
-            var user = Program.GetClient().GetUser(userId);
-
             EmbedBuilder eb = new EmbedBuilder();
             var bot = game.Message.Author.Id;
 
@@ -240,7 +238,7 @@ namespace Namiko
                 AutoReset = false,
                 Enabled = true
             };
-            Timeout.Elapsed += (sender, args) => Blackjack.GameTimeout(Context.User.Id, this);
+            Timeout.Elapsed += (sender, args) => Blackjack.GameTimeout(Context.User, this);
             Timeout.Start();
         }
 

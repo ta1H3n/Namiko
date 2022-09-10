@@ -21,6 +21,8 @@ namespace Namiko
     [Name("Users & Profiles")]
     public class User : CustomModuleBase<ICustomContext>
     {
+        public BaseSocketClient Client { get; set; }
+        
 
         [Command("Profile"), Description("Shows a users profile.\n**Usage**: `!profile [user_optional]`")]
         [SlashCommand("profile", "Show user profile")]
@@ -40,7 +42,7 @@ namespace Namiko
 
             if (waifus.Count <= 21)
             {
-                await ReplyAsync("", false, UserUtil.WaifusEmbed((SocketGuildUser)user).Build());
+                await ReplyAsync("", false, UserUtil.WaifusEmbed((SocketGuildUser)user, GetPrefix()).Build());
                 return;
             }
 
@@ -106,7 +108,7 @@ namespace Namiko
 
                 eb.WithAuthor(wife);
                 eb.WithDescription($"**{ user.Mention }** has proposed to you.");
-                eb.WithFooter($"`{Program.GetPrefix(Context)}marry [user]` or `{Program.GetPrefix(Context)}decline [user]`");
+                eb.WithFooter($"`{GetPrefix()}marry [user]` or `{GetPrefix()}decline [user]`");
                 await ReplyAsync($"", false, eb.Build());
                 return;
             }
@@ -204,7 +206,7 @@ namespace Namiko
         [SlashCommand("marriages", "Show marital details")]
         public async Task Marriages([Remainder] IUser user = null)
         {
-            await ReplyAsync("", false, UserUtil.MarriagesEmbed(user ?? Context.User, Context.Guild).Build());
+            await ReplyAsync("", false, UserUtil.MarriagesEmbed(user ?? Context.User, Context.Guild, Client).Build());
         }
 
         [Command("SetColour"), Alias("SetColor", "sc"), Description("Set your profile colour.\n**Usage**: `!sc [colour_name or hex_value]`")]
@@ -458,7 +460,7 @@ namespace Namiko
                 .WithThumbnailUrl("https://i.imgur.com/xxobSIH.png")
                 .Build());
 
-            var bot = Program.GetClient().CurrentUser;
+            var bot = Client.CurrentUser;
             if (user.Id == bot.Id)
             {
                 await BalanceDb.AddToasties(Context.User.Id, 50, Context.Guild.Id);

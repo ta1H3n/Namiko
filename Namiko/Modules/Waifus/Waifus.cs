@@ -20,6 +20,9 @@ namespace Namiko
     [RequireGuild]
     public class Waifus : CustomModuleBase<ICustomContext>
     {
+        public BaseSocketClient Client { get; set; }
+        
+        
         private static readonly Dictionary<ulong, Object> slideLock = new Dictionary<ulong, Object>();
 
         [SlashCommand("waifu-shop", "Open a waifu shop")]
@@ -43,38 +46,38 @@ namespace Namiko
         [Command("WaifuShop"), Alias("ws"), Description("Opens the waifu shop.")]
         public async Task WaifuShop()
         {
-            WaifuShop shop = await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Waifu);
+            WaifuShop shop = await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Waifu, Client);
             int count = Constants.shoplimitedamount + Constants.shopt1amount + Constants.shopt2amount + Constants.shopt3amount;
-            string prefix = Program.GetPrefix(Context);
+            string prefix = GetPrefix();
             var waifus = shop.ShopWaifus.OrderByDescending(x => x.Limited).ThenBy(x => x.Waifu.Tier).ThenBy(x => x.Waifu.Source).ToList();
 
             if (waifus.Count <= count)
             {
-                var eb = WaifuUtil.NewShopEmbed(waifus, prefix, Context.Guild.Id);
+                var eb = WaifuUtil.NewShopEmbed(waifus, prefix, Client, Context.Guild.Id);
                 await ReplyAsync("", false, eb.Build());
                 return;
             }
 
-            await PagedReplyAsync(WaifuUtil.PaginatedShopMessage(waifus, count, prefix, Context.Guild.Id));
+            await PagedReplyAsync(WaifuUtil.PaginatedShopMessage(waifus, count, prefix, Client, Context.Guild.Id));
         }
 
         [Command("GachaShop"), Alias("gs"), Description("Opens the gacha shop.")]
         public async Task GachaShop()
         {
-            WaifuShop shop = await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Gacha);
-            string prefix = Program.GetPrefix(Context);
+            WaifuShop shop = await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Gacha, Client);
+            string prefix = GetPrefix();
             var waifus = shop.ShopWaifus.OrderByDescending(x => x.Limited).ThenBy(x => x.Waifu.Tier).ThenBy(x => x.Waifu.Source).ToList();
 
-            var eb = WaifuUtil.NewShopEmbed(waifus, prefix, Context.Guild.Id, ShopType.Gacha);
+            var eb = WaifuUtil.NewShopEmbed(waifus, prefix, Client, Context.Guild.Id, ShopType.Gacha);
             await ReplyAsync("", false, eb.Build());
         }
 
         [Command("ModShop"), Alias("ms"), Description("Opens the mod shop. A waifu shop controlled by server moderators.")]
         public async Task ModShop()
         {
-            WaifuShop shop = await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Mod);
+            WaifuShop shop = await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Mod, Client);
             int count = Constants.shoplimitedamount + Constants.shopt1amount + Constants.shopt2amount + Constants.shopt3amount;
-            string prefix = Program.GetPrefix(Context);
+            string prefix = GetPrefix();
             List<ShopWaifu> waifus = new List<ShopWaifu>();
             if (shop != null)
                 waifus = shop.ShopWaifus;
@@ -83,18 +86,18 @@ namespace Namiko
 
             if (waifus.Count <= count)
             {
-                var eb = WaifuUtil.NewShopEmbed(waifus, prefix, Context.Guild.Id, ShopType.Mod);
+                var eb = WaifuUtil.NewShopEmbed(waifus, prefix, Client, Context.Guild.Id, ShopType.Mod);
                 await ReplyAsync("", false, eb.Build());
                 return;
             }
 
-            await PagedReplyAsync(WaifuUtil.PaginatedShopMessage(waifus, count, prefix, Context.Guild.Id, ShopType.Mod));
+            await PagedReplyAsync(WaifuUtil.PaginatedShopMessage(waifus, count, prefix, Client, Context.Guild.Id, ShopType.Mod));
         }
 
         [Command("WaifuShopSlides"), Alias("wss"), Description("Opens the waifu shop slides.")]
         public async Task WaifuShopSlides()
         {
-            List<ShopWaifu> waifus = (await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Waifu)).ShopWaifus;
+            List<ShopWaifu> waifus = (await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Waifu, Client)).ShopWaifus;
             waifus.RemoveAt(0);
 
             var lockObj = new Object();
@@ -280,7 +283,7 @@ namespace Namiko
             if (PremiumDb.IsPremium(Context.User.Id, ProType.ProPlus))
                 cap = 12;
 
-            string prefix = Program.GetPrefix(Context);
+            string prefix = GetPrefix();
             if (waifus.Count >= cap)
             {
                 await ReplyAsync(embed: new EmbedBuilderPrepared(Context.User)
@@ -306,7 +309,7 @@ namespace Namiko
             await WaifuWishlistDb.AddWaifuWish(Context.User.Id, waifu, Context.Guild.Id);
 
             waifus = await WaifuWishlistDb.GetWishlist(user.Id, Context.Guild.Id);
-            await ReplyAsync($"Added **{waifu.Name}** to your wishlist!", false, WaifuUtil.WishlistEmbed(waifus, (SocketGuildUser)user).Build());
+            await ReplyAsync($"Added **{waifu.Name}** to your wishlist!", false, WaifuUtil.WishlistEmbed(waifus, (SocketGuildUser)user, GetPrefix()).Build());
         }
 
         [Command("WaifuWishlist"), Alias("wwl"), Description("Shows yours or someone's waifu wishlist.\n**Usage**: `!wwl [user_optional]`")]
@@ -316,7 +319,7 @@ namespace Namiko
             user ??= Context.User;
             var waifus = await WaifuWishlistDb.GetWishlist(user.Id, Context.Guild.Id);
 
-            await ReplyAsync(null, false, WaifuUtil.WishlistEmbed(waifus, (SocketGuildUser)user).Build());
+            await ReplyAsync(null, false, WaifuUtil.WishlistEmbed(waifus, (SocketGuildUser)user, GetPrefix()).Build());
         }
 
         [Command("RemoveWish"), Alias("rww", "RemoveWaifuWish"), Description("Removes a waifu from your wishlist.\n**Usage**: `!rww [waifu]`")]
@@ -346,7 +349,7 @@ namespace Namiko
          Description("Adds a waifu to the mod shop. Available for everyone to purchase.\n**Usage**: `!msaw [waifu]`")]
         public async Task ModShopAddWaifu([Remainder] string waifuSearch)
         {
-            var shop = await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Mod);
+            var shop = await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Mod, Client);
             var waifus = shop.ShopWaifus.Select(x => x.Waifu);
 
             var waifu = await WaifuUtil.ProcessWaifuListAndRespond(await WaifuDb.SearchWaifus(waifuSearch), this);
@@ -355,7 +358,7 @@ namespace Namiko
         [SlashCommand("waifu-shop-add", "Add waifu to the mod shop.")]
         public async Task ModShopAddWaifu([Autocomplete(typeof(WaifuAutocomplete))] Waifu waifu)
         {
-            var prefix = Program.GetPrefix(Context);
+            var prefix = GetPrefix();
 
             if (!PremiumDb.IsPremium(Context.Guild.Id, ProType.GuildPlus))
             {
@@ -411,7 +414,7 @@ namespace Namiko
         [SlashCommand("waifu-shop-remove", "Remove waifu from the mod shop.")]
         public async Task ModShopRemoveWaifu([Remainder, Autocomplete(typeof(WaifuAutocomplete))] string waifuSearch)
         {
-            var shop = await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Mod);
+            var shop = await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Mod, Client);
             var waifus = shop.ShopWaifus.Select(x => x.Waifu);
 
             var waifu = await WaifuUtil.ProcessWaifuListAndRespond(await WaifuDb.SearchWaifus(waifuSearch, false, waifus), this);
@@ -461,6 +464,9 @@ namespace Namiko
 
     public class WaifuEditing : CustomModuleBase<ICustomContext>
     {
+        public BaseSocketClient Client { get; set; }
+        
+        
         [Insider]
         [Command("NewWaifu"), Alias("nw"), Description("Adds a waifu to the database.\n**Usage**: `!nw [name] [tier(1-3)] [image_url]`")]
         public async Task NewWaifuCommand(string name, int tier, string url = "")
@@ -502,7 +508,7 @@ namespace Namiko
             }
 
             var waifu = new Waifu { Name = name, Tier = tier, ImageUrl = imageUrl, Description = null, LongName = null };
-            await WaifuUtil.UploadWaifuImage(waifu, Context.Channel);
+            await WaifuUtil.UploadWaifuImage(waifu, Context.Channel, Client);
 
             if (await WaifuDb.AddWaifu(waifu) > 0)
                 await ReplyAsync($"{name} added.");
@@ -584,7 +590,7 @@ namespace Namiko
             }
 
             var waifu = new Waifu { Name = name, Tier = 404, ImageUrl = url, Description = null, LongName = null };
-            await WaifuUtil.UploadWaifuImage(waifu, Context.Channel);
+            await WaifuUtil.UploadWaifuImage(waifu, Context.Channel, Client);
 
             var mal = await WebUtil.GetWaifu(malId);
             waifu.LongName = $"{mal.Name} ({mal.NameKanji})";
@@ -683,7 +689,7 @@ namespace Namiko
             var iImage = await ImgurAPI.UploadImageAsync(imageUrl, albumId, null, waifu.Name);
             string old = waifu.ImageUrl;
             waifu.ImageUrl = iImage.Link;
-            await WaifuUtil.UploadWaifuImage(waifu, Context.Channel);
+            await WaifuUtil.UploadWaifuImage(waifu, Context.Channel, Client);
 
             if (await WaifuDb.UpdateWaifu(waifu) > 0)
             {
@@ -815,14 +821,6 @@ namespace Namiko
         }
 
         [Insider]
-        [Command("ImageSauceRequest"), Alias("isr"), Description("Get a request for missing image sauce.\n**Usage**: `!isr`")]
-        public async Task ImageSauceRequest(string url = null)
-        {
-            await Timers.Timer_RequestSauce(null, null);
-            await ReplyAsync("<#728729035986829342>");
-        }
-
-        [Insider]
         [Command("GetWaifu"), Description("Get details about a waifu.\n**Usage**: `!wi [name] [image_url]`")]
         public async Task GetWaifu([Remainder] string name) =>
             GetWaifu(await WaifuUtil.ProcessWaifuListAndRespond(await WaifuDb.SearchWaifus(name, true, null, true), this));
@@ -935,8 +933,8 @@ namespace Namiko
         [Command("ResetWaifuShop"), Alias("rws"), Description("Resets the waifu shop contents.")]
         public async Task ResetWaifuShop()
         {
-            await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Waifu, true);
-            await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Gacha, true);
+            await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Waifu, Client, true);
+            await WaifuUtil.GetShop(Context.Guild.Id, ShopType.Gacha, Client, true);
             await ReplyAsync("Waifu Shop and Gacha Shop reset.");
         }
 
