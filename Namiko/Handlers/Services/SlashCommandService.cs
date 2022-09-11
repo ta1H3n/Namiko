@@ -52,31 +52,46 @@ public class SlashCommandService
 
     
     private int _reactionImageCommandsRegistered = 0;
-    private async Task RegisterReactionImageCommands(SocketGuild guild, SlashCommandProperties[] sharedCommands)
+    private async Task<bool> RegisterReactionImageCommands(SocketGuild guild, SlashCommandProperties[] sharedCommands)
     {
-        sharedCommands ??= BuildReactionImageCommands(_reactionCommands);
-        
-        if (Images.ReactionImageCommands.ContainsKey(guild.Id))
+        try
         {
-            var guildImages = Images.ReactionImageCommands[guild.Id];
-            var commands = BuildReactionImageCommands(guildImages).ToList();
-            commands.AddRange(sharedCommands.Where(x => !guildImages.Contains(x.Name.Value)));
+            sharedCommands ??= BuildReactionImageCommands(_reactionCommands);
 
-            await guild.BulkOverwriteApplicationCommandAsync(commands.ToArray());
-        }
-        else if (guild.Id == 418900885079588884)
-        {
-            var commands = await guild.GetApplicationCommandsAsync();
-
-            foreach (var cmd in sharedCommands.Take(100 - commands.Count))
+            if (Images.ReactionImageCommands.ContainsKey(guild.Id))
             {
-                await Task.Delay(5000);
-                await guild.CreateApplicationCommandAsync(cmd);
+                var guildImages = Images.ReactionImageCommands[guild.Id];
+                var commands = BuildReactionImageCommands(guildImages).ToList();
+                commands.AddRange(sharedCommands.Where(x => !guildImages.Contains(x.Name.Value)));
+
+                await guild.BulkOverwriteApplicationCommandAsync(commands.ToArray());
+                return true;
+            }
+            else if (guild.Id == 418900885079588884)
+            {
+                var commands = await guild.GetApplicationCommandsAsync();
+
+                foreach (var cmd in sharedCommands.Take(100 - commands.Count))
+                {
+                    await Task.Delay(5000);
+                    await guild.CreateApplicationCommandAsync(cmd);
+                }
+                return true;
+            }
+            else
+            {
+                await guild.BulkOverwriteApplicationCommandAsync(sharedCommands);
+                return true;
             }
         }
-        else
+        catch (Exception ex)
         {
-            _ = guild.BulkOverwriteApplicationCommandAsync(sharedCommands);
+            await WebhookClients.ErrorLogChannel.SendMessageAsync(
+                "Error when registering reaction commands, guild " + guild.Id, embeds: new List<Embed>()
+                {
+                    new EmbedBuilder().WithDescription("```cs\n" + ex.Message + "```").Build()
+                });
+            return false;
         }
     }
     private Task RegisterReactionImageCommands(SocketGuild guild) => RegisterReactionImageCommands(guild, null);
@@ -95,15 +110,27 @@ public class SlashCommandService
                     Date = DateTime.MinValue
                 };
                 var guilds = ServerDb.GetGuildsJoinedAfterDate(param.Date);
-                
+
+                int success = 0;
+                int fail = 0;
                 foreach (var guild in client.Guilds.Where(x => guilds.Contains(x.Id)))
                 {
                     await Task.Delay(5000);
-                    await RegisterReactionImageCommands(guild, sharedCommands);
+                    if (await RegisterReactionImageCommands(guild, sharedCommands))
+                    {
+                        success++;
+                    }
+                    else
+                    {
+                        fail++;
+                    }
                 }
 
                 param.Date = DateTime.Now;
                 ParamDb.UpdateParam(param);
+
+                await WebhookClients.NamikoLogChannel.SendMessageAsync(
+                    $"Reaction image commands registering complete. Success: {success} Fail: {fail}");
             }
             catch (Exception ex)
             {
