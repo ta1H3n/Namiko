@@ -19,7 +19,10 @@ namespace Namiko
 
         public static async Task<LavaTrack> SelectTrack(List<LavaTrack> tracks, Music module)
         {
-            return await module.Select(tracks, "Track", TrackSelectEmbed(tracks, (SocketGuildUser)module?.Context.User).Build());
+            Func<LavaTrack, string> label = (x) => x.Title;
+            Func<LavaTrack, string> description = (x) => $"{x.Duration.ToString("g")} | {x.Author}";
+            
+            return await module.Select(tracks, "Select a track", TrackSelectEmbed(tracks, (SocketGuildUser)module?.Context.User).Build(), label, description);
         }
         public static async Task<List<LavaTrack>> SearchAndSelect(this LavaNode client, string query, Music module, int limit = 500)
         {
@@ -86,17 +89,8 @@ namespace Namiko
         public static EmbedBuilder TrackSelectEmbed(List<LavaTrack> tracks, IUser author = null)
         {
             var eb = new EmbedBuilderLava(author);
-
-            string str = "";
-            int i = 0;
-
-            foreach (var track in tracks)
-            {
-                i++;
-                str += $"`#{i}` {track.Title.ShortenString(60, 55)}\n";
-            }
-
-            eb.AddField($"Search Results :musical_note:", str);
+            
+            eb.WithDescription($"Found {tracks.Count} tracks :musical_note: \nPlease select from the list ...");
             return eb;
         }
         public static EmbedBuilder TrackListEmbed(IEnumerable<LavaTrack> tracks, IUser author = null, bool loop = false)
