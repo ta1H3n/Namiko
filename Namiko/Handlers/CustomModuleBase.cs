@@ -119,9 +119,21 @@ namespace Namiko.Addons.Handlers
 
 
         #region IModuleBase
+
+        public Task BeforeExecuteAsync(CommandInfo command)
+        {
+            return Task.CompletedTask;
+        }
+
         public virtual void BeforeExecute(CommandInfo command)
         {
         }
+
+        public Task AfterExecuteAsync(CommandInfo command)
+        {
+            return Task.CompletedTask;
+        }
+
         public virtual void AfterExecute(CommandInfo command)
         {
         }

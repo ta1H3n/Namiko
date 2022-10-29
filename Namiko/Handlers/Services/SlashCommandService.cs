@@ -20,6 +20,10 @@ namespace Namiko.Addons.Handlers;
 
 public class SlashCommandService
 {
+    private const string TickYes = "<:TickYes:577838859107303424>";
+    private const string TickNo = "<:TickNo:577838859077943306>";
+    
+    
     public readonly InteractionService Interaction;
     private readonly IServiceProvider _services;
     private readonly DiscordShardedClient _client;
@@ -52,7 +56,7 @@ public class SlashCommandService
 
     
     private int _reactionImageCommandsRegistered = 0;
-    private async Task<bool> RegisterReactionImageCommands(SocketGuild guild, SlashCommandProperties[] sharedCommands)
+    private async Task<bool> RegisterReactionImageCommands(SocketGuild guild, SlashCommandProperties[] sharedCommands, bool logError = true)
     {
         try
         {
@@ -101,6 +105,9 @@ public class SlashCommandService
         if (_client.Shards.All(x => x.ConnectionState == ConnectionState.Connected) &&
             Interlocked.Exchange(ref _reactionImageCommandsRegistered, 1) == 0)
         {
+            int success = 0;
+            int fail = 0;
+            int error = 0;
             try
             {
                 var sharedCommands = BuildReactionImageCommands(_reactionCommands);
@@ -111,18 +118,34 @@ public class SlashCommandService
                 };
                 var guilds = ServerDb.GetGuildsJoinedAfterDate(param.Date);
 
-                int success = 0;
-                int fail = 0;
                 foreach (var guild in client.Guilds.Where(x => guilds.Contains(x.Id)))
                 {
                     await Task.Delay(5000);
-                    if (await RegisterReactionImageCommands(guild, sharedCommands))
+                    try
                     {
-                        success++;
+                        if (await RegisterReactionImageCommands(guild, sharedCommands, logError: false))
+                        {
+                            success++;
+                        }
+                        else
+                        {
+                            fail++;
+                        }
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        fail++;
+                        if (error < 1 || error % 50 == 1)
+                        {
+                            await WebhookClients.NamikoLogChannel.SendMessageAsync(
+                                $"{TickNo} Reaction image command registration threw an exception.\n" +
+                                $"GuildId: {(guild == null ? "0" : guild.Id)} Success: {success} Fail: {fail} Error: {error}", embeds: new List<Embed>()
+                                {
+                                    new EmbedBuilder().WithDescription("```cs\n" + ex.Message.ShortenString(3900, 3900) + "```").Build()
+                                });
+                            SentrySdk.WithScope(scope => scope.SetExtra("guildId", guild == null ? "0" : guild.Id));
+                            SentrySdk.CaptureException(ex);
+                        }
+                        error++;
                     }
                 }
 
@@ -130,12 +153,18 @@ public class SlashCommandService
                 ParamDb.UpdateParam(param);
 
                 await WebhookClients.NamikoLogChannel.SendMessageAsync(
-                    $"Reaction image commands registering complete. Success: {success} Fail: {fail}");
+                    $"{TickYes} Reaction images registered successfully. Success: {success} Fail: {fail} Error: {error}");
             }
             catch (Exception ex)
             {
                 _reactionImageCommandsRegistered = 0;
                 SentrySdk.CaptureException(ex);
+                await WebhookClients.NamikoLogChannel.SendMessageAsync(
+                    $"{TickNo} Reaction image command registration stopped execution in the finally block.\n" +
+                    $"Success: {success} Fail: {fail} Error: {error}", embeds: new List<Embed>()
+                    {
+                        new EmbedBuilder().WithDescription("```cs\n" + ex.Message.ShortenString(3900, 3900) + "```").Build()
+                    });
             }
         }
     }
@@ -175,7 +204,7 @@ public class SlashCommandService
 
                 if (_discordService.Development)
                 {
-                    Interaction.AddModulesToGuildAsync(418900885079588884, true, Interaction.Modules.ToArray());
+                    Interaction.AddModulesToGuildAsync(231113616911237120, true, Interaction.Modules.ToArray());
                 }
                 else
                 {

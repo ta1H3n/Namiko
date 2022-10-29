@@ -236,7 +236,7 @@ public class TextCommandService
                     scope.SetExtra("MessageId", cmdException.Context.Message.Id);
                     scope.SetExtra("Message", cmdException.Context.Message.Content);
                     if (cmdException.InnerException is HttpException)
-                        scope.Level = Sentry.Protocol.SentryLevel.Warning;
+                        scope.Level = SentryLevel.Warning;
                     SentrySdk.CaptureException(cmdException.InnerException);
                 });
 
