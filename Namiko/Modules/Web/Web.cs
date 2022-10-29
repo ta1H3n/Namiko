@@ -61,7 +61,7 @@ namespace Namiko
 
             var sauce = await WebUtil.SauceNETSearchAsync(url);
 
-            if (sauce.Request.Status != 0)
+            if (sauce.Request.Status != 0 && sauce.Results != null && sauce.Results.Count <= 0)
             {
                 await ReplyAsync($"An error occured. Server response: `{sauce.Message}`");
                 return;
