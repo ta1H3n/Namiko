@@ -83,74 +83,74 @@ namespace Namiko
         }
         
 
-        public enum Mal { Anime, Manga, Waifu }
-
-        [SlashCommand("myanimelist", "Search MyAnimeList database")]
-        public Task MalSearch(Mal searchType, string search) => searchType switch
-        {
-            Mal.Anime => AnimeSearch(search),
-            Mal.Manga => MangaSearch(search),
-            Mal.Waifu => WaifuSearch(search)
-        };
-        
-        [Command("Anime"), Alias("AnimeSearch", "SearchAnime"), Description("Searches MAL for an anime and the following details.\n**Usage**: `!Anime [anime_title]`")]
-        public async Task AnimeSearch([Remainder]string Query)
-        {
-            await Context.TriggerTypingAsync();
-            var animeSearch = await WebUtil.AnimeSearch(Query);
-
-            //Quick If to see if manga had results
-            if (animeSearch == null || animeSearch.Results == null || animeSearch.Results.Count <= 0)
-            {
-                await ReplyAsync($"Gomen, senpai... No results.");
-                return;
-            }
-
-            var response = await Select(animeSearch.Results, "Result", WebUtil.AnimeListEmbed(animeSearch).Build());
-
-            await Context.TriggerTypingAsync();
-            var anime = await WebUtil.GetAnime(response.MalId); //EndManga becomes the manga, it uses ID to get propa page umu
-
-            await ReplyAsync(WebUtil.AnimeEmbed(anime).Build());
-        }
-
-        [Command("Manga"), Alias("MangaSearch", "SearchManga"), Description("Searches MAL for an manga and the following details.\n**Usage**: `!Manga [manga_title]`")]
-        public async Task MangaSearch([Remainder]string Query)
-        {
-            await Context.TriggerTypingAsync();
-            var mangaSearch = await WebUtil.MangaSearch(Query);
-
-            //Quick If to see if manga had results
-            if (mangaSearch == null || mangaSearch.Results == null || mangaSearch.Results.Count <= 0)
-            {
-                await ReplyAsync($"Gomen, Senpai... No results.");
-                return;
-            }
-
-            var response = await Select(mangaSearch.Results, "Result", WebUtil.MangaListEmbed(mangaSearch).Build());
-
-            await Context.TriggerTypingAsync();
-            var manga = await WebUtil.GetManga(response.MalId); //EndManga becomes the manga, it uses ID to get propa page umu
-
-            await ReplyAsync(WebUtil.MangaEmbed(manga).Build());
-        }
-        
-        [Command("MALWaifu"), Alias("malw"), Description("Searches MAL for characters.\n**Usage**: `!malw [query]`")]
-        public async Task WaifuSearch([Remainder] string name)
-        {
-            await Context.TriggerTypingAsync();
-            var eb = new EmbedBuilderPrepared(Context.User);
-
-            var waifus = await WebUtil.GetWaifus(name);
-            string list = "";
-            foreach (var w in waifus.Results.Take(10))
-            {
-                list += $"`{w.MalId}` [{w.Name}]({w.URL}) - *{(w.Animeography.FirstOrDefault() == null ? w.Mangaography.FirstOrDefault().Name : w.Animeography.FirstOrDefault().Name)}*\n";
-            }
-            eb.WithDescription(list);
-
-            await ReplyAsync(embed: eb.Build());
-        }
+        // public enum Mal { Anime, Manga, Waifu }
+        //
+        // [SlashCommand("myanimelist", "Search MyAnimeList database")]
+        // public Task MalSearch(Mal searchType, string search) => searchType switch
+        // {
+        //     Mal.Anime => AnimeSearch(search),
+        //     Mal.Manga => MangaSearch(search),
+        //     Mal.Waifu => WaifuSearch(search)
+        // };
+        //
+        // [Command("Anime"), Alias("AnimeSearch", "SearchAnime"), Description("Searches MAL for an anime and the following details.\n**Usage**: `!Anime [anime_title]`")]
+        // public async Task AnimeSearch([Remainder]string Query)
+        // {
+        //     await Context.TriggerTypingAsync();
+        //     var animeSearch = await WebUtil.AnimeSearch(Query);
+        //
+        //     //Quick If to see if manga had results
+        //     if (animeSearch == null || animeSearch.Results == null || animeSearch.Results.Count <= 0)
+        //     {
+        //         await ReplyAsync($"Gomen, senpai... No results.");
+        //         return;
+        //     }
+        //
+        //     var response = await Select(animeSearch.Results, "Result", WebUtil.AnimeListEmbed(animeSearch).Build());
+        //
+        //     await Context.TriggerTypingAsync();
+        //     var anime = await WebUtil.GetAnime(response.MalId); //EndManga becomes the manga, it uses ID to get propa page umu
+        //
+        //     await ReplyAsync(WebUtil.AnimeEmbed(anime).Build());
+        // }
+        //
+        // [Command("Manga"), Alias("MangaSearch", "SearchManga"), Description("Searches MAL for an manga and the following details.\n**Usage**: `!Manga [manga_title]`")]
+        // public async Task MangaSearch([Remainder]string Query)
+        // {
+        //     await Context.TriggerTypingAsync();
+        //     var mangaSearch = await WebUtil.MangaSearch(Query);
+        //
+        //     //Quick If to see if manga had results
+        //     if (mangaSearch == null || mangaSearch.Results == null || mangaSearch.Results.Count <= 0)
+        //     {
+        //         await ReplyAsync($"Gomen, Senpai... No results.");
+        //         return;
+        //     }
+        //
+        //     var response = await Select(mangaSearch.Results, "Result", WebUtil.MangaListEmbed(mangaSearch).Build());
+        //
+        //     await Context.TriggerTypingAsync();
+        //     var manga = await WebUtil.GetManga(response.MalId); //EndManga becomes the manga, it uses ID to get propa page umu
+        //
+        //     await ReplyAsync(WebUtil.MangaEmbed(manga).Build());
+        // }
+        //
+        // [Command("MALWaifu"), Alias("malw"), Description("Searches MAL for characters.\n**Usage**: `!malw [query]`")]
+        // public async Task WaifuSearch([Remainder] string name)
+        // {
+        //     await Context.TriggerTypingAsync();
+        //     var eb = new EmbedBuilderPrepared(Context.User);
+        //
+        //     var waifus = await WebUtil.GetWaifus(name);
+        //     string list = "";
+        //     foreach (var w in waifus.Results.Take(10))
+        //     {
+        //         list += $"`{w.MalId}` [{w.Name}]({w.URL}) - *{(w.Animeography.FirstOrDefault() == null ? w.Mangaography.FirstOrDefault().Name : w.Animeography.FirstOrDefault().Name)}*\n";
+        //     }
+        //     eb.WithDescription(list);
+        //
+        //     await ReplyAsync(embed: eb.Build());
+        // }
 
 
         [RequireGuild]

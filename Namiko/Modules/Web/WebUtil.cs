@@ -178,111 +178,111 @@ namespace Namiko
         // MAL
 
         // Anime
-        public static async Task<AnimeSearchResult> AnimeSearch(string Query)
-        {
-            //animeSearch becomes a "list" of the results of query
-            return await Task.Run(() => Jikan.SearchAnime(Query).Result);
-        }
-        public static EmbedBuilder AnimeListEmbed(AnimeSearchResult animeSearch)
-        {
-            int i = 1;
-            string listboo = "";
-            foreach (var x in animeSearch.Results)
-            {
-                listboo += $"**{i++}.** {x.Title}\n";
-                if (i > 7)
-                    break;
-            }
-
-            var eb = new EmbedBuilder();
-            eb.WithColor(BasicUtil.RandomColor());
-            eb.WithAuthor("Anime search results. Select by typing 1-7", MalIconUrl);
-            eb.WithFooter("Times out in 23 seconds");
-            eb.WithDescription(listboo);
-            eb.WithThumbnailUrl(animeSearch.Results.First().ImageURL);
-            return eb;
-        }
-        public static async Task<Anime> GetAnime(long id)
-        {
-            return await Task.Run(() => Jikan.GetAnime(id).Result); //Gets anime machine
-        }
-        public static EmbedBuilder AnimeEmbed(Anime anime)
-        {
-            var eb = new EmbedBuilder();
-            eb.WithColor(BasicUtil.RandomColor());
-            eb.WithAuthor($"{anime.Title} ({anime.TitleJapanese})", MalIconUrl, anime.LinkCanonical);
-            eb.WithFooter($"Results of anime search");
-            eb.WithCurrentTimestamp(); //automatically put in footer
-            string desc = "**Type:** " + anime.Type +
-                "\n**Anime score:** " + anime.Score +
-                "\n**Rated:** " + anime.Rating +
-                "\n**Episodes:** " + anime.Episodes +
-                "\n**Genres:** " + string.Join('/', anime.Genres) + "\n" + "\n" +
-                anime.Synopsis;
-            eb.WithDescription(desc.Length > 2040 ? desc.Substring(0, 2030) + "..." : desc);
-            eb.ThumbnailUrl = anime.ImageURL;
-            return eb;
-        }
-
-        // Manga
-        public static async  Task<MangaSearchResult> MangaSearch(string Query)
-        {
-            //mangaSearch becomes a "list" of the results of query
-            return await Task.Run(() => Jikan.SearchManga(Query).Result);
-        }
-        public static EmbedBuilder MangaListEmbed(MangaSearchResult mangaSearch)
-        {
-            int i = 1;
-            string listboo = "";
-            foreach(var x in mangaSearch.Results)
-            {
-                listboo += $"**{i++}.** {x.Title}\n";
-                if (i > 7)
-                    break;
-            }
-
-            var eb = new EmbedBuilder();
-            eb.WithColor(BasicUtil.RandomColor());
-            eb.WithAuthor("Manga search results. Select by typing 1-7", MalIconUrl);
-            eb.WithFooter("Times out in 23 seconds");
-            eb.WithDescription(listboo);
-            eb.WithThumbnailUrl(mangaSearch.Results.First().ImageURL);
-            return eb;
-        }
-        public static async Task<Manga> GetManga(long id)
-        {
-            return await Task.Run(() => Jikan.GetManga(id).Result); //Gets manga machine
-        }
-        public static EmbedBuilder MangaEmbed(Manga manga)
-        {
-            string MangaState;
-            if (manga.Status == "Publishing") MangaState = "^"; else MangaState = manga.Chapters?.ToString();
-
-            var eb = new EmbedBuilder();
-            eb.WithColor(BasicUtil.RandomColor());
-            eb.WithAuthor($"{manga.Title} ({manga.TitleJapanese})", MalIconUrl, manga.LinkCanonical);
-            eb.WithFooter($"Results of manga search");
-            eb.WithCurrentTimestamp();
-            string desc = "**Type:** " + manga.Type +
-                "\n**Manga score:** " + manga.Score +
-                "\n**Status:** " + manga.Status +
-                "\n**Chapters:** " + MangaState +
-                "\n**Genres:** " + string.Join('/', manga.Genres) + "\n" + "\n" +
-                manga.Synopsis;
-            eb.WithDescription(desc.Length > 2040 ? desc.Substring(0, 2030) + "..." : desc);
-            eb.ThumbnailUrl = manga.ImageURL;
-            return eb;
-        }
-
-        //Character
+        // public static async Task<AnimeSearchResult> AnimeSearch(string Query)
+        // {
+        //     //animeSearch becomes a "list" of the results of query
+        //     return await Task.Run(() => Jikan.SearchAnime(Query).Result);
+        // }
+        // public static EmbedBuilder AnimeListEmbed(AnimeSearchResult animeSearch)
+        // {
+        //     int i = 1;
+        //     string listboo = "";
+        //     foreach (var x in animeSearch.Results)
+        //     {
+        //         listboo += $"**{i++}.** {x.Title}\n";
+        //         if (i > 7)
+        //             break;
+        //     }
+        //
+        //     var eb = new EmbedBuilder();
+        //     eb.WithColor(BasicUtil.RandomColor());
+        //     eb.WithAuthor("Anime search results. Select by typing 1-7", MalIconUrl);
+        //     eb.WithFooter("Times out in 23 seconds");
+        //     eb.WithDescription(listboo);
+        //     eb.WithThumbnailUrl(animeSearch.Results.First().ImageURL);
+        //     return eb;
+        // }
+        // public static async Task<Anime> GetAnime(long id)
+        // {
+        //     return await Task.Run(() => Jikan.GetAnime(id).Result); //Gets anime machine
+        // }
+        // public static EmbedBuilder AnimeEmbed(Anime anime)
+        // {
+        //     var eb = new EmbedBuilder();
+        //     eb.WithColor(BasicUtil.RandomColor());
+        //     eb.WithAuthor($"{anime.Title} ({anime.TitleJapanese})", MalIconUrl, anime.LinkCanonical);
+        //     eb.WithFooter($"Results of anime search");
+        //     eb.WithCurrentTimestamp(); //automatically put in footer
+        //     string desc = "**Type:** " + anime.Type +
+        //         "\n**Anime score:** " + anime.Score +
+        //         "\n**Rated:** " + anime.Rating +
+        //         "\n**Episodes:** " + anime.Episodes +
+        //         "\n**Genres:** " + string.Join('/', anime.Genres) + "\n" + "\n" +
+        //         anime.Synopsis;
+        //     eb.WithDescription(desc.Length > 2040 ? desc.Substring(0, 2030) + "..." : desc);
+        //     eb.ThumbnailUrl = anime.ImageURL;
+        //     return eb;
+        // }
+        //
+        // // Manga
+        // public static async  Task<MangaSearchResult> MangaSearch(string Query)
+        // {
+        //     //mangaSearch becomes a "list" of the results of query
+        //     return await Task.Run(() => Jikan.SearchManga(Query).Result);
+        // }
+        // public static EmbedBuilder MangaListEmbed(MangaSearchResult mangaSearch)
+        // {
+        //     int i = 1;
+        //     string listboo = "";
+        //     foreach(var x in mangaSearch.Results)
+        //     {
+        //         listboo += $"**{i++}.** {x.Title}\n";
+        //         if (i > 7)
+        //             break;
+        //     }
+        //
+        //     var eb = new EmbedBuilder();
+        //     eb.WithColor(BasicUtil.RandomColor());
+        //     eb.WithAuthor("Manga search results. Select by typing 1-7", MalIconUrl);
+        //     eb.WithFooter("Times out in 23 seconds");
+        //     eb.WithDescription(listboo);
+        //     eb.WithThumbnailUrl(mangaSearch.Results.First().ImageURL);
+        //     return eb;
+        // }
+        // public static async Task<Manga> GetManga(long id)
+        // {
+        //     return await Task.Run(() => Jikan.GetManga(id).Result); //Gets manga machine
+        // }
+        // public static EmbedBuilder MangaEmbed(Manga manga)
+        // {
+        //     string MangaState;
+        //     if (manga.Status == "Publishing") MangaState = "^"; else MangaState = manga.Chapters?.ToString();
+        //
+        //     var eb = new EmbedBuilder();
+        //     eb.WithColor(BasicUtil.RandomColor());
+        //     eb.WithAuthor($"{manga.Title} ({manga.TitleJapanese})", MalIconUrl, manga.LinkCanonical);
+        //     eb.WithFooter($"Results of manga search");
+        //     eb.WithCurrentTimestamp();
+        //     string desc = "**Type:** " + manga.Type +
+        //         "\n**Manga score:** " + manga.Score +
+        //         "\n**Status:** " + manga.Status +
+        //         "\n**Chapters:** " + MangaState +
+        //         "\n**Genres:** " + string.Join('/', manga.Genres) + "\n" + "\n" +
+        //         manga.Synopsis;
+        //     eb.WithDescription(desc.Length > 2040 ? desc.Substring(0, 2030) + "..." : desc);
+        //     eb.ThumbnailUrl = manga.ImageURL;
+        //     return eb;
+        // }
+        //
+        // //Character
         public static async Task<Character> GetWaifu(long malId)
         {
             return await Jikan.GetCharacter(malId);
         }
-        public static async Task<CharacterSearchResult> GetWaifus(string name)
-        {
-            return await Jikan.SearchCharacter(name);
-        }
+        // public static async Task<CharacterSearchResult> GetWaifus(string name)
+        // {
+        //     return await Jikan.SearchCharacter(name);
+        // }
         
         // DISCORD BOTS ORG
 
