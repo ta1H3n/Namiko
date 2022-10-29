@@ -6,6 +6,7 @@ using Discord;
 using Discord.Interactions;
 using Microsoft.AspNetCore.Diagnostics;
 using Model;
+using Namiko.Handlers.Extenstions;
 
 namespace Namiko.Handlers.Autocomplete;
 
@@ -13,10 +14,10 @@ public class InventoryWaifuAutocomplete : AutocompleteHandler
 {
     public override async Task<AutocompletionResult> GenerateSuggestionsAsync(IInteractionContext context, IAutocompleteInteraction autocompleteInteraction, IParameterInfo parameter, IServiceProvider services)
     {
-        var value = autocompleteInteraction?.Data?.Options?.FirstOrDefault()?.Value;
+        var value = autocompleteInteraction.GetInput(parameter) ?? "";
 
         var items = await UserInventoryDb.GetWaifusAsync(context.User.Id, context.Guild.Id);
-        var waifus = await WaifuDb.SearchWaifus(value.ToString(), false, items);
+        var waifus = await WaifuDb.SearchWaifus(value, false, items);
 
         var result = waifus.OrderBy(x => x.Source).ThenBy(x => x.Name).Select(x => new AutocompleteResult
         {

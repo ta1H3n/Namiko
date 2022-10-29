@@ -6,6 +6,7 @@ using Discord;
 using Discord.Interactions;
 using Microsoft.AspNetCore.Diagnostics;
 using Model;
+using Namiko.Handlers.Extenstions;
 
 namespace Namiko.Handlers.Autocomplete;
 
@@ -13,7 +14,7 @@ public class ReactionImageAutocomplete : AutocompleteHandler
 {
     public override async Task<AutocompletionResult> GenerateSuggestionsAsync(IInteractionContext context, IAutocompleteInteraction autocompleteInteraction, IParameterInfo parameter, IServiceProvider services)
     {
-        var value = autocompleteInteraction?.Data?.Options?.FirstOrDefault()?.Value?.ToString() ?? "";
+        var value = autocompleteInteraction.GetInput(parameter) ?? "";
         var images = Images.ReactionImageCommands[0].ToHashSet();
         
         if (context?.Guild != null && Images.ReactionImageCommands.TryGetValue(context.Guild.Id, out var images2))
