@@ -118,7 +118,7 @@ public class SlashCommandService
                 };
                 var guilds = ServerDb.GetGuildsJoinedAfterDate(param.Date);
 
-                foreach (var guild in client.Guilds.Where(x => guilds.Contains(x.Id)))
+                foreach (var guild in _client.Guilds.Where(x => guilds.Contains(x.Id)))
                 {
                     await Task.Delay(5000);
                     try
