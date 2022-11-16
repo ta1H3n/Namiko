@@ -16,9 +16,11 @@ namespace Victoria.Converters {
             if (reader.TokenType != JsonTokenType.StartObject)
                 throw new JsonException();
 
+            var originalDepth = reader.CurrentDepth;
+            
             var response = new BaseWsResponse();
             while (reader.Read()) {
-                if (reader.TokenType == JsonTokenType.EndObject)
+                if (reader.TokenType == JsonTokenType.EndObject && reader.CurrentDepth == originalDepth)
                     break;
 
                 if (reader.TokenType != JsonTokenType.PropertyName)
