@@ -5,7 +5,11 @@
 
 # Namiko
 
-Includes the C# Namiko discord bot, the accompanying Namiko Moe web app made with ASPNET and React, and Maid - a helper bot that does housekeeping in the Namiko Support Server.
+The project includes: 
+* **Namiko** - the main C# discord bot
+* **Namiko Moe** - accompanying ASNPET + React web app
+* **Maid** - C# helper bot that does housekeeping in the Namiko Support Server
+* **ImageHost** - ASPNET api that allows upload of images and thereafter exposes them on a public path - used as a CDN for Namiko
 
 Learn about the bot and it's features on [Namiko Moe](https://namiko.moe)
 
