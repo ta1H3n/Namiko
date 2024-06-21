@@ -17,7 +17,7 @@ Learn about the bot and it's features on [Namiko Moe](https://namiko.moe)
 
 I used this project to teach myself programming as I was studying in my computer science course. Even though it was refactored a few times, it might still be difficult to understand and set-up for anyone who is not me.
 
-I have tried many patterns and C# features while developing this, which you can explore in the codebase. Some of the features are implemented in clever but difficult patterns, such as a method that takes any list of items and turns it into a fully interactive paginated embed on Discord. Some features are implemented in dumb patterns, such as using static methods for almost everything that should be a service. 
+I have tried many patterns and C# features while developing this, which you can explore in the codebase. Some of the features are implemented in clever but difficult patterns, such as a method that takes any list of items and turns it into a fully interactive paginated embed on Discord. Some features are implemented in questionable patterns, such as using static methods for almost everything that should be a service. 
 
 Alas, the end product is performant and of high quality, but difficult to maintain and demands some major refactoring, such as introducing proper dependency injection.
 
