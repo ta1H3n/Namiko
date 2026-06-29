@@ -75,7 +75,6 @@ namespace Namiko
         [SlashCommand("daily", "Claim a daily reward")]
         public async Task DailyCmd()
         {
-            bool newDaily = false;
             Daily daily = DailyDb.GetDaily(Context.User.Id, Context.Guild.Id);
             if (daily == null)
             {
@@ -85,7 +84,6 @@ namespace Namiko
                     GuildId = Context.Guild.Id,
                     Date = 0
                 };
-                newDaily = true;
             }
 
             long timeNow = DateTimeOffset.Now.ToUnixTimeMilliseconds();
@@ -96,7 +94,8 @@ namespace Namiko
             long dayslate = 0;
             if ((daily.Date + ms) < timeNow)
             {
-                if ((daily.Date + 172800000) < timeNow && !newDaily)
+                var dailySafeDate = 1782691200000; // Namiko was down, so all dailies before this date do not expire
+                if ((daily.Date + 172800000) < timeNow && daily.Date > dailySafeDate)
                 {
                     long mslate = timeNow - (daily.Date + 172800000);
                     dayslate = (mslate / (1000 * 60 * 60 * 24)) + 1;
