@@ -87,7 +87,6 @@ namespace Website.Controllers
                 AvatarUrl = searchUser.Result.GetAvatarUrl(size: 256),
                 Id = searchUser.Result.Id.ToString(),
                 Name = searchUser.Result.Username,
-                Discriminator = searchUser.Result.Discriminator,
                 ImageUrl = profile.Image,
                 Quote = profile.Quote.CleanQuote(),
                 LootboxesOpened = profile.LootboxesOpened,

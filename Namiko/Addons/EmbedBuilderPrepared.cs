@@ -9,7 +9,7 @@ namespace Namiko
         {
             WithColor(BasicUtil.RandomColor());
             if (author != null)
-                WithAuthor(author.Username + "#" + author.Discriminator, author.GetAvatarUrl(), LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-embed-author"));
+                WithAuthor(author.Username, author.GetAvatarUrl(), LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-embed-author"));
         }
 
         public EmbedBuilderPrepared(string desc) : base()
@@ -28,12 +28,12 @@ namespace Namiko
         }
         public static EmbedBuilder WithAuthor(this EmbedBuilder eb, IUser author)
         {
-            eb.WithAuthor(author.Username + "#" + author.Discriminator, author.GetAvatarUrl(), LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-embed-author"));
+            eb.WithAuthor(author.Username, author.GetAvatarUrl(), LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-embed-author"));
             return eb;
         }
         public static EmbedBuilder WithAuthor(this EmbedBuilder eb, IGuildUser author)
         {
-            eb.WithAuthor(author.Username + "#" + author.Discriminator, author.GetAvatarUrl(), LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-embed-author"));
+            eb.WithAuthor(author.Username, author.GetAvatarUrl(), LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-embed-author"));
             return eb;
         }
 

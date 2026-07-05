@@ -9,7 +9,7 @@ namespace Namiko
         {
             WithColor(BasicUtil.RandomColor());
             WithFooter($"Namiko 🌋 Lavalink");
-            string title = author != null ? $"{author.Username}#{author.Discriminator}" : "Player";
+            string title = author != null ? $"{author.Username}" : "Player";
             WithAuthor(title, author?.GetAvatarUrl(), LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-lavalink"));
         }
     }

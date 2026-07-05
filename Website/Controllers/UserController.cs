@@ -37,7 +37,6 @@ namespace Website.Controllers
                 AvatarUrl = client.CurrentUser.GetAvatarUrl(size: 256),
                 Id = client.CurrentUser.Id.ToString(),
                 Name = client.CurrentUser.Username,
-                Discriminator = client.CurrentUser.Discriminator,
                 ImageUrl = profile.Image,
                 Quote = profile.Quote,
                 LootboxesOpened = profile.LootboxesOpened,

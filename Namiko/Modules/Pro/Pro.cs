@@ -232,7 +232,6 @@ namespace Namiko.Modules.Pro
                     $"- Request a **custom waifu** that is only obtainable by you (Stays after premium ends)\n" +
                     $"- Waifu **wishlist** limit increased to **12**\n" +
                     $"- Marry up to **10** users\n" +
-                    $"- Behind the scenes access in *Namiko Test Realm*\n" +
                     $"\n" +
                     $":star: Subscribe on [Patreon]({LinkHelper.GetRedirectUrl(LinkHelper.Patreon, "Patreon", "cmd-info-proplus")})")
                 .WithImageUrl("https://i.imgur.com/uq9eip4.png")

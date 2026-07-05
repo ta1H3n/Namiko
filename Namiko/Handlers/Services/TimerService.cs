@@ -84,7 +84,7 @@ namespace Namiko.Handlers.Services
             _hourAgain = new Timer(1000 * 60 * 60);
             _hourAgain.AutoReset = true;
             _hourAgain.Enabled = true;
-            _hourAgain.Elapsed += Timer_CleanData;
+            // _hourAgain.Elapsed += Timer_CleanData;
 
             await Task.Delay(30000);
             _sauce = new Timer(1000 * 60 * 1);

@@ -78,7 +78,7 @@ namespace Namiko.Modules.Leaderboard
                 if (user == null)
                     continue;
 
-                rep.Add(new KeyValuePair<string, int>(user.Username + "#" + user.Discriminator, x.Value));
+                rep.Add(new KeyValuePair<string, int>(user.Username, x.Value));
             }
             rep = rep.OrderByDescending(x => x.Value).ToList();
             var msg = new PaginatedMessage();
@@ -129,7 +129,7 @@ namespace Namiko.Modules.Leaderboard
                 if (user == null)
                     continue;
 
-                votes.Add(new KeyValuePair<string, int>(user.Username + "#" + user.Discriminator, x.Value));
+                votes.Add(new KeyValuePair<string, int>(user.Username, x.Value));
             }
             votes = votes.OrderByDescending(x => x.Value).ToList();
             var msg = new PaginatedMessage();

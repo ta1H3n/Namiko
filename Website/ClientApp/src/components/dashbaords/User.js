@@ -33,7 +33,7 @@ export class User extends Component {
                 : <>
                     <div className="dashboard-header">
                         <img className="avatar" alt="avatar" src={this.state.res.avatarUrl} /><br />
-                        <h2 className="text-center title-text inline"><strong>{this.state.res.name}</strong></h2><h5 className="inline">#{this.state.res.discriminator}</h5>
+                        <h2 className="text-center title-text inline"><strong>{this.state.res.name}</strong></h2>
                     </div>
                     <Container>
                         <div className="row mt-5">

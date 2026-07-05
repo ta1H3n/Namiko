@@ -671,20 +671,20 @@ namespace Namiko
 
             imageUrl = imageUrl.EndsWith(".gifv") ? imageUrl.Replace(".gifv", ".gif") : imageUrl;
             imageUrl = imageUrl.EndsWith(".mp4") ? imageUrl.Replace(".mp4", ".gif") : imageUrl;
-
-            if (ImgurAPI.RateLimit.ClientRemaining < 15)
+            
+            if (ImgurAPI.RateLimit?.ClientRemaining < 15)
             {
                 await ReplyAsync("Not enough imgur credits to upload. Please try again later.");
                 return;
             }
 
             string albumId;
-            if (!ImageDb.AlbumExists("Waifus"))
+            if (!ImageDb.AlbumExists("Namiko-Waifus"))
             {
-                albumId = (await ImgurAPI.CreateAlbumAsync("Waifus")).Id;
-                await ImageDb.CreateAlbum("Waifus", albumId);
+                albumId = (await ImgurAPI.CreateAlbumAsync("Namiko-Waifus")).Id;
+                await ImageDb.CreateAlbum("Namiko-Waifus", albumId);
             }
-            else albumId = ImageDb.GetAlbum("Waifus").AlbumId;
+            else albumId = ImageDb.GetAlbum("Namiko-Waifus").AlbumId;
 
             var iImage = await ImgurAPI.UploadImageAsync(imageUrl, albumId, null, waifu.Name);
             string old = waifu.ImageUrl;
@@ -951,7 +951,7 @@ namespace Namiko
                 .AddField("New", newVal, true)
                 .AddField("Old", oldVal, true)
                 .WithColor(BasicUtil.RandomColor())
-                .WithFooter(author.Username + "#" + author.Discriminator, author.GetAvatarUrl());
+                .WithFooter(author.Username, author.GetAvatarUrl());
 
             await ReplyAsync(embed: eb.Build());
         }
